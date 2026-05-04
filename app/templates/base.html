@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo | ELT Room Test Data Management</title>
+    <link rel="icon" type="image/svg+xml" href="/static/images/favicon.svg">
+    <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+    <div id="app_message_modal" class="guide_modal_overlay" aria-hidden="true" style="display:none;">
+        <div class="guide_modal_card" role="dialog" aria-modal="true" aria-labelledby="app_message_modal_title">
+            <div class="section_header_row">
+                <h3 id="app_message_modal_title">알림</h3>
+                <button id="app_message_modal_close_button" type="button">닫기</button>
+            </div>
+            <div id="app_message_modal_body" class="detail_guide"></div>
+            <div class="section_header_row" style="justify-content: flex-end;">
+                <button id="app_message_modal_ok_button" type="button" class="project_standard_button">확인</button>
+            </div>
+        </div>
+    </div>
+    <header class="site_header">
+        <div class="site_header_inner">
+            <h1>
+                <img src="/static/images/huvitz_logo.svg" alt="Huvitz" class="header_logo">
+                {% if request.url.path.startswith('/admin') %}
+                ELT 시험 데이터 입력관리 시스템
+                {% elif request.url.path.startswith('/user') %}
+                ELT 시험 데이터 입력 시스템
+                {% elif request.url.path.startswith('/login') %}
+                ELT Room 시험시간 소요 데이터 관리 시스템 로그인
+                {% elif request.url.path.startswith('/join') %}
+                ELT Room 시험시간 소요 데이터 관리 시스템 업체등록
+                {% else %}
+                ELT Room 시험시간 소요 데이터 관리 시스템
+                {% endif %}
+            </h1>
+            <div class="qc_header_actions">
+                <a class="qc_mode_button" href="/login">
+                    로그인페이지로 이동
+                </a>
+            </div>
+        </div>
+    </header>
+    <main class="page_container">
+        {% block content %}{% endblock %}
+    </main>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

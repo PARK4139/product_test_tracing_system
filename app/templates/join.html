@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+    <div class="section_header_row">
+        <div></div>
+        {% if qc_mode_enabled %}
+        <div class="table_action_bar">
+            <button id="fill_join_sample_a_button" type="button" class="qc_mode_action_button">샘플가입양식채우기(A업체)</button>
+            <button id="fill_join_sample_b_button" type="button" class="qc_mode_action_button">샘플가입양식채우기(B업체)</button>
+        </div>
+        {% else %}
+        <div></div>
+        {% endif %}
+    </div>
+    {% if error_message %}
+    {% if error_message == "이미 등록된 전화번호입니다." %}
+    <script>
+    (() => {
+        const message_text = {{ error_message|tojson }};
+        const try_show_center_non_modal = (attempt_left) => {
+            if (window.showCenterNonModalV2) {
+                window.showCenterNonModalV2(message_text, "error");
+                return;
+            }
+            if (attempt_left <= 0) {
+                return;
+            }
+            window.setTimeout(() => try_show_center_non_modal(attempt_left - 1), 50);
+        };
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", () => try_show_center_non_modal(20), { once: true });
+        } else {
+            try_show_center_non_modal(20);
+        }
+    })();
+    </script>
+    {% else %}
+    <div class="non_modal_notice error"><div>{{ error_message }}</div></div>
+    {% endif %}
+    {% endif %}
+    <form method="post" action="/join" class="form_stack">
+        <label for="company_name">업체명</label>
+        <input id="company_name" name="company_name" type="text" required>
+
+        <label for="display_name">양식제출자</label>
+        <input id="display_name" name="display_name" type="text" required>
+
+        <label for="phone_number">전화번호</label>
+        <input id="phone_number" name="phone_number" type="text" required>
+
+        <label for="password">비밀번호</label>
+        <input id="password" name="password" type="password" required>
+
+        <button type="submit" class="project_standard_button">가입신청</button>
+    </form>
+</section>
+
+<section class="card">
+    <a href="/login" class="project_standard_button">로그인페이지로 이동</a>
+</section>
+{% if qc_mode_enabled %}
+<script>
+(() => {
+    const ui_sample_profiles_map = {{ (ui_sample_profiles_map or {})|tojson }};
+    const fill_a_button = document.getElementById("fill_join_sample_a_button");
+    const fill_b_button = document.getElementById("fill_join_sample_b_button");
+    const company_name_input = document.getElementById("company_name");
+    const display_name_input = document.getElementById("display_name");
+    const phone_input = document.getElementById("phone_number");
+    const password_input = document.getElementById("password");
+    if (
+        !fill_a_button ||
+        !fill_b_button ||
+        !company_name_input ||
+        !display_name_input ||
+        !phone_input ||
+        !password_input
+    ) {
+        return;
+    }
+
+    const apply_profile = (profile_key) => {
+        const profile = ui_sample_profiles_map[profile_key] || {};
+        company_name_input.value = profile.company_name || "";
+        display_name_input.value = profile.display_name || "";
+        phone_input.value = profile.phone_number || "";
+        password_input.value = profile.password || "";
+    };
+
+    fill_a_button.addEventListener("click", () => {
+        apply_profile("A");
+    });
+    fill_b_button.addEventListener("click", () => {
+        apply_profile("B");
+    });
+})();
+</script>
+{% endif %}
+{% if success_message %}
+<script>
+(() => {
+    const success_message = {{ success_message|tojson }};
+    const run_success_modal = () => {
+        let redirected = false;
+        const move_login = () => {
+            if (redirected) {
+                return;
+            }
+            redirected = true;
+            window.location.href = "/login";
+        };
+        if (window.openMessageModal) {
+            window.openMessageModal(success_message, {
+                type: "success",
+                title: "회원가입 완료",
+                ok_text: "로그인 페이지로 이동",
+                on_ok: move_login,
+                on_close: move_login,
+            });
+            return;
+        }
+        // fallback: modal helper not ready
+        alert(success_message);
+        move_login();
+    };
+
+    const try_open_success_modal = (attempt_left) => {
+        if (window.openMessageModal) {
+            run_success_modal();
+            return;
+        }
+        if (attempt_left <= 0) {
+            run_success_modal();
+            return;
+        }
+        window.setTimeout(() => {
+            try_open_success_modal(attempt_left - 1);
+        }, 50);
+    };
+
+    const start_success_modal_flow = () => {
+        try_open_success_modal(20);
+    };
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", start_success_modal_flow, { once: true });
+    } else {
+        start_success_modal_flow();
+    }
+})();
+</script>
+{% endif %}
+{% endblock %}

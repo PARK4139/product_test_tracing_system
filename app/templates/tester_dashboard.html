@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+    <h3>{{ (current_company_name or "OO업체") }} {{ (current_display_name or "OOO") }} 님, 안녕하세요.</h3>
+</section>
+
+<section class="card">
+    <div class="section_header_row">
+        <h3>데이터 입력</h3>
+        <div class="table_action_bar">
+            <button id="col_fill_button" type="button" class="qc_mode_action_button">SAMPLE 작성</button>
+            <button id="add_row_button" type="button">행 추가</button>
+            <button id="select_all_rows_button" type="button">모든 행 선택</button>
+            <button id="delete_selected_rows_button" type="button">행 삭제</button>
+        </div>
+    </div>
+    <input type="hidden" id="tester_form_submission_id_value" value="" autocomplete="off">
+    <div id="save_validation_notice" class="non_modal_notice" aria-live="polite"></div>
+    <script id="tester_dropdown_options_json" type="application/json">{{ dropdown_options_map|tojson }}</script>
+    <div class="tester_table_wrap">
+        <table id="tester_grid_table" class="basic_table">
+            <thead>
+                <tr>
+                    <th>행 선택</th>
+                    <th class="hidden_id_column">ID</th>
+                    <th>양식제출ID</th>
+                    <th>업체명</th>
+                    <th>양식제출자</th>
+                    <th>모델명</th>
+                    <th>공정번호</th>
+                    <th>월</th>
+                    <th>검사대수</th>
+                    <th>저온 투입일</th>
+                    <th>저온 완료일</th>
+                    <th>저온 시간</th>
+                    <th>PASS / FAIL1</th>
+                    <th>고온 투입일</th>
+                    <th>고온 완료일</th>
+                    <th>고온 시간</th>
+                    <th>PASS / FAIL2</th>
+                    <th>불량내용</th>
+                    <th>확인사항</th>
+                    <th>조치사항</th>
+                </tr>
+            </thead>
+            <tbody
+                id="tester_grid_body"
+                data-current-display-name="{{ current_display_name or '' }}"
+                data-current-company-name="{{ current_company_name or '' }}"
+                data-active-form-submission-id=""
+            >
+                {% for row in recent_test_results %}
+                <tr class="editable_row" data-id="{{ row.id }}">
+                    <td><input class="row_select_checkbox" type="checkbox"></td>
+                    <td class="id_cell hidden_id_column">{{ row.id }}</td>
+                    <td>
+                        <span class="submission_id_cell_value delta_value{% if not row.form_submission_id %} is_placeholder{% endif %}">{{ row.form_submission_id or "자동계산" }}</span>
+                    </td>
+                    <td>
+                        <input type="hidden" data-field="key_1" value="{{ row.key_1 or current_company_name or '' }}">
+                        <span class="company_name_cell_value delta_value{% if not (row.key_1 or current_company_name) %} is_placeholder{% endif %}">{{ row.key_1 or current_company_name or "자동계산" }}</span>
+                    </td>
+                    <td>
+                        <input type="hidden" data-field="key_2" value="{{ row.key_2 or current_display_name or '' }}">
+                        <span class="data_writer_name_cell_value delta_value{% if not (row.key_2 or row.data_writer_name or current_display_name) %} is_placeholder{% endif %}">{{ row.key_2 or row.data_writer_name or current_display_name or "자동계산" }}</span>
+                    </td>
+                    <td>
+                        <select data-field="key_3">
+                            <option value=""></option>
+                            {% if row.key_3 and row.key_3 not in dropdown_options_map.get("key_3", []) %}
+                            <option value="{{ row.key_3 }}" selected>{{ row.key_3 }}</option>
+                            {% endif %}
+                            {% for option_value in dropdown_options_map.get("key_3", []) %}
+                            <option value="{{ option_value }}" {% if (row.key_3 or "") == option_value %}selected{% endif %}>{{ option_value }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td>
+                        <select data-field="key_4">
+                            <option value=""></option>
+                            {% if row.key_4 and row.key_4 not in dropdown_options_map.get("key_4", []) %}
+                            <option value="{{ row.key_4 }}" selected>{{ row.key_4 }}</option>
+                            {% endif %}
+                            {% for option_value in dropdown_options_map.get("key_4", []) %}
+                            <option value="{{ option_value }}" {% if (row.key_4 or "") == option_value %}selected{% endif %}>{{ option_value }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td>
+                        <select data-field="field_01">
+                            <option value=""></option>
+                            {% if row.field_01 and row.field_01 not in dropdown_options_map.get("field_01", []) %}
+                            <option value="{{ row.field_01 }}" selected>{{ row.field_01 }}</option>
+                            {% endif %}
+                            {% for option_value in dropdown_options_map.get("field_01", []) %}
+                            <option value="{{ option_value }}" {% if (row.field_01 or "") == option_value %}selected{% endif %}>{{ option_value }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td>
+                        <select data-field="field_02">
+                            <option value=""></option>
+                            {% if row.field_02 and row.field_02 not in dropdown_options_map.get("field_02", []) %}
+                            <option value="{{ row.field_02 }}" selected>{{ row.field_02 }}</option>
+                            {% endif %}
+                            {% for option_value in dropdown_options_map.get("field_02", []) %}
+                            <option value="{{ option_value }}" {% if (row.field_02 or "") == option_value %}selected{% endif %}>{{ option_value }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td class="test_action_td">
+                        <div class="test_action_cell">
+                            <input class="low_test_started_at_cell test_timestamp_input" value="{{ row.low_test_started_at or '' }}">
+                            <button type="button" class="low_test_start_button"{% if row.low_test_started_at %} style="display:none;"{% endif %}>저온시험 시작</button>
+                        </div>
+                    </td>
+                    <td class="test_action_td">
+                        <div class="test_action_cell">
+                            <input class="low_test_ended_at_cell test_timestamp_input" value="{{ row.low_test_ended_at or '' }}">
+                            <button type="button" class="low_test_end_button"{% if row.low_test_ended_at %} style="display:none;"{% endif %}>저온시험 종료</button>
+                        </div>
+                    </td>
+                    <td class="low_test_delta_cell"><span class="delta_value{% if not row.low_test_delta %} is_placeholder{% endif %}">{{ row.low_test_delta or "자동계산" }}</span></td>
+                    <td>
+                        <select data-field="field_03">
+                            <option value=""></option>
+                            <option value="PASS" {% if (row.field_03 or "") == "PASS" %}selected{% endif %}>PASS</option>
+                            <option value="FAIL" {% if (row.field_03 or "") == "FAIL" %}selected{% endif %}>FAIL</option>
+                        </select>
+                    </td>
+                    <td class="test_action_td">
+                        <div class="test_action_cell">
+                            <input class="high_test_started_at_cell test_timestamp_input" value="{{ row.high_test_started_at or '' }}">
+                            <button type="button" class="high_test_start_button"{% if row.high_test_started_at %} style="display:none;"{% endif %}>고온시험 시작</button>
+                        </div>
+                    </td>
+                    <td class="test_action_td">
+                        <div class="test_action_cell">
+                            <input class="high_test_ended_at_cell test_timestamp_input" value="{{ row.high_test_ended_at or '' }}">
+                            <button type="button" class="high_test_end_button"{% if row.high_test_ended_at %} style="display:none;"{% endif %}>고온시험 종료</button>
+                        </div>
+                    </td>
+                    <td class="high_test_delta_cell"><span class="delta_value{% if not row.high_test_delta %} is_placeholder{% endif %}">{{ row.high_test_delta or "자동계산" }}</span></td>
+                    <td>
+                        <select data-field="field_04">
+                            <option value=""></option>
+                            <option value="PASS" {% if (row.field_04 or "") == "PASS" %}selected{% endif %}>PASS</option>
+                            <option value="FAIL" {% if (row.field_04 or "") == "FAIL" %}selected{% endif %}>FAIL</option>
+                        </select>
+                    </td>
+                    <td><input data-field="field_05" value="{{ row.field_05 or '' }}"></td>
+                    <td><input data-field="field_06" value="{{ row.field_06 or '' }}"></td>
+                    <td><input data-field="field_07" value="{{ row.field_07 or '' }}"></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="card">
+    <form method="post" action="/logout" class="form_stack">
+        <button type="submit" class="project_standard_button">로그아웃</button>
+    </form>
+</section>
+{% endblock %}

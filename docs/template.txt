@@ -1,0 +1,146 @@
+1. "HDR Setup 화면"의 "Network 탭"에 Wifi ON 터치	
+1. ""홈화면""의 우측하단 Gear icon 터치하여 ""HDR Setup 화면"" 진입 
+1. "HDR Setup 화면"의 "Network 탭"에 Wifi ON 터치	
+"홈화면의 우측상단 wi-fi Symbol이 연결 상태확인(범례와 묘사와 같은 상태)
+
+"HDR Setup 화면"의 우측상단 wi-fi Symbol이 미연결 상태확인(wi-fi Symbol이 없어짐 확인)
+1. ""HDR Setup 화면""의 우측상단 wi-fi Symbol이 없어짐 확인"	
+1. ""HDR Setup 화면""의 ""Network 탭""에 Wifi OFF 터치
+
+
+
+
+
+상세절차
+1. "HDR Setup 화면"의 "Network 탭" 하위 1번 탭으로 이동
+1. 핸들 수동조작하여 모델아이의 눈동자를 화면 위치로 대략적 배치 
+1. 핸들 수동조작하여 모델아이의 눈동자를 화면 위치로 대략적 배치 
+1. 핸들 수동조작하여 모델아이의 눈동자를 화면 위치로 대략적 배치 
+1. 연결 가능한 "AP List"가 모달로서 시현"
+1. 연결 가능한 "AP List"가 모달로서 시현"
+1. 모델아이 장착
+1. 모델아이 장착
+1. 모델아이 장착
+1. Verify 버튼 터치"
+1. Verify 버튼 터치"
+1. TFBUT 터치     
+1. Scan 버튼 터치
+1. Scan 버튼 터치
+1. Router AP 전원 DC 배럴 잭 분리(전원 OFF)
+1. TBD 초 이상 대기
+1. Router AP 전원 DC 배럴 잭 연결(전원 ON)
+1. Retro-Illum(Ill? lll? TBD) 터치     
+1. Meibo 터치     
+1. MANUAL 설정(TBD)
+1. 홈화면" 좌측 Data List 버튼 터치
+1. 홈화면" 좌측 Data List 버튼 터치
+1. 홈화면" 좌측 Data List 버튼 터치
+1. 홈화면" 좌측 Data List 버튼 터치
+1. HDR 네트워크 구성 설정 (IP)
+1. HDR TFBUT 화면 중간하단 timestamp 멈춤 확인"
+1. HDR Retro-Illum 화면 하단중간 Image Captured 시현 확인"
+1. HDR Meibo 화면 하단중간 Image Captured 시현 확인"
+1. HDR Data Row에 대한 Checkbox를 V 표기가 되도록 터치하여 활성화"
+1. HDR Color View 화면 하단중간 Image Captured 시현 확인"
+1. Color 터치     
+1. AUTO 설정(TBD)
+1. AUTO 설정(TBD)
+1. AP SSID 입력(5GHz 지원 AP SSID 선택)  ex> MER****_5G 
+1. AP SSID 입력(2.4GHz 지원 AP SSID 선택)  ex> MER****
+1. AP Password 입력
+1. AP Password 입력
+1. "OP 홈화면"에서 Shift+MENU 터치(TBD, QC Settings 화면 진입실패 많음. Button Release Timing 확인필요)
+1. "OP 홈화면"에서 Shift+MENU 터치(TBD, QC Settings 화면 진입실패 많음. Button Release Timing 확인필요)
+1. "OP 홈화면"에서 Shift+MENU 터치(TBD, QC Settings 화면 진입실패 많음. Button Release Timing 확인필요)
+1. "OP 키보드"의 LOAD 버튼 터치
+1. "OP 키보드"의 LOAD 버튼 터치
+1. "OP 키보드"의 LOAD 버튼 터치
+1. "OP 키보드"의 LOAD 버튼 터치
+1. "OP QC Settings 화면"의 OK 터치"
+1. "OP QC Settings 화면"의 OK 터치"
+1. "OP QC Settings 화면"의 OK 터치
+1. "OP QC Settings 화면"의 "Commnunication 탭"의 Connection을 ON로 설정.
+1. "OP QC Settings 화면"의 "Commnunication 탭"의 Connection을 ON로 설정.
+1. "OP QC Settings 화면"의 "Commnunication 탭"의 Connection을 OFF로 설정.
+1. "OP QC Settings 화면" 시현 확인
+1. "OP QC Settings 화면" 시현 확인
+1. "OP QC Settings 화면" 시현 확인
+1. "OP Basic Operation 화면" 좌측상단 RK 버튼 터치"
+1. "OP Basic Operation 화면" 좌측상단 RK 버튼 터치"
+1. "OP Basic Operation 화면" 좌측상단 RK 버튼 터치"
+1. "OP Basic Operation 화면" 좌측상단 RK 버튼 터치"
+1. "OP Basic Operation 화면" 이동
+1. "HDR 장비 스위치 ON" "
+1. "HDR 장비 스위치 OFF" 
+1. "홈화면"의 우측하단 Gear icon 터치하여 "HDR Setup 화면" 진입 
+1. "홈화면"의 우측하단 Gear icon 터치하여 "HDR Setup 화면" 진입 
+1. "홈화면"의 우측하단 Gear icon 터치하여 "HDR Setup 화면" 진입 
+1. "홈화면" 좌측하단 부가기능 버튼(2x2 Matrix Icon, 좌상단 1개 파란색, 나머지 3개 회색) 터치
+1. "홈화면" 좌측하단 부가기능 버튼(2x2 Matrix Icon, 좌상단 1개 파란색, 나머지 3개 회색) 터치
+1. "홈화면" 좌측하단 부가기능 버튼(2x2 Matrix Icon, 좌상단 1개 파란색, 나머지 3개 회색) 터치
+1. "홈화면" 좌측하단 부가기능 버튼(2x2 Matrix Icon, 좌상단 1개 파란색, 나머지 3개 회색) 터치
+1. "홈화면" 좌측상단 RK 선택
+1. "홈화면" 좌측상단 RK 선택
+1. "홈화면" 좌측상단 RK 선택
+1. "홈화면" 우측하단 PRINT 터치
+1. "홈화면" 우측상단 START 터치
+1. "홈화면" 우측상단 START 터치
+1. "홈화면" 우측상단 START 터치
+1. "홈화면" 상단중앙 START 터치 (TBD 전송 중 재연결됨)"
+1. "HDR Setup 화면"의 "IP ADDRESS 탭"에 HDR Nickname 입력 ex> HDR9000
+1. "HDR Setup 화면"의 "IP ADDRESS 탭"에 HDR IP/Port 입력 ex> 192.168.1.***
+1. "HDR Setup 화면"의 "Commnunication 탭" 하위 2번 탭으로 이동
+1. "HDR Setup 화면"의 "Commnunication 탭" 하위 2번 탭으로 이동
+1. "HDR Handle"의 Shot Button 누름
+1. "HDR Handle"의 Shot Button 누름
+1. "HDR Handle"의 Shot Button 누름
+1. "HDR Handle"의 Shot Button 누름
+1. "HDR Handle"의 Shot Button 누름
+
+
+
+
+
+
+
+
+
+
+전송된 이미지 데이터 OP하위UI 위치확인필요(TBD)
+전송된 이미지 데이터 OP하위UI 위치확인필요(TBD)
+전송된 이미지 데이터 OP하위UI 위치확인필요(TBD)
+전송된 이미지 데이터 OP하위UI 위치확인필요(TBD)
+범례
+범례
+범례
+범례
+범례
+TBD 초 간 최초 연결 후 AP 끊어짐 없고, 연결관련 에러메세지 없음확인"
+TBD 초 간 최초 연결 후 AP 끊어짐 없고, 연결관련 에러메세지 없음확인"
+Data transfer completed(파란색 통신성공 표기) 비모달 시현 확인"
+*wi-fi Symbol: 회색으로 RSSI 신호세기 표기상태, 우하단심볼 미표기 "
+*wi-fi Symbol: 회색으로 RSSI 신호세기 표기상태, 우하단심볼 미표기 "
+*wi-fi Symbol: 회색으로 RSSI 신호세기 표기상태, 우하단심볼 미표기 "
+*wi-fi : 회색으로 RSSI 신호세기 표기상태, 우하단심볼 미표기 
+*wi-fi : 회색으로 RSSI 신호세기 표기상태, 우하단심볼 미표기 
+*DR : 회색으로 DR 표기, 우하단심볼 미표기 "
+*DR : 회색으로 DR 표기, 우하단심볼 미표기 "
+"홈화면의 우측상단 wi-fi Symbol이 연결 상태확인(범례와 묘사와 같은 상태)
+"홈화면의 우측상단 wi-fi Symbol이 연결 상태확인(범례와 묘사와 같은 상태)
+"홈화면의 우측상단 wi-fi Symbol이 미연결 상태확인(범례의 묘사와 다른 상태)
+"홈화면의 우측상단 wi-fi & DR Symbol의 상태가 아래의 범례와 같이 시현확인
+"홈화면의 우측상단 wi-fi & DR Symbol의 상태가 아래의 범례와 같이 시현확인
+"홈화면"의 우측상단 HDR Symbol 상태가 우하단심볼 노란색 삼각형과 느낌표 표기확인
+"홈화면" 좌측상단 차트번호와 "OP Basic Operation 화면" 좌측상단 차트번호 비교결과, 차트번호가 일치확인
+"홈화면" 좌측상단 차트번호와 "OP Basic Operation 화면" 좌측상단 차트번호 비교결과, 차트번호가 일치확인
+"홈화면" 좌측상단 차트번호와 "OP Basic Operation 화면" 좌측상단 차트번호 비교결과, 차트번호가 일치확인
+"홈화면" 좌측상단 차트번호와 "OP Basic Operation 화면" 좌측상단 차트번호 비교결과, 차트번호가 일치확인
+"홈화면" Data List의 데이터와 "OP Basic Operation 화면" 상단중간 데이터 비교결과, SPH의 소수점 둘째자리에서 반올림한 수치가 일치확인
+"홈화면" Data List의 데이터와 "OP Basic Operation 화면" 상단중간 데이터 비교결과, SPH의 소수점 둘째자리에서 반올림한 수치가 일치확인
+"홈화면" Data List의 데이터와 "OP Basic Operation 화면" 상단중간 데이터 비교결과, SPH의 소수점 둘째자리에서 반올림한 수치가 일치확인
+"홈화면" Data List의 데이터와 "OP Basic Operation 화면" 상단중간 데이터 비교결과, SPH의 소수점 둘째자리에서 반올림한 수치가 일치확인
+"Check connection with Server(파란색 통신성공 표기) 비모달 시현확인 후 연달아
+"AP Password is okay! 모달 UI 시현 후 
+"AP Password is okay! 모달 UI 시현 후 
+"AP List"에 HDR Setup 화면에 RSSI 신호강도가 강한 순에서 작은 순으로 SSID가 배치확인
+"AP List"에 HDR Setup 화면에 RSSI 신호강도가 강한 순에서 작은 순으로 SSID가 배치확인

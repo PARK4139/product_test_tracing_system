@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+    <div class="section_header_row">
+        <div></div>
+        {% if qc_mode_enabled %}
+        <div class="table_action_bar">
+            <button id="fill_login_sample_admin_a_button" type="button" class="qc_mode_action_button">샘플로그인양식채우기(A관리자)</button>
+            <button id="fill_login_sample_a_button" type="button" class="qc_mode_action_button">샘플로그인양식채우기(A업체)</button>
+            <button id="fill_login_sample_b_button" type="button" class="qc_mode_action_button">샘플로그인양식채우기(B업체)</button>
+        </div>
+        {% else %}
+        <div></div>
+        {% endif %}
+    </div>
+    {% if error_message %}
+    <div class="non_modal_notice error"><div>{{ error_message }}</div></div>
+    {% endif %}
+    <form method="post" action="/login" class="form_stack">
+        <label for="phone_number">전화번호</label>
+        <input id="phone_number" name="phone_number" type="text" required>
+
+        <label for="password">비밀번호</label>
+        <input id="password" name="password" type="password" required>
+
+        <button type="submit" class="project_standard_button">로그인</button>
+    </form>
+</section>
+
+<section class="card">
+    <div class="table_action_bar">
+        <a href="/join" class="project_standard_button">업체등록페이지로 이동</a>
+    </div>
+</section>
+{% if qc_mode_enabled %}
+<script>
+(() => {
+    const ui_sample_profiles_map = {{ (ui_sample_profiles_map or {})|tojson }};
+    const fill_admin_a_button = document.getElementById("fill_login_sample_admin_a_button");
+    const fill_a_button = document.getElementById("fill_login_sample_a_button");
+    const fill_b_button = document.getElementById("fill_login_sample_b_button");
+    const phone_input = document.getElementById("phone_number");
+    const password_input = document.getElementById("password");
+    if (!fill_admin_a_button || !fill_a_button || !fill_b_button || !phone_input || !password_input) {
+        return;
+    }
+
+    const apply_profile = (profile_key) => {
+        const profile = ui_sample_profiles_map[profile_key] || {};
+        phone_input.value = profile.phone_number || "";
+        password_input.value = profile.password || "";
+    };
+
+    fill_a_button.addEventListener("click", () => {
+        apply_profile("A");
+    });
+    fill_b_button.addEventListener("click", () => {
+        apply_profile("B");
+    });
+    fill_admin_a_button.addEventListener("click", () => {
+        phone_input.value = "010-4444-4444";
+        password_input.value = "4444";
+    });
+})();
+</script>
+{% endif %}
+{% endblock %}
