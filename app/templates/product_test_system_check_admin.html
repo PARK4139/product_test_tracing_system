@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+    <div class="section_header_row">
+        <h3>Product Test System Check | 운영 점검</h3>
+        <div class="table_action_bar">
+            <a href="/admin" class="project_standard_button">관리자 홈</a>
+        </div>
+    </div>
+</section>
+<section class="card">
+    <div class="section_header_row"><h3>Summary</h3></div>
+    <table class="basic_table">
+        <tbody>
+            <tr><th>unresolved_defects_count</th><td>{{ unresolved_defects_count }}</td></tr>
+            <tr><th>report_count</th><td>{{ report_count }}</td></tr>
+            <tr><th>approved_report_count</th><td>{{ approved_report_count }}</td></tr>
+            <tr><th>locked_release_count</th><td>{{ locked_release_count }}</td></tr>
+        </tbody>
+    </table>
+</section>
+<section class="card">
+    <div class="section_header_row"><h3>Table Existence</h3></div>
+    <div class="tester_table_wrap">
+        <table class="basic_table">
+            <thead><tr><th>table_name</th><th>exists</th></tr></thead>
+            <tbody>
+                {% for row in table_rows %}
+                <tr>
+                    <td>{{ row.table_name }}</td>
+                    <td><span class="status_badge status-{{ 'approved' if row.exists else 'failed' }}">{{ row.exists }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+<section class="card">
+    <div class="section_header_row"><h3>Seed Data Presence</h3></div>
+    <table class="basic_table">
+        <tbody>
+            {% for key, value in seed_data_presence.items() %}
+            <tr><th>{{ key }}</th><td><span class="status_badge status-{{ 'approved' if value else 'failed' }}">{{ value }}</span></td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

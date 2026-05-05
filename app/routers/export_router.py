@@ -28,7 +28,7 @@ def export_test_results_as_excel(
     output_stream = BytesIO()
     workbook.save(output_stream)
     output_stream.seek(0)
-    export_file_name = f"elt_test_data_{datetime.now().strftime('%y%m%d')}.xlsx"
+    export_file_name = f"product_test_data_{datetime.now().strftime('%y%m%d')}.xlsx"
     return StreamingResponse(
         output_stream,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

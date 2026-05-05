@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+    <div class="section_header_row">
+        <h3>시리얼 보고서 추적</h3>
+        <div class="table_action_bar">
+            <a href="/admin" class="project_standard_button">관리자 홈</a>
+            <button type="button" class="project_standard_button" disabled>검색 비활성화</button>
+        </div>
+    </div>
+    <div class="detail_guide">
+        DB 연결 전 placeholder 화면이다. 시리얼 번호 기반 추적 shell만 제공한다.
+    </div>
+</section>
+
+<section class="card">
+    <div class="section_header_row"><h3>시리얼 번호 검색</h3></div>
+    <form class="form_stack">
+        <label>시리얼 번호</label>
+        <input type="text" disabled placeholder="예정">
+    </form>
+</section>
+
+<section class="card">
+    <div class="section_header_row"><h3>테스트 보고서 추적 테이블</h3></div>
+    <table class="basic_table">
+        <thead>
+            <tr>
+                <th>시리얼 번호</th>
+                <th>보고서 ID</th>
+                <th>테스트 ID</th>
+                <th>테스트 구성 ID</th>
+                <th>상태</th>
+                <th>수정 시각</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>예정</td>
+                <td>-</td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+{% endblock %}

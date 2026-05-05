@@ -19,6 +19,7 @@ engine = create_engine(
 @event.listens_for(engine, "connect")
 def _set_sqlite_pragma(database_api_connection, _connection_record) -> None:
     cursor = database_api_connection.cursor()
+    cursor.execute("PRAGMA foreign_keys=ON;")
     cursor.execute("PRAGMA journal_mode=WAL;")
     cursor.execute("PRAGMA synchronous=NORMAL;")
     cursor.close()
@@ -44,6 +45,7 @@ def initialize_database() -> None:
     from app import models
 
     models.Base.metadata.create_all(bind=engine)
+    _ensure_product_test_indexes()
     _ensure_user_account_columns()
     _migrate_test_result_to_four_key_if_needed()
     _ensure_test_result_columns()
@@ -331,6 +333,22 @@ def _backfill_form_submissions() -> None:
         backfill_form_submissions_from_test_results(session)
     finally:
         session.close()
+
+
+def _ensure_product_test_indexes() -> None:
+    statements = [
+        "CREATE INDEX IF NOT EXISTS ix_product_test_run_product_test_release_id ON product_test_run (product_test_release_id)",
+        "CREATE INDEX IF NOT EXISTS ix_product_test_result_product_test_run_id ON product_test_result (product_test_run_id)",
+        "CREATE INDEX IF NOT EXISTS ix_product_test_procedure_result_product_test_result_id ON product_test_procedure_result (product_test_result_id)",
+        "CREATE INDEX IF NOT EXISTS ix_product_test_evidence_product_test_result_id ON product_test_evidence (product_test_result_id)",
+        "CREATE INDEX IF NOT EXISTS ix_product_test_evidence_product_test_procedure_result_id ON product_test_evidence (product_test_procedure_result_id)",
+        "CREATE INDEX IF NOT EXISTS ix_product_test_defect_product_test_result_id ON product_test_defect (product_test_result_id)",
+        "CREATE INDEX IF NOT EXISTS ix_product_test_report_product_test_release_id ON product_test_report (product_test_release_id)",
+        "CREATE INDEX IF NOT EXISTS ix_product_test_status_transition_entity_type_entity_id ON product_test_status_transition (entity_type, entity_id)",
+    ]
+    with engine.begin() as connection:
+        for statement in statements:
+            connection.execute(text(statement))
 
 
 def _ensure_ui_sample_profiles() -> None:

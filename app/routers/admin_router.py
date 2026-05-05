@@ -1,8 +1,10 @@
 import os
+import csv
+from io import BytesIO, StringIO
 from datetime import timedelta
 
 from fastapi import APIRouter, Form, HTTPException, Query, Request, status
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, StreamingResponse
 from sqlalchemy import and_, exists, func, or_, select
 from sqlalchemy.orm import Session
 
@@ -27,9 +29,65 @@ from app.services.dropdown_option_service import (
     delete_dropdown_option_if_exists,
     list_dropdown_options_for_field,
 )
+from app.services.product_test_run_service import (
+    MASTER_ACTIVE_STATUS_VALUES,
+    REPORT_STATUS_VALUES,
+    REPORT_TYPE_VALUES,
+    TARGET_STATUS_VALUES,
+    ENVIRONMENT_STATUS_VALUES,
+    EVIDENCE_TYPE_VALUES,
+    PRODUCT_TEST_RELEASE_STATUS_VALUES,
+    RELEASE_STAGE_VALUES,
+    approve_product_test_report,
+    create_product_test_case,
+    create_product_test_environment,
+    create_product_test_environment_definition,
+    create_product_test_procedure,
+    create_product_test_report,
+    create_product_test_release,
+    create_product_test_target,
+    create_product_test_target_definition,
+    build_product_test_report_export_rows,
+    build_product_test_run_export_rows,
+    build_product_test_trace_export_rows,
+    get_product_test_report_detail,
+    get_product_test_system_check,
+    get_product_test_trace_view,
+    get_release_id_by_result_id,
+    get_release_id_by_run_id,
+    list_case_options,
+    list_environment_options,
+    list_product_test_cases,
+    list_product_test_environment_definitions,
+    list_product_test_environments,
+    list_product_test_procedures,
+    list_product_test_reports,
+    list_product_test_releases,
+    list_target_options,
+    list_product_test_target_definitions,
+    list_product_test_targets,
+    list_report_release_options,
+    reject_product_test_report,
+)
 
 
 admin_router = APIRouter(prefix="/admin", tags=["admin"])
+
+
+def _csv_streaming_response(*, rows: list[list[str]], file_name: str) -> StreamingResponse:
+    text_stream = StringIO()
+    writer = csv.writer(text_stream)
+    for row in rows:
+        writer.writerow(row)
+    output_stream = BytesIO()
+    output_stream.write("\ufeff".encode("utf-8"))
+    output_stream.write(text_stream.getvalue().encode("utf-8"))
+    output_stream.seek(0)
+    return StreamingResponse(
+        output_stream,
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f"attachment; filename={file_name}"},
+    )
 
 
 def _ensure_admin_role(current_role_name: str) -> None:
@@ -82,6 +140,14 @@ def _admin_identity_context(database_session: Session, request: Request) -> dict
     }
 
 
+def _admin_actor_name(database_session: Session, request: Request) -> str:
+    identity_context = _admin_identity_context(database_session=database_session, request=request)
+    display_name = str(identity_context.get("current_admin_display_name") or "").strip()
+    if display_name:
+        return display_name
+    return "ADMIN"
+
+
 def _form_submissions_for_admin(database_session: Session) -> list[dict]:
     subs = list_submissions_for_admin(database_session=database_session, limit=200)
     if not subs:
@@ -121,36 +187,1044 @@ def _admin_accounts_for_admin(database_session: Session) -> list[UserAccount]:
     )
 
 
+def _render_admin_shell_template(
+    request: Request,
+    database_session: Session,
+    current_role_name: str,
+    template_name: str,
+    page_title: str,
+    extra_context: dict | None = None,
+):
+    if current_role_name not in {ROLE_ADMIN, ROLE_MASTER_ADMIN}:
+        return RedirectResponse(url="/login", status_code=303)
+    templates = request.app.state.templates
+    context = {
+        "request": request,
+        "page_title": page_title,
+        "current_role_name": current_role_name,
+        "can_edit_all_data": current_role_name == ROLE_MASTER_ADMIN,
+        **_admin_identity_context(database_session=database_session, request=request),
+    }
+    if extra_context:
+        context.update(extra_context)
+    return templates.TemplateResponse(
+        request=request,
+        name=template_name,
+        context=context,
+    )
+
+
+def _sample_product_test_release_rows() -> list[dict]:
+    return [
+        {
+            "product_test_release_id": "PTREL-MERCUSYS_MR30G-1.0.0-RC1",
+            "upstream_release_id": "MERCUSYS_MR30G-1.0.0",
+            "upstream_release_system": "MERCUSYS",
+            "release_stage": "RC",
+            "release_sequence": 1,
+            "product_test_release_status": "testing",
+            "created_at": "2026-05-05 09:00:00",
+            "created_by": "SQA_MASTER",
+            "updated_at": "2026-05-05 10:30:00",
+            "updated_by": "SQA_MASTER",
+            "remark": "RC baseline",
+        },
+        {
+            "product_test_release_id": "PTREL-MERCUSYS_MR30G-1.0.0-GA",
+            "upstream_release_id": "MERCUSYS_MR30G-1.0.0",
+            "upstream_release_system": "MERCUSYS",
+            "release_stage": "GA",
+            "release_sequence": 0,
+            "product_test_release_status": "drafted",
+            "created_at": "2026-05-05 11:00:00",
+            "created_by": "SQA_MASTER",
+            "updated_at": "2026-05-05 11:00:00",
+            "updated_by": "SQA_MASTER",
+            "remark": "",
+        },
+    ]
+
+
+def _sample_product_test_target_definition_rows() -> list[dict]:
+    return [
+        {
+            "product_test_target_definition_id": "PTTARGETDEF-HUVITZ_HRK_9000A",
+            "product_code": "HUVITZ_HRK_9000A",
+            "manufacturer": "Huvitz",
+            "model_name": "HRK-9000A",
+            "hardware_revision": "A",
+            "default_software_version": "1.0.0",
+            "default_firmware_version": "1.0.0",
+            "product_test_target_definition_status": "active",
+            "created_at": "2026-05-05 09:00:00",
+            "created_by": "SQA_MASTER",
+            "updated_at": "2026-05-05 09:00:00",
+            "updated_by": "SQA_MASTER",
+            "remark": "",
+        },
+        {
+            "product_test_target_definition_id": "PTTARGETDEF-MERCUSYS_MR30G",
+            "product_code": "MERCUSYS_MR30G",
+            "manufacturer": "MERCUSYS",
+            "model_name": "MR30G",
+            "hardware_revision": "A1",
+            "default_software_version": "1.0.0",
+            "default_firmware_version": "1.0.0",
+            "product_test_target_definition_status": "active",
+            "created_at": "2026-05-05 09:30:00",
+            "created_by": "SQA_MASTER",
+            "updated_at": "2026-05-05 09:30:00",
+            "updated_by": "SQA_MASTER",
+            "remark": "",
+        },
+    ]
+
+
+def _sample_product_test_target_rows() -> list[dict]:
+    return [
+        {
+            "product_test_target_id": "PTTARGET-MR30G-0001",
+            "product_test_target_definition_id": "PTTARGETDEF-MERCUSYS_MR30G",
+            "serial_number": "MR30GSN0001",
+            "software_version": "1.0.0",
+            "firmware_version": "1.0.0",
+            "manufacture_lot": "LOT-202605",
+            "product_test_target_status": "active",
+            "created_at": "2026-05-05 10:00:00",
+            "created_by": "SQA_MASTER",
+            "updated_at": "2026-05-05 10:00:00",
+            "updated_by": "SQA_MASTER",
+            "remark": "",
+        }
+    ]
+
+
+def _sample_product_test_environment_definition_rows() -> list[dict]:
+    return [
+        {
+            "product_test_environment_definition_id": "PTENVDEF-HUVITZ-ANYANG-CONNECTIVITY_ROOM",
+            "product_test_environment_definition_name": "Huvitz Anyang Connectivity Room Standard Environment",
+            "test_country": "Korea",
+            "test_city": "Anyang",
+            "test_company": "Huvitz",
+            "test_building": "",
+            "test_floor": "6F",
+            "test_room": "Connectivity Room",
+            "network_type": "ISOLATED_NETWORK",
+            "test_computer_name": "SQA-PC-01",
+            "operating_system_version": "Windows 10",
+            "test_tool_name": "Product Test Tool",
+            "test_tool_version": "1.0.0",
+            "power_voltage": "220V",
+            "power_frequency": "60Hz",
+            "power_connector_type": "OO_CONNECTOR",
+            "power_condition": "Commercial AC power",
+            "product_test_environment_definition_status": "active",
+            "created_at": "2026-05-05 09:00:00",
+            "created_by": "SQA_MASTER",
+            "updated_at": "2026-05-05 09:00:00",
+            "updated_by": "SQA_MASTER",
+            "remark": "",
+        }
+    ]
+
+
+def _sample_product_test_environment_rows() -> list[dict]:
+    return [
+        {
+            "product_test_environment_id": "PTENV-ANYANG-CONNECTIVITY-001",
+            "product_test_environment_definition_id": "PTENVDEF-HUVITZ-ANYANG-CONNECTIVITY_ROOM",
+            "product_test_environment_name": "Anyang Connectivity Room Snapshot",
+            "test_computer_name": "SQA-PC-01",
+            "operating_system_version": "Windows 10",
+            "test_tool_version": "1.0.0",
+            "network_type": "ISOLATED_NETWORK",
+            "power_voltage": "220V",
+            "power_frequency": "60Hz",
+            "power_connector_type": "OO_CONNECTOR",
+            "captured_at": "2026-05-05 09:15:00",
+            "product_test_environment_status": "active",
+            "created_at": "2026-05-05 09:15:00",
+            "created_by": "SQA_MASTER",
+            "updated_at": "2026-05-05 09:15:00",
+            "updated_by": "SQA_MASTER",
+            "remark": "",
+        }
+    ]
+
+
+def _sample_product_test_case_rows() -> list[dict]:
+    return [
+        {
+            "product_test_case_id": "PTCASE-WIFI-AP-CONFIG-001",
+            "product_test_case_title": "WiFi AP 설정 적합성 검증",
+            "test_category": "WiFi",
+            "test_objective": "RS9116 WiFi 모듈 기준으로 AP 설정이 권장 조건을 만족하는지 확인",
+            "precondition": "시험 대상 AP 관리자 화면 접근 가능",
+            "expected_result": "AP 설정값이 RS9116 모듈 권장 조건을 만족해야 함",
+            "product_test_case_status": "active",
+            "created_at": "2026-05-05 08:30:00",
+            "created_by": "SQA_MASTER",
+            "updated_at": "2026-05-05 08:30:00",
+            "updated_by": "SQA_MASTER",
+            "remark": "",
+        }
+    ]
+
+
+def _sample_product_test_procedure_rows() -> list[dict]:
+    return [
+        {
+            "product_test_procedure_id": "PTPROC-WIFI-AP-CONFIG-001-001",
+            "product_test_case_id": "PTCASE-WIFI-AP-CONFIG-001",
+            "procedure_sequence": 1,
+            "procedure_action": "WiFi Band 분리설정 확인",
+            "expected_result": "2.4GHz와 5GHz SSID가 분리되어 있어야 함",
+            "acceptance_criteria": "2.4GHz, 5GHz의 SSID를 분리하는 것을 권장",
+            "required_evidence_type": "screenshot",
+            "product_test_procedure_status": "active",
+            "created_at": "2026-05-05 08:40:00",
+            "created_by": "SQA_MASTER",
+            "updated_at": "2026-05-05 08:40:00",
+            "updated_by": "SQA_MASTER",
+            "remark": "분리하지 않은 경우 임베디드 장비가 2.4GHz로 할당될 가능성이 높음.",
+        },
+        {
+            "product_test_procedure_id": "PTPROC-WIFI-AP-CONFIG-001-002",
+            "product_test_case_id": "PTCASE-WIFI-AP-CONFIG-001",
+            "procedure_sequence": 2,
+            "procedure_action": "WiFi Channel 설정 확인",
+            "expected_result": "2.4GHz는 1~11번, 5GHz는 36/40/44/48 고정 채널이어야 함",
+            "acceptance_criteria": "DFS 채널이 아닌 36, 40, 44, 48 채널 고정 사용 권장",
+            "required_evidence_type": "screenshot",
+            "product_test_procedure_status": "active",
+            "created_at": "2026-05-05 08:41:00",
+            "created_by": "SQA_MASTER",
+            "updated_at": "2026-05-05 08:41:00",
+            "updated_by": "SQA_MASTER",
+            "remark": "DFS 채널 사용 시 검색 실패 가능.",
+        },
+    ]
+
+
 @admin_router.get("")
 def render_admin_dashboard(
     request: Request,
     database_session: database_session_dependency,
     current_role_name: current_role_name_dependency,
 ):
-    if current_role_name not in {ROLE_ADMIN, ROLE_MASTER_ADMIN}:
-        return RedirectResponse(url="/login", status_code=303)
-    recent_test_results = list_recent_test_results(database_session=database_session, limit=50)
-    pending_tester_join_requests = _tester_accounts_for_admin(database_session)
-    templates = request.app.state.templates
-    return templates.TemplateResponse(
+    return _render_admin_shell_template(
         request=request,
-        name="admin_dashboard.html",
-        context={
-            "request": request,
-            "page_title": "ELT 시험 데이터 트래킹 시스템",
-            "recent_test_results": recent_test_results,
-            "current_role_name": current_role_name,
-            "can_edit_all_data": current_role_name == ROLE_MASTER_ADMIN,
-            **_admin_identity_context(database_session=database_session, request=request),
-            "admin_create_error_message": "",
-            "admin_create_success_message": "",
-            "tester_create_error_message": "",
-            "tester_create_success_message": "",
-            "form_submissions": _form_submissions_for_admin(database_session),
-            "submission_summaries": _submission_summaries_for_admin(database_session),
-            "pending_tester_join_requests": pending_tester_join_requests,
-            "admin_accounts_for_management": _admin_accounts_for_admin(database_session),
+        database_session=database_session,
+        current_role_name=current_role_name,
+        template_name="admin_dashboard.html",
+        page_title="Product Test Data Tracing System",
+    )
+
+
+@admin_router.get("/test-configs")
+def render_test_config_admin(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    return _render_admin_shell_template(
+        request=request,
+        database_session=database_session,
+        current_role_name=current_role_name,
+        template_name="test_config_admin.html",
+        page_title="Product Test Data Tracing System",
+    )
+
+
+@admin_router.get("/tests")
+def render_test_definition_admin(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    return _render_admin_shell_template(
+        request=request,
+        database_session=database_session,
+        current_role_name=current_role_name,
+        template_name="test_definition_admin.html",
+        page_title="Product Test Data Tracing System",
+    )
+
+
+@admin_router.get("/test-reports")
+def render_test_report_admin(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    return _render_admin_shell_template(
+        request=request,
+        database_session=database_session,
+        current_role_name=current_role_name,
+        template_name="test_report_admin.html",
+        page_title="Product Test Data Tracing System",
+    )
+
+
+@admin_router.get("/serial-report-trace")
+def render_serial_report_trace_admin(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    return _render_admin_shell_template(
+        request=request,
+        database_session=database_session,
+        current_role_name=current_role_name,
+        template_name="serial_report_trace_admin.html",
+        page_title="Product Test Data Tracing System",
+    )
+
+
+@admin_router.get("/product-test-releases")
+def render_product_test_releases_admin(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    return _render_admin_shell_template(
+        request=request,
+        database_session=database_session,
+        current_role_name=current_role_name,
+        template_name="product_test_releases_admin.html",
+        page_title="Product Test Data Tracing System",
+        extra_context={
+            "rows": list_product_test_releases(database_session),
+            "release_stage_values": RELEASE_STAGE_VALUES,
+            "product_test_release_status_values": PRODUCT_TEST_RELEASE_STATUS_VALUES,
+            "message": (request.query_params.get("message") or "").strip(),
+            "message_type": (request.query_params.get("message_type") or "info").strip(),
         },
+    )
+
+
+@admin_router.post("/product-test-releases/create")
+def create_product_test_release_admin(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+    product_test_release_id: str = Form(""),
+    upstream_release_id: str = Form(""),
+    upstream_release_system: str = Form(""),
+    release_stage: str = Form(""),
+    product_test_release_status: str = Form(""),
+    remark: str = Form(""),
+):
+    _ensure_admin_role(current_role_name)
+    try:
+        create_product_test_release(
+            database_session,
+            product_test_release_id=product_test_release_id,
+            upstream_release_id=upstream_release_id,
+            upstream_release_system=upstream_release_system,
+            release_stage=release_stage,
+            product_test_release_status=product_test_release_status,
+            actor_name=_admin_actor_name(database_session, request),
+            remark=remark,
+        )
+    except ValueError as exception:
+        return RedirectResponse(url=f"/admin/product-test-releases?message={str(exception)}&message_type=error", status_code=303)
+    return RedirectResponse(url="/admin/product-test-releases?message=Saved&message_type=success", status_code=303)
+
+
+@admin_router.get("/product-test-target-definitions")
+def render_product_test_target_definitions_admin(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    return _render_admin_shell_template(
+        request=request,
+        database_session=database_session,
+        current_role_name=current_role_name,
+        template_name="product_test_target_definitions_admin.html",
+        page_title="Product Test Data Tracing System",
+        extra_context={
+            "rows": list_product_test_target_definitions(database_session),
+            "status_values": MASTER_ACTIVE_STATUS_VALUES,
+            "message": (request.query_params.get("message") or "").strip(),
+            "message_type": (request.query_params.get("message_type") or "info").strip(),
+        },
+    )
+
+
+@admin_router.post("/product-test-target-definitions/create")
+def create_product_test_target_definition_admin(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+    product_test_target_definition_id: str = Form(""),
+    product_code: str = Form(""),
+    manufacturer: str = Form(""),
+    model_name: str = Form(""),
+    hardware_revision: str = Form(""),
+    default_software_version: str = Form(""),
+    default_firmware_version: str = Form(""),
+    product_test_target_definition_status: str = Form(""),
+    remark: str = Form(""),
+):
+    _ensure_admin_role(current_role_name)
+    try:
+        create_product_test_target_definition(
+            database_session,
+            product_test_target_definition_id=product_test_target_definition_id,
+            product_code=product_code,
+            manufacturer=manufacturer,
+            model_name=model_name,
+            hardware_revision=hardware_revision,
+            default_software_version=default_software_version,
+            default_firmware_version=default_firmware_version,
+            product_test_target_definition_status=product_test_target_definition_status,
+            actor_name=_admin_actor_name(database_session, request),
+            remark=remark,
+        )
+    except ValueError as exception:
+        return RedirectResponse(url=f"/admin/product-test-target-definitions?message={str(exception)}&message_type=error", status_code=303)
+    return RedirectResponse(url="/admin/product-test-target-definitions?message=Saved&message_type=success", status_code=303)
+
+
+@admin_router.get("/product-test-targets")
+def render_product_test_targets_admin(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    return _render_admin_shell_template(
+        request=request,
+        database_session=database_session,
+        current_role_name=current_role_name,
+        template_name="product_test_targets_admin.html",
+        page_title="Product Test Data Tracing System",
+        extra_context={
+            "rows": list_product_test_targets(database_session),
+            "target_definition_rows": list_product_test_target_definitions(database_session),
+            "status_values": TARGET_STATUS_VALUES,
+            "message": (request.query_params.get("message") or "").strip(),
+            "message_type": (request.query_params.get("message_type") or "info").strip(),
+        },
+    )
+
+
+@admin_router.post("/product-test-targets/create")
+def create_product_test_target_admin(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+    product_test_target_id: str = Form(""),
+    product_test_target_definition_id: str = Form(""),
+    serial_number: str = Form(""),
+    software_version: str = Form(""),
+    firmware_version: str = Form(""),
+    manufacture_lot: str = Form(""),
+    product_test_target_status: str = Form(""),
+    remark: str = Form(""),
+):
+    _ensure_admin_role(current_role_name)
+    try:
+        create_product_test_target(
+            database_session,
+            product_test_target_id=product_test_target_id,
+            product_test_target_definition_id=product_test_target_definition_id,
+            serial_number=serial_number,
+            software_version=software_version,
+            firmware_version=firmware_version,
+            manufacture_lot=manufacture_lot,
+            product_test_target_status=product_test_target_status,
+            actor_name=_admin_actor_name(database_session, request),
+            remark=remark,
+        )
+    except ValueError as exception:
+        return RedirectResponse(url=f"/admin/product-test-targets?message={str(exception)}&message_type=error", status_code=303)
+    return RedirectResponse(url="/admin/product-test-targets?message=Saved&message_type=success", status_code=303)
+
+
+@admin_router.get("/product-test-environment-definitions")
+def render_product_test_environment_definitions_admin(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    return _render_admin_shell_template(
+        request=request,
+        database_session=database_session,
+        current_role_name=current_role_name,
+        template_name="product_test_environment_definitions_admin.html",
+        page_title="Product Test Data Tracing System",
+        extra_context={
+            "rows": list_product_test_environment_definitions(database_session),
+            "status_values": MASTER_ACTIVE_STATUS_VALUES,
+            "message": (request.query_params.get("message") or "").strip(),
+            "message_type": (request.query_params.get("message_type") or "info").strip(),
+        },
+    )
+
+
+@admin_router.post("/product-test-environment-definitions/create")
+def create_product_test_environment_definition_admin(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+    product_test_environment_definition_id: str = Form(""),
+    product_test_environment_definition_name: str = Form(""),
+    test_country: str = Form(""),
+    test_city: str = Form(""),
+    test_company: str = Form(""),
+    test_building: str = Form(""),
+    test_floor: str = Form(""),
+    test_room: str = Form(""),
+    network_type: str = Form(""),
+    test_computer_name: str = Form(""),
+    operating_system_version: str = Form(""),
+    test_tool_name: str = Form(""),
+    test_tool_version: str = Form(""),
+    power_voltage: str = Form(""),
+    power_frequency: str = Form(""),
+    power_connector_type: str = Form(""),
+    power_condition: str = Form(""),
+    product_test_environment_definition_status: str = Form(""),
+    remark: str = Form(""),
+):
+    _ensure_admin_role(current_role_name)
+    try:
+        create_product_test_environment_definition(
+            database_session,
+            product_test_environment_definition_id=product_test_environment_definition_id,
+            product_test_environment_definition_name=product_test_environment_definition_name,
+            test_country=test_country,
+            test_city=test_city,
+            test_company=test_company,
+            test_building=test_building,
+            test_floor=test_floor,
+            test_room=test_room,
+            network_type=network_type,
+            test_computer_name=test_computer_name,
+            operating_system_version=operating_system_version,
+            test_tool_name=test_tool_name,
+            test_tool_version=test_tool_version,
+            power_voltage=power_voltage,
+            power_frequency=power_frequency,
+            power_connector_type=power_connector_type,
+            power_condition=power_condition,
+            product_test_environment_definition_status=product_test_environment_definition_status,
+            actor_name=_admin_actor_name(database_session, request),
+            remark=remark,
+        )
+    except ValueError as exception:
+        return RedirectResponse(url=f"/admin/product-test-environment-definitions?message={str(exception)}&message_type=error", status_code=303)
+    return RedirectResponse(url="/admin/product-test-environment-definitions?message=Saved&message_type=success", status_code=303)
+
+
+@admin_router.get("/product-test-environments")
+def render_product_test_environments_admin(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    return _render_admin_shell_template(
+        request=request,
+        database_session=database_session,
+        current_role_name=current_role_name,
+        template_name="product_test_environments_admin.html",
+        page_title="Product Test Data Tracing System",
+        extra_context={
+            "rows": list_product_test_environments(database_session),
+            "environment_definition_rows": list_product_test_environment_definitions(database_session),
+            "status_values": ENVIRONMENT_STATUS_VALUES,
+            "message": (request.query_params.get("message") or "").strip(),
+            "message_type": (request.query_params.get("message_type") or "info").strip(),
+        },
+    )
+
+
+@admin_router.post("/product-test-environments/create")
+def create_product_test_environment_admin(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+    product_test_environment_id: str = Form(""),
+    product_test_environment_definition_id: str = Form(""),
+    product_test_environment_name: str = Form(""),
+    test_computer_name: str = Form(""),
+    operating_system_version: str = Form(""),
+    test_tool_version: str = Form(""),
+    network_type: str = Form(""),
+    power_voltage: str = Form(""),
+    power_frequency: str = Form(""),
+    power_connector_type: str = Form(""),
+    captured_at: str = Form(""),
+    product_test_environment_status: str = Form(""),
+    remark: str = Form(""),
+):
+    _ensure_admin_role(current_role_name)
+    try:
+        create_product_test_environment(
+            database_session,
+            product_test_environment_id=product_test_environment_id,
+            product_test_environment_definition_id=product_test_environment_definition_id,
+            product_test_environment_name=product_test_environment_name,
+            test_computer_name=test_computer_name,
+            operating_system_version=operating_system_version,
+            test_tool_version=test_tool_version,
+            network_type=network_type,
+            power_voltage=power_voltage,
+            power_frequency=power_frequency,
+            power_connector_type=power_connector_type,
+            captured_at=captured_at,
+            product_test_environment_status=product_test_environment_status,
+            actor_name=_admin_actor_name(database_session, request),
+            remark=remark,
+        )
+    except ValueError as exception:
+        return RedirectResponse(url=f"/admin/product-test-environments?message={str(exception)}&message_type=error", status_code=303)
+    return RedirectResponse(url="/admin/product-test-environments?message=Saved&message_type=success", status_code=303)
+
+
+@admin_router.get("/product-test-cases")
+def render_product_test_cases_admin(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    return _render_admin_shell_template(
+        request=request,
+        database_session=database_session,
+        current_role_name=current_role_name,
+        template_name="product_test_cases_admin.html",
+        page_title="Product Test Data Tracing System",
+        extra_context={
+            "rows": list_product_test_cases(database_session),
+            "status_values": MASTER_ACTIVE_STATUS_VALUES,
+            "message": (request.query_params.get("message") or "").strip(),
+            "message_type": (request.query_params.get("message_type") or "info").strip(),
+        },
+    )
+
+
+@admin_router.post("/product-test-cases/create")
+def create_product_test_case_admin(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+    product_test_case_id: str = Form(""),
+    product_test_case_title: str = Form(""),
+    test_category: str = Form(""),
+    test_objective: str = Form(""),
+    precondition: str = Form(""),
+    expected_result: str = Form(""),
+    product_test_case_status: str = Form(""),
+    remark: str = Form(""),
+):
+    _ensure_admin_role(current_role_name)
+    try:
+        create_product_test_case(
+            database_session,
+            product_test_case_id=product_test_case_id,
+            product_test_case_title=product_test_case_title,
+            test_category=test_category,
+            test_objective=test_objective,
+            precondition=precondition,
+            expected_result=expected_result,
+            product_test_case_status=product_test_case_status,
+            actor_name=_admin_actor_name(database_session, request),
+            remark=remark,
+        )
+    except ValueError as exception:
+        return RedirectResponse(url=f"/admin/product-test-cases?message={str(exception)}&message_type=error", status_code=303)
+    return RedirectResponse(url="/admin/product-test-cases?message=Saved&message_type=success", status_code=303)
+
+
+@admin_router.get("/product-test-procedures")
+def render_product_test_procedures_admin(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    return _render_admin_shell_template(
+        request=request,
+        database_session=database_session,
+        current_role_name=current_role_name,
+        template_name="product_test_procedures_admin.html",
+        page_title="Product Test Data Tracing System",
+        extra_context={
+            "rows": list_product_test_procedures(database_session),
+            "case_rows": list_product_test_cases(database_session),
+            "status_values": MASTER_ACTIVE_STATUS_VALUES,
+            "evidence_type_values": EVIDENCE_TYPE_VALUES,
+            "message": (request.query_params.get("message") or "").strip(),
+            "message_type": (request.query_params.get("message_type") or "info").strip(),
+        },
+    )
+
+
+@admin_router.post("/product-test-procedures/create")
+def create_product_test_procedure_admin(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+    product_test_procedure_id: str = Form(""),
+    product_test_case_id: str = Form(""),
+    procedure_sequence: int = Form(0),
+    procedure_action: str = Form(""),
+    expected_result: str = Form(""),
+    acceptance_criteria: str = Form(""),
+    required_evidence_type: str = Form(""),
+    product_test_procedure_status: str = Form(""),
+    remark: str = Form(""),
+):
+    _ensure_admin_role(current_role_name)
+    try:
+        create_product_test_procedure(
+            database_session,
+            product_test_procedure_id=product_test_procedure_id,
+            product_test_case_id=product_test_case_id,
+            procedure_sequence=procedure_sequence,
+            procedure_action=procedure_action,
+            expected_result=expected_result,
+            acceptance_criteria=acceptance_criteria,
+            required_evidence_type=required_evidence_type,
+            product_test_procedure_status=product_test_procedure_status,
+            actor_name=_admin_actor_name(database_session, request),
+            remark=remark,
+        )
+    except ValueError as exception:
+        return RedirectResponse(url=f"/admin/product-test-procedures?message={str(exception)}&message_type=error", status_code=303)
+    return RedirectResponse(url="/admin/product-test-procedures?message=Saved&message_type=success", status_code=303)
+
+
+@admin_router.get("/product-test-reports")
+def render_product_test_reports_admin(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    return _render_admin_shell_template(
+        request=request,
+        database_session=database_session,
+        current_role_name=current_role_name,
+        template_name="product_test_reports_admin.html",
+        page_title="Product Test Data Tracing System",
+        extra_context={
+            "rows": list_product_test_reports(database_session),
+            "release_options": list_report_release_options(database_session),
+            "report_type_values": REPORT_TYPE_VALUES,
+            "report_status_values": REPORT_STATUS_VALUES,
+            "message": (request.query_params.get("message") or "").strip(),
+            "message_type": (request.query_params.get("message_type") or "info").strip(),
+        },
+    )
+
+
+@admin_router.post("/product-test-reports/create")
+def create_product_test_report_admin(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+    product_test_release_id: str = Form(""),
+    product_test_report_type: str = Form(""),
+    product_test_report_title: str = Form(""),
+    remark: str = Form(""),
+):
+    _ensure_admin_role(current_role_name)
+    actor_name = _admin_actor_name(database_session=database_session, request=request)
+    try:
+        report = create_product_test_report(
+            database_session,
+            product_test_release_id=product_test_release_id,
+            product_test_report_type=product_test_report_type,
+            product_test_report_title=product_test_report_title,
+            created_by=actor_name,
+            remark=remark,
+        )
+    except ValueError as exception:
+        return RedirectResponse(
+            url=f"/admin/product-test-reports?message={str(exception)}&message_type=error",
+            status_code=303,
+        )
+    return RedirectResponse(
+        url=f"/admin/product-test-reports/{report['product_test_report_id']}?message=Report created&message_type=success",
+        status_code=303,
+    )
+
+
+@admin_router.get("/product-test-reports/{product_test_report_id}")
+def render_product_test_report_detail_admin(
+    product_test_report_id: str,
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    detail = get_product_test_report_detail(database_session, product_test_report_id)
+    if detail is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found.")
+    return _render_admin_shell_template(
+        request=request,
+        database_session=database_session,
+        current_role_name=current_role_name,
+        template_name="product_test_report_detail_admin.html",
+        page_title="Product Test Data Tracing System",
+        extra_context={
+            **detail,
+            "message": (request.query_params.get("message") or "").strip(),
+            "message_type": (request.query_params.get("message_type") or "info").strip(),
+        },
+    )
+
+
+@admin_router.get("/product-test-reports/{product_test_report_id}/export.csv")
+def export_product_test_report_csv(
+    product_test_report_id: str,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    _ensure_admin_role(current_role_name)
+    rows = build_product_test_report_export_rows(database_session, product_test_report_id)
+    return _csv_streaming_response(rows=rows, file_name=f"{product_test_report_id}.csv")
+
+
+@admin_router.get("/product-test-reports/{product_test_report_id}/print")
+def render_product_test_report_print(
+    product_test_report_id: str,
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    detail = get_product_test_report_detail(database_session, product_test_report_id)
+    if detail is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found.")
+    return _render_admin_shell_template(
+        request=request,
+        database_session=database_session,
+        current_role_name=current_role_name,
+        template_name="product_test_report_print_admin.html",
+        page_title="Product Test Data Tracing System",
+        extra_context={
+            **detail,
+            "generated_at": get_utc_now_datetime().strftime("%Y-%m-%d %H:%M:%S"),
+        },
+    )
+
+
+@admin_router.post("/product-test-reports/{product_test_report_id}/approve")
+def approve_product_test_report_admin(
+    product_test_report_id: str,
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    _ensure_admin_role(current_role_name)
+    actor_name = _admin_actor_name(database_session=database_session, request=request)
+    try:
+        approve_product_test_report(
+            database_session,
+            product_test_report_id=product_test_report_id,
+            approved_by=actor_name,
+        )
+    except (LookupError, ValueError) as exception:
+        return RedirectResponse(
+            url=f"/admin/product-test-reports/{product_test_report_id}?message={str(exception)}&message_type=error",
+            status_code=303,
+        )
+    return RedirectResponse(
+        url=f"/admin/product-test-reports/{product_test_report_id}?message=Report approved&message_type=success",
+        status_code=303,
+    )
+
+
+@admin_router.post("/product-test-reports/{product_test_report_id}/reject")
+def reject_product_test_report_admin(
+    product_test_report_id: str,
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+    rejection_reason: str = Form(""),
+):
+    _ensure_admin_role(current_role_name)
+    actor_name = _admin_actor_name(database_session=database_session, request=request)
+    try:
+        reject_product_test_report(
+            database_session,
+            product_test_report_id=product_test_report_id,
+            rejected_by=actor_name,
+            rejection_reason=rejection_reason,
+        )
+    except (LookupError, ValueError) as exception:
+        return RedirectResponse(
+            url=f"/admin/product-test-reports/{product_test_report_id}?message={str(exception)}&message_type=error",
+            status_code=303,
+        )
+    return RedirectResponse(
+        url=f"/admin/product-test-reports/{product_test_report_id}?message=Report rejected&message_type=success",
+        status_code=303,
+    )
+
+
+@admin_router.get("/product-test-trace")
+def render_product_test_trace_admin(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+    product_test_release_id: str = Query(""),
+    product_test_target_id: str = Query(""),
+    product_test_environment_id: str = Query(""),
+    product_test_case_id: str = Query(""),
+    result_status: str = Query(""),
+    defect_status: str = Query(""),
+):
+    selected_release_id = (product_test_release_id or "").strip()
+    trace_detail = None
+    if selected_release_id:
+        trace_detail = get_product_test_trace_view(
+            database_session,
+            product_test_release_id=selected_release_id,
+            product_test_target_id=product_test_target_id,
+            product_test_environment_id=product_test_environment_id,
+            product_test_case_id=product_test_case_id,
+            result_status=result_status,
+            defect_status=defect_status,
+        )
+    return _render_admin_shell_template(
+        request=request,
+        database_session=database_session,
+        current_role_name=current_role_name,
+        template_name="product_test_trace_admin.html",
+        page_title="Product Test Data Tracing System",
+        extra_context={
+            "trace_detail": trace_detail,
+            "release_options": list_report_release_options(database_session),
+            "target_options": list_target_options(database_session),
+            "environment_options": list_environment_options(database_session),
+            "case_options": list_case_options(database_session),
+            "message": (request.query_params.get("message") or "").strip(),
+            "message_type": (request.query_params.get("message_type") or "info").strip(),
+        },
+    )
+
+
+@admin_router.get("/product-test-releases/{product_test_release_id}/trace")
+def render_product_test_release_trace_admin(
+    product_test_release_id: str,
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+    product_test_target_id: str = Query(""),
+    product_test_environment_id: str = Query(""),
+    product_test_case_id: str = Query(""),
+    result_status: str = Query(""),
+    defect_status: str = Query(""),
+):
+    trace_detail = get_product_test_trace_view(
+        database_session,
+        product_test_release_id=product_test_release_id,
+        product_test_target_id=product_test_target_id,
+        product_test_environment_id=product_test_environment_id,
+        product_test_case_id=product_test_case_id,
+        result_status=result_status,
+        defect_status=defect_status,
+    )
+    return _render_admin_shell_template(
+        request=request,
+        database_session=database_session,
+        current_role_name=current_role_name,
+        template_name="product_test_trace_admin.html",
+        page_title="Product Test Data Tracing System",
+        extra_context={
+            "trace_detail": trace_detail,
+            "release_options": list_report_release_options(database_session),
+            "target_options": list_target_options(database_session),
+            "environment_options": list_environment_options(database_session),
+            "case_options": list_case_options(database_session),
+            "message": (request.query_params.get("message") or "").strip(),
+            "message_type": (request.query_params.get("message_type") or "info").strip(),
+        },
+    )
+
+
+@admin_router.get("/product-test-releases/{product_test_release_id}/trace/export.csv")
+def export_product_test_release_trace_csv(
+    product_test_release_id: str,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+    product_test_target_id: str = Query(""),
+    product_test_environment_id: str = Query(""),
+    product_test_case_id: str = Query(""),
+    result_status: str = Query(""),
+    defect_status: str = Query(""),
+):
+    _ensure_admin_role(current_role_name)
+    rows = build_product_test_trace_export_rows(
+        database_session,
+        product_test_release_id=product_test_release_id,
+        product_test_target_id=product_test_target_id,
+        product_test_environment_id=product_test_environment_id,
+        product_test_case_id=product_test_case_id,
+        result_status=result_status,
+        defect_status=defect_status,
+    )
+    return _csv_streaming_response(rows=rows, file_name=f"{product_test_release_id}_trace.csv")
+
+
+@admin_router.get("/product-test-runs/{product_test_run_id}/trace")
+def render_product_test_run_trace_admin(
+    product_test_run_id: str,
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    _ensure_admin_role(current_role_name)
+    try:
+        release_id = get_release_id_by_run_id(database_session, product_test_run_id)
+    except LookupError as exception:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exception)) from exception
+    return RedirectResponse(url=f"/admin/product-test-releases/{release_id}/trace", status_code=303)
+
+
+@admin_router.get("/product-test-runs/{product_test_run_id}/export.csv")
+def export_product_test_run_csv(
+    product_test_run_id: str,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    _ensure_admin_role(current_role_name)
+    rows = build_product_test_run_export_rows(database_session, product_test_run_id)
+    return _csv_streaming_response(rows=rows, file_name=f"{product_test_run_id}.csv")
+
+
+@admin_router.get("/product-test-results/{product_test_result_id}/trace")
+def render_product_test_result_trace_admin(
+    product_test_result_id: str,
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    _ensure_admin_role(current_role_name)
+    try:
+        release_id = get_release_id_by_result_id(database_session, product_test_result_id)
+    except LookupError as exception:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exception)) from exception
+    return RedirectResponse(url=f"/admin/product-test-releases/{release_id}/trace", status_code=303)
+
+
+@admin_router.get("/product-test-system-check")
+def render_product_test_system_check(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    _ensure_admin_role(current_role_name)
+    detail = get_product_test_system_check(database_session)
+    return _render_admin_shell_template(
+        request=request,
+        database_session=database_session,
+        current_role_name=current_role_name,
+        template_name="product_test_system_check_admin.html",
+        page_title="Product Test Data Tracing System",
+        extra_context=detail,
     )
 
 
@@ -188,7 +1262,7 @@ def create_admin_user_account(
             name="admin_dashboard.html",
             context={
                 "request": request,
-                "page_title": "ELT 시험 데이터 트래킹 시스템",
+                "page_title": "Product Test Data Tracing System",
                 "recent_test_results": recent_test_results,
                 "current_role_name": current_role_name,
                 "can_edit_all_data": current_role_name == ROLE_MASTER_ADMIN,
@@ -214,7 +1288,7 @@ def create_admin_user_account(
             name="admin_dashboard.html",
             context={
                 "request": request,
-                "page_title": "ELT 시험 데이터 트래킹 시스템",
+                "page_title": "Product Test Data Tracing System",
                 "recent_test_results": recent_test_results,
                 "current_role_name": current_role_name,
                 "can_edit_all_data": current_role_name == ROLE_MASTER_ADMIN,
@@ -251,7 +1325,7 @@ def create_admin_user_account(
         name="admin_dashboard.html",
         context={
             "request": request,
-            "page_title": "ELT 시험 데이터 트래킹 시스템",
+            "page_title": "Product Test Data Tracing System",
             "recent_test_results": recent_test_results,
             "current_role_name": current_role_name,
             "can_edit_all_data": current_role_name == ROLE_MASTER_ADMIN,
@@ -298,7 +1372,7 @@ def create_tester_user_account(
             name="admin_dashboard.html",
             context={
                 "request": request,
-                "page_title": "ELT 시험 데이터 트래킹 시스템",
+                "page_title": "Product Test Data Tracing System",
                 "recent_test_results": recent_test_results,
                 "current_role_name": current_role_name,
                 "can_edit_all_data": current_role_name == ROLE_MASTER_ADMIN,
@@ -323,7 +1397,7 @@ def create_tester_user_account(
             name="admin_dashboard.html",
             context={
                 "request": request,
-                "page_title": "ELT 시험 데이터 트래킹 시스템",
+                "page_title": "Product Test Data Tracing System",
                 "recent_test_results": recent_test_results,
                 "current_role_name": current_role_name,
                 "can_edit_all_data": current_role_name == ROLE_MASTER_ADMIN,
@@ -359,7 +1433,7 @@ def create_tester_user_account(
         name="admin_dashboard.html",
         context={
             "request": request,
-            "page_title": "ELT 시험 데이터 트래킹 시스템",
+            "page_title": "Product Test Data Tracing System",
             "recent_test_results": recent_test_results,
             "current_role_name": current_role_name,
             "can_edit_all_data": current_role_name == ROLE_MASTER_ADMIN,
@@ -396,7 +1470,7 @@ def approve_tester_join_request(
         name="admin_dashboard.html",
         context={
             "request": request,
-            "page_title": "ELT 시험 데이터 트래킹 시스템",
+            "page_title": "Product Test Data Tracing System",
             "recent_test_results": recent_test_results,
             "current_role_name": current_role_name,
             "can_edit_all_data": current_role_name == ROLE_MASTER_ADMIN,
@@ -433,7 +1507,7 @@ def delete_tester_join_request(
         name="admin_dashboard.html",
         context={
             "request": request,
-            "page_title": "ELT 시험 데이터 트래킹 시스템",
+            "page_title": "Product Test Data Tracing System",
             "recent_test_results": recent_test_results,
             "current_role_name": current_role_name,
             "can_edit_all_data": current_role_name == ROLE_MASTER_ADMIN,

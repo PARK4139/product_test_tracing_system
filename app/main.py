@@ -10,6 +10,7 @@ from app.db import initialize_database
 from app.routers.admin_router import admin_router
 from app.routers.auth_router import auth_router
 from app.routers.export_router import export_router
+from app.routers.product_test_tester_router import product_test_tester_router
 from app.routers.submission_router import submission_router
 from app.routers.tester_router import tester_router
 
@@ -32,6 +33,7 @@ def create_app() -> FastAPI:
     app.include_router(auth_router)
     app.include_router(submission_router)
     app.include_router(tester_router)
+    app.include_router(product_test_tester_router)
     app.include_router(admin_router)
     app.include_router(export_router)
 

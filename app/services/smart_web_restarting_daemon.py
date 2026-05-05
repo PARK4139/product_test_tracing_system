@@ -19,9 +19,9 @@ def _fallback_focus_browser_window_by_title_segments() -> bool:
     if os.name != "nt":
         return False
     title_segments = (
-        "Demo | ELT Room Test Data Management",
+        "Product Test Data Tracing System",
         "127.0.0.1:8000",
-        "ELT Room",
+        "Product Test",
         "Chrome",
     )
 

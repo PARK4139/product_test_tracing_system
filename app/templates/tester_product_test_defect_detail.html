@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+    <div class="section_header_row">
+        <h3>Product Test Defect Detail | 제품 테스트 결함 상세</h3>
+        <div class="table_action_bar">
+            <a href="/tester/product-test-runs/{{ original_result.product_test_run_id }}" class="project_standard_button">Run 상세</a>
+        </div>
+    </div>
+</section>
+{% if message %}
+<section class="card"><div class="non_modal_notice {{ message_type }}"><div>{{ message }}</div></div></section>
+{% endif %}
+<section class="card">
+    <div class="section_header_row"><h3>Defect Header</h3></div>
+    <table class="basic_table">
+        <tbody>
+            <tr><th>product_test_defect_id</th><td>{{ defect.product_test_defect_id }}</td></tr>
+            <tr><th>status</th><td><span class="status_badge status-{{ defect.status }}">{{ defect.status }}</span></td></tr>
+            <tr><th>defect_title</th><td>{{ defect.defect_title }}</td></tr>
+            <tr><th>defect_description</th><td>{{ defect.defect_description }}</td></tr>
+            <tr><th>defect_severity</th><td><span class="status_badge status-{{ defect.defect_severity }}">{{ defect.defect_severity }}</span></td></tr>
+            <tr><th>defect_priority</th><td><span class="status_badge status-{{ defect.defect_priority }}">{{ defect.defect_priority }}</span></td></tr>
+            <tr><th>assigned_to</th><td>{{ defect.assigned_to }}</td></tr>
+            <tr><th>fix_description</th><td>{{ defect.fix_description }}</td></tr>
+            <tr><th>retest_product_test_result_id</th><td>{% if defect.retest_product_test_result_id %}<a href="/tester/product-test-runs/{{ retest_result.product_test_run_id if retest_result else original_result.product_test_run_id }}">{{ defect.retest_product_test_result_id }}</a>{% else %}{% endif %}</td></tr>
+            <tr><th>remark</th><td>{{ defect.remark }}</td></tr>
+        </tbody>
+    </table>
+</section>
+<section class="card">
+    <div class="section_header_row"><h3>Original Failed Result</h3></div>
+    <table class="basic_table">
+        <tbody>
+            <tr><th>product_test_result_id</th><td>{{ original_result.product_test_result_id }}</td></tr>
+            <tr><th>product_test_run_id</th><td>{{ original_result.product_test_run_id }}</td></tr>
+            <tr><th>product_test_case_id</th><td>{{ original_result.product_test_case_id }}</td></tr>
+            <tr><th>product_test_case_title</th><td>{{ original_result.product_test_case_title }}</td></tr>
+            <tr><th>status</th><td><span class="status_badge status-{{ original_result.status }}">{{ original_result.status }}</span></td></tr>
+            <tr><th>actual_result</th><td>{{ original_result.actual_result }}</td></tr>
+            <tr><th>judgement_reason</th><td>{{ original_result.judgement_reason }}</td></tr>
+        </tbody>
+    </table>
+</section>
+{% if original_procedure_result %}
+<section class="card">
+    <div class="section_header_row"><h3>Original Failed Procedure Result</h3></div>
+    <table class="basic_table">
+        <tbody>
+            <tr><th>product_test_procedure_result_id</th><td>{{ original_procedure_result.product_test_procedure_result_id }}</td></tr>
+            <tr><th>procedure_sequence</th><td>{{ original_procedure_result.procedure_sequence }}</td></tr>
+            <tr><th>procedure_action</th><td>{{ original_procedure_result.procedure_action }}</td></tr>
+            <tr><th>expected_result</th><td>{{ original_procedure_result.expected_result }}</td></tr>
+            <tr><th>acceptance_criteria</th><td>{{ original_procedure_result.acceptance_criteria }}</td></tr>
+            <tr><th>required_evidence_type</th><td>{{ original_procedure_result.required_evidence_type }}</td></tr>
+            <tr><th>status</th><td><span class="status_badge status-{{ original_procedure_result.product_test_procedure_result_status }}">{{ original_procedure_result.product_test_procedure_result_status }}</span></td></tr>
+            <tr><th>actual_result</th><td>{{ original_procedure_result.actual_result }}</td></tr>
+            <tr><th>judgement_reason</th><td>{{ original_procedure_result.judgement_reason }}</td></tr>
+        </tbody>
+    </table>
+</section>
+{% endif %}
+<section class="card">
+    <div class="section_header_row"><h3>Evidence List</h3></div>
+    <div class="tester_table_wrap">
+        <table class="basic_table">
+            <thead><tr><th>Evidence ID</th><th>Type</th><th>File Name</th><th>File Path</th><th>Captured At</th><th>Captured By</th><th>Remark</th></tr></thead>
+            <tbody>{% for row in evidence_rows %}<tr><td>{{ row.product_test_evidence_id }}</td><td>{{ row.product_test_evidence_type }}</td><td>{{ row.file_name }}</td><td>{{ row.file_path }}</td><td>{{ row.captured_at }}</td><td>{{ row.captured_by }}</td><td>{{ row.remark }}</td></tr>{% endfor %}</tbody>
+        </table>
+    </div>
+    <form method="post" action="/tester/product-test-evidence/save" class="dropdown_inline_form" style="margin-top:12px;">
+        <input type="hidden" name="product_test_run_id" value="{{ original_result.product_test_run_id }}">
+        <input type="hidden" name="product_test_result_id" value="{{ original_result.product_test_result_id }}">
+        <input type="hidden" name="product_test_procedure_result_id" value="{{ defect.product_test_procedure_result_id or '' }}">
+        <input type="hidden" name="product_test_defect_id" value="{{ defect.product_test_defect_id }}">
+        <label>Evidence Type<span class="required_marker">*</span></label>
+        <select name="product_test_evidence_type" required>{% for value in evidence_type_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select>
+        <label>File Path<span class="required_marker">*</span></label>
+        <input name="file_path" required>
+        <label>Remark</label>
+        <input name="remark">
+        <button type="submit">Attach Evidence</button>
+    </form>
+</section>
+{% if defect.status == "opened" %}
+<section class="card">
+    <div class="section_header_row"><h3>Assign / Reject</h3></div>
+    <form method="post" action="/tester/product-test-defects/{{ defect.product_test_defect_id }}/assign" class="form_stack" style="max-width:none;">
+        <label>assigned_to<span class="required_marker">*</span></label><input name="assigned_to" required>
+        <label>transition_reason<span class="required_marker">*</span></label><input name="transition_reason" required>
+        <div class="table_action_bar"><button type="submit">Assign</button></div>
+    </form>
+    <form method="post" action="/tester/product-test-defects/{{ defect.product_test_defect_id }}/reject" class="form_stack" style="max-width:none; margin-top:12px;">
+        <label>rejection_reason<span class="required_marker">*</span></label><input name="rejection_reason" list="defect_rejection_reason_values" required>
+        <label>transition_reason<span class="required_marker">*</span></label><input name="transition_reason" required>
+        <div class="table_action_bar"><button type="submit">Reject</button></div>
+    </form>
+</section>
+{% elif defect.status == "assigned" %}
+<section class="card">
+    <div class="section_header_row"><h3>Mark Fixed / Reject</h3></div>
+    <form method="post" action="/tester/product-test-defects/{{ defect.product_test_defect_id }}/fix" class="form_stack" style="max-width:none;">
+        <label>fix_description<span class="required_marker">*</span></label><input name="fix_description" required>
+        <label>transition_reason<span class="required_marker">*</span></label><input name="transition_reason" required>
+        <div class="table_action_bar"><button type="submit">Mark Fixed</button></div>
+    </form>
+    <form method="post" action="/tester/product-test-defects/{{ defect.product_test_defect_id }}/reject" class="form_stack" style="max-width:none; margin-top:12px;">
+        <label>rejection_reason<span class="required_marker">*</span></label><input name="rejection_reason" list="defect_rejection_reason_values" required>
+        <label>transition_reason<span class="required_marker">*</span></label><input name="transition_reason" required>
+        <div class="table_action_bar"><button type="submit">Reject</button></div>
+    </form>
+</section>
+{% elif defect.status == "fixed" %}
+<section class="card">
+    <div class="section_header_row"><h3>Create Retest Result / Mark Retested</h3></div>
+    <form method="post" action="/tester/product-test-defects/{{ defect.product_test_defect_id }}/create-retest-result" class="form_stack" style="max-width:none;">
+        <label>product_test_run_id<span class="required_marker">*</span></label>
+        <select name="product_test_run_id" required>
+            <option value=""></option>
+            {% for row in running_run_options %}
+            <option value="{{ row.product_test_run_id }}">{{ row.product_test_run_id }} / {{ row.product_test_release_id }} / {{ row.product_test_target_id }}</option>
+            {% endfor %}
+        </select>
+        <div class="table_action_bar"><button type="submit">Create Retest Result</button></div>
+    </form>
+    <form method="post" action="/tester/product-test-defects/{{ defect.product_test_defect_id }}/retested" class="form_stack" style="max-width:none; margin-top:12px;">
+        <label>retest_product_test_result_id<span class="required_marker">*</span></label><input name="retest_product_test_result_id" value="{{ defect.retest_product_test_result_id or '' }}" required>
+        <label>transition_reason<span class="required_marker">*</span></label><input name="transition_reason" required>
+        <div class="table_action_bar"><button type="submit">Mark Retested</button></div>
+    </form>
+</section>
+{% elif defect.status == "retested" %}
+<section class="card">
+    <div class="section_header_row"><h3>Close Defect</h3></div>
+    <form method="post" action="/tester/product-test-defects/{{ defect.product_test_defect_id }}/close" class="form_stack" style="max-width:none;">
+        <label>transition_reason<span class="required_marker">*</span></label><input name="transition_reason" required>
+        <div class="table_action_bar"><button type="submit">Close</button></div>
+    </form>
+</section>
+{% endif %}
+{% if retest_result %}
+<section class="card">
+    <div class="section_header_row"><h3>Retest Result</h3></div>
+    <table class="basic_table">
+        <tbody>
+            <tr><th>product_test_result_id</th><td>{{ retest_result.product_test_result_id }}</td></tr>
+            <tr><th>product_test_run_id</th><td>{{ retest_result.product_test_run_id }}</td></tr>
+            <tr><th>status</th><td><span class="status_badge status-{{ retest_result.status }}">{{ retest_result.status }}</span></td></tr>
+            <tr><th>actual_result</th><td>{{ retest_result.actual_result }}</td></tr>
+            <tr><th>judgement_reason</th><td>{{ retest_result.judgement_reason }}</td></tr>
+        </tbody>
+    </table>
+</section>
+{% endif %}
+<section class="card">
+    <div class="section_header_row"><h3>Transition History</h3></div>
+    <div class="tester_table_wrap">
+        <table class="basic_table">
+            <thead><tr><th>Transition ID</th><th>Entity Type</th><th>Entity ID</th><th>From</th><th>To</th><th>Reason</th><th>At</th><th>By</th></tr></thead>
+            <tbody>{% for row in transition_rows %}<tr><td>{{ row.product_test_status_transition_id }}</td><td>{{ row.entity_type }}</td><td>{{ row.entity_id }}</td><td>{{ row.from_status }}</td><td>{{ row.to_status }}</td><td>{{ row.transition_reason }}</td><td>{{ row.transitioned_at }}</td><td>{{ row.transitioned_by }}</td></tr>{% endfor %}</tbody>
+        </table>
+    </div>
+</section>
+<datalist id="defect_rejection_reason_values">
+    {% for value in rejection_reason_examples %}<option value="{{ value }}"></option>{% endfor %}
+</datalist>
+{% endblock %}

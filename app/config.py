@@ -15,10 +15,10 @@ class AppSettings:
 def build_app_settings() -> AppSettings:
     base_directory_path = Path(__file__).resolve().parent
     data_directory_path = base_directory_path.parent / "data"
-    sqlite_database_file_path = data_directory_path / "elt_test_tracking_system.db"
+    sqlite_database_file_path = data_directory_path / "product_test_tracking_system.db"
     sqlite_database_url = f"sqlite:///{sqlite_database_file_path.as_posix()}"
     return AppSettings(
-        project_name="elt_test_tracking_system",
+        project_name="product_test_tracking_system",
         project_version="0.1.0",
         base_directory_path=base_directory_path,
         data_directory_path=data_directory_path,
@@ -28,4 +28,3 @@ def build_app_settings() -> AppSettings:
 
 
 app_settings = build_app_settings()
-

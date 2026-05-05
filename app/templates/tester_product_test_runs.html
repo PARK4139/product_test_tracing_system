@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+    <div class="section_header_row">
+        <h3>Product Test Run | 제품 테스트 실행</h3>
+    </div>
+    <div class="detail_guide">테스터는 Product Test Report 를 직접 작성하지 않고 Product Test Run, Product Test Result, Product Test Procedure Result, Product Test Evidence, Product Test Defect 를 입력한다.</div>
+</section>
+{% if message %}
+<section class="card"><div class="non_modal_notice {{ message_type }}"><div>{{ message }}</div></div></section>
+{% endif %}
+<section class="card">
+    <div class="section_header_row"><h3>실행 시작</h3></div>
+    <form method="post" action="/tester/product-test-runs/start" class="form_stack">
+        <label>Product Test Release | 제품 테스트 릴리즈</label>
+        <select name="product_test_release_id" required>
+            <option value=""></option>
+            {% for row in release_options %}<option value="{{ row.product_test_release_id }}">{{ row.product_test_release_id }}</option>{% endfor %}
+        </select>
+        <label>Product Test Target | 제품 테스트 대상</label>
+        <select name="product_test_target_id" required>
+            <option value=""></option>
+            {% for row in target_options %}<option value="{{ row.product_test_target_id }}">{{ row.product_test_target_id }} / {{ row.serial_number }}</option>{% endfor %}
+        </select>
+        <label>Product Test Environment | 제품 테스트 환경</label>
+        <select name="product_test_environment_id" required>
+            <option value=""></option>
+            {% for row in environment_options %}<option value="{{ row.product_test_environment_id }}">{{ row.product_test_environment_id }}</option>{% endfor %}
+        </select>
+        <div class="table_action_bar"><button type="submit">Start Run</button><button type="reset">Reset</button></div>
+    </form>
+</section>
+<section class="card">
+    <div class="section_header_row"><h3>실행 목록</h3></div>
+    <div class="tester_table_wrap">
+        <table class="basic_table">
+            <thead><tr><th>Run ID</th><th>Release</th><th>Target</th><th>Environment</th><th>Status</th><th>Started At</th><th>Started By</th><th>Action</th></tr></thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    <td>{{ row.product_test_run_id }}</td>
+                    <td>{{ row.product_test_release_id }}</td>
+                    <td>{{ row.product_test_target_id }}</td>
+                    <td>{{ row.product_test_environment_id }}</td>
+                    <td>{{ row.status }}</td>
+                    <td>{{ row.started_at }}</td>
+                    <td>{{ row.started_by }}</td>
+                    <td><a href="/tester/product-test-runs/{{ row.product_test_run_id }}" class="project_standard_button">열기</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

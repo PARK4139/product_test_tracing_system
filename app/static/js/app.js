@@ -1748,3 +1748,58 @@
 
     // 양식제출ID는 페이지 진입 시 자동 생성하지 않고, 양식 저장(자동저장 포함) 시 생성한다.
 })();
+
+(() => {
+    const procedure_forms = Array.from(
+        document.querySelectorAll(".product_test_procedure_result_form")
+    );
+    if (procedure_forms.length === 0) {
+        return;
+    }
+
+    const render_reason_hint = (status_select, reason_input, hint_node) => {
+        const selected_status = String(status_select.value || "").trim();
+        const skipped_reasons = String(reason_input.dataset.skippedReasons || "").trim();
+        const blocked_reasons = String(reason_input.dataset.blockedReasons || "").trim();
+        const requires_reason = ["failed", "blocked", "skipped"].includes(selected_status);
+
+        reason_input.required = requires_reason;
+
+        if (!hint_node) {
+            return;
+        }
+        if (selected_status === "skipped" && skipped_reasons) {
+            hint_node.textContent = `예시: ${skipped_reasons}`;
+            return;
+        }
+        if (selected_status === "blocked" && blocked_reasons) {
+            hint_node.textContent = `예시: ${blocked_reasons}`;
+            return;
+        }
+        if (selected_status === "failed") {
+            hint_node.textContent = "실패 원인을 구체적으로 입력해 주세요.";
+            return;
+        }
+        hint_node.textContent = "";
+    };
+
+    procedure_forms.forEach((form_element) => {
+        const status_select = form_element.querySelector(
+            ".product_test_procedure_result_status_select"
+        );
+        const reason_input = form_element.querySelector(
+            ".product_test_judgement_reason_input"
+        );
+        const hint_node = form_element.querySelector(".product_test_reason_hint");
+        if (
+            !(status_select instanceof HTMLSelectElement) ||
+            !(reason_input instanceof HTMLInputElement)
+        ) {
+            return;
+        }
+
+        const refresh = () => render_reason_hint(status_select, reason_input, hint_node);
+        status_select.addEventListener("change", refresh);
+        refresh();
+    });
+})();

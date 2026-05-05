@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+    <div class="section_header_row">
+        <h3>Product Test Report Detail | 제품 테스트 보고서 상세</h3>
+        <div class="table_action_bar">
+            <a href="/admin/product-test-reports" class="project_standard_button">보고서 목록</a>
+            <a href="/admin/product-test-releases/{{ report.product_test_release_id }}/trace" class="project_standard_button">Trace 보기</a>
+            <a href="/admin/product-test-reports/{{ report.product_test_report_id }}/export.csv" class="project_standard_button">CSV Export</a>
+            <a href="/admin/product-test-reports/{{ report.product_test_report_id }}/print" class="project_standard_button">Print View</a>
+        </div>
+    </div>
+    <div class="detail_guide">product_test_report_item 은 제외되며, 본문은 release 기반 trace lookup 으로 생성된다.</div>
+</section>
+{% if message %}
+<section class="card"><div class="non_modal_notice {{ message_type }}"><div>{{ message }}</div></div></section>
+{% endif %}
+{% if report.product_test_report_status == "approved" %}
+<section class="card">
+    <div class="lock_banner">보고서가 승인된 상태다. underlying Run / Result / Evidence / Defect 는 source lock 상태로 취급된다.</div>
+</section>
+{% endif %}
+<section class="card">
+    <div class="section_header_row"><h3>Report Header</h3></div>
+    <table class="basic_table">
+        <tbody>
+            <tr><th>product_test_report_id</th><td>{{ report.product_test_report_id }}</td></tr>
+            <tr><th>product_test_release_id</th><td>{{ report.product_test_release_id }}</td></tr>
+            <tr><th>product_test_report_type</th><td><span class="status_badge">{{ report.product_test_report_type }}</span></td></tr>
+            <tr><th>product_test_report_status</th><td><span class="status_badge status-{{ report.product_test_report_status }}">{{ report.product_test_report_status }}</span></td></tr>
+            <tr><th>product_test_report_title</th><td>{{ report.product_test_report_title }}</td></tr>
+            <tr><th>approved_at</th><td>{{ report.approved_at }}</td></tr>
+            <tr><th>approved_by</th><td>{{ report.approved_by }}</td></tr>
+            <tr><th>rejected_at</th><td>{{ report.rejected_at }}</td></tr>
+            <tr><th>rejected_by</th><td>{{ report.rejected_by }}</td></tr>
+            <tr><th>rejection_reason</th><td>{{ report.rejection_reason }}</td></tr>
+            <tr><th>approval_readiness</th><td><span class="status_badge status-{{ 'failed' if approval_blocked else 'approved' }}">{{ "blocked" if approval_blocked else "ready" }}</span></td></tr>
+            <tr><th>source_lock_status</th><td><span class="status_badge status-{{ 'approved' if report.product_test_report_status == 'approved' else 'drafted' }}">{{ "locked" if report.product_test_report_status == "approved" else "unlocked" }}</span></td></tr>
+            <tr><th>remark</th><td>{{ report.remark }}</td></tr>
+        </tbody>
+    </table>
+    <div class="table_action_bar" style="margin-top:12px;">
+        <form method="post" action="/admin/product-test-reports/{{ report.product_test_report_id }}/approve">
+            <button type="submit" {% if report.product_test_report_status != "drafted" or approval_blocked %}disabled{% endif %}>Approve</button>
+        </form>
+        <form method="post" action="/admin/product-test-reports/{{ report.product_test_report_id }}/reject" class="dropdown_inline_form">
+            <label>rejection_reason<span class="required_marker">*</span></label>
+            <input type="text" name="rejection_reason" required placeholder="reject reason">
+            <button type="submit" {% if report.product_test_report_status != "drafted" %}disabled{% endif %}>Reject</button>
+        </form>
+    </div>
+    {% if approval_blocked %}
+    <div class="detail_guide">opened / assigned / fixed defect 가 남아 있어 승인 차단 상태다.</div>
+    {% endif %}
+</section>
+<section class="card">
+    <div class="section_header_row"><h3>Release Summary</h3></div>
+    <table class="basic_table">
+        <tbody>
+            <tr><th>product_test_release_id</th><td>{{ release_summary.product_test_release_id }}</td></tr>
+            <tr><th>upstream_release_id</th><td>{{ release_summary.upstream_release_id }}</td></tr>
+            <tr><th>upstream_release_system</th><td>{{ release_summary.upstream_release_system }}</td></tr>
+            <tr><th>release_stage</th><td>{{ release_summary.release_stage }}</td></tr>
+            <tr><th>release_sequence</th><td>{{ release_summary.release_sequence }}</td></tr>
+            <tr><th>product_test_release_status</th><td><span class="status_badge status-{{ release_summary.product_test_release_status }}">{{ release_summary.product_test_release_status }}</span></td></tr>
+        </tbody>
+    </table>
+</section>
+<section class="card">
+    <div class="section_header_row"><h3>Result Summary</h3></div>
+    <table class="basic_table">
+        <tbody>
+            <tr><th>total_result_count</th><td>{{ result_summary.total_result_count }}</td></tr>
+            <tr><th>passed_count</th><td>{{ result_summary.passed_count }}</td></tr>
+            <tr><th>failed_count</th><td>{{ result_summary.failed_count }}</td></tr>
+            <tr><th>blocked_count</th><td>{{ result_summary.blocked_count }}</td></tr>
+            <tr><th>skipped_count</th><td>{{ result_summary.skipped_count }}</td></tr>
+            <tr><th>procedure_result_count</th><td>{{ result_summary.procedure_result_count }}</td></tr>
+            <tr><th>procedure_failed_count</th><td>{{ result_summary.procedure_failed_count }}</td></tr>
+            <tr><th>defect_count</th><td>{{ result_summary.defect_count }}</td></tr>
+            <tr><th>open_defect_count</th><td>{{ result_summary.open_defect_count }}</td></tr>
+            <tr><th>unresolved_defect_count</th><td>{{ result_summary.unresolved_defect_count }}</td></tr>
+            <tr><th>evidence_count</th><td>{{ result_summary.evidence_count }}</td></tr>
+        </tbody>
+    </table>
+</section>
+{% for run in run_summaries %}
+<section class="card">
+    <div class="section_header_row"><h3>Run Summary | {{ run.product_test_run_id }}</h3></div>
+    <table class="basic_table">
+        <tbody>
+            <tr><th>product_test_run_id</th><td>{{ run.product_test_run_id }}</td></tr>
+            <tr><th>product_test_target_id</th><td>{{ run.product_test_target_id }}</td></tr>
+            <tr><th>product_test_environment_id</th><td>{{ run.product_test_environment_id }}</td></tr>
+            <tr><th>product_test_run_status</th><td><span class="status_badge status-{{ run.product_test_run_status }}">{{ run.product_test_run_status }}</span></td></tr>
+            <tr><th>started_at</th><td>{{ run.started_at }}</td></tr>
+            <tr><th>started_by</th><td>{{ run.started_by }}</td></tr>
+            <tr><th>finished_at</th><td>{{ run.finished_at }}</td></tr>
+        </tbody>
+    </table>
+</section>
+<section class="card">
+    <div class="section_header_row"><h3>Target Summary | {{ run.product_test_target_id }}</h3></div>
+    <table class="basic_table">
+        <tbody>
+            <tr><th>product_test_target_id</th><td>{{ run.target_summary.product_test_target_id }}</td></tr>
+            <tr><th>product_code</th><td>{{ run.target_summary.product_code }}</td></tr>
+            <tr><th>manufacturer</th><td>{{ run.target_summary.manufacturer }}</td></tr>
+            <tr><th>model_name</th><td>{{ run.target_summary.model_name }}</td></tr>
+            <tr><th>serial_number</th><td>{{ run.target_summary.serial_number }}</td></tr>
+            <tr><th>software_version</th><td>{{ run.target_summary.software_version }}</td></tr>
+            <tr><th>firmware_version</th><td>{{ run.target_summary.firmware_version }}</td></tr>
+            <tr><th>manufacture_lot</th><td>{{ run.target_summary.manufacture_lot }}</td></tr>
+        </tbody>
+    </table>
+</section>
+<section class="card">
+    <div class="section_header_row"><h3>Environment Summary | {{ run.product_test_environment_id }}</h3></div>
+    <table class="basic_table">
+        <tbody>
+            <tr><th>product_test_environment_id</th><td>{{ run.environment_summary.product_test_environment_id }}</td></tr>
+            <tr><th>product_test_environment_name</th><td>{{ run.environment_summary.product_test_environment_name }}</td></tr>
+            <tr><th>test_country</th><td>{{ run.environment_summary.test_country }}</td></tr>
+            <tr><th>test_city</th><td>{{ run.environment_summary.test_city }}</td></tr>
+            <tr><th>test_company</th><td>{{ run.environment_summary.test_company }}</td></tr>
+            <tr><th>test_building</th><td>{{ run.environment_summary.test_building }}</td></tr>
+            <tr><th>test_floor</th><td>{{ run.environment_summary.test_floor }}</td></tr>
+            <tr><th>test_room</th><td>{{ run.environment_summary.test_room }}</td></tr>
+            <tr><th>network_type</th><td>{{ run.environment_summary.network_type }}</td></tr>
+            <tr><th>test_computer_name</th><td>{{ run.environment_summary.test_computer_name }}</td></tr>
+            <tr><th>operating_system_version</th><td>{{ run.environment_summary.operating_system_version }}</td></tr>
+            <tr><th>test_tool_version</th><td>{{ run.environment_summary.test_tool_version }}</td></tr>
+            <tr><th>power_voltage</th><td>{{ run.environment_summary.power_voltage }}</td></tr>
+            <tr><th>power_frequency</th><td>{{ run.environment_summary.power_frequency }}</td></tr>
+            <tr><th>power_connector_type</th><td>{{ run.environment_summary.power_connector_type }}</td></tr>
+            <tr><th>power_condition</th><td>{{ run.environment_summary.power_condition }}</td></tr>
+        </tbody>
+    </table>
+</section>
+{% endfor %}
+{% for result in result_details %}
+<section class="card">
+    <div class="section_header_row"><h3>Result Detail | {{ result.product_test_result_id }}</h3></div>
+    <table class="basic_table">
+        <tbody>
+            <tr><th>product_test_result_id</th><td>{{ result.product_test_result_id }}</td></tr>
+            <tr><th>product_test_run_id</th><td><a href="/admin/product-test-runs/{{ result.product_test_run_id }}/trace">{{ result.product_test_run_id }}</a></td></tr>
+            <tr><th>product_test_case_id</th><td>{{ result.product_test_case_id }}</td></tr>
+            <tr><th>product_test_case_title</th><td>{{ result.product_test_case_title }}</td></tr>
+            <tr><th>product_test_result_status</th><td><span class="status_badge status-{{ result.product_test_result_status }}">{{ result.product_test_result_status }}</span></td></tr>
+            <tr><th>actual_result</th><td>{{ result.actual_result }}</td></tr>
+            <tr><th>judgement_reason</th><td>{{ result.judgement_reason }}</td></tr>
+            <tr><th>result_judged_at</th><td>{{ result.result_judged_at }}</td></tr>
+            <tr><th>result_judged_by</th><td>{{ result.result_judged_by }}</td></tr>
+        </tbody>
+    </table>
+</section>
+<section class="card">
+    <div class="section_header_row"><h3>Procedure Result Detail | {{ result.product_test_result_id }}</h3></div>
+    <div class="tester_table_wrap">
+        <table class="basic_table">
+            <thead>
+                <tr>
+                    <th>Seq</th>
+                    <th>Procedure Action</th>
+                    <th>Expected Result</th>
+                    <th>Acceptance Criteria</th>
+                    <th>Required Evidence Type</th>
+                    <th>Status</th>
+                    <th>Actual Result</th>
+                    <th>Judgement Reason</th>
+                    <th>Evidence Count</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for procedure in result.procedure_rows %}
+                <tr>
+                    <td>{{ procedure.procedure_sequence }}</td>
+                    <td>{{ procedure.procedure_action }}</td>
+                    <td>{{ procedure.expected_result }}</td>
+                    <td>{{ procedure.acceptance_criteria }}</td>
+                    <td>{{ procedure.required_evidence_type }}</td>
+                    <td><span class="status_badge status-{{ procedure.product_test_procedure_result_status }}">{{ procedure.product_test_procedure_result_status }}</span></td>
+                    <td>{{ procedure.actual_result }}</td>
+                    <td>{{ procedure.judgement_reason }}</td>
+                    <td>{{ procedure.evidence_count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+<section class="card">
+    <div class="section_header_row"><h3>Defect Detail | {{ result.product_test_result_id }}</h3></div>
+    <div class="tester_table_wrap">
+        <table class="basic_table">
+            <thead>
+                <tr>
+                    <th>product_test_defect_id</th>
+                    <th>defect_title</th>
+                    <th>defect_description</th>
+                    <th>defect_severity</th>
+                    <th>defect_priority</th>
+                    <th>product_test_defect_status</th>
+                    <th>assigned_to</th>
+                    <th>fix_description</th>
+                    <th>retest_product_test_result_id</th>
+                    <th>rejection_reason</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for defect in result.defect_rows %}
+                <tr>
+                    <td>{{ defect.product_test_defect_id }}</td>
+                    <td>{{ defect.defect_title }}</td>
+                    <td>{{ defect.defect_description }}</td>
+                    <td>{{ defect.defect_severity }}</td>
+                    <td>{{ defect.defect_priority }}</td>
+                    <td><span class="status_badge status-{{ defect.status }}">{{ defect.status }}</span></td>
+                    <td>{{ defect.assigned_to }}</td>
+                    <td>{{ defect.fix_description }}</td>
+                    <td>{{ defect.retest_product_test_result_id }}</td>
+                    <td>{{ defect.rejection_reason }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+<section class="card">
+    <div class="section_header_row"><h3>Evidence Detail | {{ result.product_test_result_id }}</h3></div>
+    <div class="tester_table_wrap">
+        <table class="basic_table">
+            <thead>
+                <tr>
+                    <th>product_test_evidence_id</th>
+                    <th>product_test_evidence_type</th>
+                    <th>file_name</th>
+                    <th>file_path</th>
+                    <th>file_hash</th>
+                    <th>captured_at</th>
+                    <th>captured_by</th>
+                    <th>remark</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for evidence in result.evidence_rows %}
+                <tr>
+                    <td>{{ evidence.product_test_evidence_id }}</td>
+                    <td><span class="status_badge">{{ evidence.product_test_evidence_type }}</span></td>
+                    <td>{{ evidence.file_name }}</td>
+                    <td>{{ evidence.file_path }}</td>
+                    <td>{{ evidence.file_hash }}</td>
+                    <td>{{ evidence.captured_at }}</td>
+                    <td>{{ evidence.captured_by }}</td>
+                    <td>{{ evidence.remark }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endfor %}
+<section class="card">
+    <div class="section_header_row"><h3>Status Transition</h3></div>
+    <div class="tester_table_wrap">
+        <table class="basic_table">
+            <thead>
+                <tr>
+                    <th>transition_id</th>
+                    <th>entity_type</th>
+                    <th>entity_id</th>
+                    <th>from_status</th>
+                    <th>to_status</th>
+                    <th>transition_reason</th>
+                    <th>transitioned_at</th>
+                    <th>transitioned_by</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in status_transitions %}
+                <tr>
+                    <td>{{ row.product_test_status_transition_id }}</td>
+                    <td>{{ row.entity_type }}</td>
+                    <td>{{ row.entity_id }}</td>
+                    <td>{{ row.from_status }}</td>
+                    <td>{{ row.to_status }}</td>
+                    <td>{{ row.transition_reason }}</td>
+                    <td>{{ row.transitioned_at }}</td>
+                    <td>{{ row.transitioned_by }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

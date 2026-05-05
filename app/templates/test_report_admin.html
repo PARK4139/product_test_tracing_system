@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+    <div class="section_header_row">
+        <h3>테스트 보고서 관리</h3>
+        <div class="table_action_bar">
+            <a href="/admin" class="project_standard_button">관리자 홈</a>
+            <button type="button" class="project_standard_button" disabled>저장 비활성화</button>
+        </div>
+    </div>
+    <div class="detail_guide">
+        DB 연결 전 placeholder 화면이다. 보고서 입력 구조만 준비되어 있다.
+    </div>
+</section>
+
+<section class="card">
+    <div class="section_header_row"><h3>테스트 보고서 헤더</h3></div>
+    <form class="form_stack">
+        <label>보고서 ID</label>
+        <input type="text" disabled placeholder="예정">
+        <label>시리얼 번호</label>
+        <input type="text" disabled placeholder="예정">
+        <label>연결된 테스트</label>
+        <input type="text" disabled placeholder="예정">
+    </form>
+</section>
+
+<section class="card">
+    <div class="section_header_row"><h3>테스트 결과 입력</h3></div>
+    <table class="basic_table">
+        <thead><tr><th>결과 항목</th><th>값</th><th>상태</th></tr></thead>
+        <tbody>
+            <tr>
+                <td><input type="text" disabled placeholder="예정"></td>
+                <td><input type="text" disabled placeholder="예정"></td>
+                <td><input type="text" disabled placeholder="pass / fail / blocked"></td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+<section class="card">
+    <div class="section_header_row"><h3>증빙 / 비고</h3></div>
+    <form class="form_stack" style="max-width:none;">
+        <label>증빙 참조</label>
+        <input type="text" disabled placeholder="예정">
+        <label>비고</label>
+        <input type="text" disabled placeholder="예정">
+    </form>
+</section>
+{% endblock %}

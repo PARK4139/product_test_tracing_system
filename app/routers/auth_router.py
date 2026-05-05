@@ -13,8 +13,21 @@ from app.services.ui_sample_profile_service import list_ui_sample_profiles_map
 auth_router = APIRouter(tags=["auth"])
 
 
+def _is_qc_mode_enabled() -> bool:
+    return os.getenv("QC_MODE", "True").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _build_qc_mode_admin_redirect_response() -> RedirectResponse:
+    response = RedirectResponse(url="/admin", status_code=303)
+    response.set_cookie("role_name", ROLE_MASTER_ADMIN, httponly=False)
+    response.set_cookie("phone_number", "", httponly=False)
+    return response
+
+
 @auth_router.get("/")
 def redirect_root_to_login():
+    if _is_qc_mode_enabled():
+        return _build_qc_mode_admin_redirect_response()
     return RedirectResponse(url="/login", status_code=303)
 
 
@@ -23,6 +36,8 @@ def render_login_page(
     request: Request,
     database_session: database_session_dependency,
 ):
+    if _is_qc_mode_enabled():
+        return _build_qc_mode_admin_redirect_response()
     templates = request.app.state.templates
     return templates.TemplateResponse(
         request=request,
@@ -82,8 +97,6 @@ def handle_login_submission(
         )
 
     ensure_active_user_limit(user_name=normalized_phone_number)
-    qc_mode_enabled = os.getenv("QC_MODE", "True").strip().lower() in {"1", "true", "yes", "on"}
-    _ = qc_mode_enabled
     is_admin_role = user_account.role_name in {ROLE_ADMIN, ROLE_MASTER_ADMIN}
     redirect_url = "/admin" if is_admin_role else "/user"
     response = RedirectResponse(url=redirect_url, status_code=303)
@@ -191,6 +204,8 @@ def handle_join_submission(
 
 @auth_router.post("/logout")
 def handle_logout_submission():
+    if _is_qc_mode_enabled():
+        return _build_qc_mode_admin_redirect_response()
     response = RedirectResponse(url="/login", status_code=303)
     response.delete_cookie("role_name")
     response.delete_cookie("phone_number")

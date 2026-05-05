@@ -156,6 +156,113 @@ button:disabled {
     white-space: nowrap;
 }
 
+.status_badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 24px;
+    padding: 2px 10px;
+    border: 1px solid #B8C8CF;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+    background: #F4F7F9;
+    color: #32424A;
+}
+
+.status_badge.status-drafted,
+.status_badge.status-testing,
+.status_badge.status-running {
+    background: #E8F4FB;
+    border-color: #9DCAE2;
+    color: #16506B;
+}
+
+.status_badge.status-approved,
+.status_badge.status-passed,
+.status_badge.status-finished,
+.status_badge.status-closed,
+.status_badge.status-active,
+.status_badge.status-retested {
+    background: #EAF7EE;
+    border-color: #A8D5B4;
+    color: #1F5C2E;
+}
+
+.status_badge.status-failed,
+.status_badge.status-rejected,
+.status_badge.status-cancelled,
+.status_badge.status-opened,
+.status_badge.status-critical,
+.status_badge.status-major {
+    background: #FDECEC;
+    border-color: #E5AEAE;
+    color: #8A2D2D;
+}
+
+.status_badge.status-blocked,
+.status_badge.status-skipped,
+.status_badge.status-assigned,
+.status_badge.status-fixed,
+.status_badge.status-archived,
+.status_badge.status-deprecated,
+.status_badge.status-inactive,
+.status_badge.status-damaged,
+.status_badge.status-returned,
+.status_badge.status-trivial,
+.status_badge.status-minor,
+.status_badge.status-low,
+.status_badge.status-medium {
+    background: #F5F1E8;
+    border-color: #DBCBA7;
+    color: #6A5423;
+}
+
+.required_marker {
+    color: #B42318;
+    font-weight: 700;
+    margin-left: 4px;
+}
+
+.lock_banner {
+    border: 1px solid #E5AEAE;
+    background: #FFF4F4;
+    color: #8A2D2D;
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-weight: 600;
+}
+
+.summary_grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+}
+
+.summary_panel {
+    border: 1px solid var(--color_border);
+    border-radius: 6px;
+    padding: 12px;
+}
+
+.summary_panel h4 {
+    margin: 0 0 8px;
+    font-size: 16px;
+}
+
+.summary_kv {
+    display: grid;
+    gap: 6px;
+}
+
+.summary_kv div {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 8px;
+}
+
 .page_container {
     width: 100%;
     max-width: none;
@@ -536,6 +643,15 @@ button:disabled {
     font-weight: 500;
     color: #5F6B73;
     line-height: 1.5;
+}
+
+.product_test_reason_hint {
+    margin-top: 6px;
+    max-width: 320px;
+}
+
+.product_test_procedure_result_form input[name="judgement_reason"] {
+    min-width: 220px;
 }
 
 .low_test_delta_cell,

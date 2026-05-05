@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+    <div class="section_header_row">
+        <h3>Product Test Report | 제품 테스트 보고서</h3>
+        <div class="table_action_bar">
+            <a href="/admin" class="project_standard_button">관리자 홈</a>
+            <a href="/admin/product-test-trace" class="project_standard_button">Trace 보기</a>
+        </div>
+    </div>
+    <div class="detail_guide">Product Test Report 는 output header 와 approval object 이며, 본문은 product_test_release_id 기반 조회로 생성된다.</div>
+</section>
+{% if message %}
+<section class="card"><div class="non_modal_notice {{ message_type }}"><div>{{ message }}</div></div></section>
+{% endif %}
+<section class="card">
+    <div class="section_header_row"><h3>보고서 생성</h3></div>
+    <form method="post" action="/admin/product-test-reports/create" class="form_stack" style="max-width:none;">
+        <label>Product Test Release<span class="required_marker">*</span></label>
+        <select name="product_test_release_id" required>
+            <option value=""></option>
+            {% for row in release_options %}
+            <option value="{{ row.product_test_release_id }}">{{ row.product_test_release_id }}</option>
+            {% endfor %}
+        </select>
+        <label>Report Type<span class="required_marker">*</span></label>
+        <select name="product_test_report_type" required>
+            {% for value in report_type_values %}
+            <option value="{{ value }}">{{ value }}</option>
+            {% endfor %}
+        </select>
+        <label>Report Title<span class="required_marker">*</span></label>
+        <input type="text" name="product_test_report_title" required placeholder="PTREL-MERCUSYS_MR30G-1.0.0-RC1 제품 테스트 보고서">
+        <label>Remark</label>
+        <input type="text" name="remark">
+        <div class="table_action_bar">
+            <button type="submit">Create</button>
+            <button type="reset">Reset</button>
+        </div>
+    </form>
+</section>
+<section class="card">
+    <div class="section_header_row"><h3>보고서 목록</h3></div>
+    <div class="tester_table_wrap">
+        <table class="basic_table">
+            <thead>
+                <tr>
+                    <th>Report ID</th>
+                    <th>Release ID</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Title</th>
+                    <th>Created At</th>
+                    <th>Created By</th>
+                    <th>Updated At</th>
+                    <th>Updated By</th>
+                    <th>Approved At</th>
+                    <th>Rejected At</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    <td>{{ row.product_test_report_id }}</td>
+                    <td><a href="/admin/product-test-releases/{{ row.product_test_release_id }}/trace">{{ row.product_test_release_id }}</a></td>
+                    <td><span class="status_badge">{{ row.product_test_report_type }}</span></td>
+                    <td><span class="status_badge status-{{ row.product_test_report_status }}">{{ row.product_test_report_status }}</span></td>
+                    <td>{{ row.product_test_report_title }}</td>
+                    <td>{{ row.created_at }}</td>
+                    <td>{{ row.created_by }}</td>
+                    <td>{{ row.updated_at }}</td>
+                    <td>{{ row.updated_by }}</td>
+                    <td>{{ row.approved_at }}</td>
+                    <td>{{ row.rejected_at }}</td>
+                    <td><a href="/admin/product-test-reports/{{ row.product_test_report_id }}" class="project_standard_button">상세</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

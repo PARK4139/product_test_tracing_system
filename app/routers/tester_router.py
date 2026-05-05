@@ -119,7 +119,7 @@ def render_tester_dashboard(
         name="tester_dashboard.html",
         context={
             "request": request,
-            "page_title": "ELT 시험 데이터 입력 시스템",
+            "page_title": "Product Test Data Tracing System",
             "recent_test_results": recent_test_results,
             "current_role_name": current_role_name,
             "current_display_name": current_display_name,

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Demo | ELT Room Test Data Management</title>
+    <title>Product Test Data Tracing System</title>
     <link rel="icon" type="image/svg+xml" href="/static/images/favicon.svg">
     <link rel="stylesheet" href="/static/css/app.css">
 </head>
@@ -25,15 +25,15 @@
             <h1>
                 <img src="/static/images/huvitz_logo.svg" alt="Huvitz" class="header_logo">
                 {% if request.url.path.startswith('/admin') %}
-                ELT 시험 데이터 입력관리 시스템
+                Product Test Data Tracing System
                 {% elif request.url.path.startswith('/user') %}
-                ELT 시험 데이터 입력 시스템
+                Product Test Data Tracing System
                 {% elif request.url.path.startswith('/login') %}
-                ELT Room 시험시간 소요 데이터 관리 시스템 로그인
+                Product Test Data Tracing System Login
                 {% elif request.url.path.startswith('/join') %}
-                ELT Room 시험시간 소요 데이터 관리 시스템 업체등록
+                Product Test Data Tracing System Vendor Registration
                 {% else %}
-                ELT Room 시험시간 소요 데이터 관리 시스템
+                Product Test Data Tracing System
                 {% endif %}
             </h1>
             <div class="qc_header_actions">

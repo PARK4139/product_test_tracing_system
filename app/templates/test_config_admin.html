@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+    <div class="section_header_row">
+        <h3>테스트 구성 관리</h3>
+        <div class="table_action_bar">
+            <a href="/admin" class="project_standard_button">관리자 홈</a>
+            <button type="button" class="project_standard_button" disabled>저장 비활성화</button>
+        </div>
+    </div>
+    <div class="detail_guide">
+        DB 연결 전 placeholder 화면이다. 입력 섹션 구조만 준비되어 있다.
+    </div>
+</section>
+
+<section class="card">
+    <div class="section_header_row"><h3>테스트 구성 헤더</h3></div>
+    <form class="form_stack">
+        <label>테스트 구성 ID</label>
+        <input type="text" disabled placeholder="예정">
+        <label>테스트 구성 버전</label>
+        <input type="text" disabled placeholder="예정">
+        <label>상태</label>
+        <input type="text" disabled placeholder="drafted / review_requested / approved / released / deprecated">
+    </form>
+</section>
+
+<section class="card">
+    <div class="section_header_row"><h3>테스트 대상 도메인</h3></div>
+    <table class="basic_table">
+        <thead><tr><th>항목</th><th>예정 입력값</th></tr></thead>
+        <tbody>
+            <tr><td>대상 항목</td><td><input type="text" disabled placeholder="예정"></td></tr>
+            <tr><td>대상 상세</td><td><input type="text" disabled placeholder="예정"></td></tr>
+        </tbody>
+    </table>
+</section>
+
+<section class="card">
+    <div class="section_header_row"><h3>테스트 환경 도메인</h3></div>
+    <table class="basic_table">
+        <thead><tr><th>항목</th><th>예정 입력값</th></tr></thead>
+        <tbody>
+            <tr><td>환경 항목</td><td><input type="text" disabled placeholder="예정"></td></tr>
+            <tr><td>라우터 환경</td><td><input type="text" disabled placeholder="router_identity / access / wifi"></td></tr>
+        </tbody>
+    </table>
+</section>
+
+<section class="card">
+    <div class="section_header_row"><h3>테스트 구성 STR</h3></div>
+    <table class="basic_table">
+        <thead><tr><th>단계 순서</th><th>STR 단계</th><th>기대 결과</th></tr></thead>
+        <tbody>
+            <tr><td>1</td><td><input type="text" disabled placeholder="예정"></td><td><input type="text" disabled placeholder="예정"></td></tr>
+        </tbody>
+    </table>
+</section>
+
+<section class="card">
+    <div class="section_header_row"><h3>테스트 구성 STR 완료 기준</h3></div>
+    <table class="basic_table">
+        <thead><tr><th>기준</th><th>상세</th></tr></thead>
+        <tbody>
+            <tr><td><input type="text" disabled placeholder="예정"></td><td><input type="text" disabled placeholder="예정"></td></tr>
+        </tbody>
+    </table>
+</section>
+{% endblock %}

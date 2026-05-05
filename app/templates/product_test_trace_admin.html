@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+    <div class="section_header_row">
+        <h3>Product Test Traceability | 제품 테스트 추적</h3>
+        <div class="table_action_bar">
+            <a href="/admin" class="project_standard_button">관리자 홈</a>
+            <a href="/admin/product-test-reports" class="project_standard_button">보고서 보기</a>
+            {% if trace_detail %}
+            <a href="/admin/product-test-releases/{{ trace_detail.release.product_test_release_id }}/trace/export.csv" class="project_standard_button">CSV Export</a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="detail_guide">Product Test Release -> Run -> Result -> Procedure Result -> Evidence / Defect -> Report / Status Transition 추적 트리</div>
+</section>
+{% if message %}
+<section class="card"><div class="non_modal_notice {{ message_type }}"><div>{{ message }}</div></div></section>
+{% endif %}
+<section class="card">
+    <div class="section_header_row"><h3>Trace Filter</h3></div>
+    <form method="get" action="/admin/product-test-trace" class="form_stack" style="max-width:none;">
+        <label>product_test_release_id<span class="required_marker">*</span></label>
+        <select name="product_test_release_id" required>
+            <option value=""></option>
+            {% for row in release_options %}
+            <option value="{{ row.product_test_release_id }}" {% if trace_detail and trace_detail.filters.product_test_release_id == row.product_test_release_id %}selected{% endif %}>{{ row.product_test_release_id }}</option>
+            {% endfor %}
+        </select>
+        <label>product_test_target_id</label>
+        <select name="product_test_target_id">
+            <option value=""></option>
+            {% for row in target_options %}
+            <option value="{{ row.product_test_target_id }}" {% if trace_detail and trace_detail.filters.product_test_target_id == row.product_test_target_id %}selected{% endif %}>{{ row.product_test_target_id }}</option>
+            {% endfor %}
+        </select>
+        <label>product_test_environment_id</label>
+        <select name="product_test_environment_id">
+            <option value=""></option>
+            {% for row in environment_options %}
+            <option value="{{ row.product_test_environment_id }}" {% if trace_detail and trace_detail.filters.product_test_environment_id == row.product_test_environment_id %}selected{% endif %}>{{ row.product_test_environment_id }}</option>
+            {% endfor %}
+        </select>
+        <label>product_test_case_id</label>
+        <select name="product_test_case_id">
+            <option value=""></option>
+            {% for row in case_options %}
+            <option value="{{ row.product_test_case_id }}" {% if trace_detail and trace_detail.filters.product_test_case_id == row.product_test_case_id %}selected{% endif %}>{{ row.product_test_case_id }}</option>
+            {% endfor %}
+        </select>
+        <label>result_status</label>
+        <select name="result_status">
+            {% set selected_result_status = trace_detail.filters.result_status if trace_detail else '' %}
+            <option value=""></option>
+            {% for value in ["testing", "passed", "failed", "blocked", "skipped"] %}
+            <option value="{{ value }}" {% if selected_result_status == value %}selected{% endif %}>{{ value }}</option>
+            {% endfor %}
+        </select>
+        <label>defect_status</label>
+        <select name="defect_status">
+            {% set selected_defect_status = trace_detail.filters.defect_status if trace_detail else '' %}
+            <option value=""></option>
+            {% for value in ["opened", "assigned", "fixed", "retested", "closed", "rejected"] %}
+            <option value="{{ value }}" {% if selected_defect_status == value %}selected{% endif %}>{{ value }}</option>
+            {% endfor %}
+        </select>
+        <div class="table_action_bar">
+            <button type="submit">Search</button>
+            <button type="reset">Reset</button>
+        </div>
+    </form>
+</section>
+{% if trace_detail %}
+<section class="card">
+    <div class="section_header_row"><h3>Release</h3></div>
+    <table class="basic_table">
+        <tbody>
+            <tr><th>product_test_release_id</th><td>{{ trace_detail.release.product_test_release_id }}</td></tr>
+            <tr><th>upstream_release_id</th><td>{{ trace_detail.release.upstream_release_id }}</td></tr>
+            <tr><th>release_stage</th><td>{{ trace_detail.release.release_stage }}</td></tr>
+            <tr><th>product_test_release_status</th><td><span class="status_badge status-{{ trace_detail.release.product_test_release_status }}">{{ trace_detail.release.product_test_release_status }}</span></td></tr>
+        </tbody>
+    </table>
+</section>
+{% for run in trace_detail.run_trace_rows %}
+<section class="card">
+    <div class="section_header_row"><h3>Runs | {{ run.product_test_run_id }}</h3></div>
+    <div class="detail_guide">Target: {{ run.target_summary.product_code }} / {{ run.target_summary.serial_number }} | Environment: {{ run.environment_summary.product_test_environment_name }} | Status: <span class="status_badge status-{{ run.product_test_run_status }}">{{ run.product_test_run_status }}</span></div>
+    {% for result in run.result_rows %}
+    <div class="detail_guide" style="margin-top:10px;">
+        Result: <a href="/admin/product-test-results/{{ result.product_test_result_id }}/trace">{{ result.product_test_result_id }}</a>
+        / {{ result.product_test_case_id }} / {{ result.case_row.product_test_case_title }} / <span class="status_badge status-{{ result.product_test_result_status }}">{{ result.product_test_result_status }}</span>
+    </div>
+    <div class="detail_guide">Procedure Results</div>
+    <div class="tester_table_wrap" style="margin-top:8px;">
+        <table class="basic_table">
+            <thead>
+                <tr>
+                    <th>procedure_sequence</th>
+                    <th>procedure_action</th>
+                    <th>expected_result</th>
+                    <th>acceptance_criteria</th>
+                    <th>required_evidence_type</th>
+                    <th>procedure_result_status</th>
+                    <th>actual_result</th>
+                    <th>judgement_reason</th>
+                    <th>evidence_count</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for procedure in result.procedure_rows %}
+                <tr>
+                    <td>{{ procedure.procedure_sequence }}</td>
+                    <td>{{ procedure.procedure_action }}</td>
+                    <td>{{ procedure.expected_result }}</td>
+                    <td>{{ procedure.acceptance_criteria }}</td>
+                    <td>{{ procedure.required_evidence_type }}</td>
+                    <td><span class="status_badge status-{{ procedure.product_test_procedure_result_status }}">{{ procedure.product_test_procedure_result_status }}</span></td>
+                    <td>{{ procedure.actual_result }}</td>
+                    <td>{{ procedure.judgement_reason }}</td>
+                    <td>{{ procedure.evidence_rows|length }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="detail_guide" style="margin-top:10px;">Evidence</div>
+    <div class="tester_table_wrap">
+        <table class="basic_table">
+            <thead>
+                <tr>
+                    <th>procedure_result_id</th>
+                    <th>evidence_id</th>
+                    <th>type</th>
+                    <th>file_name</th>
+                    <th>file_path</th>
+                    <th>captured_at</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for procedure in result.procedure_rows %}
+                    {% for evidence in procedure.evidence_rows %}
+                    <tr>
+                        <td>{{ procedure.product_test_procedure_result_id }}</td>
+                        <td>{{ evidence.product_test_evidence_id }}</td>
+                        <td><span class="status_badge">{{ evidence.product_test_evidence_type }}</span></td>
+                        <td>{{ evidence.file_name }}</td>
+                        <td>{{ evidence.file_path }}</td>
+                        <td>{{ evidence.captured_at }}</td>
+                    </tr>
+                    {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if result.defect_rows %}
+    <div class="detail_guide" style="margin-top:10px;">Defects</div>
+    <div class="tester_table_wrap">
+        <table class="basic_table">
+            <thead>
+                <tr>
+                    <th>product_test_defect_id</th>
+                    <th>defect_title</th>
+                    <th>defect_severity</th>
+                    <th>defect_priority</th>
+                    <th>product_test_defect_status</th>
+                    <th>assigned_to</th>
+                    <th>retest_product_test_result_id</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for defect in result.defect_rows %}
+                <tr>
+                    <td>{{ defect.product_test_defect_id }}</td>
+                    <td>{{ defect.defect_title }}</td>
+                    <td>{{ defect.defect_severity }}</td>
+                    <td>{{ defect.defect_priority }}</td>
+                    <td><span class="status_badge status-{{ defect.status }}">{{ defect.status }}</span></td>
+                    <td>{{ defect.assigned_to }}</td>
+                    <td>{% if defect.retest_product_test_result_id %}<a href="/admin/product-test-results/{{ defect.retest_product_test_result_id }}/trace">{{ defect.retest_product_test_result_id }}</a>{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    {% endfor %}
+</section>
+{% endfor %}
+<section class="card">
+    <div class="section_header_row"><h3>Report</h3></div>
+    <div class="tester_table_wrap">
+        <table class="basic_table">
+            <thead>
+                <tr>
+                    <th>product_test_report_id</th>
+                    <th>type</th>
+                    <th>status</th>
+                    <th>title</th>
+                    <th>action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in trace_detail.report_rows %}
+                <tr>
+                    <td>{{ row.product_test_report_id }}</td>
+                    <td>{{ row.product_test_report_type }}</td>
+                    <td><span class="status_badge status-{{ row.product_test_report_status }}">{{ row.product_test_report_status }}</span></td>
+                    <td>{{ row.product_test_report_title }}</td>
+                    <td><a href="/admin/product-test-reports/{{ row.product_test_report_id }}" class="project_standard_button">상세</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+<section class="card">
+    <div class="section_header_row"><h3>Status Transitions</h3></div>
+    <div class="tester_table_wrap">
+        <table class="basic_table">
+            <thead>
+                <tr>
+                    <th>transition_id</th>
+                    <th>entity_type</th>
+                    <th>entity_id</th>
+                    <th>from_status</th>
+                    <th>to_status</th>
+                    <th>transition_reason</th>
+                    <th>transitioned_at</th>
+                    <th>transitioned_by</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in trace_detail.status_transition_rows %}
+                <tr>
+                    <td>{{ row.product_test_status_transition_id }}</td>
+                    <td>{{ row.entity_type }}</td>
+                    <td>{{ row.entity_id }}</td>
+                    <td>{{ row.from_status }}</td>
+                    <td>{{ row.to_status }}</td>
+                    <td>{{ row.transition_reason }}</td>
+                    <td>{{ row.transitioned_at }}</td>
+                    <td>{{ row.transitioned_by }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

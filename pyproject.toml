@@ -1,7 +1,7 @@
 [project]
-name = "elt_test_tracking_system"
+name = "product_test_tracking_system"
 version = "0.1.0"
-description = "Internal ELT test tracking system MVP"
+description = "Internal Product Test tracking system"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

@@ -108,7 +108,7 @@ def main() -> None:
     os.environ["KIOSK_MODE"] = "True" if kiosk_mode_enabled else "False"
     if qc_mode_enabled:
         launch_debuggable_chrome(
-            "http://127.0.0.1:8000/login",
+            "http://127.0.0.1:8000/admin",
             kiosk_mode_enabled=False,
         )
         run_qc_mode_with_watchdog()
