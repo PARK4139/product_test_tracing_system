@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+    <div class="section_header_row">
+        <h3>Product Test Report Snapshots | 보고서 스냅샷</h3>
+        <div class="table_action_bar">
+            <a href="/admin/product-test-reports" class="project_standard_button">보고서 목록</a>
+            <a href="/admin/product-test-report-snapshots/diff" class="project_standard_button">Snapshot Diff</a>
+        </div>
+    </div>
+</section>
+{% if message %}
+<section class="card"><div class="non_modal_notice {{ message_type }}"><div>{{ message }}</div></div></section>
+{% endif %}
+<section class="card">
+    <div class="section_header_row"><h3>Manual Snapshot</h3></div>
+    <form method="post" action="/admin/product-test-reports/{{ (report_rows[0].product_test_report_id if report_rows else '') }}/snapshot" id="manual_snapshot_form" class="form_stack" style="max-width:none;">
+        <label>product_test_report_id<span class="required_marker">*</span></label>
+        <select name="product_test_report_id_selector" id="product_test_report_id_selector" required onchange="document.getElementById('manual_snapshot_form').action='/admin/product-test-reports/' + this.value + '/snapshot'">
+            <option value=""></option>
+            {% for row in report_rows %}
+            <option value="{{ row.product_test_report_id }}">{{ row.product_test_report_id }}</option>
+            {% endfor %}
+        </select>
+        <label>snapshot_type<span class="required_marker">*</span></label>
+        <select name="snapshot_type" required>
+            {% for value in snapshot_type_values %}
+            <option value="{{ value }}" {% if value == 'manual' %}selected{% endif %}>{{ value }}</option>
+            {% endfor %}
+        </select>
+        <label>remark</label>
+        <input type="text" name="remark" placeholder="manual snapshot note">
+        <div class="table_action_bar">
+            <button type="submit">Create Snapshot</button>
+            <button type="reset">Reset</button>
+        </div>
+    </form>
+</section>
+<section class="card">
+    <div class="section_header_row"><h3>Snapshot List</h3></div>
+    <div class="tester_table_wrap">
+        <table class="basic_table">
+            <thead>
+                <tr>
+                    <th>snapshot_id</th>
+                    <th>report_id</th>
+                    <th>release_id</th>
+                    <th>type</th>
+                    <th>format</th>
+                    <th>hash</th>
+                    <th>locked</th>
+                    <th>created_at</th>
+                    <th>created_by</th>
+                    <th>remark</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    <td><a href="/admin/product-test-report-snapshots/{{ row.product_test_report_snapshot_id }}">{{ row.product_test_report_snapshot_id }}</a></td>
+                    <td><a href="/admin/product-test-reports/{{ row.product_test_report_id }}">{{ row.product_test_report_id }}</a></td>
+                    <td><a href="/admin/product-test-releases/{{ row.product_test_release_id }}/trace">{{ row.product_test_release_id }}</a></td>
+                    <td><span class="status_badge">{{ row.snapshot_type }}</span></td>
+                    <td>{{ row.snapshot_format }}</td>
+                    <td>{{ row.snapshot_hash }}</td>
+                    <td><span class="status_badge status-{{ 'approved' if row.source_data_locked else 'drafted' }}">{{ row.source_data_locked }}</span></td>
+                    <td>{{ row.created_at }}</td>
+                    <td>{{ row.created_by }}</td>
+                    <td>{{ row.remark }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

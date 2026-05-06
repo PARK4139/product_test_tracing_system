@@ -537,6 +537,35 @@ class ProductTestReport(Base):
     remark: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
+class ProductTestReportSnapshot(Base):
+    __tablename__ = "product_test_report_snapshot"
+    __table_args__ = (
+        Index("ix_product_test_report_snapshot_product_test_report_id", "product_test_report_id"),
+        Index("ix_product_test_report_snapshot_product_test_release_id", "product_test_release_id"),
+        Index("ix_product_test_report_snapshot_snapshot_type", "snapshot_type"),
+    )
+
+    product_test_report_snapshot_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    product_test_report_id: Mapped[str] = mapped_column(
+        Text,
+        ForeignKey("product_test_report.product_test_report_id"),
+        nullable=False,
+    )
+    product_test_release_id: Mapped[str] = mapped_column(
+        Text,
+        ForeignKey("product_test_release.product_test_release_id"),
+        nullable=False,
+    )
+    snapshot_type: Mapped[str] = mapped_column(Text, nullable=False)
+    snapshot_format: Mapped[str] = mapped_column(Text, nullable=False)
+    snapshot_payload: Mapped[str] = mapped_column(Text, nullable=False)
+    snapshot_hash: Mapped[str] = mapped_column(Text, nullable=False)
+    source_data_locked: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    created_at: Mapped[str] = mapped_column(Text, nullable=False)
+    created_by: Mapped[str] = mapped_column(Text, nullable=False)
+    remark: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
 class ProductTestStatusTransition(Base):
     __tablename__ = "product_test_status_transition"
     __table_args__ = (

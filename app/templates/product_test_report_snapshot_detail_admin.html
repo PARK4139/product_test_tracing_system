@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+    <div class="section_header_row">
+        <h3>Product Test Report Snapshot Detail | 스냅샷 상세</h3>
+        <div class="table_action_bar">
+            <a href="/admin/product-test-report-snapshots" class="project_standard_button">스냅샷 목록</a>
+            <a href="/admin/product-test-reports/{{ snapshot.product_test_report_id }}" class="project_standard_button">관련 보고서</a>
+            <a href="/admin/product-test-releases/{{ snapshot.product_test_release_id }}/trace" class="project_standard_button">관련 릴리즈</a>
+        </div>
+    </div>
+</section>
+{% if message %}
+<section class="card"><div class="non_modal_notice {{ message_type }}"><div>{{ message }}</div></div></section>
+{% endif %}
+<section class="card">
+    <div class="section_header_row"><h3>Snapshot Header</h3></div>
+    <table class="basic_table">
+        <tbody>
+            <tr><th>product_test_report_snapshot_id</th><td>{{ snapshot.product_test_report_snapshot_id }}</td></tr>
+            <tr><th>product_test_report_id</th><td>{{ snapshot.product_test_report_id }}</td></tr>
+            <tr><th>product_test_release_id</th><td>{{ snapshot.product_test_release_id }}</td></tr>
+            <tr><th>snapshot_type</th><td><span class="status_badge">{{ snapshot.snapshot_type }}</span></td></tr>
+            <tr><th>snapshot_format</th><td>{{ snapshot.snapshot_format }}</td></tr>
+            <tr><th>snapshot_hash</th><td>{{ snapshot.snapshot_hash }}</td></tr>
+            <tr><th>source_data_locked</th><td>{{ snapshot.source_data_locked }}</td></tr>
+            <tr><th>created_at</th><td>{{ snapshot.created_at }}</td></tr>
+            <tr><th>created_by</th><td>{{ snapshot.created_by }}</td></tr>
+            <tr><th>remark</th><td>{{ snapshot.remark }}</td></tr>
+        </tbody>
+    </table>
+</section>
+<section class="card">
+    <div class="section_header_row"><h3>Snapshot Payload JSON</h3></div>
+    <pre style="white-space:pre-wrap; word-break:break-word;">{{ snapshot_payload_pretty }}</pre>
+</section>
+{% endblock %}

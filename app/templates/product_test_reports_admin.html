@@ -6,6 +6,8 @@
         <div class="table_action_bar">
             <a href="/admin" class="project_standard_button">관리자 홈</a>
             <a href="/admin/product-test-trace" class="project_standard_button">Trace 보기</a>
+            <a href="/admin/product-test-report-snapshots" class="project_standard_button">스냅샷 목록</a>
+            <a href="/admin/product-test-report-snapshots/diff" class="project_standard_button">스냅샷 비교</a>
         </div>
     </div>
     <div class="detail_guide">Product Test Report 는 output header 와 approval object 이며, 본문은 product_test_release_id 기반 조회로 생성된다.</div>
@@ -39,6 +41,27 @@
         </div>
     </form>
 </section>
+{% if snapshot_rows %}
+<section class="card">
+    <div class="section_header_row"><h3>Recent Snapshots</h3></div>
+    <div class="tester_table_wrap">
+        <table class="basic_table">
+            <thead><tr><th>Snapshot ID</th><th>Report ID</th><th>Type</th><th>Hash</th><th>Created At</th></tr></thead>
+            <tbody>
+                {% for row in snapshot_rows %}
+                <tr>
+                    <td><a href="/admin/product-test-report-snapshots/{{ row.product_test_report_snapshot_id }}">{{ row.product_test_report_snapshot_id }}</a></td>
+                    <td>{{ row.product_test_report_id }}</td>
+                    <td>{{ row.snapshot_type }}</td>
+                    <td>{{ row.snapshot_hash }}</td>
+                    <td>{{ row.created_at }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endif %}
 <section class="card">
     <div class="section_header_row"><h3>보고서 목록</h3></div>
     <div class="tester_table_wrap">

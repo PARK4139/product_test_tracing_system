@@ -33,17 +33,20 @@ from app.services.product_test_run_service import (
     MASTER_ACTIVE_STATUS_VALUES,
     REPORT_STATUS_VALUES,
     REPORT_TYPE_VALUES,
+    SNAPSHOT_TYPE_VALUES,
     TARGET_STATUS_VALUES,
     ENVIRONMENT_STATUS_VALUES,
     EVIDENCE_TYPE_VALUES,
     PRODUCT_TEST_RELEASE_STATUS_VALUES,
     RELEASE_STAGE_VALUES,
     approve_product_test_report,
+    compare_product_test_report_snapshots,
     create_product_test_case,
     create_product_test_environment,
     create_product_test_environment_definition,
     create_product_test_procedure,
     create_product_test_report,
+    create_product_test_report_snapshot,
     create_product_test_release,
     create_product_test_target,
     create_product_test_target_definition,
@@ -51,6 +54,7 @@ from app.services.product_test_run_service import (
     build_product_test_run_export_rows,
     build_product_test_trace_export_rows,
     get_product_test_report_detail,
+    get_product_test_report_snapshot_detail,
     get_product_test_system_check,
     get_product_test_trace_view,
     get_release_id_by_result_id,
@@ -62,6 +66,7 @@ from app.services.product_test_run_service import (
     list_product_test_environments,
     list_product_test_procedures,
     list_product_test_reports,
+    list_product_test_report_snapshots,
     list_product_test_releases,
     list_target_options,
     list_product_test_target_definitions,
@@ -248,7 +253,7 @@ def _sample_product_test_release_rows() -> list[dict]:
 def _sample_product_test_target_definition_rows() -> list[dict]:
     return [
         {
-            "product_test_target_definition_id": "PTTARGETDEF-HUVITZ_HRK_9000A",
+            "product_test_target_definition_id": "PTTGTDEF-HUVITZ_HRK_9000A",
             "product_code": "HUVITZ_HRK_9000A",
             "manufacturer": "Huvitz",
             "model_name": "HRK-9000A",
@@ -263,7 +268,7 @@ def _sample_product_test_target_definition_rows() -> list[dict]:
             "remark": "",
         },
         {
-            "product_test_target_definition_id": "PTTARGETDEF-MERCUSYS_MR30G",
+            "product_test_target_definition_id": "PTTGTDEF-MERCUSYS_MR30G",
             "product_code": "MERCUSYS_MR30G",
             "manufacturer": "MERCUSYS",
             "model_name": "MR30G",
@@ -283,9 +288,9 @@ def _sample_product_test_target_definition_rows() -> list[dict]:
 def _sample_product_test_target_rows() -> list[dict]:
     return [
         {
-            "product_test_target_id": "PTTARGET-MR30G-0001",
-            "product_test_target_definition_id": "PTTARGETDEF-MERCUSYS_MR30G",
-            "serial_number": "MR30GSN0001",
+            "product_test_target_id": "PTTGT-MERCUSYS_MR30G-SN001",
+            "product_test_target_definition_id": "PTTGTDEF-MERCUSYS_MR30G",
+            "serial_number": "SN001",
             "software_version": "1.0.0",
             "firmware_version": "1.0.0",
             "manufacture_lot": "LOT-202605",
@@ -332,7 +337,7 @@ def _sample_product_test_environment_definition_rows() -> list[dict]:
 def _sample_product_test_environment_rows() -> list[dict]:
     return [
         {
-            "product_test_environment_id": "PTENV-ANYANG-CONNECTIVITY-001",
+            "product_test_environment_id": "PTENV-HUVITZ-ANYANG-CONNECTIVITY_ROOM-20260504-001",
             "product_test_environment_definition_id": "PTENVDEF-HUVITZ-ANYANG-CONNECTIVITY_ROOM",
             "product_test_environment_name": "Anyang Connectivity Room Snapshot",
             "test_computer_name": "SQA-PC-01",
@@ -356,7 +361,7 @@ def _sample_product_test_environment_rows() -> list[dict]:
 def _sample_product_test_case_rows() -> list[dict]:
     return [
         {
-            "product_test_case_id": "PTCASE-WIFI-AP-CONFIG-001",
+            "product_test_case_id": "PTCASE-WIFI-AP_CONFIG-001",
             "product_test_case_title": "WiFi AP 설정 적합성 검증",
             "test_category": "WiFi",
             "test_objective": "RS9116 WiFi 모듈 기준으로 AP 설정이 권장 조건을 만족하는지 확인",
@@ -375,8 +380,8 @@ def _sample_product_test_case_rows() -> list[dict]:
 def _sample_product_test_procedure_rows() -> list[dict]:
     return [
         {
-            "product_test_procedure_id": "PTPROC-WIFI-AP-CONFIG-001-001",
-            "product_test_case_id": "PTCASE-WIFI-AP-CONFIG-001",
+            "product_test_procedure_id": "PTPROC-WIFI-AP_CONFIG-001-001",
+            "product_test_case_id": "PTCASE-WIFI-AP_CONFIG-001",
             "procedure_sequence": 1,
             "procedure_action": "WiFi Band 분리설정 확인",
             "expected_result": "2.4GHz와 5GHz SSID가 분리되어 있어야 함",
@@ -390,8 +395,8 @@ def _sample_product_test_procedure_rows() -> list[dict]:
             "remark": "분리하지 않은 경우 임베디드 장비가 2.4GHz로 할당될 가능성이 높음.",
         },
         {
-            "product_test_procedure_id": "PTPROC-WIFI-AP-CONFIG-001-002",
-            "product_test_case_id": "PTCASE-WIFI-AP-CONFIG-001",
+            "product_test_procedure_id": "PTPROC-WIFI-AP_CONFIG-001-002",
+            "product_test_case_id": "PTCASE-WIFI-AP_CONFIG-001",
             "procedure_sequence": 2,
             "procedure_action": "WiFi Channel 설정 확인",
             "expected_result": "2.4GHz는 1~11번, 5GHz는 36/40/44/48 고정 채널이어야 함",
@@ -911,6 +916,7 @@ def render_product_test_reports_admin(
         page_title="Product Test Data Tracing System",
         extra_context={
             "rows": list_product_test_reports(database_session),
+            "snapshot_rows": list_product_test_report_snapshots(database_session)[:10],
             "release_options": list_report_release_options(database_session),
             "report_type_values": REPORT_TYPE_VALUES,
             "report_status_values": REPORT_STATUS_VALUES,
@@ -970,9 +976,43 @@ def render_product_test_report_detail_admin(
         page_title="Product Test Data Tracing System",
         extra_context={
             **detail,
+            "snapshot_rows": [
+                row for row in list_product_test_report_snapshots(database_session)
+                if row["product_test_report_id"] == product_test_report_id
+            ],
             "message": (request.query_params.get("message") or "").strip(),
             "message_type": (request.query_params.get("message_type") or "info").strip(),
         },
+    )
+
+
+@admin_router.post("/product-test-reports/{product_test_report_id}/snapshot")
+def create_product_test_report_snapshot_admin(
+    product_test_report_id: str,
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+    snapshot_type: str = Form("manual"),
+    remark: str = Form(""),
+):
+    _ensure_admin_role(current_role_name)
+    actor_name = _admin_actor_name(database_session=database_session, request=request)
+    try:
+        snapshot = create_product_test_report_snapshot(
+            database_session,
+            product_test_report_id=product_test_report_id,
+            snapshot_type=snapshot_type,
+            created_by=actor_name,
+            remark=remark,
+        )
+    except (LookupError, ValueError) as exception:
+        return RedirectResponse(
+            url=f"/admin/product-test-reports/{product_test_report_id}?message={str(exception)}&message_type=error",
+            status_code=303,
+        )
+    return RedirectResponse(
+        url=f"/admin/product-test-report-snapshots/{snapshot['product_test_report_snapshot_id']}?message=Snapshot created&message_type=success",
+        status_code=303,
     )
 
 
@@ -1061,6 +1101,116 @@ def reject_product_test_report_admin(
     return RedirectResponse(
         url=f"/admin/product-test-reports/{product_test_report_id}?message=Report rejected&message_type=success",
         status_code=303,
+    )
+
+
+@admin_router.get("/product-test-report-snapshots")
+def render_product_test_report_snapshots_admin(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    _ensure_admin_role(current_role_name)
+    return _render_admin_shell_template(
+        request=request,
+        database_session=database_session,
+        current_role_name=current_role_name,
+        template_name="product_test_report_snapshots_admin.html",
+        page_title="Product Test Data Tracing System",
+        extra_context={
+            "rows": list_product_test_report_snapshots(database_session),
+            "report_rows": list_product_test_reports(database_session),
+            "snapshot_type_values": SNAPSHOT_TYPE_VALUES,
+            "message": (request.query_params.get("message") or "").strip(),
+            "message_type": (request.query_params.get("message_type") or "info").strip(),
+        },
+    )
+
+
+@admin_router.get("/product-test-report-snapshots/diff")
+def render_product_test_report_snapshot_diff_admin(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    _ensure_admin_role(current_role_name)
+    return _render_admin_shell_template(
+        request=request,
+        database_session=database_session,
+        current_role_name=current_role_name,
+        template_name="product_test_report_snapshot_diff_admin.html",
+        page_title="Product Test Data Tracing System",
+        extra_context={
+            "snapshot_rows": list_product_test_report_snapshots(database_session),
+            "diff_result": None,
+            "selected_left_snapshot_id": "",
+            "selected_right_snapshot_id": "",
+            "message": (request.query_params.get("message") or "").strip(),
+            "message_type": (request.query_params.get("message_type") or "info").strip(),
+        },
+    )
+
+
+@admin_router.post("/product-test-report-snapshots/diff")
+def compare_product_test_report_snapshot_diff_admin(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+    left_snapshot_id: str = Form(""),
+    right_snapshot_id: str = Form(""),
+):
+    _ensure_admin_role(current_role_name)
+    diff_result = None
+    message = ""
+    message_type = "info"
+    try:
+        diff_result = compare_product_test_report_snapshots(
+            database_session,
+            left_snapshot_id=left_snapshot_id,
+            right_snapshot_id=right_snapshot_id,
+        )
+    except (LookupError, ValueError) as exception:
+        message = str(exception)
+        message_type = "error"
+    return _render_admin_shell_template(
+        request=request,
+        database_session=database_session,
+        current_role_name=current_role_name,
+        template_name="product_test_report_snapshot_diff_admin.html",
+        page_title="Product Test Data Tracing System",
+        extra_context={
+            "snapshot_rows": list_product_test_report_snapshots(database_session),
+            "diff_result": diff_result,
+            "selected_left_snapshot_id": left_snapshot_id,
+            "selected_right_snapshot_id": right_snapshot_id,
+            "message": message,
+            "message_type": message_type,
+        },
+    )
+
+
+@admin_router.get("/product-test-report-snapshots/{product_test_report_snapshot_id}")
+def render_product_test_report_snapshot_detail_admin(
+    product_test_report_snapshot_id: str,
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    _ensure_admin_role(current_role_name)
+    detail = get_product_test_report_snapshot_detail(database_session, product_test_report_snapshot_id)
+    if detail is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Snapshot not found.")
+    return _render_admin_shell_template(
+        request=request,
+        database_session=database_session,
+        current_role_name=current_role_name,
+        template_name="product_test_report_snapshot_detail_admin.html",
+        page_title="Product Test Data Tracing System",
+        extra_context={
+            **detail,
+            "message": (request.query_params.get("message") or "").strip(),
+            "message_type": (request.query_params.get("message_type") or "info").strip(),
+        },
     )
 
 

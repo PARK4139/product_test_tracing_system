@@ -5,6 +5,7 @@
         <h3>Product Test Report Detail | 제품 테스트 보고서 상세</h3>
         <div class="table_action_bar">
             <a href="/admin/product-test-reports" class="project_standard_button">보고서 목록</a>
+            <a href="/admin/product-test-report-snapshots" class="project_standard_button">스냅샷 목록</a>
             <a href="/admin/product-test-releases/{{ report.product_test_release_id }}/trace" class="project_standard_button">Trace 보기</a>
             <a href="/admin/product-test-reports/{{ report.product_test_report_id }}/export.csv" class="project_standard_button">CSV Export</a>
             <a href="/admin/product-test-reports/{{ report.product_test_report_id }}/print" class="project_standard_button">Print View</a>
@@ -40,6 +41,17 @@
         </tbody>
     </table>
     <div class="table_action_bar" style="margin-top:12px;">
+        <form method="post" action="/admin/product-test-reports/{{ report.product_test_report_id }}/snapshot" class="dropdown_inline_form">
+            <label>snapshot_type</label>
+            <select name="snapshot_type">
+                <option value="manual">manual</option>
+                <option value="export">export</option>
+                <option value="draft">draft</option>
+            </select>
+            <label>remark</label>
+            <input type="text" name="remark" placeholder="snapshot note">
+            <button type="submit">Create Snapshot</button>
+        </form>
         <form method="post" action="/admin/product-test-reports/{{ report.product_test_report_id }}/approve">
             <button type="submit" {% if report.product_test_report_status != "drafted" or approval_blocked %}disabled{% endif %}>Approve</button>
         </form>
@@ -53,6 +65,29 @@
     <div class="detail_guide">opened / assigned / fixed defect 가 남아 있어 승인 차단 상태다.</div>
     {% endif %}
 </section>
+{% if snapshot_rows %}
+<section class="card">
+    <div class="section_header_row"><h3>Snapshot History</h3></div>
+    <div class="tester_table_wrap">
+        <table class="basic_table">
+            <thead><tr><th>snapshot_id</th><th>type</th><th>hash</th><th>locked</th><th>created_at</th><th>created_by</th><th>remark</th></tr></thead>
+            <tbody>
+                {% for row in snapshot_rows %}
+                <tr>
+                    <td><a href="/admin/product-test-report-snapshots/{{ row.product_test_report_snapshot_id }}">{{ row.product_test_report_snapshot_id }}</a></td>
+                    <td>{{ row.snapshot_type }}</td>
+                    <td>{{ row.snapshot_hash }}</td>
+                    <td>{{ row.source_data_locked }}</td>
+                    <td>{{ row.created_at }}</td>
+                    <td>{{ row.created_by }}</td>
+                    <td>{{ row.remark }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endif %}
 <section class="card">
     <div class="section_header_row"><h3>Release Summary</h3></div>
     <table class="basic_table">

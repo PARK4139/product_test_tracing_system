@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+    <div class="section_header_row">
+        <h3>Product Test Report Snapshot Diff | 스냅샷 비교</h3>
+        <div class="table_action_bar">
+            <a href="/admin/product-test-report-snapshots" class="project_standard_button">스냅샷 목록</a>
+        </div>
+    </div>
+</section>
+{% if message %}
+<section class="card"><div class="non_modal_notice {{ message_type }}"><div>{{ message }}</div></div></section>
+{% endif %}
+<section class="card">
+    <div class="section_header_row"><h3>Diff Input</h3></div>
+    <form method="post" action="/admin/product-test-report-snapshots/diff" class="form_stack" style="max-width:none;">
+        <label>left_snapshot_id<span class="required_marker">*</span></label>
+        <select name="left_snapshot_id" required>
+            <option value=""></option>
+            {% for row in snapshot_rows %}
+            <option value="{{ row.product_test_report_snapshot_id }}" {% if selected_left_snapshot_id == row.product_test_report_snapshot_id %}selected{% endif %}>{{ row.product_test_report_snapshot_id }}</option>
+            {% endfor %}
+        </select>
+        <label>right_snapshot_id<span class="required_marker">*</span></label>
+        <select name="right_snapshot_id" required>
+            <option value=""></option>
+            {% for row in snapshot_rows %}
+            <option value="{{ row.product_test_report_snapshot_id }}" {% if selected_right_snapshot_id == row.product_test_report_snapshot_id %}selected{% endif %}>{{ row.product_test_report_snapshot_id }}</option>
+            {% endfor %}
+        </select>
+        <div class="table_action_bar">
+            <button type="submit">Compare</button>
+            <button type="reset">Reset</button>
+        </div>
+    </form>
+</section>
+{% if diff_result %}
+<section class="card">
+    <div class="section_header_row"><h3>Diff Summary</h3></div>
+    <table class="basic_table">
+        <tbody>
+            <tr><th>left</th><td>{{ diff_result.left_snapshot.product_test_report_snapshot_id }}</td></tr>
+            <tr><th>right</th><td>{{ diff_result.right_snapshot.product_test_report_snapshot_id }}</td></tr>
+            <tr><th>warnings</th><td>{{ diff_result.warnings | join("; ") }}</td></tr>
+        </tbody>
+    </table>
+</section>
+<section class="card"><div class="section_header_row"><h3>1. Test Case changes</h3></div><pre>{{ {"added_product_test_case_ids": diff_result.added_product_test_case_ids, "removed_product_test_case_ids": diff_result.removed_product_test_case_ids} | tojson(indent=2) }}</pre></section>
+<section class="card"><div class="section_header_row"><h3>2. Result status changes</h3></div><pre>{{ diff_result.changed_product_test_result_statuses | tojson(indent=2) }}</pre></section>
+<section class="card"><div class="section_header_row"><h3>3. Procedure result status changes</h3></div><pre>{{ diff_result.changed_product_test_procedure_result_statuses | tojson(indent=2) }}</pre></section>
+<section class="card"><div class="section_header_row"><h3>4. Defect changes</h3></div><pre>{{ {"added_defect_ids": diff_result.added_defect_ids, "removed_defect_ids": diff_result.removed_defect_ids, "changed_defect_statuses": diff_result.changed_defect_statuses} | tojson(indent=2) }}</pre></section>
+<section class="card"><div class="section_header_row"><h3>5. Evidence changes</h3></div><pre>{{ {"added_evidence_ids": diff_result.added_evidence_ids, "removed_evidence_ids": diff_result.removed_evidence_ids, "changed_evidence_hashes": diff_result.changed_evidence_hashes} | tojson(indent=2) }}</pre></section>
+{% endif %}
+{% endblock %}

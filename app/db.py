@@ -344,6 +344,9 @@ def _ensure_product_test_indexes() -> None:
         "CREATE INDEX IF NOT EXISTS ix_product_test_evidence_product_test_procedure_result_id ON product_test_evidence (product_test_procedure_result_id)",
         "CREATE INDEX IF NOT EXISTS ix_product_test_defect_product_test_result_id ON product_test_defect (product_test_result_id)",
         "CREATE INDEX IF NOT EXISTS ix_product_test_report_product_test_release_id ON product_test_report (product_test_release_id)",
+        "CREATE INDEX IF NOT EXISTS ix_product_test_report_snapshot_product_test_report_id ON product_test_report_snapshot (product_test_report_id)",
+        "CREATE INDEX IF NOT EXISTS ix_product_test_report_snapshot_product_test_release_id ON product_test_report_snapshot (product_test_release_id)",
+        "CREATE INDEX IF NOT EXISTS ix_product_test_report_snapshot_snapshot_type ON product_test_report_snapshot (snapshot_type)",
         "CREATE INDEX IF NOT EXISTS ix_product_test_status_transition_entity_type_entity_id ON product_test_status_transition (entity_type, entity_id)",
     ]
     with engine.begin() as connection:

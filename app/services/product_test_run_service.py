@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import json
 import re
 from typing import Any
 
@@ -16,6 +18,7 @@ from app.models import (
     ProductTestProcedureResult,
     ProductTestRelease,
     ProductTestReport,
+    ProductTestReportSnapshot,
     ProductTestResult,
     ProductTestRun,
     ProductTestStatusTransition,
@@ -30,6 +33,8 @@ RESULT_STATUS_VALUES = ("testing", "passed", "failed", "blocked", "skipped")
 PROCEDURE_RESULT_STATUS_VALUES = ("testing", "passed", "failed", "blocked", "skipped")
 REPORT_TYPE_VALUES = ("FULL", "WIFI", "REGRESSION", "HOTFIX", "CUSTOMER")
 REPORT_STATUS_VALUES = ("drafted", "approved", "rejected")
+SNAPSHOT_TYPE_VALUES = ("draft", "approval", "manual", "export")
+SNAPSHOT_FORMAT_VALUES = ("json",)
 DEFECT_SEVERITY_VALUES = ("critical", "major", "minor", "trivial")
 DEFECT_PRIORITY_VALUES = ("high", "medium", "low")
 DEFECT_STATUS_VALUES = ("opened", "assigned", "fixed", "retested", "closed", "rejected")
@@ -148,7 +153,7 @@ _sample_product_test_release_rows = [
 
 _sample_product_test_target_definition_rows = [
     {
-        "product_test_target_definition_id": "PTTARGETDEF-HUVITZ_HRK_9000A",
+        "product_test_target_definition_id": "PTTGTDEF-HUVITZ_HRK_9000A",
         "product_code": "HUVITZ_HRK_9000A",
         "manufacturer": "Huvitz",
         "model_name": "HRK-9000A",
@@ -163,7 +168,7 @@ _sample_product_test_target_definition_rows = [
         "remark": "",
     },
     {
-        "product_test_target_definition_id": "PTTARGETDEF-MERCUSYS_MR30G",
+        "product_test_target_definition_id": "PTTGTDEF-MERCUSYS_MR30G",
         "product_code": "MERCUSYS_MR30G",
         "manufacturer": "MERCUSYS",
         "model_name": "MR30G",
@@ -181,9 +186,9 @@ _sample_product_test_target_definition_rows = [
 
 _sample_product_test_target_rows = [
     {
-        "product_test_target_id": "PTTARGET-MR30G-0001",
-        "product_test_target_definition_id": "PTTARGETDEF-MERCUSYS_MR30G",
-        "serial_number": "MR30GSN0001",
+        "product_test_target_id": "PTTGT-MERCUSYS_MR30G-SN001",
+        "product_test_target_definition_id": "PTTGTDEF-MERCUSYS_MR30G",
+        "serial_number": "SN001",
         "software_version": "1.0.0",
         "firmware_version": "1.0.0",
         "manufacture_lot": "LOT-202605",
@@ -226,7 +231,7 @@ _sample_product_test_environment_definition_rows = [
 
 _sample_product_test_environment_rows = [
     {
-        "product_test_environment_id": "PTENV-ANYANG-CONNECTIVITY-001",
+        "product_test_environment_id": "PTENV-HUVITZ-ANYANG-CONNECTIVITY_ROOM-20260504-001",
         "product_test_environment_definition_id": "PTENVDEF-HUVITZ-ANYANG-CONNECTIVITY_ROOM",
         "product_test_environment_name": "Anyang Connectivity Room Snapshot",
         "test_computer_name": "SQA-PC-01",
@@ -248,7 +253,7 @@ _sample_product_test_environment_rows = [
 
 _sample_product_test_case_rows = [
     {
-        "product_test_case_id": "PTCASE-WIFI-AP-CONFIG-001",
+        "product_test_case_id": "PTCASE-WIFI-AP_CONFIG-001",
         "product_test_case_title": "WiFi AP 설정 적합성 검증",
         "test_category": "WiFi",
         "test_objective": "RS9116 WiFi 모듈 기준으로 AP 설정이 권장 조건을 만족하는지 확인",
@@ -265,8 +270,8 @@ _sample_product_test_case_rows = [
 
 _sample_product_test_procedure_rows = [
     {
-        "product_test_procedure_id": "PTPROC-WIFI-AP-CONFIG-001-001",
-        "product_test_case_id": "PTCASE-WIFI-AP-CONFIG-001",
+        "product_test_procedure_id": "PTPROC-WIFI-AP_CONFIG-001-001",
+        "product_test_case_id": "PTCASE-WIFI-AP_CONFIG-001",
         "procedure_sequence": 1,
         "procedure_action": "WiFi Band 분리설정 확인",
         "expected_result": "2.4GHz와 5GHz SSID가 분리되어 있어야 함",
@@ -280,8 +285,8 @@ _sample_product_test_procedure_rows = [
         "remark": "분리하지 않은 경우 임베디드 장비가 2.4GHz로 할당될 가능성이 높음.",
     },
     {
-        "product_test_procedure_id": "PTPROC-WIFI-AP-CONFIG-001-002",
-        "product_test_case_id": "PTCASE-WIFI-AP-CONFIG-001",
+        "product_test_procedure_id": "PTPROC-WIFI-AP_CONFIG-001-002",
+        "product_test_case_id": "PTCASE-WIFI-AP_CONFIG-001",
         "procedure_sequence": 2,
         "procedure_action": "WiFi Channel 설정 확인",
         "expected_result": "2.4GHz는 1~11번 고정 채널, 5GHz는 DFS가 아닌 36, 40, 44, 48 채널이어야 함",
@@ -295,8 +300,8 @@ _sample_product_test_procedure_rows = [
         "remark": "5GHz에서 DFS 채널을 사용하는 경우 WiFi 모듈이 AP를 검색하지 못할 수 있음.",
     },
     {
-        "product_test_procedure_id": "PTPROC-WIFI-AP-CONFIG-001-003",
-        "product_test_case_id": "PTCASE-WIFI-AP-CONFIG-001",
+        "product_test_procedure_id": "PTPROC-WIFI-AP_CONFIG-001-003",
+        "product_test_case_id": "PTCASE-WIFI-AP_CONFIG-001",
         "procedure_sequence": 3,
         "procedure_action": "Channel Bandwidth 설정 확인",
         "expected_result": "Channel Bandwidth가 20MHz로 설정되어 있어야 함",
@@ -310,8 +315,8 @@ _sample_product_test_procedure_rows = [
         "remark": "WiFi 모듈 RS9116은 20MHz만 지원함.",
     },
     {
-        "product_test_procedure_id": "PTPROC-WIFI-AP-CONFIG-001-004",
-        "product_test_case_id": "PTCASE-WIFI-AP-CONFIG-001",
+        "product_test_procedure_id": "PTPROC-WIFI-AP_CONFIG-001-004",
+        "product_test_case_id": "PTCASE-WIFI-AP_CONFIG-001",
         "procedure_sequence": 4,
         "procedure_action": "WiFi 규격 Mode 설정 확인",
         "expected_result": "WiFi Mode가 802.11 a/b/g/n, WiFi 4 호환 범위여야 함",
@@ -325,8 +330,8 @@ _sample_product_test_procedure_rows = [
         "remark": "일반적으로 하위 호환은 되나 WiFi 6(ax)부터 Beacon 제어 방식 차이로 parsing 이 안 될 가능성이 있음.",
     },
     {
-        "product_test_procedure_id": "PTPROC-WIFI-AP-CONFIG-001-005",
-        "product_test_case_id": "PTCASE-WIFI-AP-CONFIG-001",
+        "product_test_procedure_id": "PTPROC-WIFI-AP_CONFIG-001-005",
+        "product_test_case_id": "PTCASE-WIFI-AP_CONFIG-001",
         "procedure_sequence": 5,
         "procedure_action": "WiFi Security 설정 확인",
         "expected_result": "AP Security가 WPA2로 설정되어 있어야 함",
@@ -350,7 +355,8 @@ def _normalize_identifier_segment(value: str) -> str:
     normalized = str(value or "").strip()
     normalized = normalized.replace("?", " UNKNOWN ")
     normalized = normalized.replace("(", " ").replace(")", " ")
-    normalized = re.sub(r"[\s\-/:]+", "_", normalized)
+    normalized = re.sub(r"[\/\\\s:\*\|\"'<>]+", "_", normalized)
+    normalized = normalized.replace("-", "_")
     normalized = re.sub(r"[^0-9A-Za-z_]+", "_", normalized)
     normalized = re.sub(r"_+", "_", normalized)
     return normalized.strip("_").upper()
@@ -1426,6 +1432,12 @@ def _upsert_model_row(
     return row
 
 
+def _delete_row_if_exists(database_session: Session, model, primary_key_value: str) -> None:
+    row = database_session.get(model, primary_key_value)
+    if row is not None:
+        database_session.delete(row)
+
+
 def _ensure_seed_status_transition(
     database_session: Session,
     *,
@@ -1677,7 +1689,7 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
         ProductTestCase,
         "product_test_case_id",
         {
-            "product_test_case_id": "PTCASE-WIFI-AP-CONFIG-001",
+            "product_test_case_id": "PTCASE-WIFI-AP_CONFIG-001",
             "product_test_case_title": "WiFi AP 설정 적합성 검증",
             "test_category": "WiFi",
             "test_objective": "RS9116 WiFi 모듈 기준으로 AP 설정이 권장 조건을 만족하는지 확인",
@@ -1694,7 +1706,7 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
 
     procedure_seed_rows = [
         {
-            "product_test_procedure_id": "PTPROC-WIFI-AP-CONFIG-001-001",
+            "product_test_procedure_id": "PTPROC-WIFI-AP_CONFIG-001-001",
             "procedure_sequence": 1,
             "procedure_action": "WiFi Band 분리설정 확인",
             "expected_result": "2.4GHz와 5GHz SSID가 분리되어 있어야 함",
@@ -1703,7 +1715,7 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
             "remark": "분리하지 않은 경우 임베디드 장비가 2.4GHz로 할당될 가능성이 높음. 원하는 SSID에 접근할 수 있도록 분리 권장.",
         },
         {
-            "product_test_procedure_id": "PTPROC-WIFI-AP-CONFIG-001-002",
+            "product_test_procedure_id": "PTPROC-WIFI-AP_CONFIG-001-002",
             "procedure_sequence": 2,
             "procedure_action": "WiFi Channel 설정 확인",
             "expected_result": "2.4GHz는 1~11번 고정 채널, 5GHz는 DFS가 아닌 36, 40, 44, 48 채널이어야 함",
@@ -1712,7 +1724,7 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
             "remark": "5GHz에서 DFS 채널을 사용하는 경우 WiFi 모듈이 AP를 검색하지 못할 수 있음.",
         },
         {
-            "product_test_procedure_id": "PTPROC-WIFI-AP-CONFIG-001-003",
+            "product_test_procedure_id": "PTPROC-WIFI-AP_CONFIG-001-003",
             "procedure_sequence": 3,
             "procedure_action": "Channel Bandwidth 설정 확인",
             "expected_result": "Channel Bandwidth가 20MHz로 설정되어 있어야 함",
@@ -1721,7 +1733,7 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
             "remark": "WiFi 모듈 RS9116은 20MHz만 지원함.",
         },
         {
-            "product_test_procedure_id": "PTPROC-WIFI-AP-CONFIG-001-004",
+            "product_test_procedure_id": "PTPROC-WIFI-AP_CONFIG-001-004",
             "procedure_sequence": 4,
             "procedure_action": "WiFi 규격 Mode 설정 확인",
             "expected_result": "WiFi Mode가 802.11 a/b/g/n, WiFi 4 호환 범위여야 함",
@@ -1730,7 +1742,7 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
             "remark": "일반적으로 하위 호환은 되나 WiFi 6(ax)부터 Beacon 제어 방식 차이로 AP에 따라 정상 parsing이 안 될 가능성이 있음.",
         },
         {
-            "product_test_procedure_id": "PTPROC-WIFI-AP-CONFIG-001-005",
+            "product_test_procedure_id": "PTPROC-WIFI-AP_CONFIG-001-005",
             "procedure_sequence": 5,
             "procedure_action": "WiFi Security 설정 확인",
             "expected_result": "AP Security가 WPA2로 설정되어 있어야 함",
@@ -1746,7 +1758,7 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
             "product_test_procedure_id",
             {
                 "product_test_procedure_id": item["product_test_procedure_id"],
-                "product_test_case_id": "PTCASE-WIFI-AP-CONFIG-001",
+                "product_test_case_id": "PTCASE-WIFI-AP_CONFIG-001",
                 "procedure_sequence": item["procedure_sequence"],
                 "procedure_action": item["procedure_action"],
                 "expected_result": item["expected_result"],
@@ -1811,7 +1823,7 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
         {
             "product_test_result_id": "PTRES-20260504-0001",
             "product_test_run_id": "PTRUN-20260504-0001",
-            "product_test_case_id": "PTCASE-WIFI-AP-CONFIG-001",
+            "product_test_case_id": "PTCASE-WIFI-AP_CONFIG-001",
             "product_test_result_status": "failed",
             "actual_result": "5GHz Channel이 DFS 채널로 설정되어 있고 Security가 WPA3로 설정되어 있음",
             "judgement_reason": "Procedure 2, Procedure 5 기준 미충족",
@@ -1828,35 +1840,35 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
     procedure_result_seed_rows = [
         {
             "product_test_procedure_result_id": "PTPRES-20260504-0001",
-            "product_test_procedure_id": "PTPROC-WIFI-AP-CONFIG-001-001",
+            "product_test_procedure_id": "PTPROC-WIFI-AP_CONFIG-001-001",
             "product_test_procedure_result_status": "passed",
             "actual_result": "2.4GHz와 5GHz SSID가 분리되어 있음",
             "judgement_reason": None,
         },
         {
             "product_test_procedure_result_id": "PTPRES-20260504-0002",
-            "product_test_procedure_id": "PTPROC-WIFI-AP-CONFIG-001-002",
+            "product_test_procedure_id": "PTPROC-WIFI-AP_CONFIG-001-002",
             "product_test_procedure_result_status": "failed",
             "actual_result": "5GHz Channel이 DFS 채널로 설정되어 있음",
             "judgement_reason": "DFS 채널 사용으로 RS9116 AP scan 실패 가능",
         },
         {
             "product_test_procedure_result_id": "PTPRES-20260504-0003",
-            "product_test_procedure_id": "PTPROC-WIFI-AP-CONFIG-001-003",
+            "product_test_procedure_id": "PTPROC-WIFI-AP_CONFIG-001-003",
             "product_test_procedure_result_status": "passed",
             "actual_result": "Channel Bandwidth 20MHz 확인",
             "judgement_reason": None,
         },
         {
             "product_test_procedure_result_id": "PTPRES-20260504-0004",
-            "product_test_procedure_id": "PTPROC-WIFI-AP-CONFIG-001-004",
+            "product_test_procedure_id": "PTPROC-WIFI-AP_CONFIG-001-004",
             "product_test_procedure_result_status": "passed",
             "actual_result": "WiFi Mode가 802.11 b/g/n 호환으로 설정됨",
             "judgement_reason": None,
         },
         {
             "product_test_procedure_result_id": "PTPRES-20260504-0005",
-            "product_test_procedure_id": "PTPROC-WIFI-AP-CONFIG-001-005",
+            "product_test_procedure_id": "PTPROC-WIFI-AP_CONFIG-001-005",
             "product_test_procedure_result_status": "failed",
             "actual_result": "AP Security가 WPA3로 설정되어 있음",
             "judgement_reason": "WPA2 권장 조건 미충족",
@@ -2031,6 +2043,18 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
             transitioned_by=item[5],
             transitioned_at=item[6],
         )
+
+    # Clean up earlier seed/sample IDs after dependent rows have been rewired.
+    legacy_procedure_ids = [
+        "PTPROC-WIFI-AP-CONFIG-001-001",
+        "PTPROC-WIFI-AP-CONFIG-001-002",
+        "PTPROC-WIFI-AP-CONFIG-001-003",
+        "PTPROC-WIFI-AP-CONFIG-001-004",
+        "PTPROC-WIFI-AP-CONFIG-001-005",
+    ]
+    for legacy_procedure_id in legacy_procedure_ids:
+        _delete_row_if_exists(database_session, ProductTestProcedure, legacy_procedure_id)
+    _delete_row_if_exists(database_session, ProductTestCase, "PTCASE-WIFI-AP-CONFIG-001")
 
     _commit_or_rollback(database_session)
 
@@ -2884,6 +2908,58 @@ def list_product_test_reports(database_session: Session) -> list[dict[str, Any]]
     ]
 
 
+def list_product_test_report_snapshots(database_session: Session) -> list[dict[str, Any]]:
+    rows = _query_all_rows(database_session, ProductTestReportSnapshot, "created_at")
+    return [
+        _as_dict(
+            row,
+            [
+                "product_test_report_snapshot_id",
+                "product_test_report_id",
+                "product_test_release_id",
+                "snapshot_type",
+                "snapshot_format",
+                "snapshot_hash",
+                "source_data_locked",
+                "created_at",
+                "created_by",
+                "remark",
+            ],
+        )
+        for row in rows
+    ]
+
+
+def get_product_test_report_snapshot_detail(
+    database_session: Session,
+    product_test_report_snapshot_id: str,
+) -> dict[str, Any] | None:
+    row = database_session.get(ProductTestReportSnapshot, product_test_report_snapshot_id)
+    if row is None:
+        return None
+    payload_object = json.loads(row.snapshot_payload)
+    return {
+        "snapshot": _as_dict(
+            row,
+            [
+                "product_test_report_snapshot_id",
+                "product_test_report_id",
+                "product_test_release_id",
+                "snapshot_type",
+                "snapshot_format",
+                "snapshot_payload",
+                "snapshot_hash",
+                "source_data_locked",
+                "created_at",
+                "created_by",
+                "remark",
+            ],
+        ),
+        "snapshot_payload_pretty": json.dumps(payload_object, ensure_ascii=False, indent=2, sort_keys=True),
+        "snapshot_payload_object": payload_object,
+    }
+
+
 def create_product_test_report(
     database_session: Session,
     *,
@@ -2900,7 +2976,7 @@ def create_product_test_report(
         raise ValueError("product_test_release_id and product_test_report_title are required.")
     if database_session.get(ProductTestRelease, release_id) is None:
         raise ValueError("Unknown product_test_release_id.")
-    report_id = _next_prefixed_id(database_session, ProductTestReport, "product_test_report_id", "PTREPORT")
+    report_id = _next_prefixed_id(database_session, ProductTestReport, "product_test_report_id", "PTRPT")
     now_text = _now_text()
     row = ProductTestReport(
         product_test_report_id=report_id,
@@ -2947,6 +3023,123 @@ def create_product_test_report(
             "rejected_at",
             "rejected_by",
             "rejection_reason",
+            "remark",
+        ],
+    )
+
+
+def _build_product_test_report_snapshot_payload(detail: dict[str, Any]) -> dict[str, Any]:
+    flat_result_rows = []
+    flat_procedure_result_rows = []
+    flat_defect_rows = []
+    flat_evidence_rows = []
+    for result in detail["result_details"]:
+        flat_result_rows.append(
+            {
+                "product_test_result_id": result["product_test_result_id"],
+                "product_test_run_id": result["product_test_run_id"],
+                "product_test_case_id": result["product_test_case_id"],
+                "product_test_case_title": result["product_test_case_title"],
+                "product_test_result_status": result["product_test_result_status"],
+                "actual_result": result["actual_result"],
+                "judgement_reason": result["judgement_reason"],
+                "result_judged_at": result["result_judged_at"],
+                "result_judged_by": result["result_judged_by"],
+            }
+        )
+        flat_defect_rows.extend(result["defect_rows"])
+        flat_evidence_rows.extend(result["evidence_rows"])
+        for procedure in result["procedure_rows"]:
+            flat_procedure_result_rows.append(
+                {
+                    "product_test_result_id": result["product_test_result_id"],
+                    "product_test_procedure_result_id": procedure.get("product_test_procedure_result_id", ""),
+                    "product_test_procedure_id": procedure.get("product_test_procedure_id", ""),
+                    "procedure_sequence": procedure["procedure_sequence"],
+                    "procedure_action": procedure["procedure_action"],
+                    "expected_result": procedure["expected_result"],
+                    "acceptance_criteria": procedure["acceptance_criteria"],
+                    "required_evidence_type": procedure["required_evidence_type"],
+                    "product_test_procedure_result_status": procedure["product_test_procedure_result_status"],
+                    "actual_result": procedure["actual_result"],
+                    "judgement_reason": procedure["judgement_reason"],
+                    "evidence_count": procedure["evidence_count"],
+                }
+            )
+            flat_defect_rows.extend(procedure["defect_rows"])
+            flat_evidence_rows.extend(procedure["evidence_rows"])
+    dedup_defects = {row["product_test_defect_id"]: row for row in flat_defect_rows if row.get("product_test_defect_id")}
+    dedup_evidences = {row["product_test_evidence_id"]: row for row in flat_evidence_rows if row.get("product_test_evidence_id")}
+    return {
+        "report_header": detail["report"],
+        "release_summary": detail["release_summary"],
+        "run_summaries": detail["run_summaries"],
+        "result_summary": detail["result_summary"],
+        "result_details": detail["result_details"],
+        "product_test_results": flat_result_rows,
+        "product_test_procedure_results": flat_procedure_result_rows,
+        "product_test_defects": list(dedup_defects.values()),
+        "product_test_evidences": list(dedup_evidences.values()),
+        "product_test_status_transitions": detail["status_transitions"],
+    }
+
+
+def create_product_test_report_snapshot(
+    database_session: Session,
+    product_test_report_id: str,
+    snapshot_type: str,
+    created_by: str,
+    remark: str | None = None,
+    *,
+    commit: bool = True,
+) -> dict[str, Any]:
+    report_row = database_session.get(ProductTestReport, str(product_test_report_id or "").strip())
+    if report_row is None:
+        raise LookupError("Report not found.")
+    snapshot_type_value = _validate_in(str(snapshot_type or "").strip(), SNAPSHOT_TYPE_VALUES, "snapshot_type")
+    detail = get_product_test_report_detail(database_session, report_row.product_test_report_id)
+    if detail is None:
+        raise LookupError("Report detail not found.")
+    payload_object = _build_product_test_report_snapshot_payload(detail)
+    snapshot_payload = json.dumps(payload_object, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    snapshot_hash = hashlib.sha256(snapshot_payload.encode("utf-8")).hexdigest()
+    today_text = get_utc_now_datetime().astimezone().strftime("%Y%m%d")
+    snapshot_id = _next_prefixed_id(
+        database_session,
+        ProductTestReportSnapshot,
+        "product_test_report_snapshot_id",
+        f"PTRPTSNAP-{today_text}",
+    )
+    now_text = _now_text()
+    source_data_locked = 1 if snapshot_type_value == "approval" or _release_is_locked(database_session, report_row.product_test_release_id) else 0
+    row = ProductTestReportSnapshot(
+        product_test_report_snapshot_id=snapshot_id,
+        product_test_report_id=report_row.product_test_report_id,
+        product_test_release_id=report_row.product_test_release_id,
+        snapshot_type=snapshot_type_value,
+        snapshot_format="json",
+        snapshot_payload=snapshot_payload,
+        snapshot_hash=snapshot_hash,
+        source_data_locked=source_data_locked,
+        created_at=now_text,
+        created_by=created_by,
+        remark=str(remark or "").strip() or None,
+    )
+    database_session.add(row)
+    if commit:
+        _commit_or_rollback(database_session)
+    return _as_dict(
+        row,
+        [
+            "product_test_report_snapshot_id",
+            "product_test_report_id",
+            "product_test_release_id",
+            "snapshot_type",
+            "snapshot_format",
+            "snapshot_hash",
+            "source_data_locked",
+            "created_at",
+            "created_by",
             "remark",
         ],
     )
@@ -3029,6 +3222,14 @@ def approve_product_test_report(database_session: Session, *, product_test_repor
     graph = _collect_release_graph(database_session, report_row.product_test_release_id)
     if any(row.product_test_defect_status in {"opened", "assigned", "fixed", "retested"} for row in graph["defects"]):
         raise ValueError("Open defects exist for this release. Approval is blocked.")
+    create_product_test_report_snapshot(
+        database_session,
+        product_test_report_id=product_test_report_id,
+        snapshot_type="approval",
+        created_by=approved_by,
+        remark="auto snapshot before approval",
+        commit=False,
+    )
     ensure_product_test_status_transition_recorded(
         database_session,
         entity_type="product_test_report",
@@ -3183,6 +3384,8 @@ def get_product_test_report_detail(database_session: Session, product_test_repor
             ]
             procedure_detail_rows.append(
                 {
+                    "product_test_procedure_result_id": procedure_result_row.product_test_procedure_result_id,
+                    "product_test_procedure_id": procedure_result_row.product_test_procedure_id,
                     "procedure_sequence": procedure_row.procedure_sequence if procedure_row else 0,
                     "procedure_action": procedure_row.procedure_action if procedure_row else "",
                     "expected_result": procedure_row.expected_result if procedure_row else "",
@@ -3197,6 +3400,9 @@ def get_product_test_report_detail(database_session: Session, product_test_repor
                             row,
                             [
                                 "product_test_evidence_id",
+                                "product_test_result_id",
+                                "product_test_procedure_result_id",
+                                "product_test_defect_id",
                                 "product_test_evidence_type",
                                 "file_name",
                                 "file_path",
@@ -3214,6 +3420,8 @@ def get_product_test_report_detail(database_session: Session, product_test_repor
                                 row,
                                 [
                                     "product_test_defect_id",
+                                    "product_test_result_id",
+                                    "product_test_procedure_result_id",
                                     "defect_title",
                                     "defect_description",
                                     "defect_severity",
@@ -3249,6 +3457,8 @@ def get_product_test_report_detail(database_session: Session, product_test_repor
                             row,
                             [
                                 "product_test_defect_id",
+                                "product_test_result_id",
+                                "product_test_procedure_result_id",
                                 "defect_title",
                                 "defect_description",
                                 "defect_severity",
@@ -3269,6 +3479,9 @@ def get_product_test_report_detail(database_session: Session, product_test_repor
                         row,
                         [
                             "product_test_evidence_id",
+                            "product_test_result_id",
+                            "product_test_procedure_result_id",
+                            "product_test_defect_id",
                             "product_test_evidence_type",
                             "file_name",
                             "file_path",
@@ -3367,6 +3580,104 @@ def get_product_test_report_detail(database_session: Session, product_test_repor
             for row in graph["status_transitions"]
         ],
         "approval_blocked": open_defect_count > 0,
+    }
+
+
+def compare_product_test_report_snapshots(
+    database_session: Session,
+    left_snapshot_id: str,
+    right_snapshot_id: str,
+) -> dict[str, Any]:
+    left_row = database_session.get(ProductTestReportSnapshot, str(left_snapshot_id or "").strip())
+    right_row = database_session.get(ProductTestReportSnapshot, str(right_snapshot_id or "").strip())
+    if left_row is None or right_row is None:
+        raise LookupError("Both snapshot IDs must exist.")
+    if left_row.snapshot_format != "json" or right_row.snapshot_format != "json":
+        raise ValueError("Both snapshots must use json format.")
+    warnings: list[str] = []
+    if left_row.product_test_release_id != right_row.product_test_release_id:
+        warnings.append("Snapshots belong to different product_test_release_id values.")
+    for row in (left_row, right_row):
+        if not re.fullmatch(r"[0-9a-f]{64}", str(row.snapshot_hash or "")):
+            warnings.append(f"Snapshot hash invalid: {row.product_test_report_snapshot_id}")
+    left_payload = json.loads(left_row.snapshot_payload)
+    right_payload = json.loads(right_row.snapshot_payload)
+    left_results = {row["product_test_result_id"]: row for row in left_payload.get("product_test_results", [])}
+    right_results = {row["product_test_result_id"]: row for row in right_payload.get("product_test_results", [])}
+    left_cases = {row["product_test_case_id"] for row in left_results.values() if row.get("product_test_case_id")}
+    right_cases = {row["product_test_case_id"] for row in right_results.values() if row.get("product_test_case_id")}
+    left_procedures = {
+        row["product_test_procedure_result_id"]: row
+        for row in left_payload.get("product_test_procedure_results", [])
+        if row.get("product_test_procedure_result_id")
+    }
+    right_procedures = {
+        row["product_test_procedure_result_id"]: row
+        for row in right_payload.get("product_test_procedure_results", [])
+        if row.get("product_test_procedure_result_id")
+    }
+    left_defects = {row["product_test_defect_id"]: row for row in left_payload.get("product_test_defects", []) if row.get("product_test_defect_id")}
+    right_defects = {row["product_test_defect_id"]: row for row in right_payload.get("product_test_defects", []) if row.get("product_test_defect_id")}
+    left_evidences = {row["product_test_evidence_id"]: row for row in left_payload.get("product_test_evidences", []) if row.get("product_test_evidence_id")}
+    right_evidences = {row["product_test_evidence_id"]: row for row in right_payload.get("product_test_evidences", []) if row.get("product_test_evidence_id")}
+    changed_result_statuses = []
+    for result_id in sorted(set(left_results) & set(right_results)):
+        if left_results[result_id].get("product_test_result_status") != right_results[result_id].get("product_test_result_status"):
+            changed_result_statuses.append(
+                {
+                    "product_test_result_id": result_id,
+                    "product_test_case_id": right_results[result_id].get("product_test_case_id") or left_results[result_id].get("product_test_case_id"),
+                    "left_status": left_results[result_id].get("product_test_result_status"),
+                    "right_status": right_results[result_id].get("product_test_result_status"),
+                }
+            )
+    changed_procedure_statuses = []
+    for procedure_result_id in sorted(set(left_procedures) & set(right_procedures)):
+        if left_procedures[procedure_result_id].get("product_test_procedure_result_status") != right_procedures[procedure_result_id].get("product_test_procedure_result_status"):
+            changed_procedure_statuses.append(
+                {
+                    "product_test_procedure_result_id": procedure_result_id,
+                    "product_test_procedure_id": right_procedures[procedure_result_id].get("product_test_procedure_id") or left_procedures[procedure_result_id].get("product_test_procedure_id"),
+                    "left_status": left_procedures[procedure_result_id].get("product_test_procedure_result_status"),
+                    "right_status": right_procedures[procedure_result_id].get("product_test_procedure_result_status"),
+                }
+            )
+    changed_defect_statuses = []
+    for defect_id in sorted(set(left_defects) & set(right_defects)):
+        left_status = left_defects[defect_id].get("status") or left_defects[defect_id].get("product_test_defect_status")
+        right_status = right_defects[defect_id].get("status") or right_defects[defect_id].get("product_test_defect_status")
+        if left_status != right_status:
+            changed_defect_statuses.append(
+                {
+                    "product_test_defect_id": defect_id,
+                    "left_status": left_status,
+                    "right_status": right_status,
+                }
+            )
+    changed_evidence_hashes = []
+    for evidence_id in sorted(set(left_evidences) & set(right_evidences)):
+        if (left_evidences[evidence_id].get("file_hash") or "") != (right_evidences[evidence_id].get("file_hash") or ""):
+            changed_evidence_hashes.append(
+                {
+                    "product_test_evidence_id": evidence_id,
+                    "left_file_hash": left_evidences[evidence_id].get("file_hash") or "",
+                    "right_file_hash": right_evidences[evidence_id].get("file_hash") or "",
+                }
+            )
+    return {
+        "left_snapshot": _as_dict(left_row, ["product_test_report_snapshot_id", "product_test_report_id", "product_test_release_id", "snapshot_type", "snapshot_hash"]),
+        "right_snapshot": _as_dict(right_row, ["product_test_report_snapshot_id", "product_test_report_id", "product_test_release_id", "snapshot_type", "snapshot_hash"]),
+        "warnings": warnings,
+        "added_product_test_case_ids": sorted(right_cases - left_cases),
+        "removed_product_test_case_ids": sorted(left_cases - right_cases),
+        "changed_product_test_result_statuses": changed_result_statuses,
+        "changed_product_test_procedure_result_statuses": changed_procedure_statuses,
+        "added_defect_ids": sorted(set(right_defects) - set(left_defects)),
+        "removed_defect_ids": sorted(set(left_defects) - set(right_defects)),
+        "changed_defect_statuses": changed_defect_statuses,
+        "added_evidence_ids": sorted(set(right_evidences) - set(left_evidences)),
+        "removed_evidence_ids": sorted(set(left_evidences) - set(right_evidences)),
+        "changed_evidence_hashes": changed_evidence_hashes,
     }
 
 
@@ -4282,7 +4593,7 @@ def get_product_test_system_check(database_session: Session) -> dict[str, Any]:
         or 0
     )
     seed_data_presence = {
-        "wifi_case": database_session.get(ProductTestCase, "PTCASE-WIFI-AP-CONFIG-001") is not None,
+        "wifi_case": database_session.get(ProductTestCase, "PTCASE-WIFI-AP_CONFIG-001") is not None,
         "wifi_release": database_session.get(ProductTestRelease, "PTREL-MERCUSYS_MR30G-1.0.0-RC1") is not None,
         "wifi_run": database_session.get(ProductTestRun, "PTRUN-20260504-0001") is not None,
         "wifi_result": database_session.get(ProductTestResult, "PTRES-20260504-0001") is not None,
