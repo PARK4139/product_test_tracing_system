@@ -4,7 +4,7 @@ from io import BytesIO, StringIO
 from datetime import timedelta
 
 from fastapi import APIRouter, Form, HTTPException, Query, Request, status
-from fastapi.responses import RedirectResponse, StreamingResponse
+from fastapi.responses import JSONResponse, RedirectResponse, StreamingResponse
 from sqlalchemy import and_, exists, func, or_, select
 from sqlalchemy.orm import Session
 
@@ -77,6 +77,32 @@ from app.services.product_test_run_service import (
 
 
 admin_router = APIRouter(prefix="/admin", tags=["admin"])
+
+
+def _is_ajax_request(request: Request) -> bool:
+    requested_with = (request.headers.get("x-requested-with") or "").strip().lower()
+    accept_header = (request.headers.get("accept") or "").strip().lower()
+    return requested_with == "xmlhttprequest" or "application/json" in accept_header
+
+
+def _admin_create_error_response(request: Request, target_url: str, message: str):
+    if _is_ajax_request(request):
+        return JSONResponse({"ok": False, "message": message}, status_code=400)
+    return RedirectResponse(url=f"{target_url}?message={message}&message_type=error", status_code=303)
+
+
+def _admin_create_success_response(
+    request: Request,
+    target_url: str,
+    message: str,
+    extra_payload: dict | None = None,
+):
+    if _is_ajax_request(request):
+        payload = {"ok": True, "message": message}
+        if extra_payload:
+            payload.update(extra_payload)
+        return JSONResponse(payload)
+    return RedirectResponse(url=f"{target_url}?message={message}&message_type=success", status_code=303)
 
 
 def _csv_streaming_response(*, rows: list[list[str]], file_name: str) -> StreamingResponse:
@@ -424,6 +450,29 @@ def render_admin_dashboard(
         current_role_name=current_role_name,
         template_name="admin_dashboard.html",
         page_title="Product Test Data Tracing System",
+        extra_context={
+            "message": (request.query_params.get("message") or "").strip(),
+            "message_type": (request.query_params.get("message_type") or "info").strip(),
+            "release_rows": list_product_test_releases(database_session),
+            "release_stage_values": RELEASE_STAGE_VALUES,
+            "product_test_release_status_values": PRODUCT_TEST_RELEASE_STATUS_VALUES,
+            "target_definition_rows": list_product_test_target_definitions(database_session),
+            "target_definition_status_values": MASTER_ACTIVE_STATUS_VALUES,
+            "target_rows": list_product_test_targets(database_session),
+            "target_status_values": TARGET_STATUS_VALUES,
+            "environment_definition_rows": list_product_test_environment_definitions(database_session),
+            "environment_definition_status_values": MASTER_ACTIVE_STATUS_VALUES,
+            "environment_rows": list_product_test_environments(database_session),
+            "environment_status_values": ENVIRONMENT_STATUS_VALUES,
+            "case_rows": list_product_test_cases(database_session),
+            "case_status_values": MASTER_ACTIVE_STATUS_VALUES,
+            "procedure_rows": list_product_test_procedures(database_session),
+            "procedure_status_values": MASTER_ACTIVE_STATUS_VALUES,
+            "evidence_type_values": EVIDENCE_TYPE_VALUES,
+            "report_rows": list_product_test_reports(database_session),
+            "report_release_options": list_report_release_options(database_session),
+            "report_type_values": REPORT_TYPE_VALUES,
+        },
     )
 
 
@@ -520,6 +569,7 @@ def create_product_test_release_admin(
     release_stage: str = Form(""),
     product_test_release_status: str = Form(""),
     remark: str = Form(""),
+    return_to: str = Form(""),
 ):
     _ensure_admin_role(current_role_name)
     try:
@@ -534,8 +584,10 @@ def create_product_test_release_admin(
             remark=remark,
         )
     except ValueError as exception:
-        return RedirectResponse(url=f"/admin/product-test-releases?message={str(exception)}&message_type=error", status_code=303)
-    return RedirectResponse(url="/admin/product-test-releases?message=Saved&message_type=success", status_code=303)
+        target_url = (return_to or "").strip() or "/admin/product-test-releases"
+        return _admin_create_error_response(request, target_url, str(exception))
+    target_url = (return_to or "").strip() or "/admin/product-test-releases"
+    return _admin_create_success_response(request, target_url, "Saved")
 
 
 @admin_router.get("/product-test-target-definitions")
@@ -573,6 +625,7 @@ def create_product_test_target_definition_admin(
     default_firmware_version: str = Form(""),
     product_test_target_definition_status: str = Form(""),
     remark: str = Form(""),
+    return_to: str = Form(""),
 ):
     _ensure_admin_role(current_role_name)
     try:
@@ -590,8 +643,10 @@ def create_product_test_target_definition_admin(
             remark=remark,
         )
     except ValueError as exception:
-        return RedirectResponse(url=f"/admin/product-test-target-definitions?message={str(exception)}&message_type=error", status_code=303)
-    return RedirectResponse(url="/admin/product-test-target-definitions?message=Saved&message_type=success", status_code=303)
+        target_url = (return_to or "").strip() or "/admin/product-test-target-definitions"
+        return _admin_create_error_response(request, target_url, str(exception))
+    target_url = (return_to or "").strip() or "/admin/product-test-target-definitions"
+    return _admin_create_success_response(request, target_url, "Saved")
 
 
 @admin_router.get("/product-test-targets")
@@ -629,6 +684,7 @@ def create_product_test_target_admin(
     manufacture_lot: str = Form(""),
     product_test_target_status: str = Form(""),
     remark: str = Form(""),
+    return_to: str = Form(""),
 ):
     _ensure_admin_role(current_role_name)
     try:
@@ -645,8 +701,10 @@ def create_product_test_target_admin(
             remark=remark,
         )
     except ValueError as exception:
-        return RedirectResponse(url=f"/admin/product-test-targets?message={str(exception)}&message_type=error", status_code=303)
-    return RedirectResponse(url="/admin/product-test-targets?message=Saved&message_type=success", status_code=303)
+        target_url = (return_to or "").strip() or "/admin/product-test-targets"
+        return _admin_create_error_response(request, target_url, str(exception))
+    target_url = (return_to or "").strip() or "/admin/product-test-targets"
+    return _admin_create_success_response(request, target_url, "Saved")
 
 
 @admin_router.get("/product-test-environment-definitions")
@@ -694,6 +752,7 @@ def create_product_test_environment_definition_admin(
     power_condition: str = Form(""),
     product_test_environment_definition_status: str = Form(""),
     remark: str = Form(""),
+    return_to: str = Form(""),
 ):
     _ensure_admin_role(current_role_name)
     try:
@@ -721,8 +780,10 @@ def create_product_test_environment_definition_admin(
             remark=remark,
         )
     except ValueError as exception:
-        return RedirectResponse(url=f"/admin/product-test-environment-definitions?message={str(exception)}&message_type=error", status_code=303)
-    return RedirectResponse(url="/admin/product-test-environment-definitions?message=Saved&message_type=success", status_code=303)
+        target_url = (return_to or "").strip() or "/admin/product-test-environment-definitions"
+        return _admin_create_error_response(request, target_url, str(exception))
+    target_url = (return_to or "").strip() or "/admin/product-test-environment-definitions"
+    return _admin_create_success_response(request, target_url, "Saved")
 
 
 @admin_router.get("/product-test-environments")
@@ -765,6 +826,7 @@ def create_product_test_environment_admin(
     captured_at: str = Form(""),
     product_test_environment_status: str = Form(""),
     remark: str = Form(""),
+    return_to: str = Form(""),
 ):
     _ensure_admin_role(current_role_name)
     try:
@@ -786,8 +848,10 @@ def create_product_test_environment_admin(
             remark=remark,
         )
     except ValueError as exception:
-        return RedirectResponse(url=f"/admin/product-test-environments?message={str(exception)}&message_type=error", status_code=303)
-    return RedirectResponse(url="/admin/product-test-environments?message=Saved&message_type=success", status_code=303)
+        target_url = (return_to or "").strip() or "/admin/product-test-environments"
+        return _admin_create_error_response(request, target_url, str(exception))
+    target_url = (return_to or "").strip() or "/admin/product-test-environments"
+    return _admin_create_success_response(request, target_url, "Saved")
 
 
 @admin_router.get("/product-test-cases")
@@ -824,6 +888,7 @@ def create_product_test_case_admin(
     expected_result: str = Form(""),
     product_test_case_status: str = Form(""),
     remark: str = Form(""),
+    return_to: str = Form(""),
 ):
     _ensure_admin_role(current_role_name)
     try:
@@ -840,8 +905,10 @@ def create_product_test_case_admin(
             remark=remark,
         )
     except ValueError as exception:
-        return RedirectResponse(url=f"/admin/product-test-cases?message={str(exception)}&message_type=error", status_code=303)
-    return RedirectResponse(url="/admin/product-test-cases?message=Saved&message_type=success", status_code=303)
+        target_url = (return_to or "").strip() or "/admin/product-test-cases"
+        return _admin_create_error_response(request, target_url, str(exception))
+    target_url = (return_to or "").strip() or "/admin/product-test-cases"
+    return _admin_create_success_response(request, target_url, "Saved")
 
 
 @admin_router.get("/product-test-procedures")
@@ -881,6 +948,7 @@ def create_product_test_procedure_admin(
     required_evidence_type: str = Form(""),
     product_test_procedure_status: str = Form(""),
     remark: str = Form(""),
+    return_to: str = Form(""),
 ):
     _ensure_admin_role(current_role_name)
     try:
@@ -898,8 +966,10 @@ def create_product_test_procedure_admin(
             remark=remark,
         )
     except ValueError as exception:
-        return RedirectResponse(url=f"/admin/product-test-procedures?message={str(exception)}&message_type=error", status_code=303)
-    return RedirectResponse(url="/admin/product-test-procedures?message=Saved&message_type=success", status_code=303)
+        target_url = (return_to or "").strip() or "/admin/product-test-procedures"
+        return _admin_create_error_response(request, target_url, str(exception))
+    target_url = (return_to or "").strip() or "/admin/product-test-procedures"
+    return _admin_create_success_response(request, target_url, "Saved")
 
 
 @admin_router.get("/product-test-reports")
@@ -935,6 +1005,7 @@ def create_product_test_report_admin(
     product_test_report_type: str = Form(""),
     product_test_report_title: str = Form(""),
     remark: str = Form(""),
+    return_to: str = Form(""),
 ):
     _ensure_admin_role(current_role_name)
     actor_name = _admin_actor_name(database_session=database_session, request=request)
@@ -948,9 +1019,24 @@ def create_product_test_report_admin(
             remark=remark,
         )
     except ValueError as exception:
-        return RedirectResponse(
-            url=f"/admin/product-test-reports?message={str(exception)}&message_type=error",
-            status_code=303,
+        target_url = (return_to or "").strip() or "/admin/product-test-reports"
+        return _admin_create_error_response(request, target_url, str(exception))
+    target_url = (return_to or "").strip()
+    if target_url:
+        return _admin_create_success_response(
+            request,
+            target_url,
+            "Report created",
+            {"product_test_report_id": report["product_test_report_id"]},
+        )
+    if _is_ajax_request(request):
+        return JSONResponse(
+            {
+                "ok": True,
+                "message": "Report created",
+                "product_test_report_id": report["product_test_report_id"],
+                "redirect_url": f"/admin/product-test-reports/{report['product_test_report_id']}",
+            }
         )
     return RedirectResponse(
         url=f"/admin/product-test-reports/{report['product_test_report_id']}?message=Report created&message_type=success",

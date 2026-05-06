@@ -703,6 +703,43 @@ button:disabled {
     color: #205D35;
 }
 
+.admin_auto_state {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    padding: 0 10px;
+    border: 1px solid var(--color_border);
+    border-radius: 6px;
+    background: #F5F7FA;
+    color: #405261;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.admin_auto_state.is_info {
+    background: #EEF5FF;
+    border-color: #B7CCE8;
+    color: #244D75;
+}
+
+.admin_auto_state.is_pending {
+    background: #FFF7E8;
+    border-color: #E2C489;
+    color: #7E5711;
+}
+
+.admin_auto_state.is_success {
+    background: #EAF7EF;
+    border-color: #A8CBB5;
+    color: #205D35;
+}
+
+.admin_auto_state.is_error {
+    background: #FAEAEA;
+    border-color: #D0A3A3;
+    color: #7A1E1E;
+}
+
 .tester_table_wrap {
     width: 100%;
     max-width: 100%;
