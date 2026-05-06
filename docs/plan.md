@@ -42,21 +42,29 @@ _________________________________________________ Plan : May
     Static 제외
     HISS 제외
     MATE 제외
-    AP 컷오프 일부미포함 
+    Server 재연결 시 복구 Test Case(AP 컷오프 건) 일부미포함 
     산출물 : "WIFI Connectivity 테스트 시나리오.xlsx - Google Sheets" 
 🔳 Connectivity Room 네트워크 시험 Test Case v1 작성
-    🔳 AP 컷오프 추가
-    🔳 5GHz Case Config 추가작성
-    🔳 Static Case Config 추가작성
+    🔳 Server 재연결 시 복구 Test Case(AP 컷오프 건) 추가
+    🔳 5GHz Case Config 추가
+    🔳 Static Case Config 추가
     🔳 Test Report 실작성 및 산출
-    🔳 Static/DHCP 별 TC 추가 필요
-    🔳 5GHz TC 추가 필요 
+    🔳 Static/DHCP 별 TC 추가 
+    🔳 5GHz TC 추가 
     🔳 절전모드 복구 TC 추가 : 절전모드 > 하루대기
     🔳 Defect 및 특이사항은 Chest Cam활용 촬영
 
 
-🔳 Test Data Tracing system 설계(Test Senario, Test Data Full Life Cycle 관리)  
+
+
+# Test Data Tracing system 설계(Test Senario, Test Data Full Life Cycle 관리)  
 🔳 Test Data Tracing system Export 기능활용 엑셀화 하여 공유
+=IFERROR(INDEX('HRK 테스트'!D:D,MATCH(TRIM(CLEAN(C5)),'HRK 테스트'!A:A,0)),
+ IFERROR(INDEX('HLM 테스트'!D:D,MATCH(TRIM(CLEAN(C5)),'HLM 테스트'!A:A,0)),
+ IFERROR(INDEX('HTR 테스트'!D:D,MATCH(TRIM(CLEAN(C5)),'HTR 테스트'!A:A,0)),
+ IFERROR(INDEX('HDR 테스트'!D:D,MATCH(TRIM(CLEAN(C5)),'HDR 테스트'!A:A,0)),
+ IFERROR(INDEX('HDC 테스트'!D:D,MATCH(TRIM(CLEAN(C5)),'HDC 테스트'!A:A,0)),"")))))
+
 
 
 
