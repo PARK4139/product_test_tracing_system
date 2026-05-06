@@ -169,8 +169,8 @@
     <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     <div class="tester_table_wrap">
         <table class="basic_table">
-            <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_TARGET_DEFINITION_ID</th><th>PRODUCT_CODE</th><th>MANUFACTURER</th><th>MODEL_NAME</th><th>PRODUCT_TEST_TARGET_DEFINITION_STATUS</th><th>REMARK</th></tr></thead>
-            <tbody>{% for row in target_definition_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_target_definition_id }}</td><td>{{ row.product_code }}</td><td>{{ row.manufacturer }}</td><td>{{ row.model_name }}</td><td>{{ row.product_test_target_definition_status }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
+            <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_TARGET_DEFINITION_ID</th><th>PRODUCT_CODE</th><th>MANUFACTURER</th><th>MODEL_NAME</th><th>HARDWARE_REVISION</th><th>DEFAULT_SOFTWARE_VERSION</th><th>DEFAULT_FIRMWARE_VERSION</th><th>PRODUCT_TEST_TARGET_DEFINITION_STATUS</th><th>REMARK</th></tr></thead>
+            <tbody>{% for row in target_definition_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_target_definition_id }}</td><td>{{ row.product_code }}</td><td>{{ row.manufacturer }}</td><td>{{ row.model_name }}</td><td>{{ row.hardware_revision }}</td><td>{{ row.default_software_version }}</td><td>{{ row.default_firmware_version }}</td><td>{{ row.product_test_target_definition_status }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
         </table>
     </div>
 </section>
@@ -199,8 +199,8 @@
     <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     <div class="tester_table_wrap">
         <table class="basic_table">
-            <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_TARGET_ID</th><th>PRODUCT_TEST_TARGET_DEFINITION_ID</th><th>SERIAL_NUMBER</th><th>SOFTWARE_VERSION</th><th>FIRMWARE_VERSION</th><th>PRODUCT_TEST_TARGET_STATUS</th></tr></thead>
-            <tbody>{% for row in target_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_target_id }}</td><td>{{ row.product_test_target_definition_id }}</td><td>{{ row.serial_number }}</td><td>{{ row.software_version }}</td><td>{{ row.firmware_version }}</td><td>{{ row.product_test_target_status }}</td></tr>{% endfor %}</tbody>
+            <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_TARGET_ID</th><th>PRODUCT_TEST_TARGET_DEFINITION_ID</th><th>SERIAL_NUMBER</th><th>SOFTWARE_VERSION</th><th>FIRMWARE_VERSION</th><th>MANUFACTURE_LOT</th><th>PRODUCT_TEST_TARGET_STATUS</th><th>REMARK</th></tr></thead>
+            <tbody>{% for row in target_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_target_id }}</td><td>{{ row.product_test_target_definition_id }}</td><td>{{ row.serial_number }}</td><td>{{ row.software_version }}</td><td>{{ row.firmware_version }}</td><td>{{ row.manufacture_lot }}</td><td>{{ row.product_test_target_status }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
         </table>
     </div>
 </section>
@@ -238,8 +238,8 @@
     <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     <div class="tester_table_wrap">
         <table class="basic_table">
-            <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID</th><th>PRODUCT_TEST_ENVIRONMENT_DEFINITION_NAME</th><th>TEST_CITY</th><th>TEST_COMPANY</th><th>TEST_ROOM</th><th>PRODUCT_TEST_ENVIRONMENT_DEFINITION_STATUS</th></tr></thead>
-            <tbody>{% for row in environment_definition_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_environment_definition_id }}</td><td>{{ row.product_test_environment_definition_name }}</td><td>{{ row.test_city }}</td><td>{{ row.test_company }}</td><td>{{ row.test_room }}</td><td>{{ row.product_test_environment_definition_status }}</td></tr>{% endfor %}</tbody>
+            <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID</th><th>PRODUCT_TEST_ENVIRONMENT_DEFINITION_NAME</th><th>TEST_COUNTRY</th><th>TEST_CITY</th><th>TEST_COMPANY</th><th>TEST_ROOM</th><th>NETWORK_TYPE</th><th>TEST_COMPUTER_NAME</th><th>OPERATING_SYSTEM_VERSION</th><th>TEST_TOOL_NAME</th><th>TEST_TOOL_VERSION</th><th>POWER_VOLTAGE</th><th>POWER_FREQUENCY</th><th>POWER_CONNECTOR_TYPE</th><th>POWER_CONDITION</th><th>PRODUCT_TEST_ENVIRONMENT_DEFINITION_STATUS</th><th>REMARK</th></tr></thead>
+            <tbody>{% for row in environment_definition_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_environment_definition_id }}</td><td>{{ row.product_test_environment_definition_name }}</td><td>{{ row.test_country }}</td><td>{{ row.test_city }}</td><td>{{ row.test_company }}</td><td>{{ row.test_room }}</td><td>{{ row.network_type }}</td><td>{{ row.test_computer_name }}</td><td>{{ row.operating_system_version }}</td><td>{{ row.test_tool_name }}</td><td>{{ row.test_tool_version }}</td><td>{{ row.power_voltage }}</td><td>{{ row.power_frequency }}</td><td>{{ row.power_connector_type }}</td><td>{{ row.power_condition }}</td><td>{{ row.product_test_environment_definition_status }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
         </table>
     </div>
 </section>
@@ -273,8 +273,8 @@
     <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     <div class="tester_table_wrap">
         <table class="basic_table">
-            <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_ENVIRONMENT_ID</th><th>PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID</th><th>PRODUCT_TEST_ENVIRONMENT_NAME</th><th>TEST_COMPUTER_NAME</th><th>OPERATING_SYSTEM_VERSION</th><th>PRODUCT_TEST_ENVIRONMENT_STATUS</th></tr></thead>
-            <tbody>{% for row in environment_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_environment_id }}</td><td>{{ row.product_test_environment_definition_id }}</td><td>{{ row.product_test_environment_name }}</td><td>{{ row.test_computer_name }}</td><td>{{ row.operating_system_version }}</td><td>{{ row.product_test_environment_status }}</td></tr>{% endfor %}</tbody>
+            <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_ENVIRONMENT_ID</th><th>PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID</th><th>PRODUCT_TEST_ENVIRONMENT_NAME</th><th>TEST_COMPUTER_NAME</th><th>OPERATING_SYSTEM_VERSION</th><th>TEST_TOOL_VERSION</th><th>NETWORK_TYPE</th><th>POWER_VOLTAGE</th><th>POWER_FREQUENCY</th><th>POWER_CONNECTOR_TYPE</th><th>CAPTURED_AT</th><th>PRODUCT_TEST_ENVIRONMENT_STATUS</th><th>REMARK</th></tr></thead>
+            <tbody>{% for row in environment_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_environment_id }}</td><td>{{ row.product_test_environment_definition_id }}</td><td>{{ row.product_test_environment_name }}</td><td>{{ row.test_computer_name }}</td><td>{{ row.operating_system_version }}</td><td>{{ row.test_tool_version }}</td><td>{{ row.network_type }}</td><td>{{ row.power_voltage }}</td><td>{{ row.power_frequency }}</td><td>{{ row.power_connector_type }}</td><td>{{ row.captured_at }}</td><td>{{ row.product_test_environment_status }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
         </table>
     </div>
 </section>
@@ -303,8 +303,8 @@
     <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     <div class="tester_table_wrap">
         <table class="basic_table">
-            <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_CASE_ID</th><th>PRODUCT_TEST_CASE_TITLE</th><th>TEST_CATEGORY</th><th>PRODUCT_TEST_CASE_STATUS</th></tr></thead>
-            <tbody>{% for row in case_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_case_id }}</td><td>{{ row.product_test_case_title }}</td><td>{{ row.test_category }}</td><td>{{ row.product_test_case_status }}</td></tr>{% endfor %}</tbody>
+            <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_CASE_ID</th><th>PRODUCT_TEST_CASE_TITLE</th><th>TEST_CATEGORY</th><th>TEST_OBJECTIVE</th><th>PRECONDITION</th><th>EXPECTED_RESULT</th><th>PRODUCT_TEST_CASE_STATUS</th><th>REMARK</th></tr></thead>
+            <tbody>{% for row in case_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_case_id }}</td><td>{{ row.product_test_case_title }}</td><td>{{ row.test_category }}</td><td>{{ row.test_objective }}</td><td>{{ row.precondition }}</td><td>{{ row.expected_result }}</td><td>{{ row.product_test_case_status }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
         </table>
     </div>
 </section>
@@ -334,8 +334,8 @@
     <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     <div class="tester_table_wrap">
         <table class="basic_table">
-            <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_PROCEDURE_ID</th><th>PRODUCT_TEST_CASE_ID</th><th>PROCEDURE_SEQUENCE</th><th>PROCEDURE_ACTION</th><th>REQUIRED_EVIDENCE_TYPE</th><th>PRODUCT_TEST_PROCEDURE_STATUS</th></tr></thead>
-            <tbody>{% for row in procedure_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_procedure_id }}</td><td>{{ row.product_test_case_id }}</td><td>{{ row.procedure_sequence }}</td><td>{{ row.procedure_action }}</td><td>{{ row.required_evidence_type }}</td><td>{{ row.product_test_procedure_status }}</td></tr>{% endfor %}</tbody>
+            <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_PROCEDURE_ID</th><th>PRODUCT_TEST_CASE_ID</th><th>PROCEDURE_SEQUENCE</th><th>PROCEDURE_ACTION</th><th>EXPECTED_RESULT</th><th>ACCEPTANCE_CRITERIA</th><th>REQUIRED_EVIDENCE_TYPE</th><th>PRODUCT_TEST_PROCEDURE_STATUS</th><th>REMARK</th></tr></thead>
+            <tbody>{% for row in procedure_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_procedure_id }}</td><td>{{ row.product_test_case_id }}</td><td>{{ row.procedure_sequence }}</td><td>{{ row.procedure_action }}</td><td>{{ row.expected_result }}</td><td>{{ row.acceptance_criteria }}</td><td>{{ row.required_evidence_type }}</td><td>{{ row.product_test_procedure_status }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
         </table>
     </div>
 </section>
@@ -360,8 +360,8 @@
     <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     <div class="tester_table_wrap">
         <table class="basic_table">
-            <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_REPORT_ID</th><th>PRODUCT_TEST_RELEASE_ID</th><th>PRODUCT_TEST_REPORT_TYPE</th><th>PRODUCT_TEST_REPORT_STATUS</th><th>PRODUCT_TEST_REPORT_TITLE</th></tr></thead>
-            <tbody>{% for row in report_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_report_id }}</td><td>{{ row.product_test_release_id }}</td><td>{{ row.product_test_report_type }}</td><td><span class="status_badge status-{{ row.product_test_report_status|lower }}">{{ row.product_test_report_status }}</span></td><td>{{ row.product_test_report_title }}</td></tr>{% endfor %}</tbody>
+            <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_REPORT_ID</th><th>PRODUCT_TEST_RELEASE_ID</th><th>PRODUCT_TEST_REPORT_TYPE</th><th>PRODUCT_TEST_REPORT_STATUS</th><th>PRODUCT_TEST_REPORT_TITLE</th><th>REMARK</th></tr></thead>
+            <tbody>{% for row in report_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_report_id }}</td><td>{{ row.product_test_release_id }}</td><td>{{ row.product_test_report_type }}</td><td><span class="status_badge status-{{ row.product_test_report_status|lower }}">{{ row.product_test_report_status }}</span></td><td>{{ row.product_test_report_title }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
         </table>
     </div>
 </section>
@@ -629,6 +629,42 @@
             window.openMessageModal(message);
         }
     };
+    const e2eTestButton = document.getElementById("qc_mode_e2e_test_button");
+    if (e2eTestButton) {
+        e2eTestButton.addEventListener("click", async () => {
+            if (e2eTestButton.disabled) {
+                return;
+            }
+            e2eTestButton.disabled = true;
+            try {
+                const response = await fetch("/admin/qc/e2e-fill", {
+                    method: "POST",
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest",
+                        "Accept": "application/json",
+                    },
+                });
+                const data = await response.json().catch(() => ({}));
+                showNotice({
+                    message: (data && data.message) || "E2E Test 요청 처리 실패",
+                    level: response.ok && data.ok ? "success" : "error",
+                    mode: "non_modal",
+                    title: "",
+                });
+            } catch (_error) {
+                showNotice({
+                    message: "E2E Test 요청 중 네트워크 오류가 발생했습니다.",
+                    level: "error",
+                    mode: "non_modal",
+                    title: "",
+                });
+            } finally {
+                window.setTimeout(() => {
+                    e2eTestButton.disabled = false;
+                }, 1200);
+            }
+        });
+    }
     const getIdValidationMessage = (fieldName) => {
         return serverIdGuides[fieldName] || `${fieldName} 형식이 맞지 않습니다. 수정하세요.`;
     };
@@ -659,25 +695,25 @@
             return `<tr>${checkbox}<td>${escapeHtml(row.product_test_release_id)}</td><td>${escapeHtml(row.upstream_release_id)}</td><td>${escapeHtml(row.upstream_release_system)}</td><td>${escapeHtml(row.release_stage)}</td><td>${escapeHtml(row.release_sequence)}</td><td>${toStatusBadgeHtml(row.product_test_release_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
         }
         if (action.endsWith("/product-test-target-definitions/create")) {
-            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_target_definition_id)}</td><td>${escapeHtml(row.product_code)}</td><td>${escapeHtml(row.manufacturer)}</td><td>${escapeHtml(row.model_name)}</td><td>${escapeHtml(row.product_test_target_definition_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
+            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_target_definition_id)}</td><td>${escapeHtml(row.product_code)}</td><td>${escapeHtml(row.manufacturer)}</td><td>${escapeHtml(row.model_name)}</td><td>${escapeHtml(row.hardware_revision)}</td><td>${escapeHtml(row.default_software_version)}</td><td>${escapeHtml(row.default_firmware_version)}</td><td>${escapeHtml(row.product_test_target_definition_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
         }
         if (action.endsWith("/product-test-targets/create")) {
-            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_target_id)}</td><td>${escapeHtml(row.product_test_target_definition_id)}</td><td>${escapeHtml(row.serial_number)}</td><td>${escapeHtml(row.software_version)}</td><td>${escapeHtml(row.firmware_version)}</td><td>${escapeHtml(row.product_test_target_status)}</td></tr>`;
+            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_target_id)}</td><td>${escapeHtml(row.product_test_target_definition_id)}</td><td>${escapeHtml(row.serial_number)}</td><td>${escapeHtml(row.software_version)}</td><td>${escapeHtml(row.firmware_version)}</td><td>${escapeHtml(row.manufacture_lot)}</td><td>${escapeHtml(row.product_test_target_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
         }
         if (action.endsWith("/product-test-environment-definitions/create")) {
-            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_environment_definition_id)}</td><td>${escapeHtml(row.product_test_environment_definition_name)}</td><td>${escapeHtml(row.test_city)}</td><td>${escapeHtml(row.test_company)}</td><td>${escapeHtml(row.test_room)}</td><td>${escapeHtml(row.product_test_environment_definition_status)}</td></tr>`;
+            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_environment_definition_id)}</td><td>${escapeHtml(row.product_test_environment_definition_name)}</td><td>${escapeHtml(row.test_country)}</td><td>${escapeHtml(row.test_city)}</td><td>${escapeHtml(row.test_company)}</td><td>${escapeHtml(row.test_room)}</td><td>${escapeHtml(row.network_type)}</td><td>${escapeHtml(row.test_computer_name)}</td><td>${escapeHtml(row.operating_system_version)}</td><td>${escapeHtml(row.test_tool_name)}</td><td>${escapeHtml(row.test_tool_version)}</td><td>${escapeHtml(row.power_voltage)}</td><td>${escapeHtml(row.power_frequency)}</td><td>${escapeHtml(row.power_connector_type)}</td><td>${escapeHtml(row.power_condition)}</td><td>${escapeHtml(row.product_test_environment_definition_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
         }
         if (action.endsWith("/product-test-environments/create")) {
-            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_environment_id)}</td><td>${escapeHtml(row.product_test_environment_definition_id)}</td><td>${escapeHtml(row.product_test_environment_name)}</td><td>${escapeHtml(row.test_computer_name)}</td><td>${escapeHtml(row.operating_system_version)}</td><td>${escapeHtml(row.product_test_environment_status)}</td></tr>`;
+            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_environment_id)}</td><td>${escapeHtml(row.product_test_environment_definition_id)}</td><td>${escapeHtml(row.product_test_environment_name)}</td><td>${escapeHtml(row.test_computer_name)}</td><td>${escapeHtml(row.operating_system_version)}</td><td>${escapeHtml(row.test_tool_version)}</td><td>${escapeHtml(row.network_type)}</td><td>${escapeHtml(row.power_voltage)}</td><td>${escapeHtml(row.power_frequency)}</td><td>${escapeHtml(row.power_connector_type)}</td><td>${escapeHtml(row.captured_at)}</td><td>${escapeHtml(row.product_test_environment_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
         }
         if (action.endsWith("/product-test-cases/create")) {
-            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_case_id)}</td><td>${escapeHtml(row.product_test_case_title)}</td><td>${escapeHtml(row.test_category)}</td><td>${escapeHtml(row.product_test_case_status)}</td></tr>`;
+            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_case_id)}</td><td>${escapeHtml(row.product_test_case_title)}</td><td>${escapeHtml(row.test_category)}</td><td>${escapeHtml(row.test_objective)}</td><td>${escapeHtml(row.precondition)}</td><td>${escapeHtml(row.expected_result)}</td><td>${escapeHtml(row.product_test_case_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
         }
         if (action.endsWith("/product-test-procedures/create")) {
-            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_procedure_id)}</td><td>${escapeHtml(row.product_test_case_id)}</td><td>${escapeHtml(row.procedure_sequence)}</td><td>${escapeHtml(row.procedure_action)}</td><td>${escapeHtml(row.required_evidence_type)}</td><td>${escapeHtml(row.product_test_procedure_status)}</td></tr>`;
+            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_procedure_id)}</td><td>${escapeHtml(row.product_test_case_id)}</td><td>${escapeHtml(row.procedure_sequence)}</td><td>${escapeHtml(row.procedure_action)}</td><td>${escapeHtml(row.expected_result)}</td><td>${escapeHtml(row.acceptance_criteria)}</td><td>${escapeHtml(row.required_evidence_type)}</td><td>${escapeHtml(row.product_test_procedure_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
         }
         if (action.endsWith("/product-test-reports/create")) {
-            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_report_id)}</td><td>${escapeHtml(row.product_test_release_id)}</td><td>${escapeHtml(row.product_test_report_type)}</td><td>${toStatusBadgeHtml(row.product_test_report_status)}</td><td>${escapeHtml(row.product_test_report_title)}</td></tr>`;
+            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_report_id)}</td><td>${escapeHtml(row.product_test_release_id)}</td><td>${escapeHtml(row.product_test_report_type)}</td><td>${toStatusBadgeHtml(row.product_test_report_status)}</td><td>${escapeHtml(row.product_test_report_title)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
         }
         return "";
     };
@@ -782,6 +818,9 @@
                 fieldCell("product_code"),
                 fieldCell("manufacturer"),
                 fieldCell("model_name"),
+                fieldCell("hardware_revision"),
+                fieldCell("default_software_version"),
+                fieldCell("default_firmware_version"),
                 fieldCell("product_test_target_definition_status"),
                 fieldCell("remark"),
             ];
@@ -793,17 +832,30 @@
                 fieldCell("serial_number"),
                 fieldCell("software_version"),
                 fieldCell("firmware_version"),
+                fieldCell("manufacture_lot"),
                 fieldCell("product_test_target_status"),
+                fieldCell("remark"),
             ];
         } else if (action.endsWith("/product-test-environment-definitions/create")) {
             cells = [
                 checkboxCell,
                 fieldCell("product_test_environment_definition_id"),
                 fieldCell("product_test_environment_definition_name"),
+                fieldCell("test_country"),
                 fieldCell("test_city"),
                 fieldCell("test_company"),
                 fieldCell("test_room"),
+                fieldCell("network_type"),
+                fieldCell("test_computer_name"),
+                fieldCell("operating_system_version"),
+                fieldCell("test_tool_name"),
+                fieldCell("test_tool_version"),
+                fieldCell("power_voltage"),
+                fieldCell("power_frequency"),
+                fieldCell("power_connector_type"),
+                fieldCell("power_condition"),
                 fieldCell("product_test_environment_definition_status"),
+                fieldCell("remark"),
             ];
         } else if (action.endsWith("/product-test-environments/create")) {
             cells = [
@@ -813,7 +865,14 @@
                 fieldCell("product_test_environment_name"),
                 fieldCell("test_computer_name"),
                 fieldCell("operating_system_version"),
+                fieldCell("test_tool_version"),
+                fieldCell("network_type"),
+                fieldCell("power_voltage"),
+                fieldCell("power_frequency"),
+                fieldCell("power_connector_type"),
+                fieldCell("captured_at"),
                 fieldCell("product_test_environment_status"),
+                fieldCell("remark"),
             ];
         } else if (action.endsWith("/product-test-cases/create")) {
             cells = [
@@ -821,7 +880,11 @@
                 fieldCell("product_test_case_id"),
                 fieldCell("product_test_case_title"),
                 fieldCell("test_category"),
+                fieldCell("test_objective"),
+                fieldCell("precondition"),
+                fieldCell("expected_result"),
                 fieldCell("product_test_case_status"),
+                fieldCell("remark"),
             ];
         } else if (action.endsWith("/product-test-procedures/create")) {
             cells = [
@@ -830,8 +893,11 @@
                 fieldCell("product_test_case_id"),
                 fieldCell("procedure_sequence"),
                 fieldCell("procedure_action"),
+                fieldCell("expected_result"),
+                fieldCell("acceptance_criteria"),
                 fieldCell("required_evidence_type"),
                 fieldCell("product_test_procedure_status"),
+                fieldCell("remark"),
             ];
         } else if (action.endsWith("/product-test-reports/create")) {
             cells = [
@@ -841,6 +907,7 @@
                 fieldCell("product_test_report_type"),
                 buildAutoPlaceholderCell("DRAFT"),
                 fieldCell("product_test_report_title"),
+                fieldCell("remark"),
             ];
         }
         cells.filter(Boolean).forEach((cell) => row.appendChild(cell));
@@ -850,9 +917,6 @@
         const card = form.closest(".card");
         const action = String(form.getAttribute("action") || "");
         if (!card || form.dataset.mergeReady === "true") {
-            return;
-        }
-        if (!action.endsWith("/product-test-releases/create")) {
             return;
         }
         const wraps = Array.from(card.querySelectorAll(".tester_table_wrap"));

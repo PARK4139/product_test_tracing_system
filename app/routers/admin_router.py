@@ -29,6 +29,7 @@ from app.services.dropdown_option_service import (
     delete_dropdown_option_if_exists,
     list_dropdown_options_for_field,
 )
+from app.services.admin_qc_e2e_service import start_admin_qc_e2e_fill
 from app.services.product_test_run_service import (
     MASTER_ACTIVE_STATUS_VALUES,
     REPORT_STATUS_VALUES,
@@ -2078,6 +2079,23 @@ def get_input_activity_status(
         "active_user_labels": normalized_user_labels,
         "tracked_row_count": tracked_row_count,
     }
+
+
+@admin_router.post("/qc/e2e-fill")
+def start_admin_qc_e2e_fill_route(
+    request: Request,
+    current_role_name: current_role_name_dependency,
+):
+    _ensure_admin_role(current_role_name)
+    if not is_qc_mode_enabled():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="QC mode required.",
+        )
+    admin_url = f"{request.url.scheme}://{request.url.netloc}/admin"
+    ok, message = start_admin_qc_e2e_fill(admin_url=admin_url)
+    status_code = 200 if ok else 409
+    return JSONResponse({"ok": ok, "message": message}, status_code=status_code)
 
 
 @admin_router.get("/rows/by_ids")
