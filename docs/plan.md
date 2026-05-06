@@ -1,3 +1,109 @@
+_________________________________________________ Plan : May  
+# 화수목 야근상신
+ 
+
+# 물품 신청
+☑️지퍼팩 30 🔳 25cm : 20매 Connectivity AP 부속자재 및 정리보관용
+🔳 3M VHB? TAPE : Connectivity AP 전선정리용
+🔳 소독용 에탄올 : Connectivity AP 자재청소용
+
+
+# 자재이동 2층 to 6층 Connectivity Room
+🔳 Cable Tie 소 : 
+
+
+
+# 라벨프린팅 예정 목록
+🔳 Connectivity 
+🔳 Router Power Adapter별로 Serial Number
+🔳 Router MODEL NAME, PASSWORD
+
+
+
+# Connectivity Room 네트워크 작업 보고서 작성 및 공유
+받는이 : 조영수, 김용순
+참조 : 김선웅
+# Connectivity Room 환경 네트워크 증설작업 진행현황
+☑️ Connectivity Room 임시 배치(Rack, Router, Router Power Adapter, 4단 Black Rack). 2026-05-06
+🔳 현지 네트워크 환경 모의를 위한 미국발 AP 추가입고 및 배치
+    🔳 Router 110V TRANS 설치.
+    🔳 Rack 멀티탭 단의 천장에 부착.
+    🔳 Router Power Adapter별로 Serial Number 주기(라벨프린팅).
+    🔳 MODEL NAME, PASSWORD 라벨프린팅 및 부착.
+    🔳 부속자재 및 정리보관용 분류 및 저장.
+    🔳 Router 배선정리(Cable Tie, Cutting Plier).
+    🔳 산출물 : "6th Connectivity Room Network Test Infra.xlsx"
+🔳 현지 네트워크 환경 모의를 위한 유럽발(독일|) AP 추가입고 및 배치
+
+# Connectivity Room 네트워크 시험 Test Case 작성 
+☑️ Connectivity Room 네트워크 시험 Test Case 초안작성 - 2026-04-30
+    Operating 중심(:server=1:1).
+    5GHz 제외
+    Static 제외
+    HISS 제외
+    MATE 제외
+    AP 컷오프 일부미포함 
+    산출물 : "WIFI Connectivity 테스트 시나리오.xlsx - Google Sheets" 
+🔳 Connectivity Room 네트워크 시험 Test Case v1 작성
+    🔳 AP 컷오프 추가
+    🔳 5GHz Case Config 추가작성
+    🔳 Static Case Config 추가작성
+    🔳 Test Report 실작성 및 산출
+    🔳 Static/DHCP 별 TC 추가 필요
+    🔳 5GHz TC 추가 필요 
+    🔳 절전모드 복구 TC 추가 : 절전모드 > 하루대기
+    🔳 Defect 및 특이사항은 Chest Cam활용 촬영
+
+
+🔳 Test Data Tracing system 설계(Test Senario, Test Data Full Life Cycle 관리)  
+🔳 Test Data Tracing system Export 기능활용 엑셀화 하여 공유
+
+
+
+# 용어 범례
+*TBD : To Be Determind 추후결정사항
+
+
+
+# Meeting TBD
+# Connectivity Room 네트워크 시험 환경 정의
+🔳 Etherent Cable(LAN CABLE) CATEGORY 규격 정의
+🔳 물리적 거리 정의(AP와 장비 간)
+    🔳 Connectivity Network 환경 컨셉 아트(AI 이미지 생성 및 첨부)
+    🔳 현재 1M 내외 수준 실배치
+🔳 안테나 방향 정의
+🔳 산출물 작업방식 제안(기존:google docs > 제안:엑셀파일) 
+
+
+
+
+# pk TBD
+🔳 Connectivity Room 네트워크 시험 환경 품평(랙 및 실제테스트 사진)
+
+
+
+# LM-100 누수시험 보고
+받는이 : 차석길
+# T3 Hall Sensor Abnormal 시현 - 2026-05-06
+_________________________________________________ TODO: e2e flow 정합성 검토 
+# 문의 to 제품 시나리오 작성 담당자별 
+🔳 장비별 Serial Number/Software version, Firmware version 취득방법
+🔳 여러대 연결 시나리오 조금 더 구체적인 샘플
+🔳 특이사항 확인
+🔳 TBD 확인.
+🔳 User(검안사|안경사)별 e2e Flow 확인
+🔳 내가 작성한 TC가 담당자 검증 의도에 맞는지 정합성 검토.
+pk 임의 우선 작성한 뒤 > flow 정합성 검토
+_________________________________________________ TODO: 문의 to 현철 프로님께
+🔳 내가 작성한 TC 작성 구조 검토
+
+
+STR(Step to Reproducing)
+
+
+
+
+
 ________________________________________________________ working
 실확인결과(Actual Result), PASSED 판단 근거
 STR Completion Criteria (TC PASSED 판단 근거)
