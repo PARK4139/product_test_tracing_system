@@ -26,21 +26,21 @@ from app.services.product_test_run_service import (
 
 
 SEEDED_TARGET_DEFINITION_IDS = [
-    "PTTGTDEF-HUVITZ_HRK_9000A",
-    "PTTGTDEF-HUVITZ_HLM_9000",
-    "PTTGTDEF-HUVITZ_HTR_TBD",
-    "PTTGTDEF-HUVITZ_HDR_9000_OP",
-    "PTTGTDEF-HUVITZ_HDR_9000_JUNCTION_BOX",
-    "PTTGTDEF-HUVITZ_HDR_9000_UNKNOWN",
-    "PTTGTDEF-HUVITZ_HDC_9100",
-    "PTTGTDEF-MERCUSYS_MR30G",
-    "PTTGTDEF-TBD_LENS",
-    "PTTGTDEF-TBD_MODELAI",
-    "PTTGTDEF-TBD_JUNCTION_BOX_POWER_CABLE",
-    "PTTGTDEF-TBD_HDC_POWER_CABLE",
-    "PTTGTDEF-TBD_HLM_POWER_CABLE_L_FORM_POWER_CABLE",
-    "PTTGTDEF-TBD_OP_SIGNAL_AND_POWER_CABLE",
-    "PTTGTDEF-TBD_HDR_SIGNAL_AND_POWER_CABLE",
+    "QA_PTTGTDEF-HRK_9000A",
+    "QA_PTTGTDEF-HUVITZ_HLM_9000",
+    "QA_PTTGTDEF-HUVITZ_HTR_TBD",
+    "QA_PTTGTDEF-HUVITZ_HDR_9000_OP",
+    "QA_PTTGTDEF-HUVITZ_HDR_9000_JUNCTION_BOX",
+    "QA_PTTGTDEF-HUVITZ_HDR_9000_UNKNOWN",
+    "QA_PTTGTDEF-HUVITZ_HDC_9100",
+    "QA_PTTGTDEF-MERCUSYS_MR30G",
+    "QA_PTTGTDEF-TBD_LENS",
+    "QA_PTTGTDEF-TBD_MODELAI",
+    "QA_PTTGTDEF-TBD_JUNCTION_BOX_POWER_CABLE",
+    "QA_PTTGTDEF-TBD_HDC_POWER_CABLE",
+    "QA_PTTGTDEF-TBD_HLM_POWER_CABLE_L_FORM_POWER_CABLE",
+    "QA_PTTGTDEF-TBD_OP_SIGNAL_AND_POWER_CABLE",
+    "QA_PTTGTDEF-TBD_HDR_SIGNAL_AND_POWER_CABLE",
 ]
 
 
@@ -57,33 +57,33 @@ def _assert_seed_is_idempotent() -> None:
             ),
             "run_count": database_session.scalar(
                 select(func.count()).select_from(ProductTestRun).where(
-                    ProductTestRun.product_test_run_id == "PTRUN-20260504-0001"
+                    ProductTestRun.product_test_run_id == "QA_PTRUN-20260504-0001"
                 )
             ),
             "result_count": database_session.scalar(
                 select(func.count()).select_from(ProductTestResult).where(
-                    ProductTestResult.product_test_result_id == "PTRES-20260504-0001"
+                    ProductTestResult.product_test_result_id == "QA_PTRES-20260504-0001"
                 )
             ),
             "procedure_result_count": database_session.scalar(
                 select(func.count()).select_from(ProductTestProcedureResult).where(
-                    ProductTestProcedureResult.product_test_result_id == "PTRES-20260504-0001"
+                    ProductTestProcedureResult.product_test_result_id == "QA_PTRES-20260504-0001"
                 )
             ),
             "evidence_count": database_session.scalar(
                 select(func.count()).select_from(ProductTestEvidence).where(
-                    ProductTestEvidence.product_test_result_id == "PTRES-20260504-0001"
+                    ProductTestEvidence.product_test_result_id == "QA_PTRES-20260504-0001"
                 )
             ),
             "defect_count": database_session.scalar(
                 select(func.count()).select_from(ProductTestDefect).where(
-                    ProductTestDefect.product_test_result_id == "PTRES-20260504-0001"
+                    ProductTestDefect.product_test_result_id == "QA_PTRES-20260504-0001"
                 )
             ),
             "report_count": database_session.scalar(
                 select(func.count()).select_from(ProductTestReport).where(
                     ProductTestReport.product_test_report_id
-                    == "PTRPT-PTREL-MERCUSYS_MR30G-1.0.0-RC1-FULL-001"
+                    == "QA_PTRPT-QA_PTREL-MERCUSYS_MR30G-1.0.0-RC1-FULL-001"
                 )
             ),
         }
@@ -98,33 +98,33 @@ def _assert_seed_is_idempotent() -> None:
             ),
             "run_count": database_session.scalar(
                 select(func.count()).select_from(ProductTestRun).where(
-                    ProductTestRun.product_test_run_id == "PTRUN-20260504-0001"
+                    ProductTestRun.product_test_run_id == "QA_PTRUN-20260504-0001"
                 )
             ),
             "result_count": database_session.scalar(
                 select(func.count()).select_from(ProductTestResult).where(
-                    ProductTestResult.product_test_result_id == "PTRES-20260504-0001"
+                    ProductTestResult.product_test_result_id == "QA_PTRES-20260504-0001"
                 )
             ),
             "procedure_result_count": database_session.scalar(
                 select(func.count()).select_from(ProductTestProcedureResult).where(
-                    ProductTestProcedureResult.product_test_result_id == "PTRES-20260504-0001"
+                    ProductTestProcedureResult.product_test_result_id == "QA_PTRES-20260504-0001"
                 )
             ),
             "evidence_count": database_session.scalar(
                 select(func.count()).select_from(ProductTestEvidence).where(
-                    ProductTestEvidence.product_test_result_id == "PTRES-20260504-0001"
+                    ProductTestEvidence.product_test_result_id == "QA_PTRES-20260504-0001"
                 )
             ),
             "defect_count": database_session.scalar(
                 select(func.count()).select_from(ProductTestDefect).where(
-                    ProductTestDefect.product_test_result_id == "PTRES-20260504-0001"
+                    ProductTestDefect.product_test_result_id == "QA_PTRES-20260504-0001"
                 )
             ),
             "report_count": database_session.scalar(
                 select(func.count()).select_from(ProductTestReport).where(
                     ProductTestReport.product_test_report_id
-                    == "PTRPT-PTREL-MERCUSYS_MR30G-1.0.0-RC1-FULL-001"
+                    == "QA_PTRPT-QA_PTREL-MERCUSYS_MR30G-1.0.0-RC1-FULL-001"
                 )
             ),
         }
@@ -135,7 +135,7 @@ def _assert_report_detail_and_approval_guard() -> dict[str, object]:
     with session_local() as database_session:
         detail = get_product_test_report_detail(
             database_session,
-            "PTRPT-PTREL-MERCUSYS_MR30G-1.0.0-RC1-FULL-001",
+            "QA_PTRPT-QA_PTREL-MERCUSYS_MR30G-1.0.0-RC1-FULL-001",
         )
         assert detail is not None
         summary = detail["result_summary"]
@@ -150,7 +150,7 @@ def _assert_report_detail_and_approval_guard() -> dict[str, object]:
         try:
             approve_product_test_report(
                 database_session,
-                product_test_report_id="PTRPT-PTREL-MERCUSYS_MR30G-1.0.0-RC1-FULL-001",
+                product_test_report_id="QA_PTRPT-QA_PTREL-MERCUSYS_MR30G-1.0.0-RC1-FULL-001",
                 approved_by="SQA_MASTER",
             )
         except ValueError as exc:
@@ -167,7 +167,7 @@ def _assert_snapshot_flow() -> dict[str, object]:
     with session_local() as database_session:
         manual_snapshot = create_product_test_report_snapshot(
             database_session,
-            product_test_report_id="PTRPT-PTREL-MERCUSYS_MR30G-1.0.0-RC1-FULL-001",
+            product_test_report_id="QA_PTRPT-QA_PTREL-MERCUSYS_MR30G-1.0.0-RC1-FULL-001",
             snapshot_type="manual",
             created_by="SQA_MASTER",
             remark="smoke manual snapshot",
@@ -186,27 +186,27 @@ def _assert_snapshot_flow() -> dict[str, object]:
 
         transition_product_test_defect_to_rejected(
             database_session,
-            product_test_defect_id="PTDEF-20260504-0001",
+            product_test_defect_id="QA_PTDEF-20260504-0001",
             rejection_reason="smoke reject",
             transition_reason="smoke reject for approval snapshot",
             transitioned_by="SQA_MASTER",
         )
         transition_product_test_defect_to_rejected(
             database_session,
-            product_test_defect_id="PTDEF-20260504-0002",
+            product_test_defect_id="QA_PTDEF-20260504-0002",
             rejection_reason="smoke reject",
             transition_reason="smoke reject for approval snapshot",
             transitioned_by="SQA_MASTER",
         )
         approve_product_test_report(
             database_session,
-            product_test_report_id="PTRPT-PTREL-MERCUSYS_MR30G-1.0.0-RC1-FULL-001",
+            product_test_report_id="QA_PTRPT-QA_PTREL-MERCUSYS_MR30G-1.0.0-RC1-FULL-001",
             approved_by="SQA_MASTER",
         )
         approval_snapshot_row = database_session.scalar(
             select(ProductTestReportSnapshot)
             .where(
-                ProductTestReportSnapshot.product_test_report_id == "PTRPT-PTREL-MERCUSYS_MR30G-1.0.0-RC1-FULL-001",
+                ProductTestReportSnapshot.product_test_report_id == "QA_PTRPT-QA_PTREL-MERCUSYS_MR30G-1.0.0-RC1-FULL-001",
                 ProductTestReportSnapshot.snapshot_type == "approval",
             )
             .order_by(ProductTestReportSnapshot.created_at.desc())

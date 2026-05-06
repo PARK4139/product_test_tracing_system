@@ -1,11 +1,11 @@
 from io import BytesIO
-import os
 from datetime import datetime
 
 from fastapi import APIRouter, Form, HTTPException, status
 from fastapi.responses import StreamingResponse
 
 from app.auth import ROLE_ADMIN, ROLE_MASTER_ADMIN, ensure_role_allowed
+from app.config import is_qc_mode_enabled
 from app.deps import current_role_name_dependency, database_session_dependency
 from app.services.excel_export_service import (
     append_test_results_to_existing_workbook,
@@ -21,7 +21,7 @@ def export_test_results_as_excel(
     database_session: database_session_dependency,
     current_role_name: current_role_name_dependency,
 ):
-    qc_mode_enabled = os.getenv("QC_MODE", "True").strip().lower() in {"1", "true", "yes", "on"}
+    qc_mode_enabled = is_qc_mode_enabled()
     if not qc_mode_enabled:
         ensure_role_allowed(current_role_name, {ROLE_ADMIN, ROLE_MASTER_ADMIN})
     workbook = build_test_result_workbook(database_session=database_session)
@@ -43,7 +43,7 @@ def append_to_existing_excel_sheet(
     excel_file_path: str = Form(""),
     sheet_name: str = Form(""),
 ):
-    qc_mode_enabled = os.getenv("QC_MODE", "True").strip().lower() in {"1", "true", "yes", "on"}
+    qc_mode_enabled = is_qc_mode_enabled()
     if not qc_mode_enabled:
         ensure_role_allowed(current_role_name, {ROLE_ADMIN, ROLE_MASTER_ADMIN})
     try:

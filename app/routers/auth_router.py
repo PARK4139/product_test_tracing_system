@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Form, HTTPException, Request, status
 from fastapi.responses import RedirectResponse
 from sqlalchemy import select
-import os
 
 from app.auth import ROLE_ADMIN, ROLE_MASTER_ADMIN, ROLE_TESTER, ensure_active_user_limit
+from app.config import is_qc_mode_enabled
 from app.deps import database_session_dependency
 from app.models import UserAccount
 from app.services.dropdown_option_service import list_dropdown_options_for_field
@@ -11,11 +11,6 @@ from app.services.ui_sample_profile_service import list_ui_sample_profiles_map
 
 
 auth_router = APIRouter(tags=["auth"])
-
-
-def _is_qc_mode_enabled() -> bool:
-    return os.getenv("QC_MODE", "True").strip().lower() in {"1", "true", "yes", "on"}
-
 
 def _build_qc_mode_admin_redirect_response() -> RedirectResponse:
     response = RedirectResponse(url="/admin", status_code=303)
@@ -26,7 +21,7 @@ def _build_qc_mode_admin_redirect_response() -> RedirectResponse:
 
 @auth_router.get("/")
 def redirect_root_to_login():
-    if _is_qc_mode_enabled():
+    if is_qc_mode_enabled():
         return _build_qc_mode_admin_redirect_response()
     return RedirectResponse(url="/login", status_code=303)
 
@@ -36,7 +31,7 @@ def render_login_page(
     request: Request,
     database_session: database_session_dependency,
 ):
-    if _is_qc_mode_enabled():
+    if is_qc_mode_enabled():
         return _build_qc_mode_admin_redirect_response()
     templates = request.app.state.templates
     return templates.TemplateResponse(
@@ -204,7 +199,7 @@ def handle_join_submission(
 
 @auth_router.post("/logout")
 def handle_logout_submission():
-    if _is_qc_mode_enabled():
+    if is_qc_mode_enabled():
         return _build_qc_mode_admin_redirect_response()
     response = RedirectResponse(url="/login", status_code=303)
     response.delete_cookie("role_name")

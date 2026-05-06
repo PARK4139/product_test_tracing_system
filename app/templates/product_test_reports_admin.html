@@ -88,7 +88,7 @@
                     <td>{{ row.product_test_report_id }}</td>
                     <td><a href="/admin/product-test-releases/{{ row.product_test_release_id }}/trace">{{ row.product_test_release_id }}</a></td>
                     <td><span class="status_badge">{{ row.product_test_report_type }}</span></td>
-                    <td><span class="status_badge status-{{ row.product_test_report_status }}">{{ row.product_test_report_status }}</span></td>
+                    <td><span class="status_badge status-{{ row.product_test_report_status|lower }}">{{ row.product_test_report_status }}</span></td>
                     <td>{{ row.product_test_report_title }}</td>
                     <td>{{ row.created_at }}</td>
                     <td>{{ row.created_by }}</td>

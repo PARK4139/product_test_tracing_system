@@ -591,6 +591,12 @@ button:disabled {
     flex-wrap: wrap;
 }
 
+.admin_table_action_bar_top {
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
 .basic_table td .table_action_bar {
     justify-content: center;
     align-items: center;
@@ -740,6 +746,54 @@ button:disabled {
     color: #7A1E1E;
 }
 
+.autocomplete-shell {
+    position: relative;
+}
+
+.fzf-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    z-index: 2600;
+    min-width: 240px;
+    max-width: min(560px, 92vw);
+    max-height: 280px;
+    overflow: auto;
+    border: 1px solid #D6E2E8;
+    border-radius: 8px;
+    background: #FFFFFF;
+    box-shadow: 0 8px 24px rgba(12, 58, 70, 0.18);
+    padding: 4px 0;
+}
+
+.fzf-item {
+    padding: 8px 12px;
+    border-bottom: 1px solid #EEF2F5;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 13px;
+}
+
+.fzf-item:last-child {
+    border-bottom: none;
+}
+
+.fzf-item.is-active,
+.fzf-item:hover {
+    background: #EEF5FF;
+    color: #244D75;
+}
+
+.fzf-hit {
+    background: #FFF0C7;
+    color: #7E5711;
+    border-radius: 4px;
+    padding: 0 1px;
+}
+
 .tester_table_wrap {
     width: 100%;
     max-width: 100%;
@@ -787,6 +841,21 @@ button:disabled {
     color: #205D35;
 }
 
+#app_message_modal_body {
+    white-space: pre-line;
+    line-height: 1.6;
+}
+
+.message_modal_error .guide_modal_card {
+    border-color: #D0A3A3;
+    background: #FAEAEA;
+}
+
+.message_modal_error #app_message_modal_title,
+.message_modal_error #app_message_modal_body {
+    color: #7A1E1E;
+}
+
 .green_non_modal_v2 {
     position: fixed;
     left: 50%;
@@ -803,6 +872,8 @@ button:disabled {
     color: #205D35;
     text-align: center;
     font-weight: 700;
+    white-space: pre-line;
+    line-height: 1.6;
     box-shadow: 0 8px 24px rgba(12, 58, 70, 0.18);
 }
 
@@ -826,6 +897,8 @@ button:disabled {
     color: #0C3A46;
     text-align: center;
     font-weight: 700;
+    white-space: pre-line;
+    line-height: 1.6;
     box-shadow: 0 8px 24px rgba(12, 58, 70, 0.18);
 }
 

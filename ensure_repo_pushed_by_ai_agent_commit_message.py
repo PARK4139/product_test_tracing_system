@@ -59,11 +59,6 @@ def find_existing_command(candidates: list[str]) -> str | None:
     return None
 
 
-def ask_yes_no(prompt: str) -> bool:
-    answer = input(f"{prompt} [y/N]: ").strip().lower()
-    return answer in {"y", "yes"}
-
-
 def print_section(title: str) -> None:
     line = "=" * 70
     print()
@@ -277,10 +272,8 @@ def main() -> int:
     )
 
     print(commit_message)
-
-    if not ask_yes_no(prompt="Proceed with git commit and git push?"):
-        print("User cancelled commit/push.")
-        return 0
+    print_section(title="Auto proceed")
+    print("Commit message generated. Continue to git commit and git push.")
 
     with tempfile.NamedTemporaryFile(
         mode="w",

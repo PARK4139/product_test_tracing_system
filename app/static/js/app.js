@@ -1,4 +1,10 @@
 (() => {
+    const formatModalMessageText = (message) =>
+        String(message || "")
+            .replace(/\.\s+/g, ".\n")
+            .replace(/\n{3,}/g, "\n\n")
+            .trim();
+
     const openMessageModal = (message, options = {}) => {
         const overlay = document.getElementById("app_message_modal");
         const title = document.getElementById("app_message_modal_title");
@@ -16,13 +22,15 @@
         const on_close = typeof options.on_close === "function" ? options.on_close : null;
 
         title.textContent = title_text;
-        body.textContent = String(message || "");
+        body.textContent = formatModalMessageText(message);
         okButton.textContent = ok_text;
         closeButton.textContent = close_text;
 
-        overlay.classList.remove("message_modal_success");
+        overlay.classList.remove("message_modal_success", "message_modal_error");
         if (type_name === "success") {
             overlay.classList.add("message_modal_success");
+        } else if (type_name === "error") {
+            overlay.classList.add("message_modal_error");
         }
         overlay.style.display = "flex";
         overlay.classList.add("is_open");
@@ -81,7 +89,7 @@
             toast.className = "green_non_modal_v2";
             document.body.appendChild(toast);
         }
-        toast.textContent = String(message_text || "");
+        toast.textContent = formatModalMessageText(message_text);
         toast.classList.add("is_open");
         if (global_green_non_modal_timer) {
             clearTimeout(global_green_non_modal_timer);
@@ -103,7 +111,7 @@
         const normalized_type = String(type_name || "info").toLowerCase();
         toast.classList.remove("success", "error", "info");
         toast.classList.add(normalized_type);
-        toast.textContent = String(message_text || "");
+        toast.textContent = formatModalMessageText(message_text);
         toast.classList.add("is_open");
         if (center_non_modal_v2_timer) {
             clearTimeout(center_non_modal_v2_timer);

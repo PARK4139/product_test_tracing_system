@@ -1,0 +1,6 @@
+{
+  "host": "127.0.0.1",
+  "port": 8008,
+  "qc_mode": true,
+  "kiosk_mode": true
+}

@@ -7,6 +7,7 @@ import time
 from pathlib import Path
 from typing import Callable
 
+from app.config import get_server_host, get_server_port
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
@@ -18,10 +19,22 @@ def _log(message: str) -> None:
 def _fallback_focus_browser_window_by_title_segments() -> bool:
     if os.name != "nt":
         return False
-    title_segments = (
+    app_host = get_server_host()
+    app_port = str(get_server_port())
+    primary_page_titles = (
         "Product Test Data Tracing System",
-        "127.0.0.1:8000",
         "Product Test",
+    )
+    exact_window_titles = tuple(
+        dict.fromkeys(
+            f"{page_title}{chrome_suffix}"
+            for page_title in primary_page_titles
+            for chrome_suffix in (" - Chrome", " - Google Chrome")
+        )
+    )
+    secondary_title_segments = (
+        f"{app_host}:{app_port}",
+        "/admin",
         "Chrome",
     )
 
@@ -53,9 +66,11 @@ def _fallback_focus_browser_window_by_title_segments() -> bool:
         user32.AllowSetForegroundWindow.argtypes = [ctypes.wintypes.DWORD]
         user32.AllowSetForegroundWindow.restype = ctypes.c_bool
 
-        found_hwnd = ctypes.wintypes.HWND(0)
+        best_hwnd = ctypes.wintypes.HWND(0)
+        best_score = -1
 
         def _enum_windows_proc(hwnd, _l_param):
+            nonlocal best_score
             if not user32.IsWindowVisible(hwnd):
                 return True
             title_length = user32.GetWindowTextLengthW(hwnd)
@@ -63,20 +78,33 @@ def _fallback_focus_browser_window_by_title_segments() -> bool:
                 return True
             title_buffer = ctypes.create_unicode_buffer(title_length + 1)
             user32.GetWindowTextW(hwnd, title_buffer, title_length + 1)
-            title_text = title_buffer.value or ""
-            if any(title_segment in title_text for title_segment in title_segments):
-                found_hwnd.value = hwnd
-                return False
+            title_text = (title_buffer.value or "").strip()
+            if not title_text:
+                return True
+
+            title_score = -1
+            if title_text in exact_window_titles:
+                title_score = 400
+            elif any(title_text.endswith(suffix) and page_title in title_text for page_title in primary_page_titles for suffix in (" - Chrome", " - Google Chrome")):
+                title_score = 300
+            elif any(page_title in title_text for page_title in primary_page_titles) and "Chrome" in title_text:
+                title_score = 200
+            elif all(segment in title_text for segment in secondary_title_segments):
+                title_score = 100
+
+            if title_score > best_score:
+                best_score = title_score
+                best_hwnd.value = hwnd
             return True
 
         callback = enum_windows_proc_type(_enum_windows_proc)
         user32.EnumWindows(callback, 0)
-        if not found_hwnd.value:
+        if not best_hwnd.value:
             return False
         user32.AllowSetForegroundWindow(0xFFFFFFFF)  # ASFW_ANY
-        user32.ShowWindow(found_hwnd, 9)  # SW_RESTORE
-        user32.BringWindowToTop(found_hwnd)
-        user32.SetForegroundWindow(found_hwnd)
+        user32.ShowWindow(best_hwnd, 9)  # SW_RESTORE
+        user32.BringWindowToTop(best_hwnd)
+        user32.SetForegroundWindow(best_hwnd)
         return True
     except Exception:
         return False
@@ -123,10 +151,11 @@ def _fallback_send_ctrl_shift_r() -> bool:
 
 
 class RestartOnChangeHandler(FileSystemEventHandler):
-    def __init__(self, restart_callback: Callable[[Path], None]):
+    def __init__(self, restart_callback: Callable[[list[Path]], None]):
         self.restart_callback = restart_callback
         self._debounce_lock = threading.Lock()
         self._debounce_timer: threading.Timer | None = None
+        self._pending_changed_paths: list[Path] = []
         self._ignored_path_fragments = (
             "\\.git\\",
             "\\.venv\\",
@@ -161,14 +190,25 @@ class RestartOnChangeHandler(FileSystemEventHandler):
         _log(f"file change detected: {changed_path}")
 
         with self._debounce_lock:
+            self._pending_changed_paths.append(changed_path)
             if self._debounce_timer is not None:
                 self._debounce_timer.cancel()
             self._debounce_timer = threading.Timer(
                 0.35,
-                lambda changed_path=changed_path: self.restart_callback(changed_path),
+                self._flush_pending_changes,
             )
             self._debounce_timer.daemon = True
             self._debounce_timer.start()
+
+    def _flush_pending_changes(self) -> None:
+        with self._debounce_lock:
+            changed_paths = list(self._pending_changed_paths)
+            self._pending_changed_paths.clear()
+            self._debounce_timer = None
+        if not changed_paths:
+            return
+        deduplicated_paths = list(dict.fromkeys(changed_paths))
+        self.restart_callback(deduplicated_paths)
 
 
 def _trigger_browser_hot_reload_shortcut() -> None:
@@ -240,16 +280,22 @@ def run_smart_web_restarting_daemon(
     watched_paths = [project_root_path]
     web_process = spawn_web_process()
 
-    def restart_web_process(changed_path: Path) -> None:
+    def restart_web_process(changed_paths: list[Path]) -> None:
         nonlocal web_process
-        suffix = changed_path.suffix.lower()
-        if suffix in {".html", ".css", ".js"}:
-            _log(f"web resource changed ({changed_path.name}) -> browser hard reload")
+        if not changed_paths:
+            return
+        normalized_paths = list(dict.fromkeys(changed_paths))
+        changed_suffixes = {path.suffix.lower() for path in normalized_paths}
+        changed_names = ", ".join(path.name for path in normalized_paths[:5])
+        if len(normalized_paths) > 5:
+            changed_names = f"{changed_names}, ..."
+        if ".py" not in changed_suffixes and changed_suffixes.issubset({".html", ".css", ".js"}):
+            _log(f"web resources changed ({changed_names}) -> browser hard reload")
             time.sleep(0.1)
             _trigger_browser_hard_reload_shortcut()
             return
 
-        _log(f"python/runtime changed ({changed_path.name}) -> restarting uvicorn")
+        _log(f"python/runtime changed ({changed_names}) -> restarting uvicorn")
         if web_process.poll() is None:
             web_process.terminate()
             try:
@@ -258,7 +304,7 @@ def run_smart_web_restarting_daemon(
                 web_process.kill()
                 web_process.wait(timeout=5)
         web_process = spawn_web_process()
-        if suffix == ".py":
+        if ".py" in changed_suffixes:
             time.sleep(0.8)
             _trigger_browser_hot_reload_shortcut()
 

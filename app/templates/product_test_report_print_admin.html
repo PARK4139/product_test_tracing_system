@@ -13,7 +13,7 @@
             <tr><th>Report ID</th><td>{{ report.product_test_report_id }}</td></tr>
             <tr><th>Release ID</th><td>{{ report.product_test_release_id }}</td></tr>
             <tr><th>Type</th><td><span class="status_badge">{{ report.product_test_report_type }}</span></td></tr>
-            <tr><th>Status</th><td><span class="status_badge status-{{ report.product_test_report_status }}">{{ report.product_test_report_status }}</span></td></tr>
+            <tr><th>Status</th><td><span class="status_badge status-{{ report.product_test_report_status|lower }}">{{ report.product_test_report_status }}</span></td></tr>
             <tr><th>Title</th><td>{{ report.product_test_report_title }}</td></tr>
             <tr><th>Approved At</th><td>{{ report.approved_at }}</td></tr>
             <tr><th>Approved By</th><td>{{ report.approved_by }}</td></tr>
@@ -32,7 +32,7 @@
             <tr><th>System</th><td>{{ release_summary.upstream_release_system }}</td></tr>
             <tr><th>Stage</th><td>{{ release_summary.release_stage }}</td></tr>
             <tr><th>Sequence</th><td>{{ release_summary.release_sequence }}</td></tr>
-            <tr><th>Status</th><td><span class="status_badge status-{{ release_summary.product_test_release_status }}">{{ release_summary.product_test_release_status }}</span></td></tr>
+            <tr><th>Status</th><td><span class="status_badge status-{{ release_summary.product_test_release_status|lower }}">{{ release_summary.product_test_release_status }}</span></td></tr>
         </tbody>
     </table>
 </section>

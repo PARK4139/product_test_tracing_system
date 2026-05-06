@@ -1,11 +1,10 @@
 from pathlib import Path
-import os
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from app.config import app_settings
+from app.config import app_settings, is_qc_mode_enabled
 from app.db import initialize_database
 from app.routers.admin_router import admin_router
 from app.routers.auth_router import auth_router
@@ -23,9 +22,7 @@ def create_app() -> FastAPI:
 
     templates_directory_path = Path(__file__).resolve().parent / "templates"
     app.state.templates = Jinja2Templates(directory=str(templates_directory_path))
-    app.state.templates.env.globals["qc_mode_enabled"] = (
-        os.getenv("QC_MODE", "True").strip().lower() in {"1", "true", "yes", "on"}
-    )
+    app.state.templates.env.globals["qc_mode_enabled"] = is_qc_mode_enabled()
 
     static_directory_path = Path(__file__).resolve().parent / "static"
     app.mount("/static", StaticFiles(directory=str(static_directory_path)), name="static")

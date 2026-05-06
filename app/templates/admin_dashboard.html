@@ -8,12 +8,111 @@
 <section class="card"><div class="non_modal_notice {{ message_type }}"><div>{{ message }}</div></div></section>
 {% endif %}
 
+<datalist id="admin_release_upstream_release_id_options">
+    {% for row in release_rows %}{% if row.upstream_release_id %}<option value="{{ row.upstream_release_id }}"></option>{% endif %}{% endfor %}
+</datalist>
+<datalist id="admin_release_upstream_release_system_options">
+    {% for row in release_rows %}{% if row.upstream_release_system %}<option value="{{ row.upstream_release_system }}"></option>{% endif %}{% endfor %}
+</datalist>
+<datalist id="admin_target_definition_product_code_options">
+    {% for row in target_definition_rows %}{% if row.product_code %}<option value="{{ row.product_code }}"></option>{% endif %}{% endfor %}
+</datalist>
+<datalist id="admin_target_definition_manufacturer_options">
+    {% for row in target_definition_rows %}{% if row.manufacturer %}<option value="{{ row.manufacturer }}"></option>{% endif %}{% endfor %}
+</datalist>
+<datalist id="admin_target_definition_model_name_options">
+    {% for row in target_definition_rows %}{% if row.model_name %}<option value="{{ row.model_name }}"></option>{% endif %}{% endfor %}
+</datalist>
+<datalist id="admin_target_definition_hardware_revision_options">
+    {% for row in target_definition_rows %}{% if row.hardware_revision %}<option value="{{ row.hardware_revision }}"></option>{% endif %}{% endfor %}
+</datalist>
+<datalist id="admin_target_definition_default_software_version_options">
+    {% for row in target_definition_rows %}{% if row.default_software_version %}<option value="{{ row.default_software_version }}"></option>{% endif %}{% endfor %}
+</datalist>
+<datalist id="admin_target_definition_default_firmware_version_options">
+    {% for row in target_definition_rows %}{% if row.default_firmware_version %}<option value="{{ row.default_firmware_version }}"></option>{% endif %}{% endfor %}
+</datalist>
+<datalist id="admin_target_software_version_options">
+    {% for row in target_rows %}{% if row.software_version %}<option value="{{ row.software_version }}"></option>{% endif %}{% endfor %}
+    {% for row in target_definition_rows %}{% if row.default_software_version %}<option value="{{ row.default_software_version }}"></option>{% endif %}{% endfor %}
+</datalist>
+<datalist id="admin_target_firmware_version_options">
+    {% for row in target_rows %}{% if row.firmware_version %}<option value="{{ row.firmware_version }}"></option>{% endif %}{% endfor %}
+    {% for row in target_definition_rows %}{% if row.default_firmware_version %}<option value="{{ row.default_firmware_version }}"></option>{% endif %}{% endfor %}
+</datalist>
+<datalist id="admin_target_manufacture_lot_options">
+    {% for row in target_rows %}{% if row.manufacture_lot %}<option value="{{ row.manufacture_lot }}"></option>{% endif %}{% endfor %}
+</datalist>
+<datalist id="admin_environment_definition_country_options">
+    {% for row in environment_definition_rows %}{% if row.test_country %}<option value="{{ row.test_country }}"></option>{% endif %}{% endfor %}
+</datalist>
+<datalist id="admin_environment_definition_city_options">
+    {% for row in environment_definition_rows %}{% if row.test_city %}<option value="{{ row.test_city }}"></option>{% endif %}{% endfor %}
+</datalist>
+<datalist id="admin_environment_definition_company_options">
+    {% for row in environment_definition_rows %}{% if row.test_company %}<option value="{{ row.test_company }}"></option>{% endif %}{% endfor %}
+</datalist>
+<datalist id="admin_environment_definition_room_options">
+    {% for row in environment_definition_rows %}{% if row.test_room %}<option value="{{ row.test_room }}"></option>{% endif %}{% endfor %}
+</datalist>
+<datalist id="admin_environment_definition_network_type_options">
+    {% for row in environment_definition_rows %}{% if row.network_type %}<option value="{{ row.network_type }}"></option>{% endif %}{% endfor %}
+</datalist>
+<datalist id="admin_environment_definition_computer_name_options">
+    {% for row in environment_definition_rows %}{% if row.test_computer_name %}<option value="{{ row.test_computer_name }}"></option>{% endif %}{% endfor %}
+    {% for row in environment_rows %}{% if row.test_computer_name %}<option value="{{ row.test_computer_name }}"></option>{% endif %}{% endfor %}
+</datalist>
+<datalist id="admin_environment_definition_os_options">
+    {% for row in environment_definition_rows %}{% if row.operating_system_version %}<option value="{{ row.operating_system_version }}"></option>{% endif %}{% endfor %}
+    {% for row in environment_rows %}{% if row.operating_system_version %}<option value="{{ row.operating_system_version }}"></option>{% endif %}{% endfor %}
+</datalist>
+<datalist id="admin_environment_definition_tool_name_options">
+    {% for row in environment_definition_rows %}{% if row.test_tool_name %}<option value="{{ row.test_tool_name }}"></option>{% endif %}{% endfor %}
+</datalist>
+<datalist id="admin_environment_definition_tool_version_options">
+    {% for row in environment_definition_rows %}{% if row.test_tool_version %}<option value="{{ row.test_tool_version }}"></option>{% endif %}{% endfor %}
+    {% for row in environment_rows %}{% if row.test_tool_version %}<option value="{{ row.test_tool_version }}"></option>{% endif %}{% endfor %}
+</datalist>
+<datalist id="admin_environment_definition_power_voltage_options">
+    {% for row in environment_definition_rows %}{% if row.power_voltage %}<option value="{{ row.power_voltage }}"></option>{% endif %}{% endfor %}
+    {% for row in environment_rows %}{% if row.power_voltage %}<option value="{{ row.power_voltage }}"></option>{% endif %}{% endfor %}
+</datalist>
+<datalist id="admin_environment_definition_power_frequency_options">
+    {% for row in environment_definition_rows %}{% if row.power_frequency %}<option value="{{ row.power_frequency }}"></option>{% endif %}{% endfor %}
+    {% for row in environment_rows %}{% if row.power_frequency %}<option value="{{ row.power_frequency }}"></option>{% endif %}{% endfor %}
+</datalist>
+<datalist id="admin_environment_definition_power_connector_type_options">
+    {% for row in environment_definition_rows %}{% if row.power_connector_type %}<option value="{{ row.power_connector_type }}"></option>{% endif %}{% endfor %}
+    {% for row in environment_rows %}{% if row.power_connector_type %}<option value="{{ row.power_connector_type }}"></option>{% endif %}{% endfor %}
+</datalist>
+<datalist id="admin_environment_definition_power_condition_options">
+    {% for row in environment_definition_rows %}{% if row.power_condition %}<option value="{{ row.power_condition }}"></option>{% endif %}{% endfor %}
+</datalist>
+<datalist id="admin_environment_name_options">
+    {% for row in environment_rows %}{% if row.product_test_environment_name %}<option value="{{ row.product_test_environment_name }}"></option>{% endif %}{% endfor %}
+</datalist>
+<datalist id="admin_case_category_options">
+    {% for row in case_rows %}{% if row.test_category %}<option value="{{ row.test_category }}"></option>{% endif %}{% endfor %}
+</datalist>
+<datalist id="admin_procedure_action_options">
+    {% for row in procedure_rows %}{% if row.procedure_action %}<option value="{{ row.procedure_action }}"></option>{% endif %}{% endfor %}
+</datalist>
+<datalist id="admin_procedure_expected_result_options">
+    {% for row in procedure_rows %}{% if row.expected_result %}<option value="{{ row.expected_result }}"></option>{% endif %}{% endfor %}
+</datalist>
+<datalist id="admin_procedure_acceptance_criteria_options">
+    {% for row in procedure_rows %}{% if row.acceptance_criteria %}<option value="{{ row.acceptance_criteria }}"></option>{% endif %}{% endfor %}
+</datalist>
+
 <section class="card">
     <div class="section_header_row">
         <h3>관리자 통합 입력 화면</h3>
     </div>
     <div class="detail_guide">
         `/tester` 입력 화면처럼 각 카드에서 바로 표 형태로 입력하고 저장한다. 페이지 이동 없이 `/admin` 한 화면에서 처리한다. 입력 중에는 브라우저에 자동저장되고, 필수 항목이 완성되면 자동제출된다.
+    </div>
+    <div class="detail_guide">
+        ID 컬럼은 관련 value 입력 시 작성규칙에 맞는 초안이 자동 가이드된다. 필요하면 직접 수정 가능하다.
     </div>
 </section>
 
@@ -26,21 +125,21 @@
                 <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_RELEASE_ID</th><th>UPSTREAM_RELEASE_ID</th><th>UPSTREAM_RELEASE_SYSTEM</th><th>RELEASE_STAGE</th><th>PRODUCT_TEST_RELEASE_STATUS</th><th>REMARK</th></tr></thead>
                 <tbody><tr>
                     <td><input type="checkbox" class="admin_input_row_checkbox"></td>
-                    <td><input type="text" name="product_test_release_id" required placeholder="PTREL-HUVITZ_HRK_9000A-1.0.0-RC1"></td>
-                    <td><input type="text" name="upstream_release_id" required placeholder="HUVITZ_HRK_9000A-1.0.0"></td>
-                    <td><input type="text" name="upstream_release_system" required placeholder="DEV"></td>
+                    <td><input type="text" name="product_test_release_id" required placeholder="QA_PTREL-HRK_9000A-1.0.0-RC1"></td>
+                    <td><input type="text" name="upstream_release_id" required placeholder="HRK_9000A-1.0.0" list="admin_release_upstream_release_id_options"></td>
+                    <td><input type="text" name="upstream_release_system" required placeholder="Huvitz Software Release System" list="admin_release_upstream_release_system_options"></td>
                     <td><select name="release_stage" required><option value="">선택 (예: RC)</option>{% for value in release_stage_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
-                    <td><select name="product_test_release_status"><option value="">선택 (예: drafted)</option>{% for value in product_test_release_status_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
+                    <td><select name="product_test_release_status"><option value="">선택 (예: DRAFT)</option>{% for value in product_test_release_status_values %}<option value="{{ value }}"{% if value == "DRAFT" %} selected{% endif %}>{{ value }}</option>{% endfor %}</select></td>
                     <td><input type="text" name="remark" placeholder="예: HRK-9000A 1차 RC 검토"></td>
                 </tr></tbody>
             </table>
         </div>
-        <div class="table_action_bar"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     </form>
+    <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     <div class="tester_table_wrap">
         <table class="basic_table">
             <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_RELEASE_ID</th><th>UPSTREAM_RELEASE_ID</th><th>UPSTREAM_RELEASE_SYSTEM</th><th>RELEASE_STAGE</th><th>RELEASE_SEQUENCE</th><th>PRODUCT_TEST_RELEASE_STATUS</th><th>REMARK</th></tr></thead>
-            <tbody>{% for row in release_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_release_id }}</td><td>{{ row.upstream_release_id }}</td><td>{{ row.upstream_release_system }}</td><td>{{ row.release_stage }}</td><td>{{ row.release_sequence }}</td><td><span class="status_badge status-{{ row.product_test_release_status }}">{{ row.product_test_release_status }}</span></td><td>{{ row.remark }}</td></tr>{% endfor %}</tbody>
+            <tbody>{% for row in release_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_release_id }}</td><td>{{ row.upstream_release_id }}</td><td>{{ row.upstream_release_system }}</td><td>{{ row.release_stage }}</td><td>{{ row.release_sequence }}</td><td><span class="status_badge status-{{ row.product_test_release_status|lower }}">{{ row.product_test_release_status }}</span></td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
         </table>
     </div>
 </section>
@@ -54,24 +153,24 @@
                 <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_TARGET_DEFINITION_ID</th><th>PRODUCT_CODE</th><th>MANUFACTURER</th><th>MODEL_NAME</th><th>HARDWARE_REVISION</th><th>DEFAULT_SOFTWARE_VERSION</th><th>DEFAULT_FIRMWARE_VERSION</th><th>PRODUCT_TEST_TARGET_DEFINITION_STATUS</th><th>REMARK</th></tr></thead>
                 <tbody><tr>
                     <td><input type="checkbox" class="admin_input_row_checkbox"></td>
-                    <td><input type="text" name="product_test_target_definition_id" required placeholder="PTTGTDEF-HUVITZ_HRK_9000A"></td>
-                    <td><input type="text" name="product_code" placeholder="HUVITZ_HRK_9000A"></td>
-                    <td><input type="text" name="manufacturer" required placeholder="Huvitz"></td>
-                    <td><input type="text" name="model_name" required placeholder="HRK-9000A"></td>
-                    <td><input type="text" name="hardware_revision" placeholder="Rev.A"></td>
-                    <td><input type="text" name="default_software_version" placeholder="1.0.0"></td>
-                    <td><input type="text" name="default_firmware_version" placeholder="1.0.3"></td>
+                    <td><input type="text" name="product_test_target_definition_id" required placeholder="QA_PTTGTDEF-HRK_9000A"></td>
+                    <td><input type="text" name="product_code" placeholder="HRK_9000A" list="admin_target_definition_product_code_options"></td>
+                    <td><input type="text" name="manufacturer" required placeholder="Huvitz" list="admin_target_definition_manufacturer_options"></td>
+                    <td><input type="text" name="model_name" required placeholder="HRK-9000A" list="admin_target_definition_model_name_options"></td>
+                    <td><input type="text" name="hardware_revision" placeholder="Rev.A" list="admin_target_definition_hardware_revision_options"></td>
+                    <td><input type="text" name="default_software_version" placeholder="1.0.0" list="admin_target_definition_default_software_version_options"></td>
+                    <td><input type="text" name="default_firmware_version" placeholder="1.0.3" list="admin_target_definition_default_firmware_version_options"></td>
                     <td><select name="product_test_target_definition_status"><option value="">선택 (예: active)</option>{% for value in target_definition_status_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
                     <td><input type="text" name="remark" placeholder="예: 대표 시험 대상 모델"></td>
                 </tr></tbody>
             </table>
         </div>
-        <div class="table_action_bar"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     </form>
+    <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     <div class="tester_table_wrap">
         <table class="basic_table">
             <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_TARGET_DEFINITION_ID</th><th>PRODUCT_CODE</th><th>MANUFACTURER</th><th>MODEL_NAME</th><th>PRODUCT_TEST_TARGET_DEFINITION_STATUS</th><th>REMARK</th></tr></thead>
-            <tbody>{% for row in target_definition_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_target_definition_id }}</td><td>{{ row.product_code }}</td><td>{{ row.manufacturer }}</td><td>{{ row.model_name }}</td><td>{{ row.product_test_target_definition_status }}</td><td>{{ row.remark }}</td></tr>{% endfor %}</tbody>
+            <tbody>{% for row in target_definition_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_target_definition_id }}</td><td>{{ row.product_code }}</td><td>{{ row.manufacturer }}</td><td>{{ row.model_name }}</td><td>{{ row.product_test_target_definition_status }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
         </table>
     </div>
 </section>
@@ -85,19 +184,19 @@
                 <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_TARGET_ID</th><th>PRODUCT_TEST_TARGET_DEFINITION_ID</th><th>SERIAL_NUMBER</th><th>SOFTWARE_VERSION</th><th>FIRMWARE_VERSION</th><th>MANUFACTURE_LOT</th><th>PRODUCT_TEST_TARGET_STATUS</th><th>REMARK</th></tr></thead>
                 <tbody><tr>
                     <td><input type="checkbox" class="admin_input_row_checkbox"></td>
-                    <td><input type="text" name="product_test_target_id" required placeholder="PTTGT-HUVITZ_HRK_9000A-SN001"></td>
-                    <td><select name="product_test_target_definition_id" required><option value="">선택 (예: PTTGTDEF-HUVITZ_HRK_9000A)</option>{% for row in target_definition_rows %}<option value="{{ row.product_test_target_definition_id }}">{{ row.product_test_target_definition_id }}</option>{% endfor %}</select></td>
+                    <td><input type="text" name="product_test_target_id" required placeholder="QA_PTTGT-HRK_9000A-SN001"></td>
+                    <td><select name="product_test_target_definition_id" required><option value="">선택 (예: QA_PTTGTDEF-HRK_9000A)</option>{% for row in target_definition_rows %}<option value="{{ row.product_test_target_definition_id }}">{{ row.product_test_target_definition_id }}</option>{% endfor %}</select></td>
                     <td><input type="text" name="serial_number" required placeholder="SN001"></td>
-                    <td><input type="text" name="software_version" placeholder="1.0.0"></td>
-                    <td><input type="text" name="firmware_version" placeholder="1.0.3"></td>
-                    <td><input type="text" name="manufacture_lot" placeholder="LOT-202605"></td>
+                    <td><input type="text" name="software_version" placeholder="1.0.0" list="admin_target_software_version_options"></td>
+                    <td><input type="text" name="firmware_version" placeholder="1.0.3" list="admin_target_firmware_version_options"></td>
+                    <td><input type="text" name="manufacture_lot" placeholder="LOT-202605" list="admin_target_manufacture_lot_options"></td>
                     <td><select name="product_test_target_status"><option value="">선택 (예: active)</option>{% for value in target_status_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
                     <td><input type="text" name="remark" placeholder="예: SQA 보유 장비"></td>
                 </tr></tbody>
             </table>
         </div>
-        <div class="table_action_bar"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     </form>
+    <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     <div class="tester_table_wrap">
         <table class="basic_table">
             <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_TARGET_ID</th><th>PRODUCT_TEST_TARGET_DEFINITION_ID</th><th>SERIAL_NUMBER</th><th>SOFTWARE_VERSION</th><th>FIRMWARE_VERSION</th><th>PRODUCT_TEST_TARGET_STATUS</th></tr></thead>
@@ -115,28 +214,28 @@
                 <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID</th><th>PRODUCT_TEST_ENVIRONMENT_DEFINITION_NAME</th><th>TEST_COUNTRY</th><th>TEST_CITY</th><th>TEST_COMPANY</th><th>TEST_ROOM</th><th>NETWORK_TYPE</th><th>TEST_COMPUTER_NAME</th><th>OPERATING_SYSTEM_VERSION</th><th>TEST_TOOL_NAME</th><th>TEST_TOOL_VERSION</th><th>POWER_VOLTAGE</th><th>POWER_FREQUENCY</th><th>POWER_CONNECTOR_TYPE</th><th>POWER_CONDITION</th><th>PRODUCT_TEST_ENVIRONMENT_DEFINITION_STATUS</th><th>REMARK</th></tr></thead>
                 <tbody><tr>
                     <td><input type="checkbox" class="admin_input_row_checkbox"></td>
-                    <td><input type="text" name="product_test_environment_definition_id" required placeholder="PTENVDEF-HUVITZ-ANYANG-CONNECTIVITY_ROOM"></td>
+                    <td><input type="text" name="product_test_environment_definition_id" required placeholder="QA_PTENVDEF-HUVITZ-ANYANG-CONNECTIVITY_ROOM"></td>
                     <td><input type="text" name="product_test_environment_definition_name" required placeholder="Huvitz Anyang Connectivity Room Standard Environment"></td>
-                    <td><input type="text" name="test_country" placeholder="Korea"></td>
-                    <td><input type="text" name="test_city" placeholder="Anyang"></td>
-                    <td><input type="text" name="test_company" placeholder="Huvitz"></td>
-                    <td><input type="text" name="test_room" placeholder="Connectivity Room"></td>
-                    <td><input type="text" name="network_type" placeholder="ISOLATED_NETWORK"></td>
-                    <td><input type="text" name="test_computer_name" placeholder="SQA-PC-01"></td>
-                    <td><input type="text" name="operating_system_version" placeholder="Windows 10"></td>
-                    <td><input type="text" name="test_tool_name" placeholder="Product Test Tool"></td>
-                    <td><input type="text" name="test_tool_version" placeholder="1.0.0"></td>
-                    <td><input type="text" name="power_voltage" placeholder="220V"></td>
-                    <td><input type="text" name="power_frequency" placeholder="60Hz"></td>
-                    <td><input type="text" name="power_connector_type" placeholder="OO_CONNECTOR"></td>
-                    <td><input type="text" name="power_condition" placeholder="Commercial AC power"></td>
+                    <td><input type="text" name="test_country" placeholder="Korea" list="admin_environment_definition_country_options"></td>
+                    <td><input type="text" name="test_city" placeholder="Anyang" list="admin_environment_definition_city_options"></td>
+                    <td><input type="text" name="test_company" placeholder="Huvitz" list="admin_environment_definition_company_options"></td>
+                    <td><input type="text" name="test_room" placeholder="Connectivity Room" list="admin_environment_definition_room_options"></td>
+                    <td><input type="text" name="network_type" placeholder="ISOLATED_NETWORK" list="admin_environment_definition_network_type_options"></td>
+                    <td><input type="text" name="test_computer_name" placeholder="SQA-PC-01" list="admin_environment_definition_computer_name_options"></td>
+                    <td><input type="text" name="operating_system_version" placeholder="Windows 10" list="admin_environment_definition_os_options"></td>
+                    <td><input type="text" name="test_tool_name" placeholder="Product Test Tool" list="admin_environment_definition_tool_name_options"></td>
+                    <td><input type="text" name="test_tool_version" placeholder="1.0.0" list="admin_environment_definition_tool_version_options"></td>
+                    <td><input type="text" name="power_voltage" placeholder="220V" list="admin_environment_definition_power_voltage_options"></td>
+                    <td><input type="text" name="power_frequency" placeholder="60Hz" list="admin_environment_definition_power_frequency_options"></td>
+                    <td><input type="text" name="power_connector_type" placeholder="OO_CONNECTOR" list="admin_environment_definition_power_connector_type_options"></td>
+                    <td><input type="text" name="power_condition" placeholder="Commercial AC power" list="admin_environment_definition_power_condition_options"></td>
                     <td><select name="product_test_environment_definition_status"><option value="">선택 (예: active)</option>{% for value in environment_definition_status_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
                     <td><input type="text" name="remark" placeholder="예: 표준 시험 환경"></td>
                 </tr></tbody>
             </table>
         </div>
-        <div class="table_action_bar"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     </form>
+    <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     <div class="tester_table_wrap">
         <table class="basic_table">
             <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID</th><th>PRODUCT_TEST_ENVIRONMENT_DEFINITION_NAME</th><th>TEST_CITY</th><th>TEST_COMPANY</th><th>TEST_ROOM</th><th>PRODUCT_TEST_ENVIRONMENT_DEFINITION_STATUS</th></tr></thead>
@@ -154,24 +253,24 @@
                 <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_ENVIRONMENT_ID</th><th>PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID</th><th>PRODUCT_TEST_ENVIRONMENT_NAME</th><th>TEST_COMPUTER_NAME</th><th>OPERATING_SYSTEM_VERSION</th><th>TEST_TOOL_VERSION</th><th>NETWORK_TYPE</th><th>POWER_VOLTAGE</th><th>POWER_FREQUENCY</th><th>POWER_CONNECTOR_TYPE</th><th>CAPTURED_AT</th><th>PRODUCT_TEST_ENVIRONMENT_STATUS</th><th>REMARK</th></tr></thead>
                 <tbody><tr>
                     <td><input type="checkbox" class="admin_input_row_checkbox"></td>
-                    <td><input type="text" name="product_test_environment_id" required placeholder="PTENV-HUVITZ-ANYANG-CONNECTIVITY_ROOM-20260504-001"></td>
-                    <td><select name="product_test_environment_definition_id" required><option value="">선택 (예: PTENVDEF-HUVITZ-ANYANG-CONNECTIVITY_ROOM)</option>{% for row in environment_definition_rows %}<option value="{{ row.product_test_environment_definition_id }}">{{ row.product_test_environment_definition_id }}</option>{% endfor %}</select></td>
-                    <td><input type="text" name="product_test_environment_name" required placeholder="Huvitz Anyang Connectivity Room Snapshot 20260504"></td>
-                    <td><input type="text" name="test_computer_name" placeholder="SQA-PC-01"></td>
-                    <td><input type="text" name="operating_system_version" placeholder="Windows 10"></td>
-                    <td><input type="text" name="test_tool_version" placeholder="1.0.0"></td>
-                    <td><input type="text" name="network_type" placeholder="ISOLATED_NETWORK"></td>
-                    <td><input type="text" name="power_voltage" placeholder="220V"></td>
-                    <td><input type="text" name="power_frequency" placeholder="60Hz"></td>
-                    <td><input type="text" name="power_connector_type" placeholder="OO_CONNECTOR"></td>
+                    <td><input type="text" name="product_test_environment_id" required placeholder="QA_PTENV-HUVITZ-ANYANG-CONNECTIVITY_ROOM-20260504-001"></td>
+                    <td><select name="product_test_environment_definition_id" required><option value="">선택 (예: QA_PTENVDEF-HUVITZ-ANYANG-CONNECTIVITY_ROOM)</option>{% for row in environment_definition_rows %}<option value="{{ row.product_test_environment_definition_id }}">{{ row.product_test_environment_definition_id }}</option>{% endfor %}</select></td>
+                    <td><input type="text" name="product_test_environment_name" required placeholder="Huvitz Anyang Connectivity Room Snapshot 20260504" list="admin_environment_name_options"></td>
+                    <td><input type="text" name="test_computer_name" placeholder="SQA-PC-01" list="admin_environment_definition_computer_name_options"></td>
+                    <td><input type="text" name="operating_system_version" placeholder="Windows 10" list="admin_environment_definition_os_options"></td>
+                    <td><input type="text" name="test_tool_version" placeholder="1.0.0" list="admin_environment_definition_tool_version_options"></td>
+                    <td><input type="text" name="network_type" placeholder="ISOLATED_NETWORK" list="admin_environment_definition_network_type_options"></td>
+                    <td><input type="text" name="power_voltage" placeholder="220V" list="admin_environment_definition_power_voltage_options"></td>
+                    <td><input type="text" name="power_frequency" placeholder="60Hz" list="admin_environment_definition_power_frequency_options"></td>
+                    <td><input type="text" name="power_connector_type" placeholder="OO_CONNECTOR" list="admin_environment_definition_power_connector_type_options"></td>
                     <td><input type="text" name="captured_at" placeholder="2026-05-04 09:00:00"></td>
                     <td><select name="product_test_environment_status"><option value="">선택 (예: active)</option>{% for value in environment_status_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
                     <td><input type="text" name="remark" placeholder="예: 환경 스냅샷"></td>
                 </tr></tbody>
             </table>
         </div>
-        <div class="table_action_bar"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     </form>
+    <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     <div class="tester_table_wrap">
         <table class="basic_table">
             <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_ENVIRONMENT_ID</th><th>PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID</th><th>PRODUCT_TEST_ENVIRONMENT_NAME</th><th>TEST_COMPUTER_NAME</th><th>OPERATING_SYSTEM_VERSION</th><th>PRODUCT_TEST_ENVIRONMENT_STATUS</th></tr></thead>
@@ -189,9 +288,9 @@
                 <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_CASE_ID</th><th>PRODUCT_TEST_CASE_TITLE</th><th>TEST_CATEGORY</th><th>TEST_OBJECTIVE</th><th>PRECONDITION</th><th>EXPECTED_RESULT</th><th>PRODUCT_TEST_CASE_STATUS</th><th>REMARK</th></tr></thead>
                 <tbody><tr>
                     <td><input type="checkbox" class="admin_input_row_checkbox"></td>
-                    <td><input type="text" name="product_test_case_id" required placeholder="PTCASE-WIFI-AP_CONFIG-001"></td>
+                    <td><input type="text" name="product_test_case_id" required placeholder="QA_PTCASE-WIFI-AP_CONFIG-001"></td>
                     <td><input type="text" name="product_test_case_title" required placeholder="WiFi AP 설정 적합성 검증"></td>
-                    <td><input type="text" name="test_category" required placeholder="WiFi"></td>
+                    <td><input type="text" name="test_category" required placeholder="WiFi" list="admin_case_category_options"></td>
                     <td><input type="text" name="test_objective" placeholder="RS9116 WiFi 모듈 기준으로 AP 설정이 권장 조건을 만족하는지 확인"></td>
                     <td><input type="text" name="precondition" placeholder="시험 대상 AP 관리자 화면 접근 가능"></td>
                     <td><input type="text" name="expected_result" placeholder="AP 설정값이 RS9116 모듈 권장 조건을 만족해야 함"></td>
@@ -200,8 +299,8 @@
                 </tr></tbody>
             </table>
         </div>
-        <div class="table_action_bar"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     </form>
+    <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     <div class="tester_table_wrap">
         <table class="basic_table">
             <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_CASE_ID</th><th>PRODUCT_TEST_CASE_TITLE</th><th>TEST_CATEGORY</th><th>PRODUCT_TEST_CASE_STATUS</th></tr></thead>
@@ -219,20 +318,20 @@
                 <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_PROCEDURE_ID</th><th>PRODUCT_TEST_CASE_ID</th><th>PROCEDURE_SEQUENCE</th><th>PROCEDURE_ACTION</th><th>EXPECTED_RESULT</th><th>ACCEPTANCE_CRITERIA</th><th>REQUIRED_EVIDENCE_TYPE</th><th>PRODUCT_TEST_PROCEDURE_STATUS</th><th>REMARK</th></tr></thead>
                 <tbody><tr>
                     <td><input type="checkbox" class="admin_input_row_checkbox"></td>
-                    <td><input type="text" name="product_test_procedure_id" required placeholder="PTPROC-WIFI-AP_CONFIG-001-001"></td>
-                    <td><select name="product_test_case_id" required><option value="">선택 (예: PTCASE-WIFI-AP_CONFIG-001)</option>{% for row in case_rows %}<option value="{{ row.product_test_case_id }}">{{ row.product_test_case_id }}</option>{% endfor %}</select></td>
+                    <td><input type="text" name="product_test_procedure_id" required placeholder="QA_PTPROC-WIFI-AP_CONFIG-001-001"></td>
+                    <td><select name="product_test_case_id" required><option value="">선택 (예: QA_PTCASE-WIFI-AP_CONFIG-001)</option>{% for row in case_rows %}<option value="{{ row.product_test_case_id }}">{{ row.product_test_case_id }}</option>{% endfor %}</select></td>
                     <td><input type="number" name="procedure_sequence" required placeholder="1"></td>
-                    <td><input type="text" name="procedure_action" required placeholder="WiFi Band 분리설정 확인"></td>
-                    <td><input type="text" name="expected_result" placeholder="2.4GHz와 5GHz SSID가 분리되어 있어야 함"></td>
-                    <td><input type="text" name="acceptance_criteria" required placeholder="2.4GHz, 5GHz의 SSID를 분리하는 것을 권장"></td>
+                    <td><input type="text" name="procedure_action" required placeholder="WiFi Band 분리설정 확인" list="admin_procedure_action_options"></td>
+                    <td><input type="text" name="expected_result" placeholder="2.4GHz와 5GHz SSID가 분리되어 있어야 함" list="admin_procedure_expected_result_options"></td>
+                    <td><input type="text" name="acceptance_criteria" required placeholder="2.4GHz, 5GHz의 SSID를 분리하는 것을 권장" list="admin_procedure_acceptance_criteria_options"></td>
                     <td><select name="required_evidence_type"><option value="">선택 (예: screenshot)</option>{% for value in evidence_type_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
                     <td><select name="product_test_procedure_status"><option value="">선택 (예: active)</option>{% for value in procedure_status_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
                     <td><input type="text" name="remark" placeholder="예: 분리하지 않으면 임베디드 장비 2.4GHz 고정 가능"></td>
                 </tr></tbody>
             </table>
         </div>
-        <div class="table_action_bar"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     </form>
+    <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     <div class="tester_table_wrap">
         <table class="basic_table">
             <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_PROCEDURE_ID</th><th>PRODUCT_TEST_CASE_ID</th><th>PROCEDURE_SEQUENCE</th><th>PROCEDURE_ACTION</th><th>REQUIRED_EVIDENCE_TYPE</th><th>PRODUCT_TEST_PROCEDURE_STATUS</th></tr></thead>
@@ -250,19 +349,19 @@
                 <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_RELEASE_ID</th><th>PRODUCT_TEST_REPORT_TYPE</th><th>PRODUCT_TEST_REPORT_TITLE</th><th>REMARK</th></tr></thead>
                 <tbody><tr>
                     <td><input type="checkbox" class="admin_input_row_checkbox"></td>
-                    <td><select name="product_test_release_id" required><option value="">선택 (예: PTREL-HUVITZ_HRK_9000A-1.0.0-RC1)</option>{% for row in report_release_options %}<option value="{{ row.product_test_release_id }}">{{ row.product_test_release_id }}</option>{% endfor %}</select></td>
+                    <td><select name="product_test_release_id" required><option value="">선택 (예: QA_PTREL-HRK_9000A-1.0.0-RC1)</option>{% for row in report_release_options %}<option value="{{ row.product_test_release_id }}">{{ row.product_test_release_id }}</option>{% endfor %}</select></td>
                     <td><select name="product_test_report_type" required><option value="">선택 (예: FULL)</option>{% for value in report_type_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
                     <td><input type="text" name="product_test_report_title" required placeholder="HRK-9000A 제품 테스트 보고서"></td>
                     <td><input type="text" name="remark" placeholder="예: 1차 RC 시험 보고서"></td>
                 </tr></tbody>
             </table>
         </div>
-        <div class="table_action_bar"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     </form>
+    <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     <div class="tester_table_wrap">
         <table class="basic_table">
             <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_REPORT_ID</th><th>PRODUCT_TEST_RELEASE_ID</th><th>PRODUCT_TEST_REPORT_TYPE</th><th>PRODUCT_TEST_REPORT_STATUS</th><th>PRODUCT_TEST_REPORT_TITLE</th></tr></thead>
-            <tbody>{% for row in report_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_report_id }}</td><td>{{ row.product_test_release_id }}</td><td>{{ row.product_test_report_type }}</td><td><span class="status_badge status-{{ row.product_test_report_status }}">{{ row.product_test_report_status }}</span></td><td>{{ row.product_test_report_title }}</td></tr>{% endfor %}</tbody>
+            <tbody>{% for row in report_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_report_id }}</td><td>{{ row.product_test_release_id }}</td><td>{{ row.product_test_report_type }}</td><td><span class="status_badge status-{{ row.product_test_report_status|lower }}">{{ row.product_test_report_status }}</span></td><td>{{ row.product_test_report_title }}</td></tr>{% endfor %}</tbody>
         </table>
     </div>
 </section>
@@ -277,22 +376,824 @@
         return;
     }
 
-    const toStorageKey = (form) => `admin_autosave_v1:${form.getAttribute("action") || ""}`;
-    const toStateLabel = (form) => {
-        let state = form.querySelector(".admin_auto_state");
-        if (state) {
-            return state;
+    const normalizeSegment = (value) => {
+        let normalized = String(value || "").trim();
+        normalized = normalized.replace(/\?/g, " UNKNOWN ");
+        normalized = normalized.replace(/[()]/g, " ");
+        normalized = normalized.replace(/[\/\\\s:\*\|"'<>\-]+/g, "_");
+        normalized = normalized.replace(/[^0-9A-Za-z_]+/g, "_");
+        normalized = normalized.replace(/_+/g, "_");
+        return normalized.replace(/^_+|_+$/g, "").toUpperCase();
+    };
+    const captureDateDigits = (value) => {
+        const digits = String(value || "").replace(/\D+/g, "");
+        if (digits.length >= 8) {
+            return digits.slice(0, 8);
         }
-        const bar = form.querySelector(".table_action_bar");
-        if (!bar) {
+        return "";
+    };
+    const uniqueNonEmpty = (values) =>
+        Array.from(
+            new Set(
+                (values || [])
+                    .map((value) => String(value || "").trim())
+                    .filter(Boolean)
+            )
+        );
+    const buildCaseTitleCore = (titleValue) =>
+        normalizeSegment(titleValue || "")
+            .replace(/^WIFI_AP_/, "AP_")
+            .replace(/^PRODUCT_TEST_/, "")
+            .slice(0, 24)
+            .replace(/_+$/g, "");
+    const buildReleaseIdCandidate = (upstreamValue, stageValue) => {
+        const upstream = String(upstreamValue || "").trim();
+        const stage = String(stageValue || "").trim().toUpperCase();
+        if (!upstream || !stage) {
+            return "";
+        }
+        const stageDisplay = stage === "GA" ? "GA" : `${stage}1`;
+        return `QA_PTREL-${upstream}-${stageDisplay}`;
+    };
+    const buildTargetDefinitionIdCandidate = (modelValue) => {
+        const modelSegment = normalizeSegment(modelValue || "");
+        if (!modelSegment) {
+            return "";
+        }
+        return `QA_PTTGTDEF-${modelSegment}`;
+    };
+    const buildTargetIdCandidate = (definitionValue, serialValue) => {
+        const definitionCore = stripQaPrefix(definitionValue || "", "QA_PTTGTDEF-");
+        const serialCore = String(serialValue || "").trim();
+        if (!definitionCore || !serialCore) {
+            return "";
+        }
+        return `QA_PTTGT-${definitionCore}-${serialCore}`;
+    };
+    const buildEnvironmentDefinitionIdCandidate = (companyValue, cityValue, roomValue) => {
+        const company = normalizeSegment(companyValue || "");
+        const city = normalizeSegment(cityValue || "");
+        const room = normalizeSegment(roomValue || "");
+        if (!company || !city || !room) {
+            return "";
+        }
+        return `QA_PTENVDEF-${company}-${city}-${room}`;
+    };
+    const buildEnvironmentIdCandidate = (definitionValue, capturedAtValue) => {
+        const definitionCore = stripQaPrefix(definitionValue || "", "QA_PTENVDEF-");
+        const dateDigits = captureDateDigits(capturedAtValue || "");
+        if (!definitionCore || !dateDigits) {
+            return "";
+        }
+        return `QA_PTENV-${definitionCore}-${dateDigits}-001`;
+    };
+    const buildCaseIdCandidate = (categoryValue, titleValue) => {
+        const category = normalizeSegment(categoryValue || "");
+        const titleCore = buildCaseTitleCore(titleValue || "") || "ITEM";
+        if (!category) {
+            return "";
+        }
+        return `QA_PTCASE-${category}-${titleCore}-001`;
+    };
+    const buildProcedureIdCandidate = (caseValue, sequenceValue) => {
+        const caseCore = stripQaPrefix(caseValue || "", "QA_PTCASE-");
+        const parsedSequence = parseInt(String(sequenceValue || "").trim(), 10);
+        if (!caseCore || Number.isNaN(parsedSequence)) {
+            return "";
+        }
+        return `QA_PTPROC-${caseCore}-${String(parsedSequence).padStart(3, "0")}`;
+    };
+    const readCandidateValuesFromField = (field) => {
+        if (!field) {
+            return [];
+        }
+        if (field instanceof HTMLSelectElement) {
+            return uniqueNonEmpty([
+                field.value,
+                ...Array.from(field.options).map((option) => option.value),
+            ]);
+        }
+        if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement) {
+            const values = [field.value];
+            const listId = field.getAttribute("list");
+            if (listId) {
+                const listNode = document.getElementById(listId);
+                if (listNode) {
+                    values.push(...Array.from(listNode.querySelectorAll("option")).map((option) => option.value));
+                }
+            }
+            return uniqueNonEmpty(values);
+        }
+        return [];
+    };
+    const getGeneratedIdCandidates = (inputElement) => {
+        if (!(inputElement instanceof HTMLInputElement)) {
+            return [];
+        }
+        const form = inputElement.closest("form");
+        if (!form) {
+            return [];
+        }
+        const fieldName = String(inputElement.name || "").trim();
+        if (!fieldName) {
+            return [];
+        }
+        if (fieldName === "product_test_release_id") {
+            const upstreamField = form.querySelector('[name="upstream_release_id"]');
+            const stageField = form.querySelector('[name="release_stage"]');
+            return uniqueNonEmpty(
+                readCandidateValuesFromField(upstreamField).flatMap((upstreamValue) =>
+                    readCandidateValuesFromField(stageField).map((stageValue) => buildReleaseIdCandidate(upstreamValue, stageValue))
+                )
+            );
+        }
+        if (fieldName === "product_test_target_definition_id") {
+            const productCodeField = form.querySelector('[name="product_code"]');
+            const modelField = form.querySelector('[name="model_name"]');
+            return uniqueNonEmpty([
+                ...readCandidateValuesFromField(modelField).map((value) => buildTargetDefinitionIdCandidate(value)),
+                ...readCandidateValuesFromField(productCodeField).map((value) => {
+                    const normalized = normalizeSegment(value);
+                    return normalized ? `QA_PTTGTDEF-${normalized}` : "";
+                }),
+            ]);
+        }
+        if (fieldName === "product_test_target_id") {
+            const definitionField = form.querySelector('[name="product_test_target_definition_id"]');
+            const serialField = form.querySelector('[name="serial_number"]');
+            return uniqueNonEmpty(
+                readCandidateValuesFromField(definitionField).flatMap((definitionValue) =>
+                    readCandidateValuesFromField(serialField).map((serialValue) => buildTargetIdCandidate(definitionValue, serialValue))
+                )
+            );
+        }
+        if (fieldName === "product_test_environment_definition_id") {
+            const companyField = form.querySelector('[name="test_company"]');
+            const cityField = form.querySelector('[name="test_city"]');
+            const roomField = form.querySelector('[name="test_room"]');
+            return uniqueNonEmpty(
+                readCandidateValuesFromField(companyField).flatMap((companyValue) =>
+                    readCandidateValuesFromField(cityField).flatMap((cityValue) =>
+                        readCandidateValuesFromField(roomField).map((roomValue) =>
+                            buildEnvironmentDefinitionIdCandidate(companyValue, cityValue, roomValue)
+                        )
+                    )
+                )
+            );
+        }
+        if (fieldName === "product_test_environment_id") {
+            const definitionField = form.querySelector('[name="product_test_environment_definition_id"]');
+            const capturedAtField = form.querySelector('[name="captured_at"]');
+            return uniqueNonEmpty(
+                readCandidateValuesFromField(definitionField).flatMap((definitionValue) =>
+                    readCandidateValuesFromField(capturedAtField).map((capturedAtValue) =>
+                        buildEnvironmentIdCandidate(definitionValue, capturedAtValue)
+                    )
+                )
+            );
+        }
+        if (fieldName === "product_test_case_id") {
+            const categoryField = form.querySelector('[name="test_category"]');
+            const titleField = form.querySelector('[name="product_test_case_title"]');
+            return uniqueNonEmpty(
+                readCandidateValuesFromField(categoryField).flatMap((categoryValue) =>
+                    readCandidateValuesFromField(titleField).map((titleValue) =>
+                        buildCaseIdCandidate(categoryValue, titleValue)
+                    )
+                )
+            );
+        }
+        if (fieldName === "product_test_procedure_id") {
+            const caseField = form.querySelector('[name="product_test_case_id"]');
+            const sequenceField = form.querySelector('[name="procedure_sequence"]');
+            return uniqueNonEmpty(
+                readCandidateValuesFromField(caseField).flatMap((caseValue) =>
+                    readCandidateValuesFromField(sequenceField).map((sequenceValue) =>
+                        buildProcedureIdCandidate(caseValue, sequenceValue)
+                    )
+                )
+            );
+        }
+        return [];
+    };
+    const setAutofillValue = (field, nextValue) => {
+        if (!field || !nextValue) {
+            return;
+        }
+        const currentValue = String(field.value || "").trim();
+        const lastSuggestedValue = String(field.dataset.lastSuggestedValue || "").trim();
+        const userLocked = field.dataset.userLocked === "true";
+        if (userLocked && currentValue && currentValue !== lastSuggestedValue) {
+            return;
+        }
+        field.value = nextValue;
+        field.dataset.lastSuggestedValue = nextValue;
+    };
+    const bindManualOverride = (field) => {
+        if (!field) {
+            return;
+        }
+        field.addEventListener("input", () => {
+            const currentValue = String(field.value || "").trim();
+            const lastSuggestedValue = String(field.dataset.lastSuggestedValue || "").trim();
+            field.dataset.userLocked = currentValue && currentValue !== lastSuggestedValue ? "true" : "false";
+        });
+    };
+    const stripQaPrefix = (value, prefix) => {
+        const text = String(value || "").trim();
+        return text.startsWith(prefix) ? text.slice(prefix.length) : text;
+    };
+    const serverIdRules = {{ admin_id_rules | tojson }};
+    const serverIdGuides = {{ admin_id_guides | tojson }};
+    const adminNoticeConfig = {{ admin_notice_config | tojson }};
+    const idValidationRules = Object.fromEntries(
+        Object.entries(serverIdRules).map(([fieldName, patternText]) => [fieldName, new RegExp(patternText)])
+    );
+    const showNotice = ({ message, level = "info", mode = "non_modal", title = "" }) => {
+        if (!message) {
+            return;
+        }
+        if (mode === "modal" && window.openMessageModal) {
+            window.openMessageModal(message, {
+                type: level === "error" ? "error" : "",
+                title: title || "",
+                ok_text: "확인",
+            });
+            return;
+        }
+        if (window.showCenterNonModalV2) {
+            window.showCenterNonModalV2(message, level);
+            return;
+        }
+        if (window.openMessageModal) {
+            window.openMessageModal(message);
+        }
+    };
+    const getIdValidationMessage = (fieldName) => {
+        return serverIdGuides[fieldName] || `${fieldName} 형식이 맞지 않습니다. 수정하세요.`;
+    };
+    const escapeHtml = (value) =>
+        String(value || "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+    const toStatusBadgeHtml = (value) => {
+        const text = String(value || "").trim();
+        if (!text) {
+            return "";
+        }
+        return `<span class="status_badge status-${text.toLowerCase()}">${escapeHtml(text)}</span>`;
+    };
+    const findOutputTableBodyForForm = (form) => {
+        const card = form.closest(".card");
+        if (!card) {
             return null;
         }
-        state = document.createElement("span");
-        state.className = "admin_auto_state";
-        state.textContent = "대기";
-        bar.appendChild(state);
-        return state;
+        const allTableBodies = Array.from(card.querySelectorAll(".tester_table_wrap table.basic_table tbody"));
+        return allTableBodies.length >= 2 ? allTableBodies[1] : null;
     };
+    const buildSubmittedRowHtml = (action, row) => {
+        const checkbox = '<td><input type="checkbox" class="admin_submitted_row_checkbox"></td>';
+        if (action.endsWith("/product-test-releases/create")) {
+            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_release_id)}</td><td>${escapeHtml(row.upstream_release_id)}</td><td>${escapeHtml(row.upstream_release_system)}</td><td>${escapeHtml(row.release_stage)}</td><td>${escapeHtml(row.release_sequence)}</td><td>${toStatusBadgeHtml(row.product_test_release_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
+        }
+        if (action.endsWith("/product-test-target-definitions/create")) {
+            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_target_definition_id)}</td><td>${escapeHtml(row.product_code)}</td><td>${escapeHtml(row.manufacturer)}</td><td>${escapeHtml(row.model_name)}</td><td>${escapeHtml(row.product_test_target_definition_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
+        }
+        if (action.endsWith("/product-test-targets/create")) {
+            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_target_id)}</td><td>${escapeHtml(row.product_test_target_definition_id)}</td><td>${escapeHtml(row.serial_number)}</td><td>${escapeHtml(row.software_version)}</td><td>${escapeHtml(row.firmware_version)}</td><td>${escapeHtml(row.product_test_target_status)}</td></tr>`;
+        }
+        if (action.endsWith("/product-test-environment-definitions/create")) {
+            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_environment_definition_id)}</td><td>${escapeHtml(row.product_test_environment_definition_name)}</td><td>${escapeHtml(row.test_city)}</td><td>${escapeHtml(row.test_company)}</td><td>${escapeHtml(row.test_room)}</td><td>${escapeHtml(row.product_test_environment_definition_status)}</td></tr>`;
+        }
+        if (action.endsWith("/product-test-environments/create")) {
+            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_environment_id)}</td><td>${escapeHtml(row.product_test_environment_definition_id)}</td><td>${escapeHtml(row.product_test_environment_name)}</td><td>${escapeHtml(row.test_computer_name)}</td><td>${escapeHtml(row.operating_system_version)}</td><td>${escapeHtml(row.product_test_environment_status)}</td></tr>`;
+        }
+        if (action.endsWith("/product-test-cases/create")) {
+            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_case_id)}</td><td>${escapeHtml(row.product_test_case_title)}</td><td>${escapeHtml(row.test_category)}</td><td>${escapeHtml(row.product_test_case_status)}</td></tr>`;
+        }
+        if (action.endsWith("/product-test-procedures/create")) {
+            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_procedure_id)}</td><td>${escapeHtml(row.product_test_case_id)}</td><td>${escapeHtml(row.procedure_sequence)}</td><td>${escapeHtml(row.procedure_action)}</td><td>${escapeHtml(row.required_evidence_type)}</td><td>${escapeHtml(row.product_test_procedure_status)}</td></tr>`;
+        }
+        if (action.endsWith("/product-test-reports/create")) {
+            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_report_id)}</td><td>${escapeHtml(row.product_test_release_id)}</td><td>${escapeHtml(row.product_test_report_type)}</td><td>${toStatusBadgeHtml(row.product_test_report_status)}</td><td>${escapeHtml(row.product_test_report_title)}</td></tr>`;
+        }
+        return "";
+    };
+    const insertSubmittedRow = (form, row) => {
+        if (!row || typeof row !== "object") {
+            return;
+        }
+        const tbody = findOutputTableBodyForForm(form);
+        if (!tbody) {
+            return;
+        }
+        const rowHtml = buildSubmittedRowHtml(String(form.getAttribute("action") || ""), row);
+        if (!rowHtml) {
+            return;
+        }
+        tbody.insertAdjacentHTML("afterbegin", rowHtml);
+    };
+    const getNextEmptyColumnSuggestion = (form, payload) => {
+        const fields = getFields(form);
+        for (const field of fields) {
+            const value = String(payload[field.name] || "").trim();
+            if (value) {
+                continue;
+            }
+            const cell = field.closest("td");
+            const row = cell ? cell.parentElement : null;
+            const table = row ? row.closest("table") : null;
+            if (!cell || !row || !table) {
+                continue;
+            }
+            const cellIndex = Array.from(row.children).indexOf(cell);
+            const headerCell = table.querySelectorAll("thead tr th")[cellIndex];
+            const headerText = String(headerCell?.textContent || field.name || "").trim();
+            if (headerText && headerText !== "SELECTED") {
+                return `다음 입력: ${headerText}`;
+            }
+        }
+        return "다음 입력 없음. 자동제출 대기.";
+    };
+    const setupSubmittedTableSelection = (form) => {
+        const card = form.closest(".card");
+        if (!card) {
+            return;
+        }
+        const outputTable = Array.from(card.querySelectorAll(".tester_table_wrap table.basic_table"))[1];
+        if (!outputTable) {
+            return;
+        }
+        outputTable.querySelectorAll('input[type="checkbox"][disabled]').forEach((checkbox) => {
+            checkbox.disabled = false;
+            checkbox.classList.add("admin_submitted_row_checkbox");
+        });
+        const actionBar = card.querySelector(".admin_table_action_bar_top");
+        if (!actionBar || actionBar.querySelector(".admin_select_all_submitted_button")) {
+            return;
+        }
+        const selectAllButton = document.createElement("button");
+        selectAllButton.type = "button";
+        selectAllButton.className = "admin_select_all_submitted_button";
+        selectAllButton.textContent = "모든 행 선택";
+        let allSelected = false;
+        selectAllButton.addEventListener("click", () => {
+            allSelected = !allSelected;
+            outputTable.querySelectorAll(".admin_submitted_row_checkbox").forEach((checkbox) => {
+                checkbox.checked = allSelected;
+            });
+            selectAllButton.textContent = allSelected ? "모든 행 해제" : "모든 행 선택";
+        });
+        actionBar.prepend(selectAllButton);
+    };
+    const buildAutoPlaceholderCell = (text = "자동계산") => {
+        const cell = document.createElement("td");
+        cell.innerHTML = `<span class="delta_value is_placeholder">${escapeHtml(text)}</span>`;
+        return cell;
+    };
+    const detachCellBySelector = (form, selector) => {
+        const field = form.querySelector(selector);
+        return field ? field.closest("td") : null;
+    };
+    const buildMergedDraftRow = (form) => {
+        const action = String(form.getAttribute("action") || "");
+        const row = document.createElement("tr");
+        row.className = "admin_merged_draft_row";
+        const checkboxCell = form.querySelector(".admin_input_row_checkbox")?.closest("td");
+        const fieldCell = (name) => detachCellBySelector(form, `[name="${name}"]`);
+        let cells = [];
+        if (action.endsWith("/product-test-releases/create")) {
+            cells = [
+                checkboxCell,
+                fieldCell("product_test_release_id"),
+                fieldCell("upstream_release_id"),
+                fieldCell("upstream_release_system"),
+                fieldCell("release_stage"),
+                buildAutoPlaceholderCell(),
+                fieldCell("product_test_release_status"),
+                fieldCell("remark"),
+            ];
+        } else if (action.endsWith("/product-test-target-definitions/create")) {
+            cells = [
+                checkboxCell,
+                fieldCell("product_test_target_definition_id"),
+                fieldCell("product_code"),
+                fieldCell("manufacturer"),
+                fieldCell("model_name"),
+                fieldCell("product_test_target_definition_status"),
+                fieldCell("remark"),
+            ];
+        } else if (action.endsWith("/product-test-targets/create")) {
+            cells = [
+                checkboxCell,
+                fieldCell("product_test_target_id"),
+                fieldCell("product_test_target_definition_id"),
+                fieldCell("serial_number"),
+                fieldCell("software_version"),
+                fieldCell("firmware_version"),
+                fieldCell("product_test_target_status"),
+            ];
+        } else if (action.endsWith("/product-test-environment-definitions/create")) {
+            cells = [
+                checkboxCell,
+                fieldCell("product_test_environment_definition_id"),
+                fieldCell("product_test_environment_definition_name"),
+                fieldCell("test_city"),
+                fieldCell("test_company"),
+                fieldCell("test_room"),
+                fieldCell("product_test_environment_definition_status"),
+            ];
+        } else if (action.endsWith("/product-test-environments/create")) {
+            cells = [
+                checkboxCell,
+                fieldCell("product_test_environment_id"),
+                fieldCell("product_test_environment_definition_id"),
+                fieldCell("product_test_environment_name"),
+                fieldCell("test_computer_name"),
+                fieldCell("operating_system_version"),
+                fieldCell("product_test_environment_status"),
+            ];
+        } else if (action.endsWith("/product-test-cases/create")) {
+            cells = [
+                checkboxCell,
+                fieldCell("product_test_case_id"),
+                fieldCell("product_test_case_title"),
+                fieldCell("test_category"),
+                fieldCell("product_test_case_status"),
+            ];
+        } else if (action.endsWith("/product-test-procedures/create")) {
+            cells = [
+                checkboxCell,
+                fieldCell("product_test_procedure_id"),
+                fieldCell("product_test_case_id"),
+                fieldCell("procedure_sequence"),
+                fieldCell("procedure_action"),
+                fieldCell("required_evidence_type"),
+                fieldCell("product_test_procedure_status"),
+            ];
+        } else if (action.endsWith("/product-test-reports/create")) {
+            cells = [
+                checkboxCell,
+                buildAutoPlaceholderCell(),
+                fieldCell("product_test_release_id"),
+                fieldCell("product_test_report_type"),
+                buildAutoPlaceholderCell("DRAFT"),
+                fieldCell("product_test_report_title"),
+            ];
+        }
+        cells.filter(Boolean).forEach((cell) => row.appendChild(cell));
+        return row.children.length ? row : null;
+    };
+    const mergeAdminDraftRowIntoOutputTable = (form) => {
+        const card = form.closest(".card");
+        const action = String(form.getAttribute("action") || "");
+        if (!card || form.dataset.mergeReady === "true") {
+            return;
+        }
+        if (!action.endsWith("/product-test-releases/create")) {
+            return;
+        }
+        const wraps = Array.from(card.querySelectorAll(".tester_table_wrap"));
+        if (wraps.length < 2) {
+            return;
+        }
+        const inputWrap = wraps[0];
+        const outputWrap = wraps[1];
+        const actionBar = card.querySelector(".admin_table_action_bar_top");
+        if (actionBar && actionBar.parentElement !== form) {
+            form.appendChild(actionBar);
+        }
+        if (outputWrap.parentElement !== form) {
+            form.appendChild(outputWrap);
+        }
+        const outputTbody = outputWrap.querySelector("table.basic_table tbody");
+        const mergedDraftRow = buildMergedDraftRow(form);
+        if (!outputTbody || !mergedDraftRow) {
+            return;
+        }
+        outputTbody.appendChild(mergedDraftRow);
+        inputWrap.style.display = "none";
+        form.dataset.mergeReady = "true";
+    };
+    const getInvalidIdField = (form) => {
+        for (const [fieldName, pattern] of Object.entries(idValidationRules)) {
+            const field = form.querySelector(`[name="${fieldName}"]`);
+            if (!(field instanceof HTMLInputElement)) {
+                continue;
+            }
+            const value = String(field.value || "").trim();
+            if (!value) {
+                continue;
+            }
+            if (/[\/\\\s]/.test(value) || !pattern.test(value)) {
+                return { fieldName, message: getIdValidationMessage(fieldName) };
+            }
+        }
+        return null;
+    };
+    const validateIdFieldsBeforeSubmit = (form) => {
+        const invalidField = getInvalidIdField(form);
+        if (!invalidField) {
+            return true;
+        }
+        showNotice({ message: invalidField.message, level: "error", mode: "non_modal" });
+        return false;
+    };
+    const attachIdGuides = (form) => {
+        const action = String(form.getAttribute("action") || "");
+        const idFields = Array.from(form.querySelectorAll('input[name$="_id"]'));
+        idFields.forEach(bindManualOverride);
+
+        if (action.endsWith("/product-test-releases/create")) {
+            const releaseIdField = form.querySelector('[name="product_test_release_id"]');
+            const upstreamField = form.querySelector('[name="upstream_release_id"]');
+            const stageField = form.querySelector('[name="release_stage"]');
+            const refresh = () => {
+                setAutofillValue(releaseIdField, getGeneratedIdCandidates(releaseIdField)[0] || "");
+            };
+            upstreamField?.addEventListener("input", refresh);
+            upstreamField?.addEventListener("change", refresh);
+            stageField?.addEventListener("change", refresh);
+            refresh();
+            return;
+        }
+
+        if (action.endsWith("/product-test-target-definitions/create")) {
+            const definitionIdField = form.querySelector('[name="product_test_target_definition_id"]');
+            const productCodeField = form.querySelector('[name="product_code"]');
+            const modelField = form.querySelector('[name="model_name"]');
+            const refresh = () => {
+                const candidateValues = getGeneratedIdCandidates(definitionIdField);
+                if (!candidateValues.length) {
+                    return;
+                }
+                setAutofillValue(definitionIdField, candidateValues[0]);
+                if (!String(productCodeField?.value || "").trim()) {
+                    setAutofillValue(productCodeField, stripQaPrefix(candidateValues[0], "QA_PTTGTDEF-"));
+                }
+            };
+            modelField?.addEventListener("input", refresh);
+            modelField?.addEventListener("change", refresh);
+            refresh();
+            return;
+        }
+
+        if (action.endsWith("/product-test-targets/create")) {
+            const targetIdField = form.querySelector('[name="product_test_target_id"]');
+            const definitionField = form.querySelector('[name="product_test_target_definition_id"]');
+            const serialField = form.querySelector('[name="serial_number"]');
+            const refresh = () => {
+                setAutofillValue(targetIdField, getGeneratedIdCandidates(targetIdField)[0] || "");
+            };
+            definitionField?.addEventListener("change", refresh);
+            serialField?.addEventListener("input", refresh);
+            serialField?.addEventListener("change", refresh);
+            refresh();
+            return;
+        }
+
+        if (action.endsWith("/product-test-environment-definitions/create")) {
+            const environmentDefinitionIdField = form.querySelector('[name="product_test_environment_definition_id"]');
+            const companyField = form.querySelector('[name="test_company"]');
+            const cityField = form.querySelector('[name="test_city"]');
+            const roomField = form.querySelector('[name="test_room"]');
+            const refresh = () => {
+                setAutofillValue(environmentDefinitionIdField, getGeneratedIdCandidates(environmentDefinitionIdField)[0] || "");
+            };
+            [companyField, cityField, roomField].forEach((field) => {
+                field?.addEventListener("input", refresh);
+                field?.addEventListener("change", refresh);
+            });
+            refresh();
+            return;
+        }
+
+        if (action.endsWith("/product-test-environments/create")) {
+            const environmentIdField = form.querySelector('[name="product_test_environment_id"]');
+            const definitionField = form.querySelector('[name="product_test_environment_definition_id"]');
+            const capturedAtField = form.querySelector('[name="captured_at"]');
+            const refresh = () => {
+                setAutofillValue(environmentIdField, getGeneratedIdCandidates(environmentIdField)[0] || "");
+            };
+            definitionField?.addEventListener("change", refresh);
+            capturedAtField?.addEventListener("input", refresh);
+            capturedAtField?.addEventListener("change", refresh);
+            refresh();
+            return;
+        }
+
+        if (action.endsWith("/product-test-cases/create")) {
+            const caseIdField = form.querySelector('[name="product_test_case_id"]');
+            const categoryField = form.querySelector('[name="test_category"]');
+            const titleField = form.querySelector('[name="product_test_case_title"]');
+            const refresh = () => {
+                setAutofillValue(caseIdField, getGeneratedIdCandidates(caseIdField)[0] || "");
+            };
+            categoryField?.addEventListener("input", refresh);
+            categoryField?.addEventListener("change", refresh);
+            titleField?.addEventListener("input", refresh);
+            titleField?.addEventListener("change", refresh);
+            refresh();
+            return;
+        }
+
+        if (action.endsWith("/product-test-procedures/create")) {
+            const procedureIdField = form.querySelector('[name="product_test_procedure_id"]');
+            const caseField = form.querySelector('[name="product_test_case_id"]');
+            const sequenceField = form.querySelector('[name="procedure_sequence"]');
+            const refresh = () => {
+                setAutofillValue(procedureIdField, getGeneratedIdCandidates(procedureIdField)[0] || "");
+            };
+            caseField?.addEventListener("change", refresh);
+            sequenceField?.addEventListener("input", refresh);
+            sequenceField?.addEventListener("change", refresh);
+            refresh();
+        }
+    };
+    const renderHighlightedText = (text, query) => {
+        const sourceText = String(text || "");
+        const normalizedQuery = String(query || "").trim();
+        if (!normalizedQuery) {
+            return sourceText
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+        }
+        const matchIndex = sourceText.toLowerCase().indexOf(normalizedQuery.toLowerCase());
+        const escaped = (value) =>
+            String(value || "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+        if (matchIndex >= 0) {
+            const before = escaped(sourceText.slice(0, matchIndex));
+            const hit = escaped(sourceText.slice(matchIndex, matchIndex + normalizedQuery.length));
+            const after = escaped(sourceText.slice(matchIndex + normalizedQuery.length));
+            return `${before}<span class="fzf-hit">${hit}</span>${after}`;
+        }
+        return escaped(sourceText);
+    };
+    const ensureAutocompleteShell = (inputElement) => {
+        if (!(inputElement instanceof HTMLInputElement)) {
+            return null;
+        }
+        const parent = inputElement.parentElement;
+        if (parent && parent.classList.contains("autocomplete-shell")) {
+            return parent;
+        }
+        const shell = document.createElement("div");
+        shell.className = "autocomplete-shell";
+        inputElement.parentNode.insertBefore(shell, inputElement);
+        shell.appendChild(inputElement);
+        return shell;
+    };
+    const buildFzfMenu = () => {
+        const menu = document.createElement("div");
+        menu.className = "fzf-menu";
+        menu.hidden = true;
+        return menu;
+    };
+    const fuzzyScore = (candidateText, queryText) => {
+        const candidate = String(candidateText || "").toLowerCase();
+        const query = String(queryText || "").toLowerCase().trim();
+        if (!query) {
+            return 1;
+        }
+        if (candidate.startsWith(query)) {
+            return 400 - candidate.length;
+        }
+        if (candidate.includes(query)) {
+            return 300 - candidate.indexOf(query);
+        }
+        let cursor = 0;
+        let score = 200;
+        for (const character of query) {
+            const index = candidate.indexOf(character, cursor);
+            if (index < 0) {
+                return Number.NEGATIVE_INFINITY;
+            }
+            score -= index - cursor;
+            cursor = index + 1;
+        }
+        return score;
+    };
+    const enhanceFzfLikeInput = (inputElement) => {
+        if (!(inputElement instanceof HTMLInputElement)) {
+            return;
+        }
+        const listId = inputElement.getAttribute("list");
+        const hasGeneratedIdCandidates = Boolean(idValidationRules[String(inputElement.name || "").trim()]);
+        if (!listId && !hasGeneratedIdCandidates) {
+            return;
+        }
+        const listNode = listId ? document.getElementById(listId) : null;
+        if (!listNode && !hasGeneratedIdCandidates) {
+            return;
+        }
+        const shell = ensureAutocompleteShell(inputElement);
+        if (!shell) {
+            return;
+        }
+        const menu = buildFzfMenu();
+        shell.appendChild(menu);
+        let activeIndex = -1;
+        let visibleOptions = [];
+        const readOptions = () =>
+            uniqueNonEmpty([
+                ...(listNode ? Array.from(listNode.querySelectorAll("option")).map((option) => String(option.value || "").trim()) : []),
+                ...getGeneratedIdCandidates(inputElement),
+            ]);
+        const closeMenu = () => {
+            menu.hidden = true;
+            menu.innerHTML = "";
+            activeIndex = -1;
+            visibleOptions = [];
+        };
+        const applyValue = (value) => {
+            inputElement.value = value;
+            inputElement.dispatchEvent(new Event("input", { bubbles: true }));
+            inputElement.dispatchEvent(new Event("change", { bubbles: true }));
+            closeMenu();
+        };
+        const refreshMenu = () => {
+            const queryText = String(inputElement.value || "").trim();
+            visibleOptions = readOptions()
+                .map((value) => ({ value, score: fuzzyScore(value, queryText) }))
+                .filter((record) => record.score > Number.NEGATIVE_INFINITY)
+                .sort((left, right) => right.score - left.score || left.value.localeCompare(right.value))
+                .slice(0, 12)
+                .map((record) => record.value);
+            if (!visibleOptions.length) {
+                closeMenu();
+                return;
+            }
+            if (activeIndex < 0 || activeIndex >= visibleOptions.length) {
+                activeIndex = 0;
+            }
+            menu.innerHTML = visibleOptions.map((value, index) => `
+                <div class="fzf-item${index === activeIndex ? " is-active" : ""}" data-fzf-index="${index}">
+                    ${renderHighlightedText(value, queryText)}
+                </div>
+            `).join("");
+            menu.hidden = false;
+            menu.querySelectorAll("[data-fzf-index]").forEach((itemElement) => {
+                itemElement.addEventListener("mousedown", (event) => {
+                    event.preventDefault();
+                    const index = Number(itemElement.getAttribute("data-fzf-index"));
+                    const targetValue = visibleOptions[index];
+                    if (targetValue) {
+                        applyValue(targetValue);
+                    }
+                });
+            });
+        };
+        const refreshActiveItem = () => {
+            menu.querySelectorAll("[data-fzf-index]").forEach((itemElement, index) => {
+                itemElement.classList.toggle("is-active", index === activeIndex);
+            });
+        };
+        inputElement.setAttribute("autocomplete", "off");
+        inputElement.addEventListener("focus", refreshMenu);
+        inputElement.addEventListener("input", refreshMenu);
+        inputElement.addEventListener("keydown", (event) => {
+            if (menu.hidden || !visibleOptions.length) {
+                return;
+            }
+            if (event.key === "ArrowDown") {
+                event.preventDefault();
+                activeIndex = Math.min(activeIndex + 1, visibleOptions.length - 1);
+                refreshActiveItem();
+                return;
+            }
+            if (event.key === "ArrowUp") {
+                event.preventDefault();
+                activeIndex = Math.max(activeIndex - 1, 0);
+                refreshActiveItem();
+                return;
+            }
+            if (event.key === "Enter" && visibleOptions[activeIndex]) {
+                event.preventDefault();
+                applyValue(visibleOptions[activeIndex]);
+                return;
+            }
+            if (event.key === "Escape") {
+                event.preventDefault();
+                closeMenu();
+            }
+        });
+        inputElement.addEventListener("blur", () => {
+            window.setTimeout(() => {
+                if (!shell.contains(document.activeElement)) {
+                    closeMenu();
+                }
+            }, 120);
+        });
+    };
+
+    const toStorageKey = (form) => `admin_autosave_v1:${form.getAttribute("action") || ""}`;
+    const toStateLabel = (_form) => null;
     const setState = (form, text, type = "") => {
         const state = toStateLabel(form);
         if (!state) {
@@ -347,6 +1248,7 @@
         form.reset();
         localStorage.removeItem(toStorageKey(form));
         form.dataset.lastSubmittedFingerprint = "";
+        form.dataset.lastInvalidIdMessage = "";
         const checkbox = form.querySelector(".admin_input_row_checkbox");
         if (checkbox) {
             checkbox.checked = false;
@@ -358,6 +1260,7 @@
         localStorage.removeItem(toStorageKey(form));
         form.dataset.lastDraftFingerprint = "";
         form.dataset.lastSubmittedFingerprint = "";
+        form.dataset.lastInvalidIdMessage = "";
         const checkbox = form.querySelector(".admin_input_row_checkbox");
         if (checkbox) {
             checkbox.checked = false;
@@ -371,6 +1274,9 @@
         const payload = serialize(form);
         const currentFingerprint = fingerprint(payload);
         if (!hasAnyValue(payload) || !isComplete(form, payload)) {
+            return;
+        }
+        if (!validateIdFieldsBeforeSubmit(form)) {
             return;
         }
         if ((form.dataset.lastSubmittedFingerprint || "") === currentFingerprint) {
@@ -391,21 +1297,33 @@
             if (!response.ok || !data.ok) {
                 const message = (data && data.message) || "자동제출에 실패했습니다.";
                 setState(form, "제출 실패", "error");
-                if (window.openMessageModal) {
-                    window.openMessageModal(message);
-                }
+                showNotice({
+                    message: data.notice_message || message,
+                    level: data.notice_level || "error",
+                    mode: data.notice_mode || "non_modal",
+                    title: data.dialog_title || "",
+                });
                 return;
             }
             form.dataset.lastSubmittedFingerprint = currentFingerprint;
             resetFormAfterSubmit(form);
-            if (window.showGreenNonModalV2) {
-                window.showGreenNonModalV2(`${reasonText}: 자동저장 후 자동제출 되었습니다.`);
-            }
+            const submitSuccessConfig = adminNoticeConfig.submit_success || {};
+            insertSubmittedRow(form, data.created_row);
+            showNotice({
+                message: data.notice_message || `${reasonText}: ${submitSuccessConfig.suffix || "자동제출 되었습니다."}`,
+                level: data.notice_level || submitSuccessConfig.level || "success",
+                mode: data.notice_mode || submitSuccessConfig.mode || "non_modal",
+                title: data.dialog_title || "",
+            });
         } catch (_error) {
             setState(form, "제출 실패", "error");
-            if (window.openMessageModal) {
-                window.openMessageModal("자동제출 중 네트워크 오류가 발생했습니다.");
-            }
+            const networkConfig = adminNoticeConfig.network_error || {};
+            showNotice({
+                message: networkConfig.message || "자동제출 중 네트워크 오류가 발생했습니다.",
+                level: networkConfig.level || "error",
+                mode: networkConfig.mode || "non_modal",
+                title: networkConfig.title || "",
+            });
         } finally {
             form.dataset.submitting = "false";
         }
@@ -414,13 +1332,33 @@
         const payload = serialize(form);
         const payloadChanged = (form.dataset.lastDraftFingerprint || "") !== fingerprint(payload);
         form.dataset.lastDraftFingerprint = fingerprint(payload);
+        const invalidIdField = getInvalidIdField(form);
         if (persistDraft(form, payload) && payloadChanged) {
             setState(form, "자동저장됨", "success");
-            if (window.showGreenNonModalV2) {
-                window.showGreenNonModalV2("자동저장 되었습니다.");
+            if (invalidIdField) {
+                const invalidDraftConfig = adminNoticeConfig.draft_invalid_id || {};
+                const warningMessage = `${invalidIdField.message} ${invalidDraftConfig.suffix || "자동제출 안 한다."}`.trim();
+                if ((form.dataset.lastInvalidIdMessage || "") !== warningMessage) {
+                    showNotice({
+                        message: warningMessage,
+                        level: invalidDraftConfig.level || "error",
+                        mode: invalidDraftConfig.mode || "non_modal",
+                        title: invalidDraftConfig.title || "",
+                    });
+                    form.dataset.lastInvalidIdMessage = warningMessage;
+                }
+            } else {
+                form.dataset.lastInvalidIdMessage = "";
+                showNotice({
+                    message: getNextEmptyColumnSuggestion(form, payload),
+                    level: "info",
+                    mode: "non_modal",
+                    title: "",
+                });
             }
         } else if (!hasAnyValue(payload)) {
             setState(form, "대기");
+            form.dataset.lastInvalidIdMessage = "";
         } else {
             setState(form, isComplete(form, payload) ? "제출 대기" : "입력 중", isComplete(form, payload) ? "pending" : "info");
         }
@@ -433,7 +1371,10 @@
     };
 
     forms.forEach((form) => {
+        attachIdGuides(form);
+        mergeAdminDraftRowIntoOutputTable(form);
         restoreDraft(form);
+        setupSubmittedTableSelection(form);
         setState(form, "대기");
         form.addEventListener("submit", async (event) => {
             event.preventDefault();
@@ -447,10 +1388,20 @@
         const removeButton = form.querySelector(".admin_remove_rows_button");
         if (removeButton) {
             removeButton.addEventListener("click", () => {
-                const checkbox = form.querySelector(".admin_input_row_checkbox");
-                if (checkbox && !checkbox.checked) {
+                const card = form.closest(".card");
+                const draftCheckbox = form.querySelector(".admin_input_row_checkbox");
+                const anySelectedCheckbox = card
+                    ? card.querySelector('input[type="checkbox"]:checked')
+                    : null;
+                if (!anySelectedCheckbox) {
                     if (window.openMessageModal) {
                         window.openMessageModal("Remove Rows 전에 Selected checkbox를 선택해 주세요.");
+                    }
+                    return;
+                }
+                if (draftCheckbox && !draftCheckbox.checked) {
+                    if (window.openMessageModal) {
+                        window.openMessageModal("제출된 목록 행 삭제는 아직 지원 안 합니다. 입력행 Selected checkbox를 선택해 주세요.");
                     }
                     return;
                 }
@@ -468,6 +1419,7 @@
             }
         }
     });
+    Array.from(document.querySelectorAll('form.admin_autosubmit_form input, form.admin_autosubmit_form textarea')).forEach(enhanceFzfLikeInput);
 })();
 </script>
 {% endblock %}

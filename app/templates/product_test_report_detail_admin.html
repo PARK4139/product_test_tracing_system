@@ -16,7 +16,7 @@
 {% if message %}
 <section class="card"><div class="non_modal_notice {{ message_type }}"><div>{{ message }}</div></div></section>
 {% endif %}
-{% if report.product_test_report_status == "approved" %}
+{% if report.product_test_report_status == "APPROVED" %}
 <section class="card">
     <div class="lock_banner">보고서가 승인된 상태다. underlying Run / Result / Evidence / Defect 는 source lock 상태로 취급된다.</div>
 </section>
@@ -28,7 +28,7 @@
             <tr><th>product_test_report_id</th><td>{{ report.product_test_report_id }}</td></tr>
             <tr><th>product_test_release_id</th><td>{{ report.product_test_release_id }}</td></tr>
             <tr><th>product_test_report_type</th><td><span class="status_badge">{{ report.product_test_report_type }}</span></td></tr>
-            <tr><th>product_test_report_status</th><td><span class="status_badge status-{{ report.product_test_report_status }}">{{ report.product_test_report_status }}</span></td></tr>
+            <tr><th>product_test_report_status</th><td><span class="status_badge status-{{ report.product_test_report_status|lower }}">{{ report.product_test_report_status }}</span></td></tr>
             <tr><th>product_test_report_title</th><td>{{ report.product_test_report_title }}</td></tr>
             <tr><th>approved_at</th><td>{{ report.approved_at }}</td></tr>
             <tr><th>approved_by</th><td>{{ report.approved_by }}</td></tr>
@@ -36,8 +36,8 @@
             <tr><th>rejected_by</th><td>{{ report.rejected_by }}</td></tr>
             <tr><th>rejection_reason</th><td>{{ report.rejection_reason }}</td></tr>
             <tr><th>approval_readiness</th><td><span class="status_badge status-{{ 'failed' if approval_blocked else 'approved' }}">{{ "blocked" if approval_blocked else "ready" }}</span></td></tr>
-            <tr><th>source_lock_status</th><td><span class="status_badge status-{{ 'approved' if report.product_test_report_status == 'approved' else 'drafted' }}">{{ "locked" if report.product_test_report_status == "approved" else "unlocked" }}</span></td></tr>
-            <tr><th>remark</th><td>{{ report.remark }}</td></tr>
+            <tr><th>source_lock_status</th><td><span class="status_badge status-{{ 'approved' if report.product_test_report_status == 'APPROVED' else 'drafted' }}">{{ "locked" if report.product_test_report_status == "APPROVED" else "unlocked" }}</span></td></tr>
+            <tr><th>remark</th><td>{{ report.remark or '' }}</td></tr>
         </tbody>
     </table>
     <div class="table_action_bar" style="margin-top:12px;">
@@ -53,12 +53,12 @@
             <button type="submit">Create Snapshot</button>
         </form>
         <form method="post" action="/admin/product-test-reports/{{ report.product_test_report_id }}/approve">
-            <button type="submit" {% if report.product_test_report_status != "drafted" or approval_blocked %}disabled{% endif %}>Approve</button>
+            <button type="submit" {% if report.product_test_report_status != "DRAFT" or approval_blocked %}disabled{% endif %}>Approve</button>
         </form>
         <form method="post" action="/admin/product-test-reports/{{ report.product_test_report_id }}/reject" class="dropdown_inline_form">
             <label>rejection_reason<span class="required_marker">*</span></label>
             <input type="text" name="rejection_reason" required placeholder="reject reason">
-            <button type="submit" {% if report.product_test_report_status != "drafted" %}disabled{% endif %}>Reject</button>
+            <button type="submit" {% if report.product_test_report_status != "DRAFT" %}disabled{% endif %}>Reject</button>
         </form>
     </div>
     {% if approval_blocked %}
@@ -80,7 +80,7 @@
                     <td>{{ row.source_data_locked }}</td>
                     <td>{{ row.created_at }}</td>
                     <td>{{ row.created_by }}</td>
-                    <td>{{ row.remark }}</td>
+                    <td>{{ row.remark or '' }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -97,7 +97,7 @@
             <tr><th>upstream_release_system</th><td>{{ release_summary.upstream_release_system }}</td></tr>
             <tr><th>release_stage</th><td>{{ release_summary.release_stage }}</td></tr>
             <tr><th>release_sequence</th><td>{{ release_summary.release_sequence }}</td></tr>
-            <tr><th>product_test_release_status</th><td><span class="status_badge status-{{ release_summary.product_test_release_status }}">{{ release_summary.product_test_release_status }}</span></td></tr>
+            <tr><th>product_test_release_status</th><td><span class="status_badge status-{{ release_summary.product_test_release_status|lower }}">{{ release_summary.product_test_release_status }}</span></td></tr>
         </tbody>
     </table>
 </section>
@@ -288,7 +288,7 @@
                     <td>{{ evidence.file_hash }}</td>
                     <td>{{ evidence.captured_at }}</td>
                     <td>{{ evidence.captured_by }}</td>
-                    <td>{{ evidence.remark }}</td>
+                    <td>{{ evidence.remark or '' }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

@@ -1,10 +1,9 @@
-import os
-
 from fastapi import APIRouter, HTTPException, Query, Request, status
 from fastapi.responses import RedirectResponse
 from sqlalchemy import select
 
 from app.auth import ROLE_ADMIN, ROLE_MASTER_ADMIN, ROLE_TESTER
+from app.config import is_qc_mode_enabled
 from app.deps import current_role_name_dependency
 from app.deps import database_session_dependency
 from app.schemas import TestResultDeleteInput, TestResultPartialInput, TestResultSaveAllInput
@@ -65,7 +64,7 @@ def render_tester_dashboard(
 ):
     if current_role_name != ROLE_TESTER:
         return RedirectResponse(url="/admin", status_code=303)
-    qc_mode_enabled = os.getenv("QC_MODE", "True").strip().lower() in {"1", "true", "yes", "on"}
+    qc_mode_enabled = is_qc_mode_enabled()
     if qc_mode_enabled and not (request.cookies.get("phone_number") or "").strip():
         return RedirectResponse(url="/login", status_code=303)
     phone_number = (request.cookies.get("phone_number") or "").strip()

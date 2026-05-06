@@ -46,6 +46,7 @@ def initialize_database() -> None:
 
     models.Base.metadata.create_all(bind=engine)
     _ensure_product_test_indexes()
+    _migrate_product_test_status_values_to_uppercase()
     _ensure_user_account_columns()
     _migrate_test_result_to_four_key_if_needed()
     _ensure_test_result_columns()
@@ -54,6 +55,71 @@ def initialize_database() -> None:
     _backfill_form_submissions()
     _ensure_ui_sample_profiles()
     _ensure_default_dropdown_options()
+
+
+def _migrate_product_test_status_values_to_uppercase() -> None:
+    status_columns = (
+        ("product_test_release", "product_test_release_status"),
+        ("product_test_target_definition", "product_test_target_definition_status"),
+        ("product_test_target", "product_test_target_status"),
+        ("product_test_environment_definition", "product_test_environment_definition_status"),
+        ("product_test_environment", "product_test_environment_status"),
+        ("product_test_case", "product_test_case_status"),
+        ("product_test_procedure", "product_test_procedure_status"),
+        ("product_test_report", "product_test_report_status"),
+    )
+    with engine.begin() as connection:
+        for table_name, column_name in status_columns:
+            table_exists = connection.execute(
+                text(
+                    "SELECT 1 FROM sqlite_master WHERE type='table' AND name=:table_name LIMIT 1"
+                ),
+                {"table_name": table_name},
+            ).fetchone()
+            if table_exists is None:
+                continue
+            connection.execute(
+                text(
+                    f"""
+                    UPDATE {table_name}
+                    SET {column_name} = UPPER(TRIM({column_name}))
+                    WHERE {column_name} IS NOT NULL
+                      AND TRIM({column_name}) <> ''
+                      AND {column_name} != UPPER(TRIM({column_name}))
+                    """
+                )
+            )
+
+        transition_table_exists = connection.execute(
+            text(
+                "SELECT 1 FROM sqlite_master WHERE type='table' AND name='product_test_status_transition' LIMIT 1"
+            )
+        ).fetchone()
+        if transition_table_exists is not None:
+            connection.execute(
+                text(
+                    """
+                    UPDATE product_test_status_transition
+                    SET from_status = UPPER(TRIM(from_status))
+                    WHERE entity_type IN ('product_test_release', 'product_test_report')
+                      AND from_status IS NOT NULL
+                      AND TRIM(from_status) <> ''
+                      AND from_status != UPPER(TRIM(from_status))
+                    """
+                )
+            )
+            connection.execute(
+                text(
+                    """
+                    UPDATE product_test_status_transition
+                    SET to_status = UPPER(TRIM(to_status))
+                    WHERE entity_type IN ('product_test_release', 'product_test_report')
+                      AND to_status IS NOT NULL
+                      AND TRIM(to_status) <> ''
+                      AND to_status != UPPER(TRIM(to_status))
+                    """
+                )
+            )
 
 
 def _ensure_user_account_columns() -> None:

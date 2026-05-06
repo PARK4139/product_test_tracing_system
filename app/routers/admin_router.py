@@ -1,4 +1,3 @@
-import os
 import csv
 from io import BytesIO, StringIO
 from datetime import timedelta
@@ -9,6 +8,7 @@ from sqlalchemy import and_, exists, func, or_, select
 from sqlalchemy.orm import Session
 
 from app.auth import ROLE_ADMIN, ROLE_MASTER_ADMIN, ROLE_TESTER
+from app.config import is_qc_mode_enabled
 from app.deps import current_role_name_dependency, database_session_dependency
 from app.models import FormSubmission, TestResult, UserAccount, get_utc_now_datetime
 from app.schemas import TestResultReviewCompleteInput
@@ -50,6 +50,8 @@ from app.services.product_test_run_service import (
     create_product_test_release,
     create_product_test_target,
     create_product_test_target_definition,
+    get_product_test_identifier_client_rules,
+    get_product_test_identifier_guides,
     build_product_test_report_export_rows,
     build_product_test_run_export_rows,
     build_product_test_trace_export_rows,
@@ -79,6 +81,35 @@ from app.services.product_test_run_service import (
 admin_router = APIRouter(prefix="/admin", tags=["admin"])
 
 
+ADMIN_FORM_NOTICE_CONFIG = {
+    "draft_saved": {
+        "message": "브라우저 임시저장 되었습니다.",
+        "level": "success",
+        "mode": "non_modal",
+    },
+    "draft_invalid_id": {
+        "suffix": "자동제출 안 한다.",
+        "level": "error",
+        "mode": "non_modal",
+    },
+    "submit_success": {
+        "suffix": "자동제출 되었습니다.",
+        "level": "success",
+        "mode": "non_modal",
+    },
+    "network_error": {
+        "message": "자동제출 중 네트워크 오류가 발생했습니다.",
+        "level": "error",
+        "mode": "non_modal",
+    },
+    "duplicate_id": {
+        "title": "중복 ID",
+        "level": "error",
+        "mode": "modal",
+    },
+}
+
+
 def _is_ajax_request(request: Request) -> bool:
     requested_with = (request.headers.get("x-requested-with") or "").strip().lower()
     accept_header = (request.headers.get("accept") or "").strip().lower()
@@ -86,8 +117,9 @@ def _is_ajax_request(request: Request) -> bool:
 
 
 def _admin_create_error_response(request: Request, target_url: str, message: str):
+    payload = _admin_notice_payload_from_message(message=message, ok=False)
     if _is_ajax_request(request):
-        return JSONResponse({"ok": False, "message": message}, status_code=400)
+        return JSONResponse(payload, status_code=400)
     return RedirectResponse(url=f"{target_url}?message={message}&message_type=error", status_code=303)
 
 
@@ -97,12 +129,52 @@ def _admin_create_success_response(
     message: str,
     extra_payload: dict | None = None,
 ):
+    payload = _admin_notice_payload_from_message(message=message, ok=True)
     if _is_ajax_request(request):
-        payload = {"ok": True, "message": message}
+        response_payload = dict(payload)
         if extra_payload:
-            payload.update(extra_payload)
-        return JSONResponse(payload)
+            response_payload.update(extra_payload)
+        return JSONResponse(response_payload)
     return RedirectResponse(url=f"{target_url}?message={message}&message_type=success", status_code=303)
+
+
+def _admin_notice_payload_from_message(*, message: str, ok: bool) -> dict:
+    normalized = str(message or "").strip()
+    payload = {
+        "ok": ok,
+        "message": normalized,
+        "notice_message": normalized,
+        "notice_level": "success" if ok else "error",
+        "notice_mode": "non_modal",
+        "dialog_title": "",
+    }
+    if ok:
+        success_config = ADMIN_FORM_NOTICE_CONFIG["submit_success"]
+        payload["notice_message"] = success_config["suffix"]
+        payload["notice_level"] = success_config["level"]
+        payload["notice_mode"] = success_config["mode"]
+        payload["state_code"] = "submit_success"
+        return payload
+    lowered = normalized.lower()
+    for field_name, guide_message in get_product_test_identifier_guides().items():
+        expected_error = f"{field_name} format is invalid."
+        if lowered == expected_error.lower():
+            payload["notice_message"] = guide_message
+            payload["state_code"] = "invalid_id"
+            return payload
+    if "already exists" in lowered:
+        duplicate_field_name = normalized.split(" ", 1)[0].strip().upper()
+        payload["notice_mode"] = "modal"
+        payload["dialog_title"] = ADMIN_FORM_NOTICE_CONFIG["duplicate_id"]["title"]
+        payload["notice_message"] = (
+            f"{duplicate_field_name} 중복이다. "
+            "다른 ID 넣어라. "
+            "다시 제출해라."
+        )
+        payload["state_code"] = "duplicate_id"
+        return payload
+    payload["state_code"] = "submit_error"
+    return payload
 
 
 def _csv_streaming_response(*, rows: list[list[str]], file_name: str) -> StreamingResponse:
@@ -130,7 +202,7 @@ def _ensure_admin_role(current_role_name: str) -> None:
 
 
 def _admin_identity_context(database_session: Session, request: Request) -> dict:
-    qc_mode_enabled = os.getenv("QC_MODE", "True").strip().lower() in {"1", "true", "yes", "on"}
+    qc_mode_enabled = is_qc_mode_enabled()
     cookie_role_name = (request.cookies.get("role_name") or "").strip()
     if qc_mode_enabled and cookie_role_name == ROLE_MASTER_ADMIN:
         return {
@@ -248,9 +320,9 @@ def _render_admin_shell_template(
 def _sample_product_test_release_rows() -> list[dict]:
     return [
         {
-            "product_test_release_id": "PTREL-MERCUSYS_MR30G-1.0.0-RC1",
-            "upstream_release_id": "MERCUSYS_MR30G-1.0.0",
-            "upstream_release_system": "MERCUSYS",
+            "product_test_release_id": "QA_PTREL-HRK_9000A-1.0.0-RC1",
+            "upstream_release_id": "HRK_9000A-1.0.0",
+            "upstream_release_system": "Huvitz Software Release System",
             "release_stage": "RC",
             "release_sequence": 1,
             "product_test_release_status": "testing",
@@ -258,12 +330,12 @@ def _sample_product_test_release_rows() -> list[dict]:
             "created_by": "SQA_MASTER",
             "updated_at": "2026-05-05 10:30:00",
             "updated_by": "SQA_MASTER",
-            "remark": "RC baseline",
+            "remark": "HRK-9000A RC baseline",
         },
         {
-            "product_test_release_id": "PTREL-MERCUSYS_MR30G-1.0.0-GA",
-            "upstream_release_id": "MERCUSYS_MR30G-1.0.0",
-            "upstream_release_system": "MERCUSYS",
+            "product_test_release_id": "QA_PTREL-HRK_9000A-1.0.0-GA",
+            "upstream_release_id": "HRK_9000A-1.0.0",
+            "upstream_release_system": "Huvitz Software Release System",
             "release_stage": "GA",
             "release_sequence": 0,
             "product_test_release_status": "drafted",
@@ -279,8 +351,8 @@ def _sample_product_test_release_rows() -> list[dict]:
 def _sample_product_test_target_definition_rows() -> list[dict]:
     return [
         {
-            "product_test_target_definition_id": "PTTGTDEF-HUVITZ_HRK_9000A",
-            "product_code": "HUVITZ_HRK_9000A",
+            "product_test_target_definition_id": "QA_PTTGTDEF-HRK_9000A",
+            "product_code": "HRK_9000A",
             "manufacturer": "Huvitz",
             "model_name": "HRK-9000A",
             "hardware_revision": "A",
@@ -294,7 +366,7 @@ def _sample_product_test_target_definition_rows() -> list[dict]:
             "remark": "",
         },
         {
-            "product_test_target_definition_id": "PTTGTDEF-MERCUSYS_MR30G",
+            "product_test_target_definition_id": "QA_PTTGTDEF-MERCUSYS_MR30G",
             "product_code": "MERCUSYS_MR30G",
             "manufacturer": "MERCUSYS",
             "model_name": "MR30G",
@@ -314,8 +386,8 @@ def _sample_product_test_target_definition_rows() -> list[dict]:
 def _sample_product_test_target_rows() -> list[dict]:
     return [
         {
-            "product_test_target_id": "PTTGT-MERCUSYS_MR30G-SN001",
-            "product_test_target_definition_id": "PTTGTDEF-MERCUSYS_MR30G",
+            "product_test_target_id": "QA_PTTGT-HRK_9000A-SN001",
+            "product_test_target_definition_id": "QA_PTTGTDEF-HRK_9000A",
             "serial_number": "SN001",
             "software_version": "1.0.0",
             "firmware_version": "1.0.0",
@@ -333,7 +405,7 @@ def _sample_product_test_target_rows() -> list[dict]:
 def _sample_product_test_environment_definition_rows() -> list[dict]:
     return [
         {
-            "product_test_environment_definition_id": "PTENVDEF-HUVITZ-ANYANG-CONNECTIVITY_ROOM",
+            "product_test_environment_definition_id": "QA_PTENVDEF-HUVITZ-ANYANG-CONNECTIVITY_ROOM",
             "product_test_environment_definition_name": "Huvitz Anyang Connectivity Room Standard Environment",
             "test_country": "Korea",
             "test_city": "Anyang",
@@ -363,8 +435,8 @@ def _sample_product_test_environment_definition_rows() -> list[dict]:
 def _sample_product_test_environment_rows() -> list[dict]:
     return [
         {
-            "product_test_environment_id": "PTENV-HUVITZ-ANYANG-CONNECTIVITY_ROOM-20260504-001",
-            "product_test_environment_definition_id": "PTENVDEF-HUVITZ-ANYANG-CONNECTIVITY_ROOM",
+            "product_test_environment_id": "QA_PTENV-HUVITZ-ANYANG-CONNECTIVITY_ROOM-20260504-001",
+            "product_test_environment_definition_id": "QA_PTENVDEF-HUVITZ-ANYANG-CONNECTIVITY_ROOM",
             "product_test_environment_name": "Anyang Connectivity Room Snapshot",
             "test_computer_name": "SQA-PC-01",
             "operating_system_version": "Windows 10",
@@ -387,7 +459,7 @@ def _sample_product_test_environment_rows() -> list[dict]:
 def _sample_product_test_case_rows() -> list[dict]:
     return [
         {
-            "product_test_case_id": "PTCASE-WIFI-AP_CONFIG-001",
+            "product_test_case_id": "QA_PTCASE-WIFI-AP_CONFIG-001",
             "product_test_case_title": "WiFi AP 설정 적합성 검증",
             "test_category": "WiFi",
             "test_objective": "RS9116 WiFi 모듈 기준으로 AP 설정이 권장 조건을 만족하는지 확인",
@@ -406,8 +478,8 @@ def _sample_product_test_case_rows() -> list[dict]:
 def _sample_product_test_procedure_rows() -> list[dict]:
     return [
         {
-            "product_test_procedure_id": "PTPROC-WIFI-AP_CONFIG-001-001",
-            "product_test_case_id": "PTCASE-WIFI-AP_CONFIG-001",
+            "product_test_procedure_id": "QA_PTPROC-WIFI-AP_CONFIG-001-001",
+            "product_test_case_id": "QA_PTCASE-WIFI-AP_CONFIG-001",
             "procedure_sequence": 1,
             "procedure_action": "WiFi Band 분리설정 확인",
             "expected_result": "2.4GHz와 5GHz SSID가 분리되어 있어야 함",
@@ -421,8 +493,8 @@ def _sample_product_test_procedure_rows() -> list[dict]:
             "remark": "분리하지 않은 경우 임베디드 장비가 2.4GHz로 할당될 가능성이 높음.",
         },
         {
-            "product_test_procedure_id": "PTPROC-WIFI-AP_CONFIG-001-002",
-            "product_test_case_id": "PTCASE-WIFI-AP_CONFIG-001",
+            "product_test_procedure_id": "QA_PTPROC-WIFI-AP_CONFIG-001-002",
+            "product_test_case_id": "QA_PTCASE-WIFI-AP_CONFIG-001",
             "procedure_sequence": 2,
             "procedure_action": "WiFi Channel 설정 확인",
             "expected_result": "2.4GHz는 1~11번, 5GHz는 36/40/44/48 고정 채널이어야 함",
@@ -453,6 +525,9 @@ def render_admin_dashboard(
         extra_context={
             "message": (request.query_params.get("message") or "").strip(),
             "message_type": (request.query_params.get("message_type") or "info").strip(),
+            "admin_id_rules": get_product_test_identifier_client_rules(),
+            "admin_id_guides": get_product_test_identifier_guides(),
+            "admin_notice_config": ADMIN_FORM_NOTICE_CONFIG,
             "release_rows": list_product_test_releases(database_session),
             "release_stage_values": RELEASE_STAGE_VALUES,
             "product_test_release_status_values": PRODUCT_TEST_RELEASE_STATUS_VALUES,
@@ -573,7 +648,7 @@ def create_product_test_release_admin(
 ):
     _ensure_admin_role(current_role_name)
     try:
-        create_product_test_release(
+        created_row = create_product_test_release(
             database_session,
             product_test_release_id=product_test_release_id,
             upstream_release_id=upstream_release_id,
@@ -587,7 +662,7 @@ def create_product_test_release_admin(
         target_url = (return_to or "").strip() or "/admin/product-test-releases"
         return _admin_create_error_response(request, target_url, str(exception))
     target_url = (return_to or "").strip() or "/admin/product-test-releases"
-    return _admin_create_success_response(request, target_url, "Saved")
+    return _admin_create_success_response(request, target_url, "Saved", {"created_row": created_row})
 
 
 @admin_router.get("/product-test-target-definitions")
@@ -629,7 +704,7 @@ def create_product_test_target_definition_admin(
 ):
     _ensure_admin_role(current_role_name)
     try:
-        create_product_test_target_definition(
+        created_row = create_product_test_target_definition(
             database_session,
             product_test_target_definition_id=product_test_target_definition_id,
             product_code=product_code,
@@ -646,7 +721,7 @@ def create_product_test_target_definition_admin(
         target_url = (return_to or "").strip() or "/admin/product-test-target-definitions"
         return _admin_create_error_response(request, target_url, str(exception))
     target_url = (return_to or "").strip() or "/admin/product-test-target-definitions"
-    return _admin_create_success_response(request, target_url, "Saved")
+    return _admin_create_success_response(request, target_url, "Saved", {"created_row": created_row})
 
 
 @admin_router.get("/product-test-targets")
@@ -688,7 +763,7 @@ def create_product_test_target_admin(
 ):
     _ensure_admin_role(current_role_name)
     try:
-        create_product_test_target(
+        created_row = create_product_test_target(
             database_session,
             product_test_target_id=product_test_target_id,
             product_test_target_definition_id=product_test_target_definition_id,
@@ -704,7 +779,7 @@ def create_product_test_target_admin(
         target_url = (return_to or "").strip() or "/admin/product-test-targets"
         return _admin_create_error_response(request, target_url, str(exception))
     target_url = (return_to or "").strip() or "/admin/product-test-targets"
-    return _admin_create_success_response(request, target_url, "Saved")
+    return _admin_create_success_response(request, target_url, "Saved", {"created_row": created_row})
 
 
 @admin_router.get("/product-test-environment-definitions")
@@ -756,7 +831,7 @@ def create_product_test_environment_definition_admin(
 ):
     _ensure_admin_role(current_role_name)
     try:
-        create_product_test_environment_definition(
+        created_row = create_product_test_environment_definition(
             database_session,
             product_test_environment_definition_id=product_test_environment_definition_id,
             product_test_environment_definition_name=product_test_environment_definition_name,
@@ -783,7 +858,7 @@ def create_product_test_environment_definition_admin(
         target_url = (return_to or "").strip() or "/admin/product-test-environment-definitions"
         return _admin_create_error_response(request, target_url, str(exception))
     target_url = (return_to or "").strip() or "/admin/product-test-environment-definitions"
-    return _admin_create_success_response(request, target_url, "Saved")
+    return _admin_create_success_response(request, target_url, "Saved", {"created_row": created_row})
 
 
 @admin_router.get("/product-test-environments")
@@ -830,7 +905,7 @@ def create_product_test_environment_admin(
 ):
     _ensure_admin_role(current_role_name)
     try:
-        create_product_test_environment(
+        created_row = create_product_test_environment(
             database_session,
             product_test_environment_id=product_test_environment_id,
             product_test_environment_definition_id=product_test_environment_definition_id,
@@ -851,7 +926,7 @@ def create_product_test_environment_admin(
         target_url = (return_to or "").strip() or "/admin/product-test-environments"
         return _admin_create_error_response(request, target_url, str(exception))
     target_url = (return_to or "").strip() or "/admin/product-test-environments"
-    return _admin_create_success_response(request, target_url, "Saved")
+    return _admin_create_success_response(request, target_url, "Saved", {"created_row": created_row})
 
 
 @admin_router.get("/product-test-cases")
@@ -892,7 +967,7 @@ def create_product_test_case_admin(
 ):
     _ensure_admin_role(current_role_name)
     try:
-        create_product_test_case(
+        created_row = create_product_test_case(
             database_session,
             product_test_case_id=product_test_case_id,
             product_test_case_title=product_test_case_title,
@@ -908,7 +983,7 @@ def create_product_test_case_admin(
         target_url = (return_to or "").strip() or "/admin/product-test-cases"
         return _admin_create_error_response(request, target_url, str(exception))
     target_url = (return_to or "").strip() or "/admin/product-test-cases"
-    return _admin_create_success_response(request, target_url, "Saved")
+    return _admin_create_success_response(request, target_url, "Saved", {"created_row": created_row})
 
 
 @admin_router.get("/product-test-procedures")
@@ -952,7 +1027,7 @@ def create_product_test_procedure_admin(
 ):
     _ensure_admin_role(current_role_name)
     try:
-        create_product_test_procedure(
+        created_row = create_product_test_procedure(
             database_session,
             product_test_procedure_id=product_test_procedure_id,
             product_test_case_id=product_test_case_id,
@@ -969,7 +1044,7 @@ def create_product_test_procedure_admin(
         target_url = (return_to or "").strip() or "/admin/product-test-procedures"
         return _admin_create_error_response(request, target_url, str(exception))
     target_url = (return_to or "").strip() or "/admin/product-test-procedures"
-    return _admin_create_success_response(request, target_url, "Saved")
+    return _admin_create_success_response(request, target_url, "Saved", {"created_row": created_row})
 
 
 @admin_router.get("/product-test-reports")
@@ -1027,7 +1102,10 @@ def create_product_test_report_admin(
             request,
             target_url,
             "Report created",
-            {"product_test_report_id": report["product_test_report_id"]},
+            {
+                "product_test_report_id": report["product_test_report_id"],
+                "created_row": report,
+            },
         )
     if _is_ajax_request(request):
         return JSONResponse(

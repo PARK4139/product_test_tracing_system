@@ -29,7 +29,7 @@
     <div class="tester_table_wrap">
         <table class="basic_table">
             <thead><tr><th>ID</th><th>Upstream</th><th>System</th><th>Stage</th><th>Seq</th><th>Status</th><th>Created</th><th>Created By</th><th>Updated</th><th>Updated By</th><th>Remark</th><th>Trace</th></tr></thead>
-            <tbody>{% for row in rows %}<tr><td>{{ row.product_test_release_id }}</td><td>{{ row.upstream_release_id }}</td><td>{{ row.upstream_release_system }}</td><td>{{ row.release_stage }}</td><td>{{ row.release_sequence }}</td><td><span class="status_badge status-{{ row.product_test_release_status }}">{{ row.product_test_release_status }}</span></td><td>{{ row.created_at }}</td><td>{{ row.created_by }}</td><td>{{ row.updated_at }}</td><td>{{ row.updated_by }}</td><td>{{ row.remark }}</td><td><a href="/admin/product-test-releases/{{ row.product_test_release_id }}/trace" class="project_standard_button">Trace</a></td></tr>{% endfor %}</tbody>
+            <tbody>{% for row in rows %}<tr><td>{{ row.product_test_release_id }}</td><td>{{ row.upstream_release_id }}</td><td>{{ row.upstream_release_system }}</td><td>{{ row.release_stage }}</td><td>{{ row.release_sequence }}</td><td><span class="status_badge status-{{ row.product_test_release_status|lower }}">{{ row.product_test_release_status }}</span></td><td>{{ row.created_at }}</td><td>{{ row.created_by }}</td><td>{{ row.updated_at }}</td><td>{{ row.updated_by }}</td><td>{{ row.remark or '' }}</td><td><a href="/admin/product-test-releases/{{ row.product_test_release_id }}/trace" class="project_standard_button">Trace</a></td></tr>{% endfor %}</tbody>
         </table>
     </div>
 </section>

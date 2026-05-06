@@ -26,7 +26,7 @@
             <tr><th>source_data_locked</th><td>{{ snapshot.source_data_locked }}</td></tr>
             <tr><th>created_at</th><td>{{ snapshot.created_at }}</td></tr>
             <tr><th>created_by</th><td>{{ snapshot.created_by }}</td></tr>
-            <tr><th>remark</th><td>{{ snapshot.remark }}</td></tr>
+            <tr><th>remark</th><td>{{ snapshot.remark or '' }}</td></tr>
         </tbody>
     </table>
 </section>

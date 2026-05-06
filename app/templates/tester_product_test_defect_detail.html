@@ -24,7 +24,7 @@
             <tr><th>assigned_to</th><td>{{ defect.assigned_to }}</td></tr>
             <tr><th>fix_description</th><td>{{ defect.fix_description }}</td></tr>
             <tr><th>retest_product_test_result_id</th><td>{% if defect.retest_product_test_result_id %}<a href="/tester/product-test-runs/{{ retest_result.product_test_run_id if retest_result else original_result.product_test_run_id }}">{{ defect.retest_product_test_result_id }}</a>{% else %}{% endif %}</td></tr>
-            <tr><th>remark</th><td>{{ defect.remark }}</td></tr>
+            <tr><th>remark</th><td>{{ defect.remark or '' }}</td></tr>
         </tbody>
     </table>
 </section>
@@ -65,7 +65,7 @@
     <div class="tester_table_wrap">
         <table class="basic_table">
             <thead><tr><th>Evidence ID</th><th>Type</th><th>File Name</th><th>File Path</th><th>Captured At</th><th>Captured By</th><th>Remark</th></tr></thead>
-            <tbody>{% for row in evidence_rows %}<tr><td>{{ row.product_test_evidence_id }}</td><td>{{ row.product_test_evidence_type }}</td><td>{{ row.file_name }}</td><td>{{ row.file_path }}</td><td>{{ row.captured_at }}</td><td>{{ row.captured_by }}</td><td>{{ row.remark }}</td></tr>{% endfor %}</tbody>
+            <tbody>{% for row in evidence_rows %}<tr><td>{{ row.product_test_evidence_id }}</td><td>{{ row.product_test_evidence_type }}</td><td>{{ row.file_name }}</td><td>{{ row.file_path }}</td><td>{{ row.captured_at }}</td><td>{{ row.captured_by }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
         </table>
     </div>
     <form method="post" action="/tester/product-test-evidence/save" class="dropdown_inline_form" style="margin-top:12px;">

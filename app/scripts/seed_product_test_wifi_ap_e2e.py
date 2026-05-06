@@ -15,7 +15,7 @@ def main() -> None:
         seed_product_test_wifi_ap_configuration_sample_data(database_session)
         detail = get_product_test_report_detail(
             database_session,
-            "PTRPT-PTREL-MERCUSYS_MR30G-1.0.0-RC1-FULL-001",
+            "QA_PTRPT-QA_PTREL-MERCUSYS_MR30G-1.0.0-RC1-FULL-001",
         )
     if detail is None:
         raise SystemExit("Seed completed but report detail was not found.")

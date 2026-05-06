@@ -77,14 +77,14 @@
             <tr><th>product_test_release_id</th><td>{{ trace_detail.release.product_test_release_id }}</td></tr>
             <tr><th>upstream_release_id</th><td>{{ trace_detail.release.upstream_release_id }}</td></tr>
             <tr><th>release_stage</th><td>{{ trace_detail.release.release_stage }}</td></tr>
-            <tr><th>product_test_release_status</th><td><span class="status_badge status-{{ trace_detail.release.product_test_release_status }}">{{ trace_detail.release.product_test_release_status }}</span></td></tr>
+            <tr><th>product_test_release_status</th><td><span class="status_badge status-{{ trace_detail.release.product_test_release_status|lower }}">{{ trace_detail.release.product_test_release_status }}</span></td></tr>
         </tbody>
     </table>
 </section>
 {% for run in trace_detail.run_trace_rows %}
 <section class="card">
     <div class="section_header_row"><h3>Runs | {{ run.product_test_run_id }}</h3></div>
-    <div class="detail_guide">Target: {{ run.target_summary.product_code }} / {{ run.target_summary.serial_number }} | Environment: {{ run.environment_summary.product_test_environment_name }} | Status: <span class="status_badge status-{{ run.product_test_run_status }}">{{ run.product_test_run_status }}</span></div>
+    <div class="detail_guide">Target: {{ run.target_summary.product_code }} / {{ run.target_summary.serial_number }} | Environment: {{ run.environment_summary.product_test_environment_name }} | Status: <span class="status_badge status-{{ run.product_test_run_status|lower }}">{{ run.product_test_run_status }}</span></div>
     {% for result in run.result_rows %}
     <div class="detail_guide" style="margin-top:10px;">
         Result: <a href="/admin/product-test-results/{{ result.product_test_result_id }}/trace">{{ result.product_test_result_id }}</a>
@@ -204,7 +204,7 @@
                 <tr>
                     <td>{{ row.product_test_report_id }}</td>
                     <td>{{ row.product_test_report_type }}</td>
-                    <td><span class="status_badge status-{{ row.product_test_report_status }}">{{ row.product_test_report_status }}</span></td>
+                    <td><span class="status_badge status-{{ row.product_test_report_status|lower }}">{{ row.product_test_report_status }}</span></td>
                     <td>{{ row.product_test_report_title }}</td>
                     <td><a href="/admin/product-test-reports/{{ row.product_test_report_id }}" class="project_standard_button">상세</a></td>
                 </tr>

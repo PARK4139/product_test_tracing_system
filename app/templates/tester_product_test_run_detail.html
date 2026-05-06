@@ -23,7 +23,7 @@
                 <div><strong>ID</strong><span>{{ release_summary.product_test_release_id }}</span></div>
                 <div><strong>Upstream</strong><span>{{ release_summary.upstream_release_id }}</span></div>
                 <div><strong>Stage</strong><span>{{ release_summary.release_stage }}</span></div>
-                <div><strong>Status</strong><span class="status_badge status-{{ release_summary.product_test_release_status }}">{{ release_summary.product_test_release_status }}</span></div>
+                <div><strong>Status</strong><span class="status_badge status-{{ release_summary.product_test_release_status|lower }}">{{ release_summary.product_test_release_status }}</span></div>
             </div>
         </div>
         <div class="summary_panel">
@@ -136,7 +136,7 @@
                             <div class="detail_guide product_test_reason_hint"></div>
                         </td>
                         <td><span class="status_badge">{{ row.evidence_count }}</span></td>
-                        <td><input name="remark" value="{{ row.remark }}"></td>
+                        <td><input name="remark" value="{{ row.remark or '' }}"></td>
                         <td><button type="submit" {% if run.status != 'running' or run.source_locked %}disabled{% endif %}>Save Procedure Results</button></td>
                     </form>
                 </tr>
@@ -173,7 +173,7 @@
     <div class="tester_table_wrap">
         <table class="basic_table">
             <thead><tr><th>Evidence ID</th><th>Procedure Result ID</th><th>Type</th><th>File Name</th><th>File Path</th><th>Captured At</th><th>Captured By</th><th>Remark</th></tr></thead>
-            <tbody>{% for row in evidence_rows %}<tr><td>{{ row.product_test_evidence_id }}</td><td>{{ row.product_test_procedure_result_id }}</td><td>{{ row.product_test_evidence_type }}</td><td>{{ row.file_name }}</td><td>{{ row.file_path }}</td><td>{{ row.captured_at }}</td><td>{{ row.captured_by }}</td><td>{{ row.remark }}</td></tr>{% endfor %}</tbody>
+            <tbody>{% for row in evidence_rows %}<tr><td>{{ row.product_test_evidence_id }}</td><td>{{ row.product_test_procedure_result_id }}</td><td>{{ row.product_test_evidence_type }}</td><td>{{ row.file_name }}</td><td>{{ row.file_path }}</td><td>{{ row.captured_at }}</td><td>{{ row.captured_by }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
         </table>
     </div>
 </section>
@@ -206,7 +206,7 @@
     <div class="tester_table_wrap">
         <table class="basic_table">
             <thead><tr><th>Defect ID</th><th>Procedure Result ID</th><th>Title</th><th>Severity</th><th>Priority</th><th>Status</th><th>Assigned To</th><th>Remark</th><th>Action</th></tr></thead>
-            <tbody>{% for row in defect_rows %}<tr><td>{{ row.product_test_defect_id }}</td><td>{{ row.product_test_procedure_result_id }}</td><td>{{ row.defect_title }}</td><td><span class="status_badge status-{{ row.defect_severity }}">{{ row.defect_severity }}</span></td><td><span class="status_badge status-{{ row.defect_priority }}">{{ row.defect_priority }}</span></td><td><span class="status_badge status-{{ row.status }}">{{ row.status }}</span></td><td>{{ row.assigned_to }}</td><td>{{ row.remark }}</td><td><a href="/tester/product-test-defects/{{ row.product_test_defect_id }}" class="project_standard_button">상세</a></td></tr>{% endfor %}</tbody>
+            <tbody>{% for row in defect_rows %}<tr><td>{{ row.product_test_defect_id }}</td><td>{{ row.product_test_procedure_result_id }}</td><td>{{ row.defect_title }}</td><td><span class="status_badge status-{{ row.defect_severity }}">{{ row.defect_severity }}</span></td><td><span class="status_badge status-{{ row.defect_priority }}">{{ row.defect_priority }}</span></td><td><span class="status_badge status-{{ row.status }}">{{ row.status }}</span></td><td>{{ row.assigned_to }}</td><td>{{ row.remark or '' }}</td><td><a href="/tester/product-test-defects/{{ row.product_test_defect_id }}" class="project_standard_button">상세</a></td></tr>{% endfor %}</tbody>
         </table>
     </div>
 </section>
