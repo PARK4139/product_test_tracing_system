@@ -1,42 +1,119 @@
-_________________________________________________ Plan : May  
-# 화수목 야근상신
- 
+_________________________________________________ etc
+# 용어 범례
+*TBD : To Be Determind 추후결정사항
 
+
+# 텍스트 템플릿
+TBD(To Be Determined, 협의사항)
+협의사항(TBD, To Be Determined)
+
+
+# "WIFI Test 관련" 경우의 수
+WIFI Test 관련 상태에 대한 Test Config의 수 = "장비 단품연동 기준 Test Config 의 수" * (2*1)*(4*1) *(etc_options*1)        (2: DHCP/Static,  4: 연동서버의 수)
+1개 Test Case는 n 개의 Step 을 가짐
+> 경우의 수가 매우 많다.
+유효한 경우의 수를 필터(중요도를 이산화하여 경우의 수에 대해서 분류한다) 
+유효한 경우의 수를 시험
+모든 경우의 수는 
+
+
+
+🔳 절차_재현판단기준 정의
+🔳 LM-100 Spindle 시험 관련 물품들 이관 및 반납
+_________________________________________________ 🔳 in 2026  
+_________________________________________________ 🔳 in 2026-05  
 # 물품 신청
 ☑️지퍼팩 30 🔳 25cm : 20매 Connectivity AP 부속자재 및 정리보관용
 🔳 3M VHB? TAPE : Connectivity AP 전선정리용
 🔳 소독용 에탄올 : Connectivity AP 자재청소용
 
-
 # 자재이동 2층 to 6층 Connectivity Room
 🔳 Cable Tie 소 : 
-
-
 
 # 라벨프린팅 예정 목록
 🔳 Router PASSWORD
 🔳 Router Power Adapter별로 Serial Number
 🔳 Router MODEL NAME, PASSWORD
-
  
-
 # 필요정보
 제품별 UI 화면설계 용어표준 : ex> UI 화면 및 UI Component 정의 정보위치. 
 
 
-
-# 용어 범례
-*TBD : To Be Determind 추후결정사항
-
- 
-
+# 특근관리
+2026.04.22 수 휴가 승인
+2026.05.06 수 특근근무 승인
+2026.05.07 목 특근근무 승인
 
 
+# TEST IDEA
+Test용 장비는 재현성 확보 및 VOC 대응을 위해 Reference별 Serial별로 별도 구비 희망. 장비가 비싸면, 케이블과 부속품이라도.
+_________________________________________________ WIFI Connectivity 제품별 네트워크 시험 및 Connectivity Room 네트워크 증설 현황 중간보고
 
-
-# Connectivity Room 네트워크 작업 보고서 작성 및 공유
 받는이 : 조영수, 김용순
 참조 : 김선웅, 이민혁
+
+안녕하세요. 제품 Wi-Fi 테스트 중인 박정훈 사원입니다.
+
+아래의 두 작업에 대해서 현황 보고 드립니다
+WIFI Connectivity 제품별 네트워크 시험 
+Connectivity Room 네트워크 증설 현황
+
+
+1. Test Report 작업
+- 완료내용
+    Test Report 에 대한 Draft 작성을 완료하였으며. 지금까지의 결과는 PASSED 입니다.
+    연구소에서 요청하신 온전한 Test 시나리오는 Test Case 정합성 검토가 필요하여, 완전히 테스트하지는 못한 상태이며  
+    5GHz, DHCP/Static, HISS, MATE, 다수서버연동에 대해서는 제외되었으며
+    단품과의 연결에 대한 Operating 중심으로. 핵심기능을 2.4GHz, DHCP 설정으로 빠르게 Smoke Test 검증하였습니다. 
+
+- 산출물 : 
+    위치: 
+        https://docs.google.com/spreadsheets/d/1CphfBg6d6mOVyiOOxpAZ-HzReFmZTyB_/edit?gid=1074338896#gid=1074338896
+    요점 위치 :
+        "문제점 관리" 시트의 
+            "파란색 폰트적용 항목" : 문제판정 검토필요 항목
+            "주황색 폰트적용 항목" : TEST 관련 기타 검토필요 항목
+
+- 추후계획
+    1. Tester 장비 숙달(HIIS, MATE, 다수서버연동 등)
+    2. Test 시나리오와 Test Config, Test Case와의 정합성 검토, 
+    3. 5GHz, Static, HISS 연동, MATE 연동결과 등에 대한 세부 Test Case 추가정의 및 Test 가 필요합니다. 
+    4. WIFI Connectivity 제품별 네트워크시험 환경 정의
+    5. Test 프로세스 시스템 정의 및 타부서 협업 연동. 
+    6. Test System 도입 제안
+
+
+
+
+
+2. Connectivity Room 네트워크 증설작업
+
+- 완료내용
+    Test Report 에 대한 Draft 작성을 완료하였으며. 지금까지의 결과는 PASSED 입니다.
+    연구소에서 요청하신 온전한 Test 시나리오는 Test Case 정합성 검토가 필요하여, 완전히 테스트하지는 못한 상태이며  
+    5GHz, DHCP/Static, HISS, MATE, 다수서버연동에 대해서는 제외되었으며
+    단품과의 연결에 대한 Operating 중심으로. 핵심기능을 2.4GHz, DHCP 설정으로 빠르게 Smoke Test 검증하였습니다. 
+
+- 산출물 : https://docs.google.com/spreadsheets/d/1CphfBg6d6mOVyiOOxpAZ-HzReFmZTyB_/edit?gid=1074338896#gid=1074338896
+
+- 추후계획
+    1. Tester 장비 숙달(HIIS, MATE, 다수서버연동 등)
+    2. Test 시나리오와 Test Config, Test Case와의 정합성 검토, 
+    3. 5GHz, Static, HISS 연동, MATE 연동결과 등에 대한 세부 Test Case 추가정의 및 Test 가 필요합니다. 
+    4. WIFI Connectivity 제품별 네트워크시험 환경 정의
+    5. Test 프로세스 시스템 정의 및 타부서 협업 연동. 
+    6. Test System 도입 제안
+    7. 사용자별(검안사|) e2e 프로세스 이해 및 Test Case 추가.
+
+
+
+
+
+아래는 업무별 진행현황 및 계획 구조 입니다.
+
+# 작업상태 
+☑️ : DONE
+🔳 : PLAN 
 
 # Connectivity Room 네트워크 증설작업 진행현황
 ☑️ Connectivity Room 미국발 AP 추가입고 및 임시배치(Rack, Router, Router Power Adapter, 4단 Black Rack). 2026-05-06
@@ -50,33 +127,36 @@ _________________________________________________ Plan : May
     🔳 Router 110V TRANS 설치.
     🔳 Router AP 동작 테스트
 🔳 현지 네트워크 환경 모의를 위한 유럽발(독일|) AP 추가입고 및 배치
+산출물:
 
-# Connectivity Room 제품별 네트워크시험 Test Case 작성 
-☑️ Connectivity Room 제품별 네트워크시험 Test Case 초안작성 - 2026-04-30
-    Operating 중심(:server=1:1).
-    5GHz 제외
-    Static 제외
-    HISS 제외
-    MATE 제외
-    Server 재연결 시 복구 Test Case(AP 컷오프 건) 일부미포함 
-    산출물 : "WIFI Connectivity 테스트 시나리오.xlsx - Google Sheets" 
-☑️ Connectivity Room 제품별 네트워크시험 Test Case v1 작성
-    ☑️ Defect(Bug, 결함) 및 특이사항은 Smart Phone활용 촬영 - 2026-05-07
-        "HRK-9000A SETUP 버튼 간헐적 미인식 건 - 2026-05-07.mp4" 영상첨부
-    ☑️ Server 재연결 시 복구 Test Case(AP 컷오프 건) 추가 - 2026-05-07
-    ☑️ Test Case 작성검증(TBD, 특이사항, 이슈 중심)
-🔳 Connectivity Room 제품별 네트워크시험 Test Case v2 작성
-    🔳 HISS 장비 기본조작 및 셋팅 배우기
-        MATE 등의 화면 기본조작 및 각 이미지 데이터 시현결과 확인법   
-    🔳 5GHz Case Config 추가
-    🔳 Static Case Config 추가
-    🔳 Static/DHCP 별 Test Case 추가 
-    🔳 5GHz Test Case 추가 
-    🔳 절전모드 복구 Test Case 추가 : 절전모드 > 하루대기
-    🔳 Defect(Bug, 결함) 및 특이사항은 Chest Cam활용 촬영
 
-# Connectivity Room 제품별 네트워크시험 Test Report 작성
-🔳 Connectivity Room 제품별 네트워크시험 Test Report 초안작성
+# WIFI Connectivity 제품별 네트워크시험 Test Report 작성
+☑️ WIFI Connectivity 제품별 네트워크시험 Test Case 작성 
+    ☑️ WIFI Connectivity 제품별 네트워크시험 Test Case 초안작성 - 2026-04-30
+        Operating 중심(server=1:1).
+        5GHz 제외
+        Static 제외
+        HISS 제외
+        MATE 제외
+        Server 재연결 시 복구 Test Case(AP 컷오프 건) 일부미포함 
+        산출물 : "WIFI Connectivity 테스트 시나리오.xlsx - Google Sheets" 
+    ☑️ WIFI Connectivity 제품별 네트워크시험 Test Case v1 작성
+        ☑️ Defect(Bug, 결함) 및 특이사항은 Smart Phone활용 촬영 - 2026-05-07
+            "HRK-9000A SETUP 버튼 간헐적 미인식 건 - 2026-05-07.mp4" 영상첨부
+        ☑️ Server 재연결 시 복구 Test Case(AP 컷오프 건) 추가 - 2026-05-07
+        ☑️ Test Case 작성검증(TBD, 특이사항, 이슈 중심)
+    🔳 WIFI Connectivity 제품별 네트워크시험 Test Case v2 작성 
+        2.4GHz HDR 4대 - 서버여러대
+        🔳 Static Case Config 추가
+        🔳 Static/DHCP 별 Test Case 추가 
+        🔳 5GHz Test Case 추가 
+        🔳 절전모드 복구 Test Case 추가 : 절전모드 > 하루대기 > 복구시험
+        🔳 Defect(Bug, 결함) 및 특이사항은 Chest Cam활용 촬영
+        🔳 공간미분리 
+        🔳 공간분리
+        🔳 5GHz Case Config 추가
+
+🔳 WIFI Connectivity 제품별 네트워크시험 Test Report 초안작성
     🔳 시험대상 및 환경 및 Serial Number/Model Name/Software Version 수집
         외관 부착스티커 및, 부팅시 화면으로도 알수 없는 장비들이 있었음. 명시적인 Version 확인방법 필요.
         도움필요.
@@ -105,36 +185,63 @@ _________________________________________________ Plan : May
                 Test Config ID  : SQA_TEST_CONFIG-HRK-9000A-WIFI-ROUTER_2_4G-HDR-9000-001
                 Test Case ID    : SQA_TEST_CASE-HRK-9000A-WIFI_AP_AUTH-001
                 Test Result ID  : SQA_TEST_RESULT-HRK-9000A-260507-001
+    중간산출물 : https://docs.google.com/spreadsheets/d/1CphfBg6d6mOVyiOOxpAZ-HzReFmZTyB_/edit?gid=1074338896#gid=1074338896
+    🔳 Tester 장비 숙달(HIIS, MATE, 다수서버연동 등)
+    🔳 Defect ID 작성규칙 추가
+    🔳 HISS 장비 기본조작 및 셋팅 배우기
+        MATE 등의 화면 기본조작 및 각 이미지 데이터 시현결과 확인법  
+    🔳 Test 시나리오와 Test Config, Test Case와의 정합성 검토
+    🔳 5GHz, Static, HISS 연동, MATE 연동결과 등에 대한 세부 Test Case 추가정의 및 Test 
+    🔳 WIFI Connectivity 제품별 네트워크시험 환경 정의
+    🔳 Test 프로세스 시스템 정의 및 타부서 협업 연동 
+    🔳 Test System 도입 제안
+    🔳 사용자별(검안사|) e2e 프로세스 이해 및 Test Case 추가.
 
-# Connectivity Room 제품별 네트워크시험 Test Scenario와 Test Case 간 정합성 검토
-🔳 Test 시나리오(TEST 요구사항 정의)과 Test Case 간 정합성 검토 회의 - 금요일예정
+
+# WIFI Connectivity 제품별 네트워크시험 Test Scenario와 Test Case 간 정합성 검토
+🔳 Test 시나리오(TEST 요구사항 정의)과 Test Case 간 정합성 검토 회의 - 오늘 중 수행 예정
     (QI > 제품담당자)
-    🔳 Connectivity Room 제품별 네트워크시험 환경 정의
+    🔳 재현 시현을 위해 케이블 및 장비 준비
+    🔳 WIFI Connectivity 제품별 네트워크시험 환경 정의
         🔳 AP와 장비 간 물리적 거리 정의
             🔳 Connectivity Network 환경 컨셉 아트(AI 이미지 생성 및 첨부)
+            🔳 Connectivity Room n x n meter 공간 내
             🔳 현재 1M 내외 수준 실배치
         🔳 안테나 방향 정의
-        🔳 산출물 작업방식 제안(기존:google docs > 제안:엑셀파일) 
+            ex> 최대한 수직방향
+        🔳 산출물 작업방식 제안(기존:google docs > 제안:엑셀파일 or System 도입) 
         🔳 Etherent Cable(LAN CABLE) CATEGORY 규격 정의
 
-# Connectivity Room 제품별 네트워크시험 Test Report 및 이슈 전달
-(QI >연구소)  
-Operating 중심(:server=1:1).
+# WIFI Connectivity 제품별 네트워크시험 Test Report 전달
+🔳 오늘 중 전달 목표 (QI >연구소)  
 
-5GHz 제외
-Static 제외
-HISS 제외
-MATE 제외
-5GHz, Static, HISS 연동, MATE 연동결과 에 대한 Test Case 추가정의 및 Test 필요 
+
+
+
+이상입니다.
+감사합니다.
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 
 # Test Data Tracing system 설계(Test Senario, Test Data Full Life Cycle 관리)  
 🔳 Test Data Tracing system Export 기능활용 엑셀화 하여 공유
-시스템 설계가 필요...
+(현재) 문서 악성노동 증가 > 문서 완성도 떨어짐.
+(제안) 시스템 설계
+꼭 만들면 좋겠어.
 
-
+왜 이렇게 안했어?
 
 
 
@@ -145,13 +252,12 @@ MATE 제외
 
 
 # pk TBD
-🔳 Connectivity Room 제품별 네트워크시험 환경 품평(랙 및 실제테스트 사진)
+🔳 WIFI Connectivity 제품별 네트워크시험 환경 품평(랙 및 실제테스트 사진)
 
 
 
-# LM-100 누수Test 보고
-받는이 : 차석길
-# T3 Hall Sensor Abnormal 시현 - 2026-05-06
+
+
 _________________________________________________ TODO: e2e flow 정합성 검토 
 # 문의 to 제품 시나리오 작성 담당자별 
 🔳 장비별 Serial Number/Software version, Firmware version 취득방법
@@ -414,20 +520,5 @@ SSID  # "-" 가 " " 보다 우선 출력.  " " 가 "_" 보다 우선 출력.
 위의 3가지를 충족하면 기대결과 충족
 
 
-# 2. AP 연결 성공
-OP/QC Settings 화면/commnunication/connection/AP Password/Verify/Connecting to the access point.
 
 
-
-
-
-
-
-
-WIFI Test 관련 상태에 대한 Test Config의 수 = "장비 단품연동 기준 Test Config 의 수" * (2*1)*(4*1) *(etc_options*1)        (2: DHCP/Static,  4: 연동서버의 수)
-1개 Test Case는 n 개의 Step 을 가짐
-> 경우의 수가 매우 많다.
-
-
-
-# 절차_재현판단기준 정의
