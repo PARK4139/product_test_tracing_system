@@ -12,3 +12,4 @@ __pycache__/
 data/*.db
 
 .chrome_qc_profile/
+.pk_system/
