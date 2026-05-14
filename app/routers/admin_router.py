@@ -29,6 +29,7 @@ from app.services.dropdown_option_service import (
     delete_dropdown_option_if_exists,
     list_dropdown_options_for_field,
 )
+from app.db import truncate_application_data
 from app.services.admin_qc_e2e_service import start_admin_qc_e2e_fill
 from app.services.product_test_run_service import (
     MASTER_ACTIVE_STATUS_VALUES,
@@ -90,7 +91,7 @@ ADMIN_FORM_NOTICE_CONFIG = {
     },
     "draft_invalid_id": {
         "suffix": "자동제출 안 한다.",
-        "level": "error",
+        "level": "guide",
         "mode": "non_modal",
     },
     "submit_success": {
@@ -105,10 +106,38 @@ ADMIN_FORM_NOTICE_CONFIG = {
     },
     "duplicate_id": {
         "title": "중복 ID",
-        "level": "error",
-        "mode": "modal",
+        "level": "guide",
+        "mode": "non_modal",
     },
 }
+
+
+def _admin_dashboard_product_tracing_template_context(*, database_session: Session) -> dict:
+    """admin_dashboard.html 표·스크립트용 키. POST 후 재렌더 시 GET /admin 과 동일하게 맞춘다."""
+    return {
+        "admin_id_rules": get_product_test_identifier_client_rules(),
+        "admin_id_guides": get_product_test_identifier_guides(),
+        "admin_notice_config": ADMIN_FORM_NOTICE_CONFIG,
+        "release_rows": list_product_test_releases(database_session),
+        "release_stage_values": RELEASE_STAGE_VALUES,
+        "product_test_release_status_values": PRODUCT_TEST_RELEASE_STATUS_VALUES,
+        "target_definition_rows": list_product_test_target_definitions(database_session),
+        "target_definition_status_values": MASTER_ACTIVE_STATUS_VALUES,
+        "target_rows": list_product_test_targets(database_session),
+        "target_status_values": TARGET_STATUS_VALUES,
+        "environment_definition_rows": list_product_test_environment_definitions(database_session),
+        "environment_definition_status_values": MASTER_ACTIVE_STATUS_VALUES,
+        "environment_rows": list_product_test_environments(database_session),
+        "environment_status_values": ENVIRONMENT_STATUS_VALUES,
+        "case_rows": list_product_test_cases(database_session),
+        "case_status_values": MASTER_ACTIVE_STATUS_VALUES,
+        "procedure_rows": list_product_test_procedures(database_session),
+        "procedure_status_values": MASTER_ACTIVE_STATUS_VALUES,
+        "evidence_type_values": EVIDENCE_TYPE_VALUES,
+        "report_rows": list_product_test_reports(database_session),
+        "report_release_options": list_report_release_options(database_session),
+        "report_type_values": REPORT_TYPE_VALUES,
+    }
 
 
 def _is_ajax_request(request: Request) -> bool:
@@ -161,13 +190,19 @@ def _admin_notice_payload_from_message(*, message: str, ok: bool) -> dict:
         expected_error = f"{field_name} format is invalid."
         if lowered == expected_error.lower():
             payload["notice_message"] = guide_message
+            payload["notice_level"] = "guide"
+            payload["notice_mode"] = "non_modal"
+            payload["dialog_title"] = ""
             payload["state_code"] = "invalid_id"
             return payload
     if "already exists" in lowered:
         duplicate_field_name = normalized.split(" ", 1)[0].strip().upper()
-        payload["notice_mode"] = "modal"
-        payload["dialog_title"] = ADMIN_FORM_NOTICE_CONFIG["duplicate_id"]["title"]
+        dup_cfg = ADMIN_FORM_NOTICE_CONFIG["duplicate_id"]
+        payload["notice_level"] = dup_cfg.get("level", "guide")
+        payload["notice_mode"] = dup_cfg.get("mode", "non_modal")
+        payload["dialog_title"] = ""
         payload["notice_message"] = (
+            f"{dup_cfg.get('title', '중복 ID')}\n\n"
             f"{duplicate_field_name} 중복이다. "
             "다른 ID 넣어라. "
             "다시 제출해라."
@@ -321,7 +356,7 @@ def _render_admin_shell_template(
 def _sample_product_test_release_rows() -> list[dict]:
     return [
         {
-            "product_test_release_id": "QA_PTREL-HRK_9000A-1.0.0-RC1",
+            "product_test_release_id": "SQA_PRODUCT_TEST_RELEASE_ID-HRK_9000A-1.0.0-RC1",
             "upstream_release_id": "HRK_9000A-1.0.0",
             "upstream_release_system": "Huvitz Software Release System",
             "release_stage": "RC",
@@ -334,7 +369,7 @@ def _sample_product_test_release_rows() -> list[dict]:
             "remark": "HRK-9000A RC baseline",
         },
         {
-            "product_test_release_id": "QA_PTREL-HRK_9000A-1.0.0-GA",
+            "product_test_release_id": "SQA_PRODUCT_TEST_RELEASE_ID-HRK_9000A-1.0.0-GA",
             "upstream_release_id": "HRK_9000A-1.0.0",
             "upstream_release_system": "Huvitz Software Release System",
             "release_stage": "GA",
@@ -352,7 +387,7 @@ def _sample_product_test_release_rows() -> list[dict]:
 def _sample_product_test_target_definition_rows() -> list[dict]:
     return [
         {
-            "product_test_target_definition_id": "QA_PTTGTDEF-HRK_9000A",
+            "product_test_target_definition_id": "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-HRK_9000A",
             "product_code": "HRK_9000A",
             "manufacturer": "Huvitz",
             "model_name": "HRK-9000A",
@@ -367,7 +402,7 @@ def _sample_product_test_target_definition_rows() -> list[dict]:
             "remark": "",
         },
         {
-            "product_test_target_definition_id": "QA_PTTGTDEF-MERCUSYS_MR30G",
+            "product_test_target_definition_id": "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-MERCUSYS_MR30G",
             "product_code": "MERCUSYS_MR30G",
             "manufacturer": "MERCUSYS",
             "model_name": "MR30G",
@@ -387,8 +422,8 @@ def _sample_product_test_target_definition_rows() -> list[dict]:
 def _sample_product_test_target_rows() -> list[dict]:
     return [
         {
-            "product_test_target_id": "QA_PTTGT-HRK_9000A-SN001",
-            "product_test_target_definition_id": "QA_PTTGTDEF-HRK_9000A",
+            "product_test_target_id": "SQA_PRODUCT_TEST_TARGET_ID-HRK_9000A-SN001",
+            "product_test_target_definition_id": "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-HRK_9000A",
             "serial_number": "SN001",
             "software_version": "1.0.0",
             "firmware_version": "1.0.0",
@@ -406,7 +441,7 @@ def _sample_product_test_target_rows() -> list[dict]:
 def _sample_product_test_environment_definition_rows() -> list[dict]:
     return [
         {
-            "product_test_environment_definition_id": "QA_PTENVDEF-HUVITZ-ANYANG-CONNECTIVITY_ROOM",
+            "product_test_environment_definition_id": "SQA_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM",
             "product_test_environment_definition_name": "Huvitz Anyang Connectivity Room Standard Environment",
             "test_country": "Korea",
             "test_city": "Anyang",
@@ -436,8 +471,8 @@ def _sample_product_test_environment_definition_rows() -> list[dict]:
 def _sample_product_test_environment_rows() -> list[dict]:
     return [
         {
-            "product_test_environment_id": "QA_PTENV-HUVITZ-ANYANG-CONNECTIVITY_ROOM-20260504-001",
-            "product_test_environment_definition_id": "QA_PTENVDEF-HUVITZ-ANYANG-CONNECTIVITY_ROOM",
+            "product_test_environment_id": "SQA_PRODUCT_TEST_ENVIRONMENT_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM-20260504-001",
+            "product_test_environment_definition_id": "SQA_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM",
             "product_test_environment_name": "Anyang Connectivity Room Snapshot",
             "test_computer_name": "SQA-PC-01",
             "operating_system_version": "Windows 10",
@@ -460,7 +495,7 @@ def _sample_product_test_environment_rows() -> list[dict]:
 def _sample_product_test_case_rows() -> list[dict]:
     return [
         {
-            "product_test_case_id": "QA_PTCASE-WIFI-AP_CONFIG-001",
+            "product_test_case_id": "SQA_PRODUCT_TEST_CASE_ID-WIFI-AP_CONFIG-001",
             "product_test_case_title": "WiFi AP 설정 적합성 검증",
             "test_category": "WiFi",
             "test_objective": "RS9116 WiFi 모듈 기준으로 AP 설정이 권장 조건을 만족하는지 확인",
@@ -479,8 +514,8 @@ def _sample_product_test_case_rows() -> list[dict]:
 def _sample_product_test_procedure_rows() -> list[dict]:
     return [
         {
-            "product_test_procedure_id": "QA_PTPROC-WIFI-AP_CONFIG-001-001",
-            "product_test_case_id": "QA_PTCASE-WIFI-AP_CONFIG-001",
+            "product_test_procedure_id": "SQA_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-001",
+            "product_test_case_id": "SQA_PRODUCT_TEST_CASE_ID-WIFI-AP_CONFIG-001",
             "procedure_sequence": 1,
             "procedure_action": "WiFi Band 분리설정 확인",
             "expected_result": "2.4GHz와 5GHz SSID가 분리되어 있어야 함",
@@ -494,8 +529,8 @@ def _sample_product_test_procedure_rows() -> list[dict]:
             "remark": "분리하지 않은 경우 임베디드 장비가 2.4GHz로 할당될 가능성이 높음.",
         },
         {
-            "product_test_procedure_id": "QA_PTPROC-WIFI-AP_CONFIG-001-002",
-            "product_test_case_id": "QA_PTCASE-WIFI-AP_CONFIG-001",
+            "product_test_procedure_id": "SQA_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-002",
+            "product_test_case_id": "SQA_PRODUCT_TEST_CASE_ID-WIFI-AP_CONFIG-001",
             "procedure_sequence": 2,
             "procedure_action": "WiFi Channel 설정 확인",
             "expected_result": "2.4GHz는 1~11번, 5GHz는 36/40/44/48 고정 채널이어야 함",
@@ -526,28 +561,7 @@ def render_admin_dashboard(
         extra_context={
             "message": (request.query_params.get("message") or "").strip(),
             "message_type": (request.query_params.get("message_type") or "info").strip(),
-            "admin_id_rules": get_product_test_identifier_client_rules(),
-            "admin_id_guides": get_product_test_identifier_guides(),
-            "admin_notice_config": ADMIN_FORM_NOTICE_CONFIG,
-            "release_rows": list_product_test_releases(database_session),
-            "release_stage_values": RELEASE_STAGE_VALUES,
-            "product_test_release_status_values": PRODUCT_TEST_RELEASE_STATUS_VALUES,
-            "target_definition_rows": list_product_test_target_definitions(database_session),
-            "target_definition_status_values": MASTER_ACTIVE_STATUS_VALUES,
-            "target_rows": list_product_test_targets(database_session),
-            "target_status_values": TARGET_STATUS_VALUES,
-            "environment_definition_rows": list_product_test_environment_definitions(database_session),
-            "environment_definition_status_values": MASTER_ACTIVE_STATUS_VALUES,
-            "environment_rows": list_product_test_environments(database_session),
-            "environment_status_values": ENVIRONMENT_STATUS_VALUES,
-            "case_rows": list_product_test_cases(database_session),
-            "case_status_values": MASTER_ACTIVE_STATUS_VALUES,
-            "procedure_rows": list_product_test_procedures(database_session),
-            "procedure_status_values": MASTER_ACTIVE_STATUS_VALUES,
-            "evidence_type_values": EVIDENCE_TYPE_VALUES,
-            "report_rows": list_product_test_reports(database_session),
-            "report_release_options": list_report_release_options(database_session),
-            "report_type_values": REPORT_TYPE_VALUES,
+            **_admin_dashboard_product_tracing_template_context(database_session=database_session),
         },
     )
 
@@ -1576,6 +1590,7 @@ def create_admin_user_account(
             request=request,
             name="admin_dashboard.html",
             context={
+                **_admin_dashboard_product_tracing_template_context(database_session=database_session),
                 "request": request,
                 "page_title": "Product Test Data Tracing System",
                 "recent_test_results": recent_test_results,
@@ -1602,6 +1617,7 @@ def create_admin_user_account(
             request=request,
             name="admin_dashboard.html",
             context={
+                **_admin_dashboard_product_tracing_template_context(database_session=database_session),
                 "request": request,
                 "page_title": "Product Test Data Tracing System",
                 "recent_test_results": recent_test_results,
@@ -1639,6 +1655,7 @@ def create_admin_user_account(
         request=request,
         name="admin_dashboard.html",
         context={
+            **_admin_dashboard_product_tracing_template_context(database_session=database_session),
             "request": request,
             "page_title": "Product Test Data Tracing System",
             "recent_test_results": recent_test_results,
@@ -1686,6 +1703,7 @@ def create_tester_user_account(
             request=request,
             name="admin_dashboard.html",
             context={
+                **_admin_dashboard_product_tracing_template_context(database_session=database_session),
                 "request": request,
                 "page_title": "Product Test Data Tracing System",
                 "recent_test_results": recent_test_results,
@@ -1711,6 +1729,7 @@ def create_tester_user_account(
             request=request,
             name="admin_dashboard.html",
             context={
+                **_admin_dashboard_product_tracing_template_context(database_session=database_session),
                 "request": request,
                 "page_title": "Product Test Data Tracing System",
                 "recent_test_results": recent_test_results,
@@ -1747,6 +1766,7 @@ def create_tester_user_account(
         request=request,
         name="admin_dashboard.html",
         context={
+            **_admin_dashboard_product_tracing_template_context(database_session=database_session),
             "request": request,
             "page_title": "Product Test Data Tracing System",
             "recent_test_results": recent_test_results,
@@ -1784,6 +1804,7 @@ def approve_tester_join_request(
         request=request,
         name="admin_dashboard.html",
         context={
+            **_admin_dashboard_product_tracing_template_context(database_session=database_session),
             "request": request,
             "page_title": "Product Test Data Tracing System",
             "recent_test_results": recent_test_results,
@@ -1821,6 +1842,7 @@ def delete_tester_join_request(
         request=request,
         name="admin_dashboard.html",
         context={
+            **_admin_dashboard_product_tracing_template_context(database_session=database_session),
             "request": request,
             "page_title": "Product Test Data Tracing System",
             "recent_test_results": recent_test_results,
@@ -2096,6 +2118,22 @@ def start_admin_qc_e2e_fill_route(
     ok, message = start_admin_qc_e2e_fill(admin_url=admin_url)
     status_code = 200 if ok else 409
     return JSONResponse({"ok": ok, "message": message}, status_code=status_code)
+
+
+@admin_router.post("/qc/db-truncate")
+def admin_qc_db_truncate_route(
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    _ensure_admin_role(current_role_name)
+    if not is_qc_mode_enabled():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="QC mode required.",
+        )
+    truncate_application_data()
+    database_session.expire_all()
+    return JSONResponse({"ok": True, "message": "Database truncated."})
 
 
 @admin_router.get("/rows/by_ids")

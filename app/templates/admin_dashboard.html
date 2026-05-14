@@ -114,10 +114,13 @@
     <div class="detail_guide">
         ID 컬럼은 관련 value 입력 시 작성규칙에 맞는 초안이 자동 가이드된다. 필요하면 직접 수정 가능하다.
     </div>
+    <div class="detail_guide">
+        표의 컬럼명(헤더)을 클릭하면 해당 입력칸으로 스크롤·포커스 이동한다. 선행 입력이 비어 있으면 화면 중앙 비모달 안내 후 먼저 채울 칸으로 이동한다.
+    </div>
 </section>
 
 <section class="card">
-    <div class="section_header_row"><h3>Product Test Release</h3></div>
+    <div class="section_header_row"><h3>Test Release</h3></div>
     <form method="post" action="/admin/product-test-releases/create" class="admin_autosubmit_form">
         <input type="hidden" name="return_to" value="/admin">
         <div class="tester_table_wrap">
@@ -125,12 +128,12 @@
                 <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_RELEASE_ID</th><th>UPSTREAM_RELEASE_ID</th><th>UPSTREAM_RELEASE_SYSTEM</th><th>RELEASE_STAGE</th><th>PRODUCT_TEST_RELEASE_STATUS</th><th>REMARK</th></tr></thead>
                 <tbody><tr>
                     <td><input type="checkbox" class="admin_input_row_checkbox"></td>
-                    <td><input type="text" name="product_test_release_id" required placeholder="QA_PTREL-HRK_9000A-1.0.0-RC1"></td>
-                    <td><input type="text" name="upstream_release_id" required placeholder="HRK_9000A-1.0.0" list="admin_release_upstream_release_id_options"></td>
-                    <td><input type="text" name="upstream_release_system" required placeholder="Huvitz Software Release System" list="admin_release_upstream_release_system_options"></td>
-                    <td><select name="release_stage" required><option value="">선택 (예: RC)</option>{% for value in release_stage_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
-                    <td><select name="product_test_release_status"><option value="">선택 (예: DRAFT)</option>{% for value in product_test_release_status_values %}<option value="{{ value }}"{% if value == "DRAFT" %} selected{% endif %}>{{ value }}</option>{% endfor %}</select></td>
-                    <td><input type="text" name="remark" placeholder="예: HRK-9000A 1차 RC 검토"></td>
+                    <td><input type="text" name="product_test_release_id" required></td>
+                    <td><input type="text" name="upstream_release_id" required list="admin_release_upstream_release_id_options"></td>
+                    <td><input type="text" name="upstream_release_system" required list="admin_release_upstream_release_system_options"></td>
+                    <td><select name="release_stage" required><option value=""></option>{% for value in release_stage_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
+                    <td><select name="product_test_release_status"><option value=""></option>{% for value in product_test_release_status_values %}<option value="{{ value }}"{% if value == "DRAFT" %} selected{% endif %}>{{ value }}</option>{% endfor %}</select></td>
+                    <td><input type="text" name="remark"></td>
                 </tr></tbody>
             </table>
         </div>
@@ -145,7 +148,7 @@
 </section>
 
 <section class="card">
-    <div class="section_header_row"><h3>Product Test Target Definition</h3></div>
+    <div class="section_header_row"><h3>Test Target Definition</h3></div>
     <form method="post" action="/admin/product-test-target-definitions/create" class="admin_autosubmit_form">
         <input type="hidden" name="return_to" value="/admin">
         <div class="tester_table_wrap">
@@ -153,15 +156,15 @@
                 <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_TARGET_DEFINITION_ID</th><th>PRODUCT_CODE</th><th>MANUFACTURER</th><th>MODEL_NAME</th><th>HARDWARE_REVISION</th><th>DEFAULT_SOFTWARE_VERSION</th><th>DEFAULT_FIRMWARE_VERSION</th><th>PRODUCT_TEST_TARGET_DEFINITION_STATUS</th><th>REMARK</th></tr></thead>
                 <tbody><tr>
                     <td><input type="checkbox" class="admin_input_row_checkbox"></td>
-                    <td><input type="text" name="product_test_target_definition_id" required placeholder="QA_PTTGTDEF-HRK_9000A"></td>
-                    <td><input type="text" name="product_code" placeholder="HRK_9000A" list="admin_target_definition_product_code_options"></td>
-                    <td><input type="text" name="manufacturer" required placeholder="Huvitz" list="admin_target_definition_manufacturer_options"></td>
-                    <td><input type="text" name="model_name" required placeholder="HRK-9000A" list="admin_target_definition_model_name_options"></td>
-                    <td><input type="text" name="hardware_revision" placeholder="Rev.A" list="admin_target_definition_hardware_revision_options"></td>
-                    <td><input type="text" name="default_software_version" placeholder="1.0.0" list="admin_target_definition_default_software_version_options"></td>
-                    <td><input type="text" name="default_firmware_version" placeholder="1.0.3" list="admin_target_definition_default_firmware_version_options"></td>
-                    <td><select name="product_test_target_definition_status"><option value="">선택 (예: active)</option>{% for value in target_definition_status_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
-                    <td><input type="text" name="remark" placeholder="예: 대표 시험 대상 모델"></td>
+                    <td><input type="text" name="product_test_target_definition_id" required></td>
+                    <td><input type="text" name="product_code" list="admin_target_definition_product_code_options"></td>
+                    <td><input type="text" name="manufacturer" required list="admin_target_definition_manufacturer_options"></td>
+                    <td><input type="text" name="model_name" required list="admin_target_definition_model_name_options"></td>
+                    <td><input type="text" name="hardware_revision" list="admin_target_definition_hardware_revision_options"></td>
+                    <td><input type="text" name="default_software_version" list="admin_target_definition_default_software_version_options"></td>
+                    <td><input type="text" name="default_firmware_version" list="admin_target_definition_default_firmware_version_options"></td>
+                    <td><select name="product_test_target_definition_status"><option value=""></option>{% for value in target_definition_status_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
+                    <td><input type="text" name="remark"></td>
                 </tr></tbody>
             </table>
         </div>
@@ -176,7 +179,7 @@
 </section>
 
 <section class="card">
-    <div class="section_header_row"><h3>Product Test Target</h3></div>
+    <div class="section_header_row"><h3>Test Target</h3></div>
     <form method="post" action="/admin/product-test-targets/create" class="admin_autosubmit_form">
         <input type="hidden" name="return_to" value="/admin">
         <div class="tester_table_wrap">
@@ -184,14 +187,14 @@
                 <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_TARGET_ID</th><th>PRODUCT_TEST_TARGET_DEFINITION_ID</th><th>SERIAL_NUMBER</th><th>SOFTWARE_VERSION</th><th>FIRMWARE_VERSION</th><th>MANUFACTURE_LOT</th><th>PRODUCT_TEST_TARGET_STATUS</th><th>REMARK</th></tr></thead>
                 <tbody><tr>
                     <td><input type="checkbox" class="admin_input_row_checkbox"></td>
-                    <td><input type="text" name="product_test_target_id" required placeholder="QA_PTTGT-HRK_9000A-SN001"></td>
-                    <td><select name="product_test_target_definition_id" required><option value="">선택 (예: QA_PTTGTDEF-HRK_9000A)</option>{% for row in target_definition_rows %}<option value="{{ row.product_test_target_definition_id }}">{{ row.product_test_target_definition_id }}</option>{% endfor %}</select></td>
-                    <td><input type="text" name="serial_number" required placeholder="SN001"></td>
-                    <td><input type="text" name="software_version" placeholder="1.0.0" list="admin_target_software_version_options"></td>
-                    <td><input type="text" name="firmware_version" placeholder="1.0.3" list="admin_target_firmware_version_options"></td>
-                    <td><input type="text" name="manufacture_lot" placeholder="LOT-202605" list="admin_target_manufacture_lot_options"></td>
-                    <td><select name="product_test_target_status"><option value="">선택 (예: active)</option>{% for value in target_status_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
-                    <td><input type="text" name="remark" placeholder="예: SQA 보유 장비"></td>
+                    <td><input type="text" name="product_test_target_id" required></td>
+                    <td><select name="product_test_target_definition_id" required><option value=""></option>{% for row in target_definition_rows %}<option value="{{ row.product_test_target_definition_id }}">{{ row.product_test_target_definition_id }}</option>{% endfor %}</select></td>
+                    <td><input type="text" name="serial_number" required></td>
+                    <td><input type="text" name="software_version" list="admin_target_software_version_options"></td>
+                    <td><input type="text" name="firmware_version" list="admin_target_firmware_version_options"></td>
+                    <td><input type="text" name="manufacture_lot" list="admin_target_manufacture_lot_options"></td>
+                    <td><select name="product_test_target_status"><option value=""></option>{% for value in target_status_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
+                    <td><input type="text" name="remark"></td>
                 </tr></tbody>
             </table>
         </div>
@@ -206,7 +209,7 @@
 </section>
 
 <section class="card">
-    <div class="section_header_row"><h3>Product Test Environment Definition</h3></div>
+    <div class="section_header_row"><h3>Test Environment Definition</h3></div>
     <form method="post" action="/admin/product-test-environment-definitions/create" class="admin_autosubmit_form">
         <input type="hidden" name="return_to" value="/admin">
         <div class="tester_table_wrap">
@@ -214,23 +217,23 @@
                 <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID</th><th>PRODUCT_TEST_ENVIRONMENT_DEFINITION_NAME</th><th>TEST_COUNTRY</th><th>TEST_CITY</th><th>TEST_COMPANY</th><th>TEST_ROOM</th><th>NETWORK_TYPE</th><th>TEST_COMPUTER_NAME</th><th>OPERATING_SYSTEM_VERSION</th><th>TEST_TOOL_NAME</th><th>TEST_TOOL_VERSION</th><th>POWER_VOLTAGE</th><th>POWER_FREQUENCY</th><th>POWER_CONNECTOR_TYPE</th><th>POWER_CONDITION</th><th>PRODUCT_TEST_ENVIRONMENT_DEFINITION_STATUS</th><th>REMARK</th></tr></thead>
                 <tbody><tr>
                     <td><input type="checkbox" class="admin_input_row_checkbox"></td>
-                    <td><input type="text" name="product_test_environment_definition_id" required placeholder="QA_PTENVDEF-HUVITZ-ANYANG-CONNECTIVITY_ROOM"></td>
-                    <td><input type="text" name="product_test_environment_definition_name" required placeholder="Huvitz Anyang Connectivity Room Standard Environment"></td>
-                    <td><input type="text" name="test_country" placeholder="Korea" list="admin_environment_definition_country_options"></td>
-                    <td><input type="text" name="test_city" placeholder="Anyang" list="admin_environment_definition_city_options"></td>
-                    <td><input type="text" name="test_company" placeholder="Huvitz" list="admin_environment_definition_company_options"></td>
-                    <td><input type="text" name="test_room" placeholder="Connectivity Room" list="admin_environment_definition_room_options"></td>
-                    <td><input type="text" name="network_type" placeholder="ISOLATED_NETWORK" list="admin_environment_definition_network_type_options"></td>
-                    <td><input type="text" name="test_computer_name" placeholder="SQA-PC-01" list="admin_environment_definition_computer_name_options"></td>
-                    <td><input type="text" name="operating_system_version" placeholder="Windows 10" list="admin_environment_definition_os_options"></td>
-                    <td><input type="text" name="test_tool_name" placeholder="Product Test Tool" list="admin_environment_definition_tool_name_options"></td>
-                    <td><input type="text" name="test_tool_version" placeholder="1.0.0" list="admin_environment_definition_tool_version_options"></td>
-                    <td><input type="text" name="power_voltage" placeholder="220V" list="admin_environment_definition_power_voltage_options"></td>
-                    <td><input type="text" name="power_frequency" placeholder="60Hz" list="admin_environment_definition_power_frequency_options"></td>
-                    <td><input type="text" name="power_connector_type" placeholder="OO_CONNECTOR" list="admin_environment_definition_power_connector_type_options"></td>
-                    <td><input type="text" name="power_condition" placeholder="Commercial AC power" list="admin_environment_definition_power_condition_options"></td>
-                    <td><select name="product_test_environment_definition_status"><option value="">선택 (예: active)</option>{% for value in environment_definition_status_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
-                    <td><input type="text" name="remark" placeholder="예: 표준 시험 환경"></td>
+                    <td><input type="text" name="product_test_environment_definition_id" required></td>
+                    <td><input type="text" name="product_test_environment_definition_name" required></td>
+                    <td><input type="text" name="test_country" list="admin_environment_definition_country_options"></td>
+                    <td><input type="text" name="test_city" list="admin_environment_definition_city_options"></td>
+                    <td><input type="text" name="test_company" list="admin_environment_definition_company_options"></td>
+                    <td><input type="text" name="test_room" list="admin_environment_definition_room_options"></td>
+                    <td><input type="text" name="network_type" list="admin_environment_definition_network_type_options"></td>
+                    <td><input type="text" name="test_computer_name" list="admin_environment_definition_computer_name_options"></td>
+                    <td><input type="text" name="operating_system_version" list="admin_environment_definition_os_options"></td>
+                    <td><input type="text" name="test_tool_name" list="admin_environment_definition_tool_name_options"></td>
+                    <td><input type="text" name="test_tool_version" list="admin_environment_definition_tool_version_options"></td>
+                    <td><input type="text" name="power_voltage" list="admin_environment_definition_power_voltage_options"></td>
+                    <td><input type="text" name="power_frequency" list="admin_environment_definition_power_frequency_options"></td>
+                    <td><input type="text" name="power_connector_type" list="admin_environment_definition_power_connector_type_options"></td>
+                    <td><input type="text" name="power_condition" list="admin_environment_definition_power_condition_options"></td>
+                    <td><select name="product_test_environment_definition_status"><option value=""></option>{% for value in environment_definition_status_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
+                    <td><input type="text" name="remark"></td>
                 </tr></tbody>
             </table>
         </div>
@@ -245,7 +248,7 @@
 </section>
 
 <section class="card">
-    <div class="section_header_row"><h3>Product Test Environment</h3></div>
+    <div class="section_header_row"><h3>Test Environment</h3></div>
     <form method="post" action="/admin/product-test-environments/create" class="admin_autosubmit_form">
         <input type="hidden" name="return_to" value="/admin">
         <div class="tester_table_wrap">
@@ -253,19 +256,19 @@
                 <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_ENVIRONMENT_ID</th><th>PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID</th><th>PRODUCT_TEST_ENVIRONMENT_NAME</th><th>TEST_COMPUTER_NAME</th><th>OPERATING_SYSTEM_VERSION</th><th>TEST_TOOL_VERSION</th><th>NETWORK_TYPE</th><th>POWER_VOLTAGE</th><th>POWER_FREQUENCY</th><th>POWER_CONNECTOR_TYPE</th><th>CAPTURED_AT</th><th>PRODUCT_TEST_ENVIRONMENT_STATUS</th><th>REMARK</th></tr></thead>
                 <tbody><tr>
                     <td><input type="checkbox" class="admin_input_row_checkbox"></td>
-                    <td><input type="text" name="product_test_environment_id" required placeholder="QA_PTENV-HUVITZ-ANYANG-CONNECTIVITY_ROOM-20260504-001"></td>
-                    <td><select name="product_test_environment_definition_id" required><option value="">선택 (예: QA_PTENVDEF-HUVITZ-ANYANG-CONNECTIVITY_ROOM)</option>{% for row in environment_definition_rows %}<option value="{{ row.product_test_environment_definition_id }}">{{ row.product_test_environment_definition_id }}</option>{% endfor %}</select></td>
-                    <td><input type="text" name="product_test_environment_name" required placeholder="Huvitz Anyang Connectivity Room Snapshot 20260504" list="admin_environment_name_options"></td>
-                    <td><input type="text" name="test_computer_name" placeholder="SQA-PC-01" list="admin_environment_definition_computer_name_options"></td>
-                    <td><input type="text" name="operating_system_version" placeholder="Windows 10" list="admin_environment_definition_os_options"></td>
-                    <td><input type="text" name="test_tool_version" placeholder="1.0.0" list="admin_environment_definition_tool_version_options"></td>
-                    <td><input type="text" name="network_type" placeholder="ISOLATED_NETWORK" list="admin_environment_definition_network_type_options"></td>
-                    <td><input type="text" name="power_voltage" placeholder="220V" list="admin_environment_definition_power_voltage_options"></td>
-                    <td><input type="text" name="power_frequency" placeholder="60Hz" list="admin_environment_definition_power_frequency_options"></td>
-                    <td><input type="text" name="power_connector_type" placeholder="OO_CONNECTOR" list="admin_environment_definition_power_connector_type_options"></td>
-                    <td><input type="text" name="captured_at" placeholder="2026-05-04 09:00:00"></td>
-                    <td><select name="product_test_environment_status"><option value="">선택 (예: active)</option>{% for value in environment_status_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
-                    <td><input type="text" name="remark" placeholder="예: 환경 스냅샷"></td>
+                    <td><input type="text" name="product_test_environment_id" required></td>
+                    <td><select name="product_test_environment_definition_id" required><option value=""></option>{% for row in environment_definition_rows %}<option value="{{ row.product_test_environment_definition_id }}">{{ row.product_test_environment_definition_id }}</option>{% endfor %}</select></td>
+                    <td><input type="text" name="product_test_environment_name" required list="admin_environment_name_options"></td>
+                    <td><input type="text" name="test_computer_name" list="admin_environment_definition_computer_name_options"></td>
+                    <td><input type="text" name="operating_system_version" list="admin_environment_definition_os_options"></td>
+                    <td><input type="text" name="test_tool_version" list="admin_environment_definition_tool_version_options"></td>
+                    <td><input type="text" name="network_type" list="admin_environment_definition_network_type_options"></td>
+                    <td><input type="text" name="power_voltage" list="admin_environment_definition_power_voltage_options"></td>
+                    <td><input type="text" name="power_frequency" list="admin_environment_definition_power_frequency_options"></td>
+                    <td><input type="text" name="power_connector_type" list="admin_environment_definition_power_connector_type_options"></td>
+                    <td><input type="text" name="captured_at"></td>
+                    <td><select name="product_test_environment_status"><option value=""></option>{% for value in environment_status_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
+                    <td><input type="text" name="remark"></td>
                 </tr></tbody>
             </table>
         </div>
@@ -280,7 +283,7 @@
 </section>
 
 <section class="card">
-    <div class="section_header_row"><h3>Product Test Case</h3></div>
+    <div class="section_header_row"><h3>Test Case</h3></div>
     <form method="post" action="/admin/product-test-cases/create" class="admin_autosubmit_form">
         <input type="hidden" name="return_to" value="/admin">
         <div class="tester_table_wrap">
@@ -288,14 +291,14 @@
                 <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_CASE_ID</th><th>PRODUCT_TEST_CASE_TITLE</th><th>TEST_CATEGORY</th><th>TEST_OBJECTIVE</th><th>PRECONDITION</th><th>EXPECTED_RESULT</th><th>PRODUCT_TEST_CASE_STATUS</th><th>REMARK</th></tr></thead>
                 <tbody><tr>
                     <td><input type="checkbox" class="admin_input_row_checkbox"></td>
-                    <td><input type="text" name="product_test_case_id" required placeholder="QA_PTCASE-WIFI-AP_CONFIG-001"></td>
-                    <td><input type="text" name="product_test_case_title" required placeholder="WiFi AP 설정 적합성 검증"></td>
-                    <td><input type="text" name="test_category" required placeholder="WiFi" list="admin_case_category_options"></td>
-                    <td><input type="text" name="test_objective" placeholder="RS9116 WiFi 모듈 기준으로 AP 설정이 권장 조건을 만족하는지 확인"></td>
-                    <td><input type="text" name="precondition" placeholder="시험 대상 AP 관리자 화면 접근 가능"></td>
-                    <td><input type="text" name="expected_result" placeholder="AP 설정값이 RS9116 모듈 권장 조건을 만족해야 함"></td>
-                    <td><select name="product_test_case_status"><option value="">선택 (예: active)</option>{% for value in case_status_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
-                    <td><input type="text" name="remark" placeholder="예: 대표 WiFi 구성 검증 항목"></td>
+                    <td><input type="text" name="product_test_case_id" required></td>
+                    <td><input type="text" name="product_test_case_title" required></td>
+                    <td><input type="text" name="test_category" required list="admin_case_category_options"></td>
+                    <td><input type="text" name="test_objective"></td>
+                    <td><input type="text" name="precondition"></td>
+                    <td><input type="text" name="expected_result"></td>
+                    <td><select name="product_test_case_status"><option value=""></option>{% for value in case_status_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
+                    <td><input type="text" name="remark"></td>
                 </tr></tbody>
             </table>
         </div>
@@ -310,7 +313,7 @@
 </section>
 
 <section class="card">
-    <div class="section_header_row"><h3>Product Test Procedure</h3></div>
+    <div class="section_header_row"><h3>Test Procedure</h3></div>
     <form method="post" action="/admin/product-test-procedures/create" class="admin_autosubmit_form">
         <input type="hidden" name="return_to" value="/admin">
         <div class="tester_table_wrap">
@@ -318,15 +321,15 @@
                 <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_PROCEDURE_ID</th><th>PRODUCT_TEST_CASE_ID</th><th>PROCEDURE_SEQUENCE</th><th>PROCEDURE_ACTION</th><th>EXPECTED_RESULT</th><th>ACCEPTANCE_CRITERIA</th><th>REQUIRED_EVIDENCE_TYPE</th><th>PRODUCT_TEST_PROCEDURE_STATUS</th><th>REMARK</th></tr></thead>
                 <tbody><tr>
                     <td><input type="checkbox" class="admin_input_row_checkbox"></td>
-                    <td><input type="text" name="product_test_procedure_id" required placeholder="QA_PTPROC-WIFI-AP_CONFIG-001-001"></td>
-                    <td><select name="product_test_case_id" required><option value="">선택 (예: QA_PTCASE-WIFI-AP_CONFIG-001)</option>{% for row in case_rows %}<option value="{{ row.product_test_case_id }}">{{ row.product_test_case_id }}</option>{% endfor %}</select></td>
-                    <td><input type="number" name="procedure_sequence" required placeholder="1"></td>
-                    <td><input type="text" name="procedure_action" required placeholder="WiFi Band 분리설정 확인" list="admin_procedure_action_options"></td>
-                    <td><input type="text" name="expected_result" placeholder="2.4GHz와 5GHz SSID가 분리되어 있어야 함" list="admin_procedure_expected_result_options"></td>
-                    <td><input type="text" name="acceptance_criteria" required placeholder="2.4GHz, 5GHz의 SSID를 분리하는 것을 권장" list="admin_procedure_acceptance_criteria_options"></td>
-                    <td><select name="required_evidence_type"><option value="">선택 (예: screenshot)</option>{% for value in evidence_type_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
-                    <td><select name="product_test_procedure_status"><option value="">선택 (예: active)</option>{% for value in procedure_status_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
-                    <td><input type="text" name="remark" placeholder="예: 분리하지 않으면 임베디드 장비 2.4GHz 고정 가능"></td>
+                    <td><input type="text" name="product_test_procedure_id" required></td>
+                    <td><select name="product_test_case_id" required><option value=""></option>{% for row in case_rows %}<option value="{{ row.product_test_case_id }}">{{ row.product_test_case_id }}</option>{% endfor %}</select></td>
+                    <td><input type="number" name="procedure_sequence" required></td>
+                    <td><input type="text" name="procedure_action" required list="admin_procedure_action_options"></td>
+                    <td><input type="text" name="expected_result" list="admin_procedure_expected_result_options"></td>
+                    <td><input type="text" name="acceptance_criteria" required list="admin_procedure_acceptance_criteria_options"></td>
+                    <td><select name="required_evidence_type"><option value=""></option>{% for value in evidence_type_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
+                    <td><select name="product_test_procedure_status"><option value=""></option>{% for value in procedure_status_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
+                    <td><input type="text" name="remark"></td>
                 </tr></tbody>
             </table>
         </div>
@@ -341,7 +344,7 @@
 </section>
 
 <section class="card">
-    <div class="section_header_row"><h3>Product Test Report</h3></div>
+    <div class="section_header_row"><h3>Test Report</h3></div>
     <form method="post" action="/admin/product-test-reports/create" class="admin_autosubmit_form">
         <input type="hidden" name="return_to" value="/admin">
         <div class="tester_table_wrap">
@@ -349,10 +352,10 @@
                 <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_RELEASE_ID</th><th>PRODUCT_TEST_REPORT_TYPE</th><th>PRODUCT_TEST_REPORT_TITLE</th><th>REMARK</th></tr></thead>
                 <tbody><tr>
                     <td><input type="checkbox" class="admin_input_row_checkbox"></td>
-                    <td><select name="product_test_release_id" required><option value="">선택 (예: QA_PTREL-HRK_9000A-1.0.0-RC1)</option>{% for row in report_release_options %}<option value="{{ row.product_test_release_id }}">{{ row.product_test_release_id }}</option>{% endfor %}</select></td>
-                    <td><select name="product_test_report_type" required><option value="">선택 (예: FULL)</option>{% for value in report_type_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
-                    <td><input type="text" name="product_test_report_title" required placeholder="HRK-9000A 제품 테스트 보고서"></td>
-                    <td><input type="text" name="remark" placeholder="예: 1차 RC 시험 보고서"></td>
+                    <td><select name="product_test_release_id" required><option value=""></option>{% for row in report_release_options %}<option value="{{ row.product_test_release_id }}">{{ row.product_test_release_id }}</option>{% endfor %}</select></td>
+                    <td><select name="product_test_report_type" required><option value=""></option>{% for value in report_type_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
+                    <td><input type="text" name="product_test_report_title" required></td>
+                    <td><input type="text" name="remark"></td>
                 </tr></tbody>
             </table>
         </div>
@@ -367,7 +370,8 @@
 </section>
 <script>
 (() => {
-    if (window.location.pathname !== "/admin") {
+    const adminRootPath = window.location.pathname.replace(/\/+$/, "") || "/";
+    if (adminRootPath !== "/admin") {
         return;
     }
 
@@ -413,22 +417,22 @@
             return "";
         }
         const stageDisplay = stage === "GA" ? "GA" : `${stage}1`;
-        return `QA_PTREL-${upstream}-${stageDisplay}`;
+        return `SQA_PRODUCT_TEST_RELEASE_ID-${upstream}-${stageDisplay}`;
     };
     const buildTargetDefinitionIdCandidate = (modelValue) => {
         const modelSegment = normalizeSegment(modelValue || "");
         if (!modelSegment) {
             return "";
         }
-        return `QA_PTTGTDEF-${modelSegment}`;
+        return `SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-${modelSegment}`;
     };
     const buildTargetIdCandidate = (definitionValue, serialValue) => {
-        const definitionCore = stripQaPrefix(definitionValue || "", "QA_PTTGTDEF-");
+        const definitionCore = stripTypedIdPrefix(definitionValue || "", "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-");
         const serialCore = String(serialValue || "").trim();
         if (!definitionCore || !serialCore) {
             return "";
         }
-        return `QA_PTTGT-${definitionCore}-${serialCore}`;
+        return `SQA_PRODUCT_TEST_TARGET_ID-${definitionCore}-${serialCore}`;
     };
     const buildEnvironmentDefinitionIdCandidate = (companyValue, cityValue, roomValue) => {
         const company = normalizeSegment(companyValue || "");
@@ -437,15 +441,15 @@
         if (!company || !city || !room) {
             return "";
         }
-        return `QA_PTENVDEF-${company}-${city}-${room}`;
+        return `SQA_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-${company}-${city}-${room}`;
     };
     const buildEnvironmentIdCandidate = (definitionValue, capturedAtValue) => {
-        const definitionCore = stripQaPrefix(definitionValue || "", "QA_PTENVDEF-");
+        const definitionCore = stripTypedIdPrefix(definitionValue || "", "SQA_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-");
         const dateDigits = captureDateDigits(capturedAtValue || "");
         if (!definitionCore || !dateDigits) {
             return "";
         }
-        return `QA_PTENV-${definitionCore}-${dateDigits}-001`;
+        return `SQA_PRODUCT_TEST_ENVIRONMENT_ID-${definitionCore}-${dateDigits}-001`;
     };
     const buildCaseIdCandidate = (categoryValue, titleValue) => {
         const category = normalizeSegment(categoryValue || "");
@@ -453,15 +457,15 @@
         if (!category) {
             return "";
         }
-        return `QA_PTCASE-${category}-${titleCore}-001`;
+        return `SQA_PRODUCT_TEST_CASE_ID-${category}-${titleCore}-001`;
     };
     const buildProcedureIdCandidate = (caseValue, sequenceValue) => {
-        const caseCore = stripQaPrefix(caseValue || "", "QA_PTCASE-");
+        const caseCore = stripTypedIdPrefix(caseValue || "", "SQA_PRODUCT_TEST_CASE_ID-");
         const parsedSequence = parseInt(String(sequenceValue || "").trim(), 10);
         if (!caseCore || Number.isNaN(parsedSequence)) {
             return "";
         }
-        return `QA_PTPROC-${caseCore}-${String(parsedSequence).padStart(3, "0")}`;
+        return `SQA_PRODUCT_TEST_PROCEDURE_ID-${caseCore}-${String(parsedSequence).padStart(3, "0")}`;
     };
     const readCandidateValuesFromField = (field) => {
         if (!field) {
@@ -514,7 +518,7 @@
                 ...readCandidateValuesFromField(modelField).map((value) => buildTargetDefinitionIdCandidate(value)),
                 ...readCandidateValuesFromField(productCodeField).map((value) => {
                     const normalized = normalizeSegment(value);
-                    return normalized ? `QA_PTTGTDEF-${normalized}` : "";
+                    return normalized ? `SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-${normalized}` : "";
                 }),
             ]);
         }
@@ -599,7 +603,7 @@
             field.dataset.userLocked = currentValue && currentValue !== lastSuggestedValue ? "true" : "false";
         });
     };
-    const stripQaPrefix = (value, prefix) => {
+    const stripTypedIdPrefix = (value, prefix) => {
         const text = String(value || "").trim();
         return text.startsWith(prefix) ? text.slice(prefix.length) : text;
     };
@@ -613,9 +617,20 @@
         if (!message) {
             return;
         }
+        if (level === "guide") {
+            if (window.showCenterNonModalV2) {
+                window.showCenterNonModalV2(message, "guide");
+                return;
+            }
+            if (window.openMessageModal) {
+                window.openMessageModal(message, { type: "info", title: title || "안내" });
+            }
+            return;
+        }
         if (mode === "modal" && window.openMessageModal) {
+            const modalType = level === "error" ? "error" : level === "success" ? "success" : "";
             window.openMessageModal(message, {
-                type: level === "error" ? "error" : "",
+                type: modalType,
                 title: title || "",
                 ok_text: "확인",
             });
@@ -629,42 +644,6 @@
             window.openMessageModal(message);
         }
     };
-    const e2eTestButton = document.getElementById("qc_mode_e2e_test_button");
-    if (e2eTestButton) {
-        e2eTestButton.addEventListener("click", async () => {
-            if (e2eTestButton.disabled) {
-                return;
-            }
-            e2eTestButton.disabled = true;
-            try {
-                const response = await fetch("/admin/qc/e2e-fill", {
-                    method: "POST",
-                    headers: {
-                        "X-Requested-With": "XMLHttpRequest",
-                        "Accept": "application/json",
-                    },
-                });
-                const data = await response.json().catch(() => ({}));
-                showNotice({
-                    message: (data && data.message) || "E2E Test 요청 처리 실패",
-                    level: response.ok && data.ok ? "success" : "error",
-                    mode: "non_modal",
-                    title: "",
-                });
-            } catch (_error) {
-                showNotice({
-                    message: "E2E Test 요청 중 네트워크 오류가 발생했습니다.",
-                    level: "error",
-                    mode: "non_modal",
-                    title: "",
-                });
-            } finally {
-                window.setTimeout(() => {
-                    e2eTestButton.disabled = false;
-                }, 1200);
-            }
-        });
-    }
     const getIdValidationMessage = (fieldName) => {
         return serverIdGuides[fieldName] || `${fieldName} 형식이 맞지 않습니다. 수정하세요.`;
     };
@@ -962,7 +941,11 @@
         if (!invalidField) {
             return true;
         }
-        showNotice({ message: invalidField.message, level: "error", mode: "non_modal" });
+        showNotice({
+            message: invalidField.message,
+            level: "guide",
+            mode: "non_modal",
+        });
         return false;
     };
     const attachIdGuides = (form) => {
@@ -995,7 +978,7 @@
                 }
                 setAutofillValue(definitionIdField, candidateValues[0]);
                 if (!String(productCodeField?.value || "").trim()) {
-                    setAutofillValue(productCodeField, stripQaPrefix(candidateValues[0], "QA_PTTGTDEF-"));
+                    setAutofillValue(productCodeField, stripTypedIdPrefix(candidateValues[0], "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-"));
                 }
             };
             modelField?.addEventListener("input", refresh);
@@ -1076,6 +1059,295 @@
             refresh();
         }
     };
+
+    const ADMIN_WRITE_ORDER_PLANS = {
+        "/admin/product-test-releases/create": {
+            order: [
+                "upstream_release_id",
+                "upstream_release_system",
+                "release_stage",
+                "product_test_release_id",
+                "product_test_release_status",
+                "remark",
+            ],
+            optional: new Set(["remark"]),
+        },
+        "/admin/product-test-target-definitions/create": {
+            order: [
+                "manufacturer",
+                "model_name",
+                "product_code",
+                "product_test_target_definition_id",
+                "hardware_revision",
+                "default_software_version",
+                "default_firmware_version",
+                "product_test_target_definition_status",
+                "remark",
+            ],
+            optional: new Set([
+                "product_code",
+                "hardware_revision",
+                "default_software_version",
+                "default_firmware_version",
+                "product_test_target_definition_status",
+                "remark",
+            ]),
+        },
+        "/admin/product-test-targets/create": {
+            order: [
+                "product_test_target_definition_id",
+                "serial_number",
+                "product_test_target_id",
+                "software_version",
+                "firmware_version",
+                "manufacture_lot",
+                "product_test_target_status",
+                "remark",
+            ],
+            optional: new Set(["software_version", "firmware_version", "manufacture_lot", "product_test_target_status", "remark"]),
+        },
+        "/admin/product-test-environment-definitions/create": {
+            order: [
+                "product_test_environment_definition_name",
+                "test_company",
+                "test_city",
+                "test_room",
+                "product_test_environment_definition_id",
+                "test_country",
+                "network_type",
+                "test_computer_name",
+                "operating_system_version",
+                "test_tool_name",
+                "test_tool_version",
+                "power_voltage",
+                "power_frequency",
+                "power_connector_type",
+                "power_condition",
+                "product_test_environment_definition_status",
+                "remark",
+            ],
+            optional: new Set([
+                "test_country",
+                "network_type",
+                "test_computer_name",
+                "operating_system_version",
+                "test_tool_name",
+                "test_tool_version",
+                "power_voltage",
+                "power_frequency",
+                "power_connector_type",
+                "power_condition",
+                "product_test_environment_definition_status",
+                "remark",
+            ]),
+        },
+        "/admin/product-test-environments/create": {
+            order: [
+                "product_test_environment_definition_id",
+                "product_test_environment_name",
+                "captured_at",
+                "product_test_environment_id",
+                "test_computer_name",
+                "operating_system_version",
+                "test_tool_version",
+                "network_type",
+                "power_voltage",
+                "power_frequency",
+                "power_connector_type",
+                "product_test_environment_status",
+                "remark",
+            ],
+            optional: new Set([
+                "test_computer_name",
+                "operating_system_version",
+                "test_tool_version",
+                "network_type",
+                "power_voltage",
+                "power_frequency",
+                "power_connector_type",
+                "product_test_environment_status",
+                "remark",
+            ]),
+        },
+        "/admin/product-test-cases/create": {
+            order: [
+                "test_category",
+                "product_test_case_title",
+                "product_test_case_id",
+                "test_objective",
+                "precondition",
+                "expected_result",
+                "product_test_case_status",
+                "remark",
+            ],
+            optional: new Set(["test_objective", "precondition", "expected_result", "product_test_case_status", "remark"]),
+        },
+        "/admin/product-test-procedures/create": {
+            order: [
+                "product_test_case_id",
+                "procedure_sequence",
+                "product_test_procedure_id",
+                "procedure_action",
+                "expected_result",
+                "acceptance_criteria",
+                "required_evidence_type",
+                "product_test_procedure_status",
+                "remark",
+            ],
+            optional: new Set(["expected_result", "required_evidence_type", "product_test_procedure_status", "remark"]),
+        },
+        "/admin/product-test-reports/create": {
+            order: ["product_test_release_id", "product_test_report_type", "product_test_report_title", "remark"],
+            optional: new Set(["remark"]),
+        },
+    };
+
+    const isFieldValueEmpty = (field) => {
+        if (!field) {
+            return true;
+        }
+        if (field instanceof HTMLSelectElement) {
+            return String(field.value || "").trim() === "";
+        }
+        if (field instanceof HTMLInputElement && field.type === "checkbox") {
+            return false;
+        }
+        return String(field.value || "").trim() === "";
+    };
+
+    const getFirstBlockingPrerequisite = (form, plan, targetName) => {
+        if (!plan || !plan.order) {
+            return null;
+        }
+        const idx = plan.order.indexOf(targetName);
+        if (idx <= 0) {
+            return null;
+        }
+        for (let j = 0; j < idx; j += 1) {
+            const name = plan.order[j];
+            if (plan.optional && plan.optional.has(name)) {
+                continue;
+            }
+            const el = form.querySelector(`[name="${name}"]`);
+            if (!el) {
+                continue;
+            }
+            if (isFieldValueEmpty(el)) {
+                return { fieldName: name, element: el };
+            }
+        }
+        return null;
+    };
+
+    const getHeaderLabelForField = (table, draftRow, fieldName) => {
+        const headers = Array.from(table.querySelectorAll("thead tr th"));
+        const cells = Array.from(draftRow.children);
+        for (let i = 0; i < cells.length; i += 1) {
+            if (cells[i].querySelector(`[name="${fieldName}"]`)) {
+                return String(headers[i]?.textContent || fieldName).trim() || fieldName;
+            }
+        }
+        return fieldName;
+    };
+
+    const focusAdminField = (element) => {
+        if (!element || !(element instanceof HTMLElement)) {
+            return;
+        }
+        element.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+        window.setTimeout(() => {
+            try {
+                element.focus({ preventScroll: true });
+            } catch (_error) {
+                try {
+                    element.focus();
+                } catch (_e2) {
+                    /* noop */
+                }
+            }
+        }, 320);
+    };
+
+    const bindColumnHeaderNavigation = (form) => {
+        const draftRow = form.querySelector("tr.admin_merged_draft_row");
+        const table = draftRow?.closest("table");
+        if (!table || table.dataset.adminColumnNavBound === "1") {
+            return;
+        }
+        table.dataset.adminColumnNavBound = "1";
+        const action = String(form.getAttribute("action") || "");
+        const plan = ADMIN_WRITE_ORDER_PLANS[action] || null;
+        table.querySelectorAll("thead th").forEach((th) => {
+            th.classList.add("admin_column_header_action");
+        });
+        table.addEventListener("click", (event) => {
+            const th = event.target.closest("thead th");
+            if (!th || !table.contains(th)) {
+                return;
+            }
+            const wrap = table.closest(".tester_table_wrap");
+            if (wrap && wrap.style.display === "none") {
+                return;
+            }
+            const headerText = String(th.textContent || "").trim();
+            if (!headerText) {
+                return;
+            }
+            const headerRow = th.parentElement;
+            const colIndex = Array.from(headerRow.children).indexOf(th);
+            const row = form.querySelector("tr.admin_merged_draft_row");
+            if (!row || !row.children[colIndex]) {
+                return;
+            }
+            const cell = row.children[colIndex];
+            if (colIndex === 0) {
+                const checkbox = cell.querySelector("input.admin_input_row_checkbox");
+                if (checkbox) {
+                    focusAdminField(checkbox);
+                }
+                return;
+            }
+            const widget = cell.querySelector("input,select,textarea");
+            if (
+                !(widget instanceof HTMLInputElement) &&
+                !(widget instanceof HTMLSelectElement) &&
+                !(widget instanceof HTMLTextAreaElement)
+            ) {
+                showNotice({
+                    message: `${headerText} 열은 자동 반영 값입니다. 편집 가능한 다른 열 헤더를 눌러 주세요.`,
+                    level: "guide",
+                    mode: "non_modal",
+                    title: "",
+                });
+                return;
+            }
+            const fieldName = String(widget.name || "").trim();
+            if (!fieldName) {
+                return;
+            }
+            const block = plan ? getFirstBlockingPrerequisite(form, plan, fieldName) : null;
+            if (block && block.element !== widget) {
+                const blockLabel = getHeaderLabelForField(table, row, block.fieldName);
+                const message = [
+                    `「${headerText}」을(를) 채우려면 먼저 선행 항목을 완료해야 합니다.`,
+                    "",
+                    `먼저 입력: ${blockLabel}`,
+                    "",
+                    "잠시 후 해당 입력칸으로 스크롤·포커스합니다.",
+                ].join("\n");
+                showNotice({
+                    message,
+                    level: "guide",
+                    mode: "non_modal",
+                    title: "",
+                });
+                window.setTimeout(() => focusAdminField(block.element), 480);
+                return;
+            }
+            focusAdminField(widget);
+        });
+    };
+
     const renderHighlightedText = (text, query) => {
         const sourceText = String(text || "");
         const normalizedQuery = String(query || "").trim();
@@ -1116,6 +1388,7 @@
     const buildFzfMenu = () => {
         const menu = document.createElement("div");
         menu.className = "fzf-menu";
+        menu.setAttribute("role", "listbox");
         menu.hidden = true;
         return menu;
     };
@@ -1161,15 +1434,97 @@
             return;
         }
         const menu = buildFzfMenu();
-        shell.appendChild(menu);
+        document.body.appendChild(menu);
         let activeIndex = -1;
         let visibleOptions = [];
+        let positionCleanups = [];
+        let positioningAttached = false;
+        const detachMenuPositioning = () => {
+            positioningAttached = false;
+            positionCleanups.forEach((fn) => {
+                try {
+                    fn();
+                } catch (_error) {
+                    /* noop */
+                }
+            });
+            positionCleanups = [];
+        };
+        const syncMenuViewportPosition = () => {
+            if (menu.hidden || !inputElement.isConnected) {
+                return;
+            }
+            const rect = inputElement.getBoundingClientRect();
+            const margin = 6;
+            const viewportW = window.innerWidth;
+            const viewportH = window.innerHeight;
+            const maxMenuHeight = 280;
+            let width = Math.max(240, rect.width);
+            width = Math.min(width, Math.min(560, viewportW * 0.92));
+            let left = Math.min(Math.max(8, rect.left), viewportW - width - 8);
+            menu.style.width = `${Math.round(width)}px`;
+            menu.style.left = `${Math.round(left)}px`;
+            menu.style.top = `${Math.round(rect.bottom + margin)}px`;
+            menu.style.maxHeight = `${maxMenuHeight}px`;
+            void menu.offsetHeight;
+            const menuRect = menu.getBoundingClientRect();
+            const spaceBelow = viewportH - rect.bottom - margin;
+            const spaceAbove = rect.top - margin;
+            if (menuRect.height > Math.max(0, spaceBelow - 8) && spaceAbove > spaceBelow) {
+                const desiredTop = rect.top - margin - menuRect.height;
+                const topClamped = Math.max(8, desiredTop);
+                menu.style.top = `${Math.round(topClamped)}px`;
+                const newMax = Math.min(maxMenuHeight, Math.max(120, rect.top - topClamped - margin));
+                menu.style.maxHeight = `${Math.floor(newMax)}px`;
+            }
+        };
+        const scheduleMenuPosition = () => {
+            if (menu.hidden) {
+                return;
+            }
+            window.requestAnimationFrame(() => {
+                syncMenuViewportPosition();
+            });
+        };
+        const attachMenuPositioning = () => {
+            if (positioningAttached) {
+                return;
+            }
+            positioningAttached = true;
+            const onResize = () => scheduleMenuPosition();
+            window.addEventListener("resize", onResize, { passive: true });
+            positionCleanups.push(() => window.removeEventListener("resize", onResize));
+            const onWindowScroll = () => scheduleMenuPosition();
+            window.addEventListener("scroll", onWindowScroll, { passive: true });
+            positionCleanups.push(() => window.removeEventListener("scroll", onWindowScroll));
+            let walk = inputElement.parentElement;
+            while (walk && walk !== document.documentElement) {
+                const style = window.getComputedStyle(walk);
+                const ox = style.overflowX;
+                const oy = style.overflowY;
+                if (
+                    ox === "auto" ||
+                    ox === "scroll" ||
+                    ox === "overlay" ||
+                    oy === "auto" ||
+                    oy === "scroll" ||
+                    oy === "overlay"
+                ) {
+                    const captured = walk;
+                    const onScroll = () => scheduleMenuPosition();
+                    captured.addEventListener("scroll", onScroll, { passive: true });
+                    positionCleanups.push(() => captured.removeEventListener("scroll", onScroll));
+                }
+                walk = walk.parentElement;
+            }
+        };
         const readOptions = () =>
             uniqueNonEmpty([
                 ...(listNode ? Array.from(listNode.querySelectorAll("option")).map((option) => String(option.value || "").trim()) : []),
                 ...getGeneratedIdCandidates(inputElement),
             ]);
         const closeMenu = () => {
+            detachMenuPositioning();
             menu.hidden = true;
             menu.innerHTML = "";
             activeIndex = -1;
@@ -1197,11 +1552,16 @@
                 activeIndex = 0;
             }
             menu.innerHTML = visibleOptions.map((value, index) => `
-                <div class="fzf-item${index === activeIndex ? " is-active" : ""}" data-fzf-index="${index}">
+                <div class="fzf-item${index === activeIndex ? " is-active" : ""}" data-fzf-index="${index}" role="option">
                     ${renderHighlightedText(value, queryText)}
                 </div>
             `).join("");
             menu.hidden = false;
+            attachMenuPositioning();
+            scheduleMenuPosition();
+            window.requestAnimationFrame(() => {
+                scheduleMenuPosition();
+            });
             menu.querySelectorAll("[data-fzf-index]").forEach((itemElement) => {
                 itemElement.addEventListener("mousedown", (event) => {
                     event.preventDefault();
@@ -1229,12 +1589,22 @@
                 event.preventDefault();
                 activeIndex = Math.min(activeIndex + 1, visibleOptions.length - 1);
                 refreshActiveItem();
+                scheduleMenuPosition();
+                const activeNode = menu.querySelector(".fzf-item.is-active");
+                if (activeNode && typeof activeNode.scrollIntoView === "function") {
+                    activeNode.scrollIntoView({ block: "nearest" });
+                }
                 return;
             }
             if (event.key === "ArrowUp") {
                 event.preventDefault();
                 activeIndex = Math.max(activeIndex - 1, 0);
                 refreshActiveItem();
+                scheduleMenuPosition();
+                const activeNode = menu.querySelector(".fzf-item.is-active");
+                if (activeNode && typeof activeNode.scrollIntoView === "function") {
+                    activeNode.scrollIntoView({ block: "nearest" });
+                }
                 return;
             }
             if (event.key === "Enter" && visibleOptions[activeIndex]) {
@@ -1249,7 +1619,8 @@
         });
         inputElement.addEventListener("blur", () => {
             window.setTimeout(() => {
-                if (!shell.contains(document.activeElement)) {
+                const active = document.activeElement;
+                if (!shell.contains(active) && !menu.contains(active)) {
                     closeMenu();
                 }
             }, 120);
@@ -1437,6 +1808,7 @@
     forms.forEach((form) => {
         attachIdGuides(form);
         mergeAdminDraftRowIntoOutputTable(form);
+        bindColumnHeaderNavigation(form);
         restoreDraft(form);
         setupSubmittedTableSelection(form);
         setState(form, "대기");

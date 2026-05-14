@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -14,6 +15,11 @@ def _parse_bool(value: object, default_value: bool) -> bool:
     if normalized in {"0", "false", "no", "off"}:
         return False
     return default_value
+
+
+def parse_config_bool(value: object, default_value: bool) -> bool:
+    """Parse boolean from JSON/env style values (server config, tests, optional env overrides)."""
+    return _parse_bool(value, default_value)
 
 
 @dataclass(frozen=True)
@@ -74,8 +80,8 @@ def _load_server_runtime_config(server_config_file_path: Path) -> ServerRuntimeC
     return ServerRuntimeConfig(
         host=host,
         port=port,
-        qc_mode=_parse_bool(payload.get("qc_mode"), bool(default_payload["qc_mode"])),
-        kiosk_mode=_parse_bool(payload.get("kiosk_mode"), bool(default_payload["kiosk_mode"])),
+        qc_mode=parse_config_bool(payload.get("qc_mode"), bool(default_payload["qc_mode"])),
+        kiosk_mode=parse_config_bool(payload.get("kiosk_mode"), bool(default_payload["kiosk_mode"])),
     )
 
 
@@ -83,8 +89,18 @@ def build_app_settings() -> AppSettings:
     base_directory_path = Path(__file__).resolve().parent
     project_root_path = base_directory_path.parent
     data_directory_path = project_root_path / "data"
-    sqlite_database_file_path = data_directory_path / "product_test_tracking_system.db"
-    sqlite_database_url = f"sqlite:///{sqlite_database_file_path.as_posix()}"
+    env_sqlite_url = (os.environ.get("PRODUCT_TEST_SQLITE_URL") or "").strip()
+    if env_sqlite_url:
+        sqlite_database_url = env_sqlite_url
+        candidate_path: Path | None = None
+        if env_sqlite_url.startswith("sqlite:///"):
+            remainder = env_sqlite_url[len("sqlite:///") :]
+            if remainder and not remainder.startswith(":"):
+                candidate_path = Path(remainder)
+        sqlite_database_file_path = candidate_path or (data_directory_path / "product_test_tracking_system.db")
+    else:
+        sqlite_database_file_path = data_directory_path / "product_test_tracking_system.db"
+        sqlite_database_url = f"sqlite:///{sqlite_database_file_path.as_posix()}"
     server_config_file_path = project_root_path / "server_config.json"
     server_runtime_config = _load_server_runtime_config(server_config_file_path=server_config_file_path)
     return AppSettings(
@@ -103,10 +119,16 @@ app_settings = build_app_settings()
 
 
 def is_qc_mode_enabled() -> bool:
+    raw = os.environ.get("PRODUCT_TEST_QC_MODE")
+    if raw is not None and str(raw).strip() != "":
+        return parse_config_bool(raw, app_settings.server_runtime_config.qc_mode)
     return app_settings.server_runtime_config.qc_mode
 
 
 def is_kiosk_mode_enabled() -> bool:
+    raw = os.environ.get("PRODUCT_TEST_KIOSK_MODE")
+    if raw is not None and str(raw).strip() != "":
+        return parse_config_bool(raw, app_settings.server_runtime_config.kiosk_mode)
     return app_settings.server_runtime_config.kiosk_mode
 
 

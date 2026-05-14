@@ -750,12 +750,13 @@ button:disabled {
     position: relative;
 }
 
+/* 포털: document.body 에 붙여 테이블 overflow·낮은 stacking context 에 가리지 않음 */
 .fzf-menu {
-    position: absolute;
-    top: calc(100% + 6px);
-    left: 0;
-    right: 0;
-    z-index: 2600;
+    position: fixed;
+    z-index: 2147483000;
+    box-sizing: border-box;
+    margin: 0;
+    right: auto;
     min-width: 240px;
     max-width: min(560px, 92vw);
     max-height: 280px;
@@ -765,6 +766,7 @@ button:disabled {
     background: #FFFFFF;
     box-shadow: 0 8px 24px rgba(12, 58, 70, 0.18);
     padding: 4px 0;
+    isolation: isolate;
 }
 
 .fzf-item {
@@ -792,6 +794,15 @@ button:disabled {
     color: #7E5711;
     border-radius: 4px;
     padding: 0 1px;
+}
+
+.admin_column_header_action {
+    cursor: pointer;
+    user-select: none;
+}
+
+.admin_column_header_action:hover {
+    background: #eef5ff;
 }
 
 .tester_table_wrap {
@@ -906,6 +917,12 @@ button:disabled {
     border-color: #D0A3A3;
     background: #FAEAEA;
     color: #7A1E1E;
+}
+
+.center_non_modal_v2.guide {
+    border-color: #E8C49A;
+    background: #FFF8ED;
+    color: #8B4510;
 }
 
 .center_non_modal_v2.success {

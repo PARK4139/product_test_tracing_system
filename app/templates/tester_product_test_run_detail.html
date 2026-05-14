@@ -128,7 +128,6 @@
                                 name="judgement_reason"
                                 value="{{ row.judgement_reason }}"
                                 class="product_test_judgement_reason_input"
-                                placeholder="failed/blocked/skipped 사유"
                                 data-skipped-reasons="{{ skipped_reason_examples|join(', ') }}"
                                 data-blocked-reasons="{{ blocked_reason_examples|join(', ') }}"
                                 {% if row.status in ['failed', 'blocked', 'skipped'] %}required{% endif %}
@@ -151,7 +150,7 @@
                                 {% for value in evidence_type_values %}<option value="{{ value }}" {% if row.required_evidence_type == value %}selected{% endif %}>{{ value }}</option>{% endfor %}
                             </select>
                             <label>File Path<span class="required_marker">*</span></label>
-                            <input name="file_path" placeholder="evidence path placeholder" required {% if run.status != 'running' or run.source_locked %}disabled{% endif %}>
+                            <input name="file_path" required {% if run.status != 'running' or run.source_locked %}disabled{% endif %}>
                             <label>Remark</label>
                             <input name="remark" {% if run.status != 'running' or run.source_locked %}disabled{% endif %}>
                             <button type="submit" {% if run.status != 'running' or run.source_locked %}disabled{% endif %}>Attach Evidence</button>

@@ -2,7 +2,7 @@
 {% block content %}
 <section class="card">
     <div class="section_header_row">
-        <h3>Product Test Report Detail | 제품 테스트 보고서 상세</h3>
+        <h3>Test Report Detail | 제품 테스트 보고서 상세</h3>
         <div class="table_action_bar">
             <a href="/admin/product-test-reports" class="project_standard_button">보고서 목록</a>
             <a href="/admin/product-test-report-snapshots" class="project_standard_button">스냅샷 목록</a>
@@ -49,7 +49,7 @@
                 <option value="draft">draft</option>
             </select>
             <label>remark</label>
-            <input type="text" name="remark" placeholder="snapshot note">
+            <input type="text" name="remark">
             <button type="submit">Create Snapshot</button>
         </form>
         <form method="post" action="/admin/product-test-reports/{{ report.product_test_report_id }}/approve">
@@ -57,7 +57,7 @@
         </form>
         <form method="post" action="/admin/product-test-reports/{{ report.product_test_report_id }}/reject" class="dropdown_inline_form">
             <label>rejection_reason<span class="required_marker">*</span></label>
-            <input type="text" name="rejection_reason" required placeholder="reject reason">
+            <input type="text" name="rejection_reason" required>
             <button type="submit" {% if report.product_test_report_status != "DRAFT" %}disabled{% endif %}>Reject</button>
         </form>
     </div>

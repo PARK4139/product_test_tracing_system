@@ -38,6 +38,7 @@
 
         const close = (run_on_close = true) => {
             overlay.classList.remove("is_open");
+            overlay.classList.remove("message_modal_success", "message_modal_error");
             overlay.setAttribute("aria-hidden", "true");
             overlay.style.display = "none";
             if (run_on_close && on_close) {
@@ -109,7 +110,7 @@
             document.body.appendChild(toast);
         }
         const normalized_type = String(type_name || "info").toLowerCase();
-        toast.classList.remove("success", "error", "info");
+        toast.classList.remove("success", "error", "info", "guide");
         toast.classList.add(normalized_type);
         toast.textContent = formatModalMessageText(message_text);
         toast.classList.add("is_open");
@@ -1810,4 +1811,116 @@
         status_select.addEventListener("change", refresh);
         refresh();
     });
+})();
+
+(() => {
+    const pathname = window.location.pathname || "";
+    if (!pathname.startsWith("/admin")) {
+        return;
+    }
+
+    const showQcHeaderMessage = (message, level = "error") => {
+        const text = String(message || "").trim();
+        if (!text) {
+            return;
+        }
+        if (window.showCenterNonModalV2) {
+            window.showCenterNonModalV2(text, level);
+            return;
+        }
+        if (window.openMessageModal) {
+            window.openMessageModal(text, { type: level === "error" ? "error" : "" });
+            return;
+        }
+        window.alert(text);
+    };
+
+    /** Matches `toStorageKey` in admin_dashboard.html — DB truncate 후 복원되지 않게 초안 제거 */
+    const clearAdminAutosaveDrafts = () => {
+        const prefix = "admin_autosave_v1:";
+        for (let index = localStorage.length - 1; index >= 0; index -= 1) {
+            const key = localStorage.key(index);
+            if (key && key.startsWith(prefix)) {
+                localStorage.removeItem(key);
+            }
+        }
+    };
+
+    const dbTruncateButton = document.getElementById("qc_mode_db_truncate_button");
+    if (dbTruncateButton && dbTruncateButton.dataset.qcBound !== "1") {
+        dbTruncateButton.dataset.qcBound = "1";
+        dbTruncateButton.addEventListener("click", async () => {
+            if (
+                !window.confirm(
+                    "QC DB_TRUNCATE: 모든 테이블 데이터를 삭제합니다. (스키마 유지) 계속할까요?",
+                )
+            ) {
+                return;
+            }
+            if (dbTruncateButton.disabled) {
+                return;
+            }
+            dbTruncateButton.disabled = true;
+            try {
+                const response = await fetch("/admin/qc/db-truncate", {
+                    method: "POST",
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest",
+                        Accept: "application/json",
+                    },
+                    credentials: "same-origin",
+                });
+                const data = await response.json().catch(() => ({}));
+                if (response.ok && data && data.ok) {
+                    clearAdminAutosaveDrafts();
+                    window.location.reload();
+                    return;
+                }
+                const errText =
+                    (data && data.message) ||
+                    (typeof data.detail === "string" ? data.detail : "") ||
+                    "DB_TRUNCATE 처리 실패";
+                showQcHeaderMessage(errText, "error");
+            } catch (_error) {
+                showQcHeaderMessage("DB_TRUNCATE 요청 중 네트워크 오류가 발생했습니다.", "error");
+            } finally {
+                window.setTimeout(() => {
+                    dbTruncateButton.disabled = false;
+                }, 800);
+            }
+        });
+    }
+
+    const e2eTestButton = document.getElementById("qc_mode_e2e_test_button");
+    if (e2eTestButton && e2eTestButton.dataset.qcBound !== "1") {
+        e2eTestButton.dataset.qcBound = "1";
+        e2eTestButton.addEventListener("click", async () => {
+            if (e2eTestButton.disabled) {
+                return;
+            }
+            e2eTestButton.disabled = true;
+            try {
+                const response = await fetch("/admin/qc/e2e-fill", {
+                    method: "POST",
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest",
+                        Accept: "application/json",
+                    },
+                    credentials: "same-origin",
+                });
+                const data = await response.json().catch(() => ({}));
+                const ok = response.ok && data && data.ok;
+                showQcHeaderMessage(
+                    (data && data.message) || "E2E TEST 요청 처리 실패",
+                    ok ? "success" : "error",
+                );
+            } catch (_error) {
+                showQcHeaderMessage("E2E TEST 요청 중 네트워크 오류가 발생했습니다.", "error");
+            } finally {
+                window.setTimeout(() => {
+                    e2eTestButton.disabled = false;
+                }, 1200);
+            }
+        });
+    }
 })();
