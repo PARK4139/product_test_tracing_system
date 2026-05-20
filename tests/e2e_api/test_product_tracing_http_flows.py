@@ -129,6 +129,27 @@ def test_pt_e2e_007_admin_and_export(seeded_wifi_ap_db: TestClient) -> None:
     assert forbidden.status_code == 403
 
 
+def test_admin_product_test_ui_json_api(seeded_wifi_ap_db: TestClient) -> None:
+    client = seeded_wifi_ap_db
+    cookies = _cookies("master_admin")
+    cfg = client.get("/admin/api/product-test/ui/client-config", cookies=cookies)
+    assert cfg.status_code == 200
+    payload = cfg.json()
+    assert "id_rules" in payload and "write_order_plans" in payload
+    cand = client.post(
+        "/admin/api/product-test/ui/id-candidates",
+        cookies=cookies,
+        json={
+            "form_action": "/admin/product-test-releases/create",
+            "field_name": "product_test_release_id",
+            "values": {"upstream_release_id": "HRK_9000A-1.0.0", "release_stage": "RC"},
+            "datalist_hints": {},
+        },
+    )
+    assert cand.status_code == 200
+    assert "SQA_PRODUCT_TEST_RELEASE_ID-HRK_9000A-1.0.0-RC1" in cand.json().get("candidates", [])
+
+
 def test_pt_test_case_start_route(seeded_wifi_ap_db: TestClient) -> None:
     """PT-E2E-004 companion: start result HTTP route (seed DB already has a result)."""
     client = seeded_wifi_ap_db

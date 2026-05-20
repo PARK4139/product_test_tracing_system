@@ -121,6 +121,9 @@
 
 <section class="card">
     <div class="section_header_row"><h3>Test Release</h3></div>
+    <div class="detail_guide">
+        공식 릴리즈 ID는 upstream·stage 조합으로 자동 채워지며 기본은 읽기 전용입니다. upstream에 넣은 버전 문자열이 ID에 다시 들어가는 것은 명명 규칙이며 별도로 ID를 한 번 더 적는 단계가 아닙니다. ID만 바꿀 때는 해당 칸을 더블클릭한 뒤 수정하세요.
+    </div>
     <form method="post" action="/admin/product-test-releases/create" class="admin_autosubmit_form">
         <input type="hidden" name="return_to" value="/admin">
         <div class="tester_table_wrap">
@@ -369,7 +372,7 @@
     </div>
 </section>
 <script>
-(() => {
+void (async () => {
     const adminRootPath = window.location.pathname.replace(/\/+$/, "") || "/";
     if (adminRootPath !== "/admin") {
         return;
@@ -380,206 +383,39 @@
         return;
     }
 
-    const normalizeSegment = (value) => {
-        let normalized = String(value || "").trim();
-        normalized = normalized.replace(/\?/g, " UNKNOWN ");
-        normalized = normalized.replace(/[()]/g, " ");
-        normalized = normalized.replace(/[\/\\\s:\*\|"'<>\-]+/g, "_");
-        normalized = normalized.replace(/[^0-9A-Za-z_]+/g, "_");
-        normalized = normalized.replace(/_+/g, "_");
-        return normalized.replace(/^_+|_+$/g, "").toUpperCase();
-    };
-    const captureDateDigits = (value) => {
-        const digits = String(value || "").replace(/\D+/g, "");
-        if (digits.length >= 8) {
-            return digits.slice(0, 8);
-        }
-        return "";
-    };
+    const adminUiConfigResponse = await fetch("/admin/api/product-test/ui/client-config", {
+        credentials: "same-origin",
+        headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+    });
+    if (!adminUiConfigResponse.ok) {
+        window.console?.error?.("admin ui client-config failed", adminUiConfigResponse.status);
+        return;
+    }
+    const adminUiConfig = await adminUiConfigResponse.json();
+    const serverIdRules = adminUiConfig.id_rules || {};
+    const serverIdGuides = adminUiConfig.id_guides || {};
+    const adminNoticeConfig = adminUiConfig.notice_config || {};
+    const ADMIN_WRITE_ORDER_PLANS = Object.fromEntries(
+        Object.entries(adminUiConfig.write_order_plans || {}).map(([actionKey, plan]) => [
+            actionKey,
+            {
+                order: Array.isArray(plan.order) ? plan.order : [],
+                optional: new Set(Array.isArray(plan.optional) ? plan.optional : []),
+            },
+        ]),
+    );
+    const idValidationRules = Object.fromEntries(
+        Object.entries(serverIdRules).map(([fieldName, patternText]) => [fieldName, new RegExp(patternText)]),
+    );
+
     const uniqueNonEmpty = (values) =>
         Array.from(
             new Set(
                 (values || [])
                     .map((value) => String(value || "").trim())
-                    .filter(Boolean)
-            )
+                    .filter(Boolean),
+            ),
         );
-    const buildCaseTitleCore = (titleValue) =>
-        normalizeSegment(titleValue || "")
-            .replace(/^WIFI_AP_/, "AP_")
-            .replace(/^PRODUCT_TEST_/, "")
-            .slice(0, 24)
-            .replace(/_+$/g, "");
-    const buildReleaseIdCandidate = (upstreamValue, stageValue) => {
-        const upstream = String(upstreamValue || "").trim();
-        const stage = String(stageValue || "").trim().toUpperCase();
-        if (!upstream || !stage) {
-            return "";
-        }
-        const stageDisplay = stage === "GA" ? "GA" : `${stage}1`;
-        return `SQA_PRODUCT_TEST_RELEASE_ID-${upstream}-${stageDisplay}`;
-    };
-    const buildTargetDefinitionIdCandidate = (modelValue) => {
-        const modelSegment = normalizeSegment(modelValue || "");
-        if (!modelSegment) {
-            return "";
-        }
-        return `SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-${modelSegment}`;
-    };
-    const buildTargetIdCandidate = (definitionValue, serialValue) => {
-        const definitionCore = stripTypedIdPrefix(definitionValue || "", "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-");
-        const serialCore = String(serialValue || "").trim();
-        if (!definitionCore || !serialCore) {
-            return "";
-        }
-        return `SQA_PRODUCT_TEST_TARGET_ID-${definitionCore}-${serialCore}`;
-    };
-    const buildEnvironmentDefinitionIdCandidate = (companyValue, cityValue, roomValue) => {
-        const company = normalizeSegment(companyValue || "");
-        const city = normalizeSegment(cityValue || "");
-        const room = normalizeSegment(roomValue || "");
-        if (!company || !city || !room) {
-            return "";
-        }
-        return `SQA_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-${company}-${city}-${room}`;
-    };
-    const buildEnvironmentIdCandidate = (definitionValue, capturedAtValue) => {
-        const definitionCore = stripTypedIdPrefix(definitionValue || "", "SQA_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-");
-        const dateDigits = captureDateDigits(capturedAtValue || "");
-        if (!definitionCore || !dateDigits) {
-            return "";
-        }
-        return `SQA_PRODUCT_TEST_ENVIRONMENT_ID-${definitionCore}-${dateDigits}-001`;
-    };
-    const buildCaseIdCandidate = (categoryValue, titleValue) => {
-        const category = normalizeSegment(categoryValue || "");
-        const titleCore = buildCaseTitleCore(titleValue || "") || "ITEM";
-        if (!category) {
-            return "";
-        }
-        return `SQA_PRODUCT_TEST_CASE_ID-${category}-${titleCore}-001`;
-    };
-    const buildProcedureIdCandidate = (caseValue, sequenceValue) => {
-        const caseCore = stripTypedIdPrefix(caseValue || "", "SQA_PRODUCT_TEST_CASE_ID-");
-        const parsedSequence = parseInt(String(sequenceValue || "").trim(), 10);
-        if (!caseCore || Number.isNaN(parsedSequence)) {
-            return "";
-        }
-        return `SQA_PRODUCT_TEST_PROCEDURE_ID-${caseCore}-${String(parsedSequence).padStart(3, "0")}`;
-    };
-    const readCandidateValuesFromField = (field) => {
-        if (!field) {
-            return [];
-        }
-        if (field instanceof HTMLSelectElement) {
-            return uniqueNonEmpty([
-                field.value,
-                ...Array.from(field.options).map((option) => option.value),
-            ]);
-        }
-        if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement) {
-            const values = [field.value];
-            const listId = field.getAttribute("list");
-            if (listId) {
-                const listNode = document.getElementById(listId);
-                if (listNode) {
-                    values.push(...Array.from(listNode.querySelectorAll("option")).map((option) => option.value));
-                }
-            }
-            return uniqueNonEmpty(values);
-        }
-        return [];
-    };
-    const getGeneratedIdCandidates = (inputElement) => {
-        if (!(inputElement instanceof HTMLInputElement)) {
-            return [];
-        }
-        const form = inputElement.closest("form");
-        if (!form) {
-            return [];
-        }
-        const fieldName = String(inputElement.name || "").trim();
-        if (!fieldName) {
-            return [];
-        }
-        if (fieldName === "product_test_release_id") {
-            const upstreamField = form.querySelector('[name="upstream_release_id"]');
-            const stageField = form.querySelector('[name="release_stage"]');
-            return uniqueNonEmpty(
-                readCandidateValuesFromField(upstreamField).flatMap((upstreamValue) =>
-                    readCandidateValuesFromField(stageField).map((stageValue) => buildReleaseIdCandidate(upstreamValue, stageValue))
-                )
-            );
-        }
-        if (fieldName === "product_test_target_definition_id") {
-            const productCodeField = form.querySelector('[name="product_code"]');
-            const modelField = form.querySelector('[name="model_name"]');
-            return uniqueNonEmpty([
-                ...readCandidateValuesFromField(modelField).map((value) => buildTargetDefinitionIdCandidate(value)),
-                ...readCandidateValuesFromField(productCodeField).map((value) => {
-                    const normalized = normalizeSegment(value);
-                    return normalized ? `SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-${normalized}` : "";
-                }),
-            ]);
-        }
-        if (fieldName === "product_test_target_id") {
-            const definitionField = form.querySelector('[name="product_test_target_definition_id"]');
-            const serialField = form.querySelector('[name="serial_number"]');
-            return uniqueNonEmpty(
-                readCandidateValuesFromField(definitionField).flatMap((definitionValue) =>
-                    readCandidateValuesFromField(serialField).map((serialValue) => buildTargetIdCandidate(definitionValue, serialValue))
-                )
-            );
-        }
-        if (fieldName === "product_test_environment_definition_id") {
-            const companyField = form.querySelector('[name="test_company"]');
-            const cityField = form.querySelector('[name="test_city"]');
-            const roomField = form.querySelector('[name="test_room"]');
-            return uniqueNonEmpty(
-                readCandidateValuesFromField(companyField).flatMap((companyValue) =>
-                    readCandidateValuesFromField(cityField).flatMap((cityValue) =>
-                        readCandidateValuesFromField(roomField).map((roomValue) =>
-                            buildEnvironmentDefinitionIdCandidate(companyValue, cityValue, roomValue)
-                        )
-                    )
-                )
-            );
-        }
-        if (fieldName === "product_test_environment_id") {
-            const definitionField = form.querySelector('[name="product_test_environment_definition_id"]');
-            const capturedAtField = form.querySelector('[name="captured_at"]');
-            return uniqueNonEmpty(
-                readCandidateValuesFromField(definitionField).flatMap((definitionValue) =>
-                    readCandidateValuesFromField(capturedAtField).map((capturedAtValue) =>
-                        buildEnvironmentIdCandidate(definitionValue, capturedAtValue)
-                    )
-                )
-            );
-        }
-        if (fieldName === "product_test_case_id") {
-            const categoryField = form.querySelector('[name="test_category"]');
-            const titleField = form.querySelector('[name="product_test_case_title"]');
-            return uniqueNonEmpty(
-                readCandidateValuesFromField(categoryField).flatMap((categoryValue) =>
-                    readCandidateValuesFromField(titleField).map((titleValue) =>
-                        buildCaseIdCandidate(categoryValue, titleValue)
-                    )
-                )
-            );
-        }
-        if (fieldName === "product_test_procedure_id") {
-            const caseField = form.querySelector('[name="product_test_case_id"]');
-            const sequenceField = form.querySelector('[name="procedure_sequence"]');
-            return uniqueNonEmpty(
-                readCandidateValuesFromField(caseField).flatMap((caseValue) =>
-                    readCandidateValuesFromField(sequenceField).map((sequenceValue) =>
-                        buildProcedureIdCandidate(caseValue, sequenceValue)
-                    )
-                )
-            );
-        }
-        return [];
-    };
     const setAutofillValue = (field, nextValue) => {
         if (!field || !nextValue) {
             return;
@@ -607,12 +443,6 @@
         const text = String(value || "").trim();
         return text.startsWith(prefix) ? text.slice(prefix.length) : text;
     };
-    const serverIdRules = {{ admin_id_rules | tojson }};
-    const serverIdGuides = {{ admin_id_guides | tojson }};
-    const adminNoticeConfig = {{ admin_notice_config | tojson }};
-    const idValidationRules = Object.fromEntries(
-        Object.entries(serverIdRules).map(([fieldName, patternText]) => [fieldName, new RegExp(patternText)])
-    );
     const showNotice = ({ message, level = "info", mode = "non_modal", title = "" }) => {
         if (!message) {
             return;
@@ -920,33 +750,41 @@
         inputWrap.style.display = "none";
         form.dataset.mergeReady = "true";
     };
-    const getInvalidIdField = (form) => {
-        for (const [fieldName, pattern] of Object.entries(idValidationRules)) {
-            const field = form.querySelector(`[name="${fieldName}"]`);
-            if (!(field instanceof HTMLInputElement)) {
-                continue;
-            }
-            const value = String(field.value || "").trim();
-            if (!value) {
-                continue;
-            }
-            if (/[\/\\\s]/.test(value) || !pattern.test(value)) {
-                return { fieldName, message: getIdValidationMessage(fieldName) };
-            }
-        }
-        return null;
-    };
-    const validateIdFieldsBeforeSubmit = (form) => {
-        const invalidField = getInvalidIdField(form);
-        if (!invalidField) {
+    const validateIdFieldsBeforeSubmit = async (form) => {
+        const res = await fetchValidateIdentifiers(form);
+        if (res.ok || !res.errors.length) {
             return true;
         }
+        const first = res.errors[0];
         showNotice({
-            message: invalidField.message,
+            message: first.message || getIdValidationMessage(first.field),
             level: "guide",
             mode: "non_modal",
         });
         return false;
+    };
+    const syncProductTestReleaseIdReadonly = async (form) => {
+        const action = String(form.getAttribute("action") || "");
+        if (!action.endsWith("/product-test-releases/create")) {
+            return;
+        }
+        const releaseIdField = form.querySelector('[name="product_test_release_id"]');
+        if (!(releaseIdField instanceof HTMLInputElement)) {
+            return;
+        }
+        const candidates = await fetchIdCandidates(form, "product_test_release_id");
+        const candidate = String(candidates[0] || "").trim();
+        const current = String(releaseIdField.value || "").trim();
+        const userLocked = releaseIdField.dataset.userLocked === "true";
+        const matchesAuto = Boolean(candidate && current === candidate);
+        releaseIdField.readOnly = matchesAuto && !userLocked;
+        releaseIdField.classList.toggle("is_auto_derived_release_id", releaseIdField.readOnly);
+        if (releaseIdField.readOnly) {
+            releaseIdField.title =
+                "upstream_release_id와 release_stage로 자동 생성된 값입니다. 직접 바꾸려면 더블클릭한 뒤 수정하세요.";
+        } else {
+            releaseIdField.removeAttribute("title");
+        }
     };
     const attachIdGuides = (form) => {
         const action = String(form.getAttribute("action") || "");
@@ -957,13 +795,36 @@
             const releaseIdField = form.querySelector('[name="product_test_release_id"]');
             const upstreamField = form.querySelector('[name="upstream_release_id"]');
             const stageField = form.querySelector('[name="release_stage"]');
-            const refresh = () => {
-                setAutofillValue(releaseIdField, getGeneratedIdCandidates(releaseIdField)[0] || "");
+            const refresh = async () => {
+                const candidates = await fetchIdCandidates(form, "product_test_release_id");
+                setAutofillValue(releaseIdField, candidates[0] || "");
+                await syncProductTestReleaseIdReadonly(form);
             };
-            upstreamField?.addEventListener("input", refresh);
-            upstreamField?.addEventListener("change", refresh);
-            stageField?.addEventListener("change", refresh);
-            refresh();
+            upstreamField?.addEventListener("input", () => void refresh());
+            upstreamField?.addEventListener("change", () => void refresh());
+            stageField?.addEventListener("change", () => void refresh());
+            releaseIdField?.addEventListener("dblclick", () => {
+                if (!(releaseIdField instanceof HTMLInputElement) || !releaseIdField.readOnly) {
+                    return;
+                }
+                releaseIdField.readOnly = false;
+                releaseIdField.dataset.userLocked = "true";
+                releaseIdField.classList.remove("is_auto_derived_release_id");
+                releaseIdField.removeAttribute("title");
+                window.setTimeout(() => {
+                    try {
+                        releaseIdField.focus({ preventScroll: true });
+                        releaseIdField.select();
+                    } catch (_e) {
+                        try {
+                            releaseIdField.focus();
+                        } catch (_e2) {
+                            /* noop */
+                        }
+                    }
+                }, 0);
+            });
+            void refresh();
             return;
         }
 
@@ -971,8 +832,8 @@
             const definitionIdField = form.querySelector('[name="product_test_target_definition_id"]');
             const productCodeField = form.querySelector('[name="product_code"]');
             const modelField = form.querySelector('[name="model_name"]');
-            const refresh = () => {
-                const candidateValues = getGeneratedIdCandidates(definitionIdField);
+            const refresh = async () => {
+                const candidateValues = await fetchIdCandidates(form, "product_test_target_definition_id");
                 if (!candidateValues.length) {
                     return;
                 }
@@ -981,9 +842,9 @@
                     setAutofillValue(productCodeField, stripTypedIdPrefix(candidateValues[0], "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-"));
                 }
             };
-            modelField?.addEventListener("input", refresh);
-            modelField?.addEventListener("change", refresh);
-            refresh();
+            modelField?.addEventListener("input", () => void refresh());
+            modelField?.addEventListener("change", () => void refresh());
+            void refresh();
             return;
         }
 
@@ -991,13 +852,14 @@
             const targetIdField = form.querySelector('[name="product_test_target_id"]');
             const definitionField = form.querySelector('[name="product_test_target_definition_id"]');
             const serialField = form.querySelector('[name="serial_number"]');
-            const refresh = () => {
-                setAutofillValue(targetIdField, getGeneratedIdCandidates(targetIdField)[0] || "");
+            const refresh = async () => {
+                const candidates = await fetchIdCandidates(form, "product_test_target_id");
+                setAutofillValue(targetIdField, candidates[0] || "");
             };
-            definitionField?.addEventListener("change", refresh);
-            serialField?.addEventListener("input", refresh);
-            serialField?.addEventListener("change", refresh);
-            refresh();
+            definitionField?.addEventListener("change", () => void refresh());
+            serialField?.addEventListener("input", () => void refresh());
+            serialField?.addEventListener("change", () => void refresh());
+            void refresh();
             return;
         }
 
@@ -1006,14 +868,15 @@
             const companyField = form.querySelector('[name="test_company"]');
             const cityField = form.querySelector('[name="test_city"]');
             const roomField = form.querySelector('[name="test_room"]');
-            const refresh = () => {
-                setAutofillValue(environmentDefinitionIdField, getGeneratedIdCandidates(environmentDefinitionIdField)[0] || "");
+            const refresh = async () => {
+                const candidates = await fetchIdCandidates(form, "product_test_environment_definition_id");
+                setAutofillValue(environmentDefinitionIdField, candidates[0] || "");
             };
             [companyField, cityField, roomField].forEach((field) => {
-                field?.addEventListener("input", refresh);
-                field?.addEventListener("change", refresh);
+                field?.addEventListener("input", () => void refresh());
+                field?.addEventListener("change", () => void refresh());
             });
-            refresh();
+            void refresh();
             return;
         }
 
@@ -1021,13 +884,14 @@
             const environmentIdField = form.querySelector('[name="product_test_environment_id"]');
             const definitionField = form.querySelector('[name="product_test_environment_definition_id"]');
             const capturedAtField = form.querySelector('[name="captured_at"]');
-            const refresh = () => {
-                setAutofillValue(environmentIdField, getGeneratedIdCandidates(environmentIdField)[0] || "");
+            const refresh = async () => {
+                const candidates = await fetchIdCandidates(form, "product_test_environment_id");
+                setAutofillValue(environmentIdField, candidates[0] || "");
             };
-            definitionField?.addEventListener("change", refresh);
-            capturedAtField?.addEventListener("input", refresh);
-            capturedAtField?.addEventListener("change", refresh);
-            refresh();
+            definitionField?.addEventListener("change", () => void refresh());
+            capturedAtField?.addEventListener("input", () => void refresh());
+            capturedAtField?.addEventListener("change", () => void refresh());
+            void refresh();
             return;
         }
 
@@ -1035,14 +899,15 @@
             const caseIdField = form.querySelector('[name="product_test_case_id"]');
             const categoryField = form.querySelector('[name="test_category"]');
             const titleField = form.querySelector('[name="product_test_case_title"]');
-            const refresh = () => {
-                setAutofillValue(caseIdField, getGeneratedIdCandidates(caseIdField)[0] || "");
+            const refresh = async () => {
+                const candidates = await fetchIdCandidates(form, "product_test_case_id");
+                setAutofillValue(caseIdField, candidates[0] || "");
             };
-            categoryField?.addEventListener("input", refresh);
-            categoryField?.addEventListener("change", refresh);
-            titleField?.addEventListener("input", refresh);
-            titleField?.addEventListener("change", refresh);
-            refresh();
+            categoryField?.addEventListener("input", () => void refresh());
+            categoryField?.addEventListener("change", () => void refresh());
+            titleField?.addEventListener("input", () => void refresh());
+            titleField?.addEventListener("change", () => void refresh());
+            void refresh();
             return;
         }
 
@@ -1050,193 +915,15 @@
             const procedureIdField = form.querySelector('[name="product_test_procedure_id"]');
             const caseField = form.querySelector('[name="product_test_case_id"]');
             const sequenceField = form.querySelector('[name="procedure_sequence"]');
-            const refresh = () => {
-                setAutofillValue(procedureIdField, getGeneratedIdCandidates(procedureIdField)[0] || "");
+            const refresh = async () => {
+                const candidates = await fetchIdCandidates(form, "product_test_procedure_id");
+                setAutofillValue(procedureIdField, candidates[0] || "");
             };
-            caseField?.addEventListener("change", refresh);
-            sequenceField?.addEventListener("input", refresh);
-            sequenceField?.addEventListener("change", refresh);
-            refresh();
+            caseField?.addEventListener("change", () => void refresh());
+            sequenceField?.addEventListener("input", () => void refresh());
+            sequenceField?.addEventListener("change", () => void refresh());
+            void refresh();
         }
-    };
-
-    const ADMIN_WRITE_ORDER_PLANS = {
-        "/admin/product-test-releases/create": {
-            order: [
-                "upstream_release_id",
-                "upstream_release_system",
-                "release_stage",
-                "product_test_release_id",
-                "product_test_release_status",
-                "remark",
-            ],
-            optional: new Set(["remark"]),
-        },
-        "/admin/product-test-target-definitions/create": {
-            order: [
-                "manufacturer",
-                "model_name",
-                "product_code",
-                "product_test_target_definition_id",
-                "hardware_revision",
-                "default_software_version",
-                "default_firmware_version",
-                "product_test_target_definition_status",
-                "remark",
-            ],
-            optional: new Set([
-                "product_code",
-                "hardware_revision",
-                "default_software_version",
-                "default_firmware_version",
-                "product_test_target_definition_status",
-                "remark",
-            ]),
-        },
-        "/admin/product-test-targets/create": {
-            order: [
-                "product_test_target_definition_id",
-                "serial_number",
-                "product_test_target_id",
-                "software_version",
-                "firmware_version",
-                "manufacture_lot",
-                "product_test_target_status",
-                "remark",
-            ],
-            optional: new Set(["software_version", "firmware_version", "manufacture_lot", "product_test_target_status", "remark"]),
-        },
-        "/admin/product-test-environment-definitions/create": {
-            order: [
-                "product_test_environment_definition_name",
-                "test_company",
-                "test_city",
-                "test_room",
-                "product_test_environment_definition_id",
-                "test_country",
-                "network_type",
-                "test_computer_name",
-                "operating_system_version",
-                "test_tool_name",
-                "test_tool_version",
-                "power_voltage",
-                "power_frequency",
-                "power_connector_type",
-                "power_condition",
-                "product_test_environment_definition_status",
-                "remark",
-            ],
-            optional: new Set([
-                "test_country",
-                "network_type",
-                "test_computer_name",
-                "operating_system_version",
-                "test_tool_name",
-                "test_tool_version",
-                "power_voltage",
-                "power_frequency",
-                "power_connector_type",
-                "power_condition",
-                "product_test_environment_definition_status",
-                "remark",
-            ]),
-        },
-        "/admin/product-test-environments/create": {
-            order: [
-                "product_test_environment_definition_id",
-                "product_test_environment_name",
-                "captured_at",
-                "product_test_environment_id",
-                "test_computer_name",
-                "operating_system_version",
-                "test_tool_version",
-                "network_type",
-                "power_voltage",
-                "power_frequency",
-                "power_connector_type",
-                "product_test_environment_status",
-                "remark",
-            ],
-            optional: new Set([
-                "test_computer_name",
-                "operating_system_version",
-                "test_tool_version",
-                "network_type",
-                "power_voltage",
-                "power_frequency",
-                "power_connector_type",
-                "product_test_environment_status",
-                "remark",
-            ]),
-        },
-        "/admin/product-test-cases/create": {
-            order: [
-                "test_category",
-                "product_test_case_title",
-                "product_test_case_id",
-                "test_objective",
-                "precondition",
-                "expected_result",
-                "product_test_case_status",
-                "remark",
-            ],
-            optional: new Set(["test_objective", "precondition", "expected_result", "product_test_case_status", "remark"]),
-        },
-        "/admin/product-test-procedures/create": {
-            order: [
-                "product_test_case_id",
-                "procedure_sequence",
-                "product_test_procedure_id",
-                "procedure_action",
-                "expected_result",
-                "acceptance_criteria",
-                "required_evidence_type",
-                "product_test_procedure_status",
-                "remark",
-            ],
-            optional: new Set(["expected_result", "required_evidence_type", "product_test_procedure_status", "remark"]),
-        },
-        "/admin/product-test-reports/create": {
-            order: ["product_test_release_id", "product_test_report_type", "product_test_report_title", "remark"],
-            optional: new Set(["remark"]),
-        },
-    };
-
-    const isFieldValueEmpty = (field) => {
-        if (!field) {
-            return true;
-        }
-        if (field instanceof HTMLSelectElement) {
-            return String(field.value || "").trim() === "";
-        }
-        if (field instanceof HTMLInputElement && field.type === "checkbox") {
-            return false;
-        }
-        return String(field.value || "").trim() === "";
-    };
-
-    const getFirstBlockingPrerequisite = (form, plan, targetName) => {
-        if (!plan || !plan.order) {
-            return null;
-        }
-        const idx = plan.order.indexOf(targetName);
-        if (idx <= 0) {
-            return null;
-        }
-        for (let j = 0; j < idx; j += 1) {
-            const name = plan.order[j];
-            if (plan.optional && plan.optional.has(name)) {
-                continue;
-            }
-            const el = form.querySelector(`[name="${name}"]`);
-            if (!el) {
-                continue;
-            }
-            if (isFieldValueEmpty(el)) {
-                return { fieldName: name, element: el };
-            }
-        }
-        return null;
     };
 
     const getHeaderLabelForField = (table, draftRow, fieldName) => {
@@ -1280,7 +967,7 @@
         table.querySelectorAll("thead th").forEach((th) => {
             th.classList.add("admin_column_header_action");
         });
-        table.addEventListener("click", (event) => {
+        table.addEventListener("click", async (event) => {
             const th = event.target.closest("thead th");
             if (!th || !table.contains(th)) {
                 return;
@@ -1325,7 +1012,7 @@
             if (!fieldName) {
                 return;
             }
-            const block = plan ? getFirstBlockingPrerequisite(form, plan, fieldName) : null;
+            const block = plan ? await fetchFirstBlockingPrerequisite(form, fieldName) : null;
             if (block && block.element !== widget) {
                 const blockLabel = getHeaderLabelForField(table, row, block.fieldName);
                 const message = [
@@ -1433,6 +1120,7 @@
         if (!shell) {
             return;
         }
+        const fzfForm = inputElement.closest("form");
         const menu = buildFzfMenu();
         document.body.appendChild(menu);
         let activeIndex = -1;
@@ -1518,11 +1206,16 @@
                 walk = walk.parentElement;
             }
         };
-        const readOptions = () =>
-            uniqueNonEmpty([
-                ...(listNode ? Array.from(listNode.querySelectorAll("option")).map((option) => String(option.value || "").trim()) : []),
-                ...getGeneratedIdCandidates(inputElement),
-            ]);
+        const readOptionsAsync = async () => {
+            const fromList = listNode
+                ? Array.from(listNode.querySelectorAll("option")).map((option) => String(option.value || "").trim())
+                : [];
+            const fromApi =
+                hasGeneratedIdCandidates && fzfForm
+                    ? await fetchIdCandidates(fzfForm, String(inputElement.name || "").trim())
+                    : [];
+            return uniqueNonEmpty([...fromList, ...fromApi]);
+        };
         const closeMenu = () => {
             detachMenuPositioning();
             menu.hidden = true;
@@ -1536,9 +1229,10 @@
             inputElement.dispatchEvent(new Event("change", { bubbles: true }));
             closeMenu();
         };
-        const refreshMenu = () => {
+        const refreshMenu = async () => {
             const queryText = String(inputElement.value || "").trim();
-            visibleOptions = readOptions()
+            const optionSource = await readOptionsAsync();
+            visibleOptions = optionSource
                 .map((value) => ({ value, score: fuzzyScore(value, queryText) }))
                 .filter((record) => record.score > Number.NEGATIVE_INFINITY)
                 .sort((left, right) => right.score - left.score || left.value.localeCompare(right.value))
@@ -1579,8 +1273,8 @@
             });
         };
         inputElement.setAttribute("autocomplete", "off");
-        inputElement.addEventListener("focus", refreshMenu);
-        inputElement.addEventListener("input", refreshMenu);
+        inputElement.addEventListener("focus", () => void refreshMenu());
+        inputElement.addEventListener("input", () => void refreshMenu());
         inputElement.addEventListener("keydown", (event) => {
             if (menu.hidden || !visibleOptions.length) {
                 return;
@@ -1628,6 +1322,20 @@
     };
 
     const toStorageKey = (form) => `admin_autosave_v1:${form.getAttribute("action") || ""}`;
+    const submittedFingerprintStorageKey = (form) =>
+        `admin_last_submitted_fp:v1:${form.getAttribute("action") || ""}`;
+    const safeSessionStorageSet = (key, value) => {
+        try {
+            sessionStorage.setItem(key, value);
+        } catch (_e) {}
+    };
+    const safeSessionStorageGet = (key) => {
+        try {
+            return sessionStorage.getItem(key);
+        } catch (_e) {
+            return null;
+        }
+    };
     const toStateLabel = (_form) => null;
     const setState = (form, text, type = "") => {
         const state = toStateLabel(form);
@@ -1647,6 +1355,104 @@
             payload[field.name] = (field.value || "").trim();
         }
         return payload;
+    };
+    const collectDatalistHintsForForm = (form) => {
+        const hints = {};
+        form.querySelectorAll("input[list], textarea[list]").forEach((el) => {
+            if (!(el instanceof HTMLInputElement) && !(el instanceof HTMLTextAreaElement)) {
+                return;
+            }
+            const listId = el.getAttribute("list");
+            if (!listId) {
+                return;
+            }
+            const node = document.getElementById(listId);
+            if (!node) {
+                return;
+            }
+            const opts = Array.from(node.querySelectorAll("option"))
+                .map((o) => String(o.value || "").trim())
+                .filter(Boolean);
+            if (opts.length && el.name) {
+                hints[el.name] = opts;
+            }
+        });
+        form.querySelectorAll("select[name]").forEach((sel) => {
+            const opts = Array.from(sel.options)
+                .map((o) => String(o.value || "").trim())
+                .filter(Boolean);
+            if (opts.length && sel.name) {
+                hints[sel.name] = opts;
+            }
+        });
+        return hints;
+    };
+    const fetchIdCandidates = async (form, fieldName) => {
+        const action = String(form.getAttribute("action") || "");
+        const response = await fetch("/admin/api/product-test/ui/id-candidates", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+                "X-Requested-With": "XMLHttpRequest",
+            },
+            body: JSON.stringify({
+                form_action: action,
+                field_name: fieldName,
+                values: serialize(form),
+                datalist_hints: collectDatalistHintsForForm(form),
+            }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data || !Array.isArray(data.candidates)) {
+            return [];
+        }
+        return data.candidates;
+    };
+    const fetchValidateIdentifiers = async (form) => {
+        const response = await fetch("/admin/api/product-test/ui/validate-identifiers", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+                "X-Requested-With": "XMLHttpRequest",
+            },
+            body: JSON.stringify({ values: serialize(form) }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data) {
+            return { ok: false, errors: [{ field: "", message: "식별자 검증 요청에 실패했습니다." }] };
+        }
+        return { ok: Boolean(data.ok), errors: Array.isArray(data.errors) ? data.errors : [] };
+    };
+    const fetchFirstBlockingPrerequisite = async (form, targetFieldName) => {
+        const action = String(form.getAttribute("action") || "");
+        const response = await fetch("/admin/api/product-test/ui/first-blocking-prerequisite", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+                "X-Requested-With": "XMLHttpRequest",
+            },
+            body: JSON.stringify({
+                form_action: action,
+                target_field_name: targetFieldName,
+                values: serialize(form),
+            }),
+        });
+        const data = await response.json().catch(() => ({}));
+        const name = data && data.blocking_field_name ? String(data.blocking_field_name) : "";
+        if (!name) {
+            return null;
+        }
+        const el = form.querySelector(`[name="${name}"]`);
+        if (!(el instanceof HTMLElement)) {
+            return null;
+        }
+        return { fieldName: name, element: el };
     };
     const fingerprint = (payload) => JSON.stringify(payload);
     const hasAnyValue = (payload) => Object.values(payload).some((value) => String(value || "").trim() !== "");
@@ -1679,18 +1485,22 @@
             localStorage.removeItem(toStorageKey(form));
         }
     };
-    const resetFormAfterSubmit = (form) => {
+    const resetFormAfterSubmit = async (form, submittedFingerprint) => {
         form.reset();
         localStorage.removeItem(toStorageKey(form));
-        form.dataset.lastSubmittedFingerprint = "";
+        form.dataset.lastSubmittedFingerprint =
+            typeof submittedFingerprint === "string" && submittedFingerprint.length > 0
+                ? submittedFingerprint
+                : "";
         form.dataset.lastInvalidIdMessage = "";
         const checkbox = form.querySelector(".admin_input_row_checkbox");
         if (checkbox) {
             checkbox.checked = false;
         }
         setState(form, "제출 완료", "success");
+        await syncProductTestReleaseIdReadonly(form);
     };
-    const clearFormDraftRow = (form) => {
+    const clearFormDraftRow = async (form) => {
         form.reset();
         localStorage.removeItem(toStorageKey(form));
         form.dataset.lastDraftFingerprint = "";
@@ -1701,6 +1511,7 @@
             checkbox.checked = false;
         }
         setState(form, "행 제거", "info");
+        await syncProductTestReleaseIdReadonly(form);
     };
     const submitNow = async (form, reasonText) => {
         if (form.dataset.submitting === "true") {
@@ -1711,10 +1522,14 @@
         if (!hasAnyValue(payload) || !isComplete(form, payload)) {
             return;
         }
-        if (!validateIdFieldsBeforeSubmit(form)) {
+        if (!(await validateIdFieldsBeforeSubmit(form))) {
             return;
         }
         if ((form.dataset.lastSubmittedFingerprint || "") === currentFingerprint) {
+            return;
+        }
+        if (safeSessionStorageGet(submittedFingerprintStorageKey(form)) === currentFingerprint) {
+            form.dataset.lastSubmittedFingerprint = currentFingerprint;
             return;
         }
         form.dataset.submitting = "true";
@@ -1740,8 +1555,8 @@
                 });
                 return;
             }
-            form.dataset.lastSubmittedFingerprint = currentFingerprint;
-            resetFormAfterSubmit(form);
+            safeSessionStorageSet(submittedFingerprintStorageKey(form), currentFingerprint);
+            await resetFormAfterSubmit(form, currentFingerprint);
             const submitSuccessConfig = adminNoticeConfig.submit_success || {};
             insertSubmittedRow(form, data.created_row);
             showNotice({
@@ -1764,52 +1579,56 @@
         }
     };
     const queueSave = (form) => {
-        const payload = serialize(form);
-        const payloadChanged = (form.dataset.lastDraftFingerprint || "") !== fingerprint(payload);
-        form.dataset.lastDraftFingerprint = fingerprint(payload);
-        const invalidIdField = getInvalidIdField(form);
-        if (persistDraft(form, payload) && payloadChanged) {
-            setState(form, "자동저장됨", "success");
-            if (invalidIdField) {
-                const invalidDraftConfig = adminNoticeConfig.draft_invalid_id || {};
-                const warningMessage = `${invalidIdField.message} ${invalidDraftConfig.suffix || "자동제출 안 한다."}`.trim();
-                if ((form.dataset.lastInvalidIdMessage || "") !== warningMessage) {
+        void (async () => {
+            const payload = serialize(form);
+            const payloadChanged = (form.dataset.lastDraftFingerprint || "") !== fingerprint(payload);
+            form.dataset.lastDraftFingerprint = fingerprint(payload);
+            const validation = await fetchValidateIdentifiers(form);
+            const invalidEntry = validation.ok ? null : validation.errors[0];
+            if (persistDraft(form, payload) && payloadChanged) {
+                setState(form, "자동저장됨", "success");
+                if (invalidEntry) {
+                    const invalidDraftConfig = adminNoticeConfig.draft_invalid_id || {};
+                    const warningMessage = `${invalidEntry.message} ${invalidDraftConfig.suffix || "자동제출 안 한다."}`.trim();
+                    if ((form.dataset.lastInvalidIdMessage || "") !== warningMessage) {
+                        showNotice({
+                            message: warningMessage,
+                            level: invalidDraftConfig.level || "error",
+                            mode: invalidDraftConfig.mode || "non_modal",
+                            title: invalidDraftConfig.title || "",
+                        });
+                        form.dataset.lastInvalidIdMessage = warningMessage;
+                    }
+                } else {
+                    form.dataset.lastInvalidIdMessage = "";
                     showNotice({
-                        message: warningMessage,
-                        level: invalidDraftConfig.level || "error",
-                        mode: invalidDraftConfig.mode || "non_modal",
-                        title: invalidDraftConfig.title || "",
+                        message: getNextEmptyColumnSuggestion(form, payload),
+                        level: "info",
+                        mode: "non_modal",
+                        title: "",
                     });
-                    form.dataset.lastInvalidIdMessage = warningMessage;
                 }
-            } else {
+            } else if (!hasAnyValue(payload)) {
+                setState(form, "대기");
                 form.dataset.lastInvalidIdMessage = "";
-                showNotice({
-                    message: getNextEmptyColumnSuggestion(form, payload),
-                    level: "info",
-                    mode: "non_modal",
-                    title: "",
-                });
+            } else {
+                setState(form, isComplete(form, payload) ? "제출 대기" : "입력 중", isComplete(form, payload) ? "pending" : "info");
             }
-        } else if (!hasAnyValue(payload)) {
-            setState(form, "대기");
-            form.dataset.lastInvalidIdMessage = "";
-        } else {
-            setState(form, isComplete(form, payload) ? "제출 대기" : "입력 중", isComplete(form, payload) ? "pending" : "info");
-        }
-        if (form._adminAutoTimer) {
-            clearTimeout(form._adminAutoTimer);
-        }
-        form._adminAutoTimer = setTimeout(() => {
-            submitNow(form, form.closest(".card")?.querySelector("h3")?.textContent?.trim() || "행");
-        }, 600);
+            if (form._adminAutoTimer) {
+                clearTimeout(form._adminAutoTimer);
+            }
+            form._adminAutoTimer = setTimeout(() => {
+                void submitNow(form, form.closest(".card")?.querySelector("h3")?.textContent?.trim() || "행");
+            }, 600);
+        })();
     };
 
-    forms.forEach((form) => {
+    for (const form of forms) {
         attachIdGuides(form);
         mergeAdminDraftRowIntoOutputTable(form);
         bindColumnHeaderNavigation(form);
         restoreDraft(form);
+        await syncProductTestReleaseIdReadonly(form);
         setupSubmittedTableSelection(form);
         setState(form, "대기");
         form.addEventListener("submit", async (event) => {
@@ -1841,7 +1660,7 @@
                     }
                     return;
                 }
-                clearFormDraftRow(form);
+                void clearFormDraftRow(form);
             });
         }
         const restoredPayload = serialize(form);
@@ -1849,12 +1668,24 @@
             form.dataset.lastDraftFingerprint = fingerprint(restoredPayload);
             setState(form, isComplete(form, restoredPayload) ? "제출 대기" : "입력 중", isComplete(form, restoredPayload) ? "pending" : "info");
             if (isComplete(form, restoredPayload)) {
-                form._adminAutoTimer = setTimeout(() => {
-                    submitNow(form, form.closest(".card")?.querySelector("h3")?.textContent?.trim() || "행");
-                }, 600);
+                const fp = fingerprint(restoredPayload);
+                const lastSubmitted = safeSessionStorageGet(submittedFingerprintStorageKey(form));
+                if (lastSubmitted === fp) {
+                    localStorage.removeItem(toStorageKey(form));
+                    form.reset();
+                    form.dataset.lastSubmittedFingerprint = fp;
+                    form.dataset.lastDraftFingerprint = fingerprint(serialize(form));
+                    mergeAdminDraftRowIntoOutputTable(form);
+                    setState(form, "이미 제출된 내용과 동일한 초안을 비웠습니다.", "info");
+                    await syncProductTestReleaseIdReadonly(form);
+                } else {
+                    form._adminAutoTimer = setTimeout(() => {
+                        void submitNow(form, form.closest(".card")?.querySelector("h3")?.textContent?.trim() || "행");
+                    }, 600);
+                }
             }
         }
-    });
+    }
     Array.from(document.querySelectorAll('form.admin_autosubmit_form input, form.admin_autosubmit_form textarea')).forEach(enhanceFzfLikeInput);
 })();
 </script>

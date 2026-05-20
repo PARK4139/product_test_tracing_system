@@ -750,6 +750,12 @@ button:disabled {
     position: relative;
 }
 
+.basic_table input.is_auto_derived_release_id {
+    background: #f0f4f7;
+    color: #2a3d47;
+    cursor: default;
+}
+
 /* 포털: document.body 에 붙여 테이블 overflow·낮은 stacking context 에 가리지 않음 */
 .fzf-menu {
     position: fixed;

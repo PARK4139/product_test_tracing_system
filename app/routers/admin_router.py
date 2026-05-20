@@ -4,6 +4,7 @@ from datetime import timedelta
 
 from fastapi import APIRouter, Form, HTTPException, Query, Request, status
 from fastapi.responses import JSONResponse, RedirectResponse, StreamingResponse
+from pydantic import BaseModel, Field
 from sqlalchemy import and_, exists, func, or_, select
 from sqlalchemy.orm import Session
 
@@ -30,6 +31,12 @@ from app.services.dropdown_option_service import (
     list_dropdown_options_for_field,
 )
 from app.db import truncate_application_data
+from app.services.admin_product_test_ui_service import (
+    get_admin_product_test_ui_client_config_payload,
+    get_first_blocking_prerequisite_field,
+    list_product_test_id_candidates,
+    validate_product_test_identifier_values,
+)
 from app.services.admin_qc_e2e_service import start_admin_qc_e2e_fill
 from app.services.product_test_run_service import (
     MASTER_ACTIVE_STATUS_VALUES,
@@ -52,7 +59,6 @@ from app.services.product_test_run_service import (
     create_product_test_release,
     create_product_test_target,
     create_product_test_target_definition,
-    get_product_test_identifier_client_rules,
     get_product_test_identifier_guides,
     build_product_test_report_export_rows,
     build_product_test_run_export_rows,
@@ -113,11 +119,8 @@ ADMIN_FORM_NOTICE_CONFIG = {
 
 
 def _admin_dashboard_product_tracing_template_context(*, database_session: Session) -> dict:
-    """admin_dashboard.html 표·스크립트용 키. POST 후 재렌더 시 GET /admin 과 동일하게 맞춘다."""
+    """admin_dashboard.html 표용 키. 식별자 규칙·안내·입력 순서는 ``GET /admin/api/product-test/ui/client-config`` 로 제공한다."""
     return {
-        "admin_id_rules": get_product_test_identifier_client_rules(),
-        "admin_id_guides": get_product_test_identifier_guides(),
-        "admin_notice_config": ADMIN_FORM_NOTICE_CONFIG,
         "release_rows": list_product_test_releases(database_session),
         "release_stage_values": RELEASE_STAGE_VALUES,
         "product_test_release_status_values": PRODUCT_TEST_RELEASE_STATUS_VALUES,
@@ -235,6 +238,72 @@ def _ensure_admin_role(current_role_name: str) -> None:
             status_code=status.HTTP_403_FORBIDDEN,
             detail="This role is not allowed for this action.",
         )
+
+
+class AdminProductTestIdCandidatesRequest(BaseModel):
+    form_action: str = ""
+    field_name: str = ""
+    values: dict[str, str] = Field(default_factory=dict)
+    datalist_hints: dict[str, list[str]] = Field(default_factory=dict)
+
+
+class AdminProductTestValidateIdentifiersRequest(BaseModel):
+    values: dict[str, str] = Field(default_factory=dict)
+
+
+class AdminProductTestBlockingPrerequisiteRequest(BaseModel):
+    form_action: str = ""
+    target_field_name: str = ""
+    values: dict[str, str] = Field(default_factory=dict)
+
+
+@admin_router.get("/api/product-test/ui/client-config")
+def admin_product_test_ui_get_client_config(
+    current_role_name: current_role_name_dependency,
+):
+    _ensure_admin_role(current_role_name)
+    payload = get_admin_product_test_ui_client_config_payload()
+    payload["notice_config"] = ADMIN_FORM_NOTICE_CONFIG
+    return payload
+
+
+@admin_router.post("/api/product-test/ui/id-candidates")
+def admin_product_test_ui_post_id_candidates(
+    current_role_name: current_role_name_dependency,
+    payload: AdminProductTestIdCandidatesRequest,
+):
+    _ensure_admin_role(current_role_name)
+    candidates = list_product_test_id_candidates(
+        form_action=payload.form_action,
+        field_name=payload.field_name,
+        values=payload.values,
+        datalist_hints=payload.datalist_hints,
+    )
+    return {"ok": True, "candidates": candidates}
+
+
+@admin_router.post("/api/product-test/ui/validate-identifiers")
+def admin_product_test_ui_post_validate_identifiers(
+    current_role_name: current_role_name_dependency,
+    payload: AdminProductTestValidateIdentifiersRequest,
+):
+    _ensure_admin_role(current_role_name)
+    errors = validate_product_test_identifier_values(payload.values)
+    return {"ok": len(errors) == 0, "errors": errors}
+
+
+@admin_router.post("/api/product-test/ui/first-blocking-prerequisite")
+def admin_product_test_ui_post_first_blocking_prerequisite(
+    current_role_name: current_role_name_dependency,
+    payload: AdminProductTestBlockingPrerequisiteRequest,
+):
+    _ensure_admin_role(current_role_name)
+    blocking = get_first_blocking_prerequisite_field(
+        form_action=payload.form_action,
+        target_field_name=payload.target_field_name,
+        values=payload.values,
+    )
+    return {"ok": True, "blocking_field_name": blocking}
 
 
 def _admin_identity_context(database_session: Session, request: Request) -> dict:

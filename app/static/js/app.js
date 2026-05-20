@@ -1846,6 +1846,19 @@
         }
     };
 
+    /** Matches `submittedFingerprintStorageKey` in admin_dashboard.html — 재로드 시 자동제출 방지 지문 제거 */
+    const clearAdminSubmittedFingerprints = () => {
+        const prefix = "admin_last_submitted_fp:v1:";
+        try {
+            for (let index = sessionStorage.length - 1; index >= 0; index -= 1) {
+                const key = sessionStorage.key(index);
+                if (key && key.startsWith(prefix)) {
+                    sessionStorage.removeItem(key);
+                }
+            }
+        } catch (_e) {}
+    };
+
     const dbTruncateButton = document.getElementById("qc_mode_db_truncate_button");
     if (dbTruncateButton && dbTruncateButton.dataset.qcBound !== "1") {
         dbTruncateButton.dataset.qcBound = "1";
@@ -1873,6 +1886,7 @@
                 const data = await response.json().catch(() => ({}));
                 if (response.ok && data && data.ok) {
                     clearAdminAutosaveDrafts();
+                    clearAdminSubmittedFingerprints();
                     window.location.reload();
                     return;
                 }
