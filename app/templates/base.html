@@ -39,7 +39,10 @@
             <div class="qc_header_actions">
                 {% if qc_mode_enabled and request.url.path.startswith('/admin') %}
                 <button id="qc_mode_e2e_test_button" type="button" class="qc_mode_action_button">
-                    E2E Test
+                    E2E TEST
+                </button>
+                <button id="qc_mode_db_truncate_button" type="button" class="qc_mode_action_button">
+                    DB_TRUNCATE
                 </button>
                 {% endif %}
                 <a class="qc_mode_button" href="/login">

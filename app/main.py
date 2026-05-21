@@ -1,8 +1,10 @@
 from pathlib import Path
 
+import jinja2
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from jinja2 import FileSystemBytecodeCache
 
 from app.config import app_settings, is_qc_mode_enabled
 from app.db import initialize_database
@@ -21,8 +23,17 @@ def create_app() -> FastAPI:
     )
 
     templates_directory_path = Path(__file__).resolve().parent / "templates"
-    app.state.templates = Jinja2Templates(directory=str(templates_directory_path))
-    app.state.templates.env.globals["qc_mode_enabled"] = is_qc_mode_enabled()
+    bytecode_directory_path = app_settings.base_directory_path.parent / ".jinja2_cache"
+    bytecode_directory_path.mkdir(parents=True, exist_ok=True)
+    loader = jinja2.FileSystemLoader(str(templates_directory_path))
+    bytecode_cache = FileSystemBytecodeCache(str(bytecode_directory_path))
+    template_env = jinja2.Environment(
+        loader=loader,
+        autoescape=jinja2.select_autoescape(),
+        bytecode_cache=bytecode_cache,
+    )
+    template_env.globals["qc_mode_enabled"] = is_qc_mode_enabled()
+    app.state.templates = Jinja2Templates(env=template_env)
 
     static_directory_path = Path(__file__).resolve().parent / "static"
     app.mount("/static", StaticFiles(directory=str(static_directory_path)), name="static")

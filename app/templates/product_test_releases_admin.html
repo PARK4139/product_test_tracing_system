@@ -2,7 +2,7 @@
 {% block content %}
 <section class="card">
     <div class="section_header_row">
-        <h3>Product Test Release</h3>
+        <h3>Test Release</h3>
         <div class="table_action_bar"><a href="/admin" class="project_standard_button">관리자 홈</a></div>
     </div>
     <div class="detail_guide">제품 테스트 릴리스 관리</div>
@@ -13,9 +13,9 @@
 <section class="card">
     <div class="section_header_row"><h3>등록 / Create</h3></div>
     <form method="post" action="/admin/product-test-releases/create" class="form_stack" style="max-width:none;">
-        <label>product_test_release_id<span class="required_marker">*</span></label><input type="text" name="product_test_release_id" required placeholder="PTREL-MERCUSYS_MR30G-1.0.0-RC1">
-        <label>upstream_release_id<span class="required_marker">*</span></label><input type="text" name="upstream_release_id" required placeholder="MERCUSYS_MR30G-1.0.0">
-        <label>upstream_release_system<span class="required_marker">*</span></label><input type="text" name="upstream_release_system" required placeholder="MERCUSYS">
+        <label>product_test_release_id<span class="required_marker">*</span></label><input type="text" name="product_test_release_id" required>
+        <label>upstream_release_id<span class="required_marker">*</span></label><input type="text" name="upstream_release_id" required>
+        <label>upstream_release_system<span class="required_marker">*</span></label><input type="text" name="upstream_release_system" required>
         <label>release_stage<span class="required_marker">*</span></label>
         <select name="release_stage">{% for value in release_stage_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select>
         <label>product_test_release_status</label>

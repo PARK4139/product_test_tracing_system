@@ -10,9 +10,25 @@ dependencies = [
     "jinja2>=3.1.4",
     "openpyxl>=3.1.5",
     "python-multipart>=0.0.9",
+    "selenium>=4.0.0",
     "sqlalchemy>=2.0.31",
     "uvicorn>=0.30.1",
     "watchdog>=4.0.1",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+markers = [
+    "integration: DB + service integration (Wi‑Fi AP seed smoke)",
 ]
 
 [tool.uv]

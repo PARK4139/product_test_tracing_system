@@ -2,7 +2,7 @@
 {% block content %}
 <section class="card">
     <div class="section_header_row">
-        <h3>Product Test Report Snapshots | 보고서 스냅샷</h3>
+        <h3>Test Report Snapshots | 보고서 스냅샷</h3>
         <div class="table_action_bar">
             <a href="/admin/product-test-reports" class="project_standard_button">보고서 목록</a>
             <a href="/admin/product-test-report-snapshots/diff" class="project_standard_button">Snapshot Diff</a>
@@ -29,7 +29,7 @@
             {% endfor %}
         </select>
         <label>remark</label>
-        <input type="text" name="remark" placeholder="manual snapshot note">
+        <input type="text" name="remark">
         <div class="table_action_bar">
             <button type="submit">Create Snapshot</button>
             <button type="reset">Reset</button>

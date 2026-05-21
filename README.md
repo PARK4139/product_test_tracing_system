@@ -51,6 +51,25 @@ product_test_tracing_system/
 
 ```powershell
 uv sync
+uv sync --group dev
+```
+
+테스트 실행:
+
+```powershell
+.\test.cmd
+```
+
+또는
+
+```powershell
+uv run python test.py
+```
+
+(`test.py`는 `tests/unit`, `tests/e2e_api`, `tests/integration` 아래 모든 `test_*.py`를 순서대로 실행한다.)
+
+```powershell
+uv run pytest
 ```
 
 ### 2. 실행

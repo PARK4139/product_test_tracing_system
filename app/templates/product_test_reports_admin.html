@@ -2,7 +2,7 @@
 {% block content %}
 <section class="card">
     <div class="section_header_row">
-        <h3>Product Test Report | 제품 테스트 보고서</h3>
+        <h3>Test Report | 제품 테스트 보고서</h3>
         <div class="table_action_bar">
             <a href="/admin" class="project_standard_button">관리자 홈</a>
             <a href="/admin/product-test-trace" class="project_standard_button">Trace 보기</a>
@@ -10,7 +10,7 @@
             <a href="/admin/product-test-report-snapshots/diff" class="project_standard_button">스냅샷 비교</a>
         </div>
     </div>
-    <div class="detail_guide">Product Test Report 는 output header 와 approval object 이며, 본문은 product_test_release_id 기반 조회로 생성된다.</div>
+    <div class="detail_guide">Test Report 는 output header 와 approval object 이며, 본문은 product_test_release_id 기반 조회로 생성된다.</div>
 </section>
 {% if message %}
 <section class="card"><div class="non_modal_notice {{ message_type }}"><div>{{ message }}</div></div></section>
@@ -18,7 +18,7 @@
 <section class="card">
     <div class="section_header_row"><h3>보고서 생성</h3></div>
     <form method="post" action="/admin/product-test-reports/create" class="form_stack" style="max-width:none;">
-        <label>Product Test Release<span class="required_marker">*</span></label>
+        <label>Test Release<span class="required_marker">*</span></label>
         <select name="product_test_release_id" required>
             <option value=""></option>
             {% for row in release_options %}
@@ -32,7 +32,7 @@
             {% endfor %}
         </select>
         <label>Report Title<span class="required_marker">*</span></label>
-        <input type="text" name="product_test_report_title" required placeholder="PTREL-MERCUSYS_MR30G-1.0.0-RC1 제품 테스트 보고서">
+        <input type="text" name="product_test_report_title" required>
         <label>Remark</label>
         <input type="text" name="remark">
         <div class="table_action_bar">

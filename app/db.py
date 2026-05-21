@@ -22,6 +22,11 @@ def _set_sqlite_pragma(database_api_connection, _connection_record) -> None:
     cursor.execute("PRAGMA foreign_keys=ON;")
     cursor.execute("PRAGMA journal_mode=WAL;")
     cursor.execute("PRAGMA synchronous=NORMAL;")
+    # 로컬 SQLite 읽기 위주 워크로드: mmap + 페이지 캐시 (파일 DB만; 메모리/테스트 DB는 제외)
+    url = app_settings.sqlite_database_url
+    if url.startswith("sqlite:///") and ":memory:" not in url:
+        cursor.execute("PRAGMA mmap_size=67108864")  # 최대 64 MiB mmap
+        cursor.execute("PRAGMA cache_size=-32768")  # 약 32 MiB 페이지 캐시
     cursor.close()
 
 
@@ -39,6 +44,33 @@ def get_database_session() -> Iterator[Session]:
         yield database_session
     finally:
         database_session.close()
+
+
+def truncate_application_data() -> None:
+    """QC 전용: ORM 테이블의 모든 행을 삭제하고 sqlite_sequence를 비운 뒤 UI·dropdown 기본값만 재주입한다."""
+    from app import auth
+    from app import models
+
+    with auth.active_user_names_lock:
+        auth.active_user_names.clear()
+
+    with engine.begin() as connection:
+        connection.execute(text("PRAGMA foreign_keys=OFF"))
+        try:
+            for table in reversed(list(models.Base.metadata.sorted_tables)):
+                connection.execute(text(f'DELETE FROM "{table.name}"'))
+        finally:
+            connection.execute(text("PRAGMA foreign_keys=ON"))
+
+    with engine.begin() as connection:
+        sequence_table = connection.execute(
+            text("SELECT 1 FROM sqlite_master WHERE type='table' AND name='sqlite_sequence' LIMIT 1")
+        ).fetchone()
+        if sequence_table is not None:
+            connection.execute(text("DELETE FROM sqlite_sequence"))
+
+    _ensure_ui_sample_profiles()
+    _ensure_default_dropdown_options()
 
 
 def initialize_database() -> None:
