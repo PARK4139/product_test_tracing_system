@@ -1,48 +1,222 @@
-_________________________________________________ etc
-# 용어 범례
-*TBD : To Be Determind 추후결정사항
+_________________________________________________ TODO
+🔳 2026 사내 필수강의 5월 중으로 수강
+🔳 Tracer 테스트 : 아침30분, 저녁30분 수치입력 by 오대영 프로.
+🔳 테스터는 조건 이해하기 쉽도록 작성해야한다. 재현절차..
+🔳 chatGPT 유료/Business  공유    팀내 사용규칙확인  
 
-
-# 텍스트 템플릿
-TBD(To Be Determined, 협의사항)
-협의사항(TBD, To Be Determined)
-
-
-# "WIFI Test 관련" 경우의 수
-WIFI Test 관련 상태에 대한 Test Config의 수 = "장비 단품연동 기준 Test Config 의 수" * (2*1)*(4*1) *(etc_options*1)        (2: DHCP/Static,  4: 연동서버의 수)
-1개 Test Case는 n 개의 Step 을 가짐
-> 경우의 수가 매우 많다.
-유효한 경우의 수를 필터(중요도를 이산화하여 경우의 수에 대해서 분류한다) 
-유효한 경우의 수를 시험
-모든 경우의 수는 
-
-
-
-🔳 절차_재현판단기준 정의
-🔳 LM-100 Spindle 시험 관련 물품들 이관 및 반납
-_________________________________________________ 🔳 in 2026  
-_________________________________________________ 🔳 in 2026-05  
-# 물품 신청
-☑️지퍼팩 30 🔳 25cm : 20매 Connectivity AP 부속자재 및 정리보관용
+# 물품 구매예정
+🔳 지퍼팩 30 🔳 25cm : 20매 Connectivity AP 부속자재 및 정리보관용
 🔳 3M VHB? TAPE : Connectivity AP 전선정리용
 🔳 소독용 에탄올 : Connectivity AP 자재청소용
-
-# 자재이동 2층 to 6층 Connectivity Room
-🔳 Cable Tie 소 : 
+1자 드라이버 소형(TEST 작업용)
+🔳 Cable Tie 소 : 자재이동 2층 to 6층 Connectivity Room
 
 # 라벨프린팅 예정 목록
 🔳 Router PASSWORD
 🔳 Router Power Adapter별로 Serial Number
 🔳 Router MODEL NAME, PASSWORD
  
-# 필요정보
+🔳 용어 필요정보
 제품별 UI 화면설계 용어표준 : ex> UI 화면 및 UI Component 정의 정보위치. 
 
-
-# 특근관리
+☑️ 특근관리
 2026.04.22 수 휴가 승인
 2026.05.06 수 특근근무 승인
 2026.05.07 목 특근근무 승인
+2026.05.11 월 특근근무 승인
+2026.05.12 화 특근근무 승인
+2026.05.13 수 특근근무 승인
+2026.05.14 목 특근근무 승인
+2026.05.18 월 특근근무 승인
+2026.05.19 화 특근근무 승인
+2026.05.20 수 특근근무 신청
+WIFI Connectivity 제품별 네트워크시험 수행
+- Wi-Fi Connectivity Test 2차(5G, 다수AP환경) 검토 회의결과 정리
+- Connectivity Room Router 스티커 라벨링 및 배선 정리 작업
+- Connectivity Room Router 현황 업데이트
+
+
+# 시험 Config 경우의 수 산출(실제로는 시험조건 추가가 되며, 시험조건 추가 시, 계속 증식되는 환경에서 수행해야함)
+    # "WIFI Test 관련" 경우의 수
+    WIFI Test 관련 상태에 대한 Test Config의 수 = "장비 단품연동 기준 Test Config 의 수" * (2*1)*(4*1) *(etc_options*1)        (2: DHCP/Static,  4: 연동서버의 수)
+    1개 Test Case는 n 개의 Step 을 가짐
+    > 경우의 수가 매우 많다. 유효한 것들을 우선순위로 필터하여 선작업.
+    유효한 경우의 수를 필터(중요도를 이산화하여 경우의 수에 대해서 분류한다) 
+    유효한 경우의 수를 시험
+    모든 경우의 수는 
+
+    Cases 
+    제품별 Test Case 수
+    = (2.4GHz/5GHz) * (Static/DHCP) * (단독HDR연동/다수HDR연동) * (미공간분리/공간분리) * (한국향/미국향/유럽향(독일향|etc))
+
+
+    2*2*2*2*(제품별 Test Case 수) = 16*(제품별 Test Case 수)
+
+    ex  (2.4GHz/공간미분리/DHCP/단독HDR연동/한국향)
+
+
+    # 한국향
+    2.4GHz/공간미분리/DHCP/단독HDR연동/한국향
+    2.4GHz/공간미분리/Static/단독HDR연동/한국향
+    2.4GHz/공간미분리/DHCP/다수HDR연동/한국향
+    2.4GHz/공간미분리/Static/다수HDR연동/한국향
+    2.4GHz/공간분리/DHCP/단독HDR연동/한국향
+    2.4GHz/공간분리/Static/단독HDR연동/한국향
+    2.4GHz/공간분리/DHCP/다수HDR연동/한국향
+    2.4GHz/공간분리/Static/다수HDR연동/한국향
+    5GHz/공간미분리/DHCP/단독HDR연동/한국향
+    5GHz/공간미분리/Static/단독HDR연동/한국향
+    5GHz/공간미분리/DHCP/다수HDR연동/한국향
+    5GHz/공간미분리/Static/다수HDR연동/한국향
+    5GHz/공간분리/DHCP/단독HDR연동/한국향
+    5GHz/공간분리/Static/단독HDR연동/한국향
+    5GHz/공간분리/DHCP/다수HDR연동/한국향
+    5GHz/공간분리/Static/다수HDR연동/한국향
+
+    # 미국향
+    2.4GHz/공간미분리/DHCP/단독HDR연동/미국향
+    2.4GHz/공간미분리/Static/단독HDR연동/미국향
+    2.4GHz/공간미분리/DHCP/다수HDR연동/미국향
+    2.4GHz/공간미분리/Static/다수HDR연동/미국향
+    2.4GHz/공간분리/DHCP/단독HDR연동/미국향
+    2.4GHz/공간분리/Static/단독HDR연동/미국향
+    2.4GHz/공간분리/DHCP/다수HDR연동/미국향
+    2.4GHz/공간분리/Static/다수HDR연동/미국향
+    5GHz/공간미분리/DHCP/단독HDR연동/미국향
+    5GHz/공간미분리/Static/단독HDR연동/미국향
+    5GHz/공간미분리/DHCP/다수HDR연동/미국향
+    5GHz/공간미분리/Static/다수HDR연동/미국향
+    5GHz/공간분리/DHCP/단독HDR연동/미국향
+    5GHz/공간분리/Static/단독HDR연동/미국향
+    5GHz/공간분리/DHCP/다수HDR연동/미국향
+    5GHz/공간분리/Static/다수HDR연동/미국향
+
+    # 유럽향
+    2.4GHz/공간미분리/DHCP/단독HDR연동/유럽향(독일향)
+    2.4GHz/공간미분리/Static/단독HDR연동/유럽향(독일향)
+    2.4GHz/공간미분리/DHCP/다수HDR연동/유럽향(독일향)
+    2.4GHz/공간미분리/Static/다수HDR연동/유럽향(독일향)
+    2.4GHz/공간분리/DHCP/단독HDR연동/유럽향(독일향)
+    2.4GHz/공간분리/Static/단독HDR연동/유럽향(독일향)
+    2.4GHz/공간분리/DHCP/다수HDR연동/유럽향(독일향)
+    2.4GHz/공간분리/Static/다수HDR연동/유럽향(독일향)
+    5GHz/공간미분리/DHCP/단독HDR연동/유럽향(독일향)
+    5GHz/공간미분리/Static/단독HDR연동/유럽향(독일향)
+    5GHz/공간미분리/DHCP/다수HDR연동/유럽향(독일향)
+    5GHz/공간미분리/Static/다수HDR연동/유럽향(독일향)
+    5GHz/공간분리/DHCP/단독HDR연동/유럽향(독일향)
+    5GHz/공간분리/Static/단독HDR연동/유럽향(독일향)
+    5GHz/공간분리/DHCP/다수HDR연동/유럽향(독일향)
+    5GHz/공간분리/Static/다수HDR연동/유럽향(독일향)
+_________________________________________________ TBD
+# Test Case 기능추가 검토필요
+ex) 베타적으로 장비 전원 OFF 시 하나씩 연결하는 경우에 대한 Test Case 를 별도로 추가"
+
+🔳 HRK 테스트 시트는 테스트케이스 작성에 도움이 된 BEST Test Senario가 작성된 시트 
+
+
+🔳 Test Case 작성을 위한 필요조건 요청사항
+
+🔳 Test변수 통제 필요성 검토
+1. xxx-000 필요함, Setting 할 수 있는 모든 UI 설정사항(버튼)에 대한 Default를 열려줘야함.
+Software Setup에 있는 각종 mode 상태 요청
+
+
+🔳 HDC 테스트 속도 개선안
+확인필요 : HDC-XXX 에서 XXX 가 의미하는 것.
+        단순 테스트 순번? 다른 관리 아키텍쳐? 
+        단순 테스트 순번이라면 순서 재배열 제안
+제안 : Test항목 간 종속성에 따른 테스트 순번 재배열 
+         기존 (DHCP > Static) 
+        신규 (Static > DHCP)
+제안 기대효과 : HDC-005, HDC-007의 테스트 속도 개선
+
+
+🔳 테스트대상 및 테스트환경 테스트시작상태 정의 필요(모든 모드, 모든 버튼 위치 및 네트워크 연결 캐시 초기화)
+
+
+TBD : 동글 활성화 상태 확인 정의, Refraction exam 생성 방법 정의
+🔳 구매필요
+🔳 라우터용 선반 1개
+🔳 220V 6구 멀티탭 1개
+🔳 110V 6구 멀티탭 2개
+🔳 220V TO 110V 변환기 플러그 1개
+🔳 스마트플러그(P110m) 2개 다른공간 라우터 원격제어용
+🔳 3M VHB 초강력 양면테이프
+
+
+
+🔳 연결할AP 송출출력 통제방법 수립
+_________________________________________________ SQA Process 개선 회의  
+제품 표준서?
+UI 불편 > 브랜드 가치 하락
+동일 내용   랭귀지 차이 L10n 다국어지원 수준
+
+# 송출출력(Router Tx Power) Low 설정
+http://192.168.1.1/
+ADVANCED
+Wireless/Wireless Settings/Transmit Power:High > Low/Save 
+무용.
+
+# Mature SQA > SQA
+
+# AS-IS
+SRS 사양서 부재(권장해상도, ..)
+VMV 레포트?
+VNV 레포트?
+
+# HW 검증( QC )
+
+# SW 검증( SQA )
+
+# heavy process sys 도입
+낮은 성숙도
+내부반발 
+
+# Shift Left ?
+# SQA Team 전략
+# risk based testing(치명 영역 집중) 기반
+# 경량검증
+
+
+# SQA Team 휴비츠형 전략
+# 실행 로드맵
+\\ 고도화 전략
+JIRA 
+JIRA Dashboard 공유
+bug level 정의
+테스트 정량화 
+개발/테스터 이해관계 (자료 공유, 문서화 공유)
+
+
+# IDEA
+소프트웨어 자동화(개발QA) 
+Smoke Test 자동화 주고
+
+
+# 문제부각
+실질적CRITICAL 케이스들을 수집해서 발표. TC 정합성 조정
+E2E 를 제공해서 연구소에서 테스트 먼저하도록 하자는 건데...
+
+
+
+# Windows장비 Web 자동화테스트
+# Windows 장비 테스트
+# 임베디드 장비 테스트
+HTG
+OCT
+BM?
+
+
+
+# VOC
+대형병원 : (층분리+Ethernet)
+
+
+ 
+# ?
+크렘리스?
+
 
 
 # TEST IDEA
@@ -106,14 +280,31 @@ Connectivity Room 네트워크 증설 현황
     7. 사용자별(검안사|) e2e 프로세스 이해 및 Test Case 추가.
 
 
-
-
-
 아래는 업무별 진행현황 및 계획 구조 입니다.
 
 # 작업상태 
 ☑️ : DONE
 🔳 : PLAN 
+
+
+# 현재작업 진행현황 (mkr, ing)
+🔳 2026-05-12 작업
+🔳 HIIS 설치 PC에 KEY(PK7579) 주기 
+🔳 Connectivity Room Doorlock KEY(PK9999) 주기 by 김선웅
+🔳 Test 현황 업데이트
+    frame 생성하고 TC 채우기
+🔳 Connectivity Room 입고 Routers 목록 업데이트
+🔳 입고 Routers 전원 테스트
+🔳 입고 Routers Wi-Fi 통신 테스트
+🔳 작업현황 공유(메일링) 
+☑️ 오피스디포 주문 물품 사무실앞 수령
+🔳 시험늦어짐 사유 취합
+    OP 부팅시간, 
+    장비 부팅시간(재부팅 AP 영향 시험), 
+    장비/케이블 빌려오는 시간, 
+    이슈발생 시 고장탐구시간
+    주변장비 셋업 
+
 
 # Connectivity Room 네트워크 증설작업 진행현황
 ☑️ Connectivity Room 미국발 AP 추가입고 및 임시배치(Rack, Router, Router Power Adapter, 4단 Black Rack). 2026-05-06
@@ -124,10 +315,21 @@ Connectivity Room 네트워크 증설 현황
     🔳 Rack 멀티탭 단의 천장에 부착.
     🔳 Router 배선정리(Cable Tie, Cutting Plier).
     🔳 Router MODEL NAME, PASSWORD 라벨프린팅 및 부착.
-    🔳 Router 110V TRANS 설치.
+    🔳 Router 110V TRANS 설치
     🔳 Router AP 동작 테스트
-🔳 현지 네트워크 환경 모의를 위한 유럽발(독일|) AP 추가입고 및 배치
-산출물:
+☑️ 현지 네트워크 환경 모의를 위한 유럽발(독일|) AP 추가입고 및 배치
+ 🔳 콘센트 14A 넘는지 21 Routers 입력전원 예측해서 전원증설 검토
+
+
+
+# WIFI Connectivity 제품별 네트워크시험 Tester 교육 
+☑️ 교육기간: 5일 (2026-04-20~2026-04-24)
+
+
+
+# WIFI Connectivity 제품별 네트워크시험 Test 
+☑️ 실투입기간: 7일 (2026-04-22~2026-04~30)        
+
 
 
 # WIFI Connectivity 제품별 네트워크시험 Test Report 작성
@@ -149,12 +351,12 @@ Connectivity Room 네트워크 증설 현황
         2.4GHz HDR 4대 - 서버여러대
         🔳 Static Case Config 추가
         🔳 Static/DHCP 별 Test Case 추가 
-        🔳 5GHz Test Case 추가 
-        🔳 절전모드 복구 Test Case 추가 : 절전모드 > 하루대기 > 복구시험
         🔳 Defect(Bug, 결함) 및 특이사항은 Chest Cam활용 촬영
         🔳 공간미분리 
         🔳 공간분리
         🔳 5GHz Case Config 추가
+        🔳 5GHz Test Case 추가 
+        🔳 절전모드 복구 Test Case 추가 : 절전모드 > 하루대기 > 복구시험
 
 🔳 WIFI Connectivity 제품별 네트워크시험 Test Report 초안작성
     🔳 시험대상 및 환경 및 Serial Number/Model Name/Software Version 수집
@@ -212,26 +414,9 @@ Connectivity Room 네트워크 증설 현황
         🔳 산출물 작업방식 제안(기존:google docs > 제안:엑셀파일 or System 도입) 
         🔳 Etherent Cable(LAN CABLE) CATEGORY 규격 정의
 
-# WIFI Connectivity 제품별 네트워크시험 Test Report 전달
-🔳 오늘 중 전달 목표 (QI >연구소)  
-
-
-
 
 이상입니다.
 감사합니다.
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -240,20 +425,12 @@ Connectivity Room 네트워크 증설 현황
 (현재) 문서 악성노동 증가 > 문서 완성도 떨어짐.
 (제안) 시스템 설계
 꼭 만들면 좋겠어.
-
 왜 이렇게 안했어?
 
 
 
-
-
-
-
-
-
-# pk TBD
+# TBD : 용순 프로가 비슷하게 진행 중 인듯. 검토 불필요 해보임.
 🔳 WIFI Connectivity 제품별 네트워크시험 환경 품평(랙 및 실제테스트 사진)
-
 
 
 
@@ -267,12 +444,57 @@ _________________________________________________ TODO: e2e flow 정합성 검�
 🔳 User(검안사|안경사)별 e2e Flow 확인
 🔳 내가 작성한 Test Case가 담당자 검증 의도에 맞는지 정합성 검토.
 pk 임의 우선 작성한 뒤 > flow 정합성 검토
-_________________________________________________ TODO: 문의 to 현철 프로님께
-🔳 내가 작성한 Test Case 작성 구조 검토
-
 
 STR(Step to Reproducing)
 
+
+
+________________________________________________________ 시험 소요시간 산출
+장비별 TC별 delta time (오늘 중) 
+HRK 12 Test Cases (141*0.5 Mins)  70분 * 0.8  
+HLM 7 Test Cases (61*0.5 Mins)   30분 * 0.8  
+HTR 12 Test Cases (91*0.5 Mins)   45분 * 0.8 
+HDR 9 Test Cases ((92+TBD)*0.5 Mins)  (46분 + HIIS_TBD×0.5분) * 0.8 
+HDC 8 Test Cases (69*0.5 Mins)   34.5분 * 0.8 
+	SQA_TEST_CASE-HDC-9100-WIFI_DR_CONNECT_ON_DHCP-001 TestProcedure*14
+	SQA_TEST_CASE-HDC-9100-WIFI_DR_CONNECT_ON_DHCP-002 TestProcedure*14
+	SQA_TEST_CASE-HDC-9100-WIFI_DR_CONNECT_OFF-001 TestProcedure*8
+	SQA_TEST_CASE-HDC-9100-WIFI_DR_CONNECT_ON_STATIC-001 TestProcedure*11
+
+# 결론 (장비별 소요시간)
+HRK 12 Test Cases (141*0.5 Mins)  70분 * 0.8  
+HLM 7 Test Cases (61*0.5 Mins)   30분 * 0.8
+HTR 12 Test Cases (91*0.5 Mins)   45분 * 0.8
+HDR 9 Test Cases ((92+TBD)*0.5 Mins)  (46분 + HIIS_TBD×0.5분) * 0.8
+HDC 8 Test Cases (69*0.5 Mins)   34.5분 * 0.8
+HIIS_TBD = 10 : *HIIS 연동 별도측정필요, 지금까지의 평균 Test Procedure는 9.45로 10으로 가정함
+1 TestProcedure = 0.5 Mins 로 가정하였음.	
+0.8 : 장비 사용 숙련이 되면 대략 20% 정도는 빠르게 끝날 수 있어보여 20%를 감축하였음.
+전장비 시험 소요시간= 184.4분 (2.4GHz/공간미분리/DHCP/단독HDR연동/한국향 기준)
+
+
+# 요약
+"예상시험소요시간(분)
+(Test Case 작성 시간 미포함)"
+56분
+24분
+36분
+41분
+28분
+전장비 시험 소요시간= 184.4분 (2.4GHz/공간미분리/DHCP/단독HDR연동/한국향 기준)
+
+
+
+
+
+_________________________________________________________ STEP 회의(품질회의) PPT
+Wi-Fi Connectivity Test 계획 및 진행현황
+
+
+데드라인 : 
+이번달 남은 워킹데이
+13일(5/12~5/29)
+10(1 항목 / 1일)  +  3(2 항목 1 일)
 ________________________________________________________ working
 실확인결과(Actual Result), PASSED 판단 근거
 STR Completion Criteria (Test Case PASSED 판단 근거)
@@ -373,7 +595,7 @@ ________________________________________________________ PLAN
 5/15 끝내는 게 매우 중요.
 5/22 늦으면.
 5/29 양산적용 Release
-7/X  2달 연장 계약 만료일
+7/3?  2달 연장 계약 만료일
 
 
 
@@ -398,42 +620,16 @@ Notion, Jira, Testcollab.io 도입 관리 환경조사
 
 
 
-________________________________________________________ TBD
-HRK 테스트 시트는 테스트케이스 작성에 도움이 된 BEST Test Senario가 작성된 시트 
-
-
-# Test Case 작성을 위한 필요조건 요청사항
 
 
 
-Test변수 통제 필요성 검토
-1. xxx-000 필요함, Setting 할 수 있는 모든 UI 설정사항(버튼)에 대한 Default를 열려줘야함.
-Software Setup에 있는 각종 mode 상태 요청
-
-
-
-HDC 테스트 속도 개선안
-확인필요 : HDC-XXX 에서 XXX 가 의미하는 것.
-        단순 테스트 순번? 다른 관리 아키텍쳐? 
-        단순 테스트 순번이라면 순서 재배열 제안
-제안 : Test항목 간 종속성에 따른 테스트 순번 재배열 
-         기존 (DHCP > Static) 
-        신규 (Static > DHCP)
-제안 기대효과 : HDC-005, HDC-007의 테스트 속도 개선
-
-
-
-
-
-
-0. 테스트대상 및 테스트환경 테스트시작상태 정의 필요(모든 모드, 모든 버튼 위치 및 네트워크 연결 캐시 초기화)
 ________________________________________________________ SQA Test 실무흐름 이해
 # basic senario == e2e senario
 
 
 
 # function test
-    Lillivis-works 프로그램/검색기능/column filter 없이 like 검색 # filter 기준 없음.
+Lillivis-works 프로그램/검색기능/column filter 없이 like 검색 # filter 기준 없음.
 ________________________________________________________ 제품 Wi-Fi Test 환경 구성
 # OBJECT
 Router
@@ -491,7 +687,7 @@ HTR/RK
 
 # logical flow
 HRK Data 전송
-________________________________________________________ HTR-000
+________________________________________________________  
 # OP IP 설정 및 확인
 OP/QC Settings 화면/commnunication/connection/on
 OP/QC Settings 화면/commnunication/connection/AP Name(SSID)/MER****{SSID Example}
@@ -518,7 +714,14 @@ OP/QC Settings 화면/commnunication/connection/AP Name(SSID)/연결가능 AP �
 RSSI 강도가 강 한것이 약한 것보다 우선 출력.
 SSID  # "-" 가 " " 보다 우선 출력.  " " 가 "_" 보다 우선 출력. 
 위의 3가지를 충족하면 기대결과 충족
-
-
-
-
+_________________________________________________ ETC
+# 텍스트 템플릿
+TBD(To Be Determined, 협의사항)
+협의사항(TBD, To Be Determined)
+🔳 절차_재현판단기준 정의
+🔳 LM-100 Spindle 시험 관련 물품들 이관 및 반납
+SQA_TEST_CASE-HRK-9000A
+SQA_TEST_CASE-HLM-9000
+SQA_TEST_CASE-HTR-1A
+SQA_TEST_CASE-HDR-9000
+SQA_TEST_CASE-HDC-9100
