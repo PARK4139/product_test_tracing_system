@@ -1,23 +1,38 @@
 _________________________________________________ TODO
-🔳 2026 사내 필수강의 5월 중으로 수강
-🔳 Tracer 테스트 : 아침30분, 저녁30분 수치입력 by 오대영 프로.
+🔳 2026년 법정의무 교육 실시 안내 (상반기 산업안전) 
 🔳 테스터는 조건 이해하기 쉽도록 작성해야한다. 재현절차..
+🔳 Tracer 테스트 : 아침30분, 저녁30분 수치입력 by 오대영 프로
 🔳 chatGPT 유료/Business  공유    팀내 사용규칙확인  
 
-# 물품 구매예정
+
+# 급한거
+장비들
+다운그레이드
+2월 전으로
+총 몇개에서 30 개 정도 진행했는데 
+이번에 얼마나 개선이 되었는가.
+S/A 심각도까지.
+
+
+# 물품 구매목록
 🔳 지퍼팩 30 🔳 25cm : 20매 Connectivity AP 부속자재 및 정리보관용
 🔳 3M VHB? TAPE : Connectivity AP 전선정리용
 🔳 소독용 에탄올 : Connectivity AP 자재청소용
 1자 드라이버 소형(TEST 작업용)
 🔳 Cable Tie 소 : 자재이동 2층 to 6층 Connectivity Room
 
-# 라벨프린팅 예정 목록
+# 라벨프린팅 대상목록
 🔳 Router PASSWORD
 🔳 Router Power Adapter별로 Serial Number
-🔳 Router MODEL NAME, PASSWORD
- 
-🔳 용어 필요정보
+
+
+# 휴비츠 S/W Process 현황 분석
+회귀테스트 결과 부족
+
+# 휴비츠 용어 식별 필요정보
 제품별 UI 화면설계 용어표준 : ex> UI 화면 및 UI Component 정의 정보위치. 
+
+
 
 ☑️ 특근관리
 2026.04.22 수 휴가 승인
@@ -36,99 +51,222 @@ WIFI Connectivity 제품별 네트워크시험 수행
 - Connectivity Room Router 현황 업데이트
 
 
-# 시험 Config 경우의 수 산출(실제로는 시험조건 추가가 되며, 시험조건 추가 시, 계속 증식되는 환경에서 수행해야함)
-    # "WIFI Test 관련" 경우의 수
-    WIFI Test 관련 상태에 대한 Test Config의 수 = "장비 단품연동 기준 Test Config 의 수" * (2*1)*(4*1) *(etc_options*1)        (2: DHCP/Static,  4: 연동서버의 수)
-    1개 Test Case는 n 개의 Step 을 가짐
-    > 경우의 수가 매우 많다. 유효한 것들을 우선순위로 필터하여 선작업.
-    유효한 경우의 수를 필터(중요도를 이산화하여 경우의 수에 대해서 분류한다) 
-    유효한 경우의 수를 시험
-    모든 경우의 수는 
-
-    Cases 
-    제품별 Test Case 수
-    = (2.4GHz/5GHz) * (Static/DHCP) * (단독HDR연동/다수HDR연동) * (미공간분리/공간분리) * (한국향/미국향/유럽향(독일향|etc))
 
 
-    2*2*2*2*(제품별 Test Case 수) = 16*(제품별 Test Case 수)
+# 궁금증 및 검토요청
+🔳 HDR 출고 시 S/W 기본값 설정하는가? RESET 버튼으로 하면되는가?
+🔳 Test Case 작성을 위한 필요조건 요청사항
+🔳 Test변수 통제 필요성 검토
+1. xxx-000 필요함, Setting 할 수 있는 모든 UI 설정사항(버튼)에 대한 Default를 열려줘야함.
+Software Setup에 있는 각종 mode 상태 요청
+RESET 버튼
+🔳 VMV 레포트 해석법
+🔳 PDM 에서 VMV 레포트 
+테스트용 시료 확보
+연구소쪽도 QI Team도 공유 필요. 재현필요 하기 때문
 
-    ex  (2.4GHz/공간미분리/DHCP/단독HDR연동/한국향)
+
+# TEST 관리
+# TEST 단일조건 식별현황
+# 2.4GHz|5GHz|6GHz # 6GHz 후순위
+# STATIC|DHCP # HDCP 후순위
+# AUTO_TRANSFER|MANUAL_TRANSFER # MANUAL_TRANSFER 후순위
+# 한국향|미국향|유럽향 # 
+# 공간분리|공간미분리
+# 층분리|층미분리
+# TEST 추가
+# TEST CONDITION X CASE X CONFIG 식별
+5GHz-STATIC-AUTO_TRANSFER-1AP_1HRK_1HTR_1HLM_4HDR_1HDC
+5GHz-STATIC-AUTO_TRANSFER-1AP_1HRK_1HTR_1HLM_4HDR
+5GHz-STATIC-AUTO_TRANSFER-1AP_4HDR
+5GHz-STATIC-AUTO_TRANSFER-1AP_1HRK_4HDR
+5GHz-STATIC-AUTO_TRANSFER-1AP_1HTR_4HDR
+5GHz-STATIC-AUTO_TRANSFER-1AP_1HLM_4HDR
+5GHz-STATIC-AUTO_TRANSFER-1AP_4HDR_1HDC
+2_4GHz-STATIC-AUTO_TRANSFER-1AP_1HRK_1HTR_1HLM_4HDR_1HDC
+2_4GHz-STATIC-AUTO_TRANSFER-1AP_1HRK_1HTR_1HLM_4HDR
+2_4GHz-STATIC-AUTO_TRANSFER-1AP_4HDR
+2_4GHz-STATIC-AUTO_TRANSFER-1AP_1HRK_4HDR
+2_4GHz-STATIC-AUTO_TRANSFER-1AP_1HTR_4HDR
+2_4GHz-STATIC-AUTO_TRANSFER-1AP_1HLM_4HDR
+2_4GHz-STATIC-AUTO_TRANSFER-1AP_4HDR_1HDC
+5GHz-STATIC-AUTO_TRANSFER-25AP_1HRK_1HTR_1HLM_4HDR_1HDC
+5GHz-STATIC-AUTO_TRANSFER-25AP_1HRK_1HTR_1HLM_4HDR
+5GHz-STATIC-AUTO_TRANSFER-25AP_4HDR
+5GHz-STATIC-AUTO_TRANSFER-25AP_1HRK_4HDR
+5GHz-STATIC-AUTO_TRANSFER-25AP_1HTR_4HDR
+5GHz-STATIC-AUTO_TRANSFER-25AP_1HLM_4HDR
+5GHz-STATIC-AUTO_TRANSFER-25AP_4HDR_1HDC
+2_4GHz-STATIC-AUTO_TRANSFER-25AP_1HRK_1HTR_1HLM_4HDR_1HDC
+2_4GHz-STATIC-AUTO_TRANSFER-25AP_1HRK_1HTR_1HLM_4HDR
+2_4GHz-STATIC-AUTO_TRANSFER-25AP_4HDR
+2_4GHz-STATIC-AUTO_TRANSFER-25AP_1HRK_4HDR
+2_4GHz-STATIC-AUTO_TRANSFER-25AP_1HTR_4HDR
+2_4GHz-STATIC-AUTO_TRANSFER-25AP_1HLM_4HDR
+2_4GHz-STATIC-AUTO_TRANSFER-25AP_4HDR_1HDC
+5GHz_DHCP_AUTO_TRANSFER-1AP_1HRK_1HTR_1HLM_4HDR_1HDC
+5GHz_DHCP_AUTO_TRANSFER-1AP_1HRK_1HTR_1HLM_4HDR
+5GHz_DHCP_AUTO_TRANSFER-1AP_4HDR
+5GHz_DHCP_AUTO_TRANSFER-1AP_1HRK_4HDR
+5GHz_DHCP_AUTO_TRANSFER-1AP_1HTR_4HDR
+5GHz_DHCP_AUTO_TRANSFER-1AP_1HLM_4HDR
+5GHz_DHCP_AUTO_TRANSFER-1AP_4HDR_1HDC
+2_4GHz_DHCP_AUTO_TRANSFER-1AP_1HRK_1HTR_1HLM_4HDR_1HDC
+2_4GHz_DHCP_AUTO_TRANSFER-1AP_1HRK_1HTR_1HLM_4HDR
+2_4GHz_DHCP_AUTO_TRANSFER-1AP_4HDR
+2_4GHz_DHCP_AUTO_TRANSFER-1AP_1HRK_4HDR
+2_4GHz_DHCP_AUTO_TRANSFER-1AP_1HTR_4HDR
+2_4GHz_DHCP_AUTO_TRANSFER-1AP_1HLM_4HDR
+2_4GHz_DHCP_AUTO_TRANSFER-1AP_4HDR_1HDC
+5GHz_DHCP_AUTO_TRANSFER-25AP_1HRK_1HTR_1HLM_4HDR_1HDC
+5GHz_DHCP_AUTO_TRANSFER-25AP_1HRK_1HTR_1HLM_4HDR
+5GHz_DHCP_AUTO_TRANSFER-25AP_4HDR
+5GHz_DHCP_AUTO_TRANSFER-25AP_1HRK_4HDR
+5GHz_DHCP_AUTO_TRANSFER-25AP_1HTR_4HDR
+5GHz_DHCP_AUTO_TRANSFER-25AP_1HLM_4HDR
+5GHz_DHCP_AUTO_TRANSFER-25AP_4HDR_1HDC
+2_4GHz_DHCP_AUTO_TRANSFER-25AP_1HRK_1HTR_1HLM_4HDR_1HDC
+2_4GHz_DHCP_AUTO_TRANSFER-25AP_1HRK_1HTR_1HLM_4HDR
+2_4GHz_DHCP_AUTO_TRANSFER-25AP_4HDR
+2_4GHz_DHCP_AUTO_TRANSFER-25AP_1HRK_4HDR
+2_4GHz_DHCP_AUTO_TRANSFER-25AP_1HTR_4HDR
+2_4GHz_DHCP_AUTO_TRANSFER-25AP_1HLM_4HDR
+2_4GHz_DHCP_AUTO_TRANSFER-25AP_4HDR_1HDC
 
 
-    # 한국향
-    2.4GHz/공간미분리/DHCP/단독HDR연동/한국향
-    2.4GHz/공간미분리/Static/단독HDR연동/한국향
-    2.4GHz/공간미분리/DHCP/다수HDR연동/한국향
-    2.4GHz/공간미분리/Static/다수HDR연동/한국향
-    2.4GHz/공간분리/DHCP/단독HDR연동/한국향
-    2.4GHz/공간분리/Static/단독HDR연동/한국향
-    2.4GHz/공간분리/DHCP/다수HDR연동/한국향
-    2.4GHz/공간분리/Static/다수HDR연동/한국향
-    5GHz/공간미분리/DHCP/단독HDR연동/한국향
-    5GHz/공간미분리/Static/단독HDR연동/한국향
-    5GHz/공간미분리/DHCP/다수HDR연동/한국향
-    5GHz/공간미분리/Static/다수HDR연동/한국향
-    5GHz/공간분리/DHCP/단독HDR연동/한국향
-    5GHz/공간분리/Static/단독HDR연동/한국향
-    5GHz/공간분리/DHCP/다수HDR연동/한국향
-    5GHz/공간분리/Static/다수HDR연동/한국향
 
-    # 미국향
-    2.4GHz/공간미분리/DHCP/단독HDR연동/미국향
-    2.4GHz/공간미분리/Static/단독HDR연동/미국향
-    2.4GHz/공간미분리/DHCP/다수HDR연동/미국향
-    2.4GHz/공간미분리/Static/다수HDR연동/미국향
-    2.4GHz/공간분리/DHCP/단독HDR연동/미국향
-    2.4GHz/공간분리/Static/단독HDR연동/미국향
-    2.4GHz/공간분리/DHCP/다수HDR연동/미국향
-    2.4GHz/공간분리/Static/다수HDR연동/미국향
-    5GHz/공간미분리/DHCP/단독HDR연동/미국향
-    5GHz/공간미분리/Static/단독HDR연동/미국향
-    5GHz/공간미분리/DHCP/다수HDR연동/미국향
-    5GHz/공간미분리/Static/다수HDR연동/미국향
-    5GHz/공간분리/DHCP/단독HDR연동/미국향
-    5GHz/공간분리/Static/단독HDR연동/미국향
-    5GHz/공간분리/DHCP/다수HDR연동/미국향
-    5GHz/공간분리/Static/다수HDR연동/미국향
+# Smoke Test Design
+Test 규칙 : {Wi-Fi BAND TYPE}-{IP 부여 TYPE}-{데이터 TRNASFER TYPE}-{제품단위 네트워크노드구성}
+5GHz-STATIC-AUTO_TRANSFER-1AP_1HRK_1HTR_1HLM_4HDR_1HDC # 보편적 기준으로서 검토필요
+5GHz-STATIC-AUTO_TRANSFER-1AP_1HRK_1HTR_1HLM_4HDR 조건에서 # (HDC 시료 미확보로 이번에는 이렇게?) 
+# Smoke Test Result
+5GHz-STATIC-AUTO_TRANSFER-1AP_1HRK_1HTR_1HLM_4HDR 조건에서 (HDC 시료 미확보) 
+장비 첫부팅 후 상태, HRK|HTR|HLM > HDR 데이터 전송 5회 PASSED   
+라우터 OFF 상태(라우터ON에서 라우터OFF상태 상태전이 후) > HRK|HTR|HLM|HDR Connection Error 없이 PASSED  
+라우터 재부팅 후 상태(라우터OFF에서 라우터ON상태 상태전이 후) > HRK|HTR|HLM > HDR 데이터 전송 5회 PASSED
+장비 재부팅 후 상태, HRK|HTR|HLM > HDR 데이터 전송 5회 PASSED 
+# Smoke Test 하는 이유. 
+휴비츠는 식별된 모든 Test(회귀테스트, E2E Test)를 진행 후 나가는게 아닌. 연구소도, QI Team기한을 맞추기 위하여 해당개발기능과 Smoke Test를 진행 후 내보내는 실정? 
+TODO : TEST SPEED ENHANCE
+TODO : TEST DEDUPLICATION
+# Smoke Test 보고
+용순 프로님 데이터 전송기본적인 것들 Smoke Test 진행 중 이구요. 
+지금까지 내용 공유 드려요. 
+결론적으로 지금까지 결과는 PASSED 입니다.  
 
-    # 유럽향
-    2.4GHz/공간미분리/DHCP/단독HDR연동/유럽향(독일향)
-    2.4GHz/공간미분리/Static/단독HDR연동/유럽향(독일향)
-    2.4GHz/공간미분리/DHCP/다수HDR연동/유럽향(독일향)
-    2.4GHz/공간미분리/Static/다수HDR연동/유럽향(독일향)
-    2.4GHz/공간분리/DHCP/단독HDR연동/유럽향(독일향)
-    2.4GHz/공간분리/Static/단독HDR연동/유럽향(독일향)
-    2.4GHz/공간분리/DHCP/다수HDR연동/유럽향(독일향)
-    2.4GHz/공간분리/Static/다수HDR연동/유럽향(독일향)
-    5GHz/공간미분리/DHCP/단독HDR연동/유럽향(독일향)
-    5GHz/공간미분리/Static/단독HDR연동/유럽향(독일향)
-    5GHz/공간미분리/DHCP/다수HDR연동/유럽향(독일향)
-    5GHz/공간미분리/Static/다수HDR연동/유럽향(독일향)
-    5GHz/공간분리/DHCP/단독HDR연동/유럽향(독일향)
-    5GHz/공간분리/Static/단독HDR연동/유럽향(독일향)
-    5GHz/공간분리/DHCP/다수HDR연동/유럽향(독일향)
-    5GHz/공간분리/Static/다수HDR연동/유럽향(독일향)
-_________________________________________________ TBD
+아래는 내역입니다.
+5GHz, STATIC, AUTO_TRANSFER, 단일AP, 1HRK_1HTR_1HLM_4HDR 조건에서 (HDC 시료 미확보) 
+1. 장비 첫부팅 후 상태, HRK|HTR|HLM > HDR 데이터 전송 5회 PASSED   
+2. 라우터 재부팅 후 상태(라우터OFF에서 라우터ON상태 상태전이 후), HRK|HTR|HLM > HDR 데이터 전송 5회 PASSED
+3. 장비 재부팅 후 상태, HRK|HTR|HLM > HDR 데이터 전송 5회 PASSED 
+4. 라우터 OFF 상태(라우터ON에서 라우터OFF상태 상태전이 후), HRK|HTR|HLM|HDR Connection Error 없이 PASSED  
+5. 연결할AP AP SSID 목록 시현 PASSED
+# BUG 추가식별
+> HRK 설정화면 진입 버튼 인식영역이 버튼크기 1/4 정도로 추정 > UX적으로 사용자 관점에서 터치가 잘 안됨 (터치스크린 터치 캘리브레이션 필요?)
+
+
+
+
+# TEST CONDITION X CASE X CONFIG 식별 수 (계속 시험항목 증식되는 예상)
+# "WIFI Test 관련" 경우의 수
+WIFI Test 관련 상태에 대한 Test Config의 수 = "장비 단품연동 기준 Test Config 의 수" * (2*1)*(4*1) *(etc_options*1)        (2: DHCP/STATIC,  4: 연동서버의 수)
+1개 Test Case는 n 개의 Step 을 가짐
+> 경우의 수가 매우 많다. 유효한 것들을 우선순위로 필터하여 선작업.
+유효한 경우의 수를 필터(중요도를 이산화하여 경우의 수에 대해서 분류한다) 
+유효한 경우의 수를 시험
+모든 경우의 수는 
+Cases 
+제품별 Test Case 수
+= (2_4GHz_5GHz) * (STATIC/DHCP) * (단독HDR연동/다수HDR연동) * (미공간분리/공간분리) * (한국향/미국향/유럽향(독일향|etc))
+2*2*2*2*(제품별 Test Case 수) = 16*(제품별 Test Case 수)
+TEST 수
+
+
+________________________________________________________ TBD
+# 제품 TEST 관리 전략(Testcollab.io 도입)
+궁극적으로, PLM의 ID DATA들과의 연결도모(실제 PLM 데이터와의 데이터관계성, 작업자/관리자 사용성 확인 필요)
+제품 TRACE ID 관리
+제품 TEST 관리 ARCHITECTURE 설계
+TRACE DEFECT LIFECYCLE 개선 > Test version > Release version  
+
+
+
+# SQA 업무프로세스 관리 전략(몇 가지 업무 flow 가 나눠질 필요가 있다. 신규테스트시나리오추가)
+## ROLE AND WORK TASKS ALLOCATION
+REQ : 타조직(고객|영업조직|시장조사조직|제품연구조직)
+IMPLEMENTATION : 타조직(제품연구조직 개발조직)
+SENARIO 생성 : 타조직(제품연구조직 개발조직)
+SENARIO ID 부여 : SQA TEAM  
+TEST : SQA TEAM
+DEFECT : SQA TEAM
+DEFECT 보고 : SQA TEAM to 타조직(제품연구조직 개발조직) 
+조치 : 타조직(제품연구조직 개발조직)
+Test Version : VAL 및 회귀 테스트 결과 보고.  
+Release : 
+## Test 산출물 : 
+XXX Release TEST REPORT
+
+
+
+
+
+
+TRACE ID 관리 전략
+TEST Schema 설계 
+
+TRACE ID 관리 전략
+Traceability Flow 예시 설계 : 문제점 관리 시트 참고, 일련번호별로 추적가능.
+MANAGEMENT MAP
+TEST_SENARIO_REQ/-TC
+                 -DEFECT
+                 -VAL
+Test항목 별 delta 측정(미숙련자|숙련자 기준)
+Test항목 별 delta 합산 통계 
+
+
+
+
+추적 예시.(Wi-Fi DEFECT 추적)
+ 
+
+
+
+# SENARIO, TEST CASE 정합성 검토회의 
+1. 정하고 싶은것
+
+
+
+# 제품 TEST Data 입력 관리 전략
+용어 정규화/표준화 > 데이터입력 제약 필요
+SERIAL 별로 TEST CASE 나오고 PASSED/FAILED
+
+
+
+# 제품 Display 터치 자동화 Test지그 설계
+1. HUMAN : 제품 및 테스트 환경 구성
+2. HUMAN : TEST FLOW 선택
+4. MACHI : UI COMPONENT 요소 객체인식 # 화면촬영
+5. MACHI : 클릭 
+FIRMWARE DESIGN(박정훈)
+2차원 기구설계 (박정훈)
+
+
+
+
 # Test Case 기능추가 검토필요
 ex) 베타적으로 장비 전원 OFF 시 하나씩 연결하는 경우에 대한 Test Case 를 별도로 추가"
 
 🔳 HRK 테스트 시트는 테스트케이스 작성에 도움이 된 BEST Test Senario가 작성된 시트 
 
 
-🔳 Test Case 작성을 위한 필요조건 요청사항
 
-🔳 Test변수 통제 필요성 검토
-1. xxx-000 필요함, Setting 할 수 있는 모든 UI 설정사항(버튼)에 대한 Default를 열려줘야함.
-Software Setup에 있는 각종 mode 상태 요청
-
-
-🔳 HDC 테스트 속도 개선안
+# HDC 테스트 속도 개선 전략
 확인필요 : HDC-XXX 에서 XXX 가 의미하는 것.
         단순 테스트 순번? 다른 관리 아키텍쳐? 
         단순 테스트 순번이라면 순서 재배열 제안
 제안 : Test항목 간 종속성에 따른 테스트 순번 재배열 
-         기존 (DHCP > Static) 
-        신규 (Static > DHCP)
+         기존 (DHCP > STATIC) 
+        신규 (STATIC > DHCP)
 제안 기대효과 : HDC-005, HDC-007의 테스트 속도 개선
 
 
@@ -143,14 +281,17 @@ TBD : 동글 활성화 상태 확인 정의, Refraction exam 생성 방법 정�
 🔳 220V TO 110V 변환기 플러그 1개
 🔳 스마트플러그(P110m) 2개 다른공간 라우터 원격제어용
 🔳 3M VHB 초강력 양면테이프
-
-
-
+🔳 312276 / 1EA # 양면테이프
+🔳 304130 /  1EA
 🔳 연결할AP 송출출력 통제방법 수립
 _________________________________________________ SQA Process 개선 회의  
-제품 표준서?
+# AS-IS
+SRS 사양서 부재(권장해상도, ..)
+VMV 레포트
+제품 표준서
 UI 불편 > 브랜드 가치 하락
-동일 내용   랭귀지 차이 L10n 다국어지원 수준
+동일 내용에 대한 랭귀지 차이 L10n 다국어지원 수준
+
 
 # 송출출력(Router Tx Power) Low 설정
 http://192.168.1.1/
@@ -158,16 +299,11 @@ ADVANCED
 Wireless/Wireless Settings/Transmit Power:High > Low/Save 
 무용.
 
+
 # Mature SQA > SQA
-
-# AS-IS
-SRS 사양서 부재(권장해상도, ..)
-VMV 레포트?
-VNV 레포트?
-
 # HW 검증( QC )
-
 # SW 검증( SQA )
+
 
 # heavy process sys 도입
 낮은 성숙도
@@ -199,9 +335,7 @@ Smoke Test 자동화 주고
 E2E 를 제공해서 연구소에서 테스트 먼저하도록 하자는 건데...
 
 
-
-# Windows장비 Web 자동화테스트
-# Windows 장비 테스트
+# Windows 장비 Web 자동화테스트
 # 임베디드 장비 테스트
 HTG
 OCT
@@ -217,6 +351,24 @@ BM?
 # ?
 크렘리스?
 
+
+
+# 연구소 김성택 프로
+김성택 프로님 안녕하세요.
+QI Team 박정훈 사원입니다.
+김용순 프로님 통해서 포워딩받은 "HDR 1.1.8_테스트버전"에 대하여 Connectivity Wi-Fi 추가시험 진행을 해보았습니다. 
+
+결론부터 말씀드리면 "PASSED" 판정하였습니다.
+
+"테스트를 해보고 싶은 동작 케이스가 있는데요.  
+HDR 에 연결 장치를 많이 붙여놓고 AP 전원을 차단시켜보고 싶습니다."
+해당 건 에 대해서 Smoke Test 진행을 해보았습니다.
+
+시험조건과 시험내역은 다음과 같습니다. 
+2.4GHz, STATIC, 1HRK_1HTR_1HLM_1HDR_1AP, HDR Send WiFi Chart ON 적용, 조건에서
+(HDC는 시료가 없어서 시험 구성에서 부득이하게 제외) 
+AP(라우터)재부팅 시, 정상적으로 AP연결들, 장비연결들 복구 됨.
+AP(라우터) OFF 상태 시, 정상적으로 연결 안되었음.(Connection 관련 에러는 없었음.)
 
 
 # TEST IDEA
@@ -237,7 +389,7 @@ Connectivity Room 네트워크 증설 현황
 - 완료내용
     Test Report 에 대한 Draft 작성을 완료하였으며. 지금까지의 결과는 PASSED 입니다.
     연구소에서 요청하신 온전한 Test 시나리오는 Test Case 정합성 검토가 필요하여, 완전히 테스트하지는 못한 상태이며  
-    5GHz, DHCP/Static, HISS, MATE, 다수서버연동에 대해서는 제외되었으며
+    5GHz, DHCP/STATIC, HISS, MATE, 다수서버연동에 대해서는 제외되었으며
     단품과의 연결에 대한 Operating 중심으로. 핵심기능을 2.4GHz, DHCP 설정으로 빠르게 Smoke Test 검증하였습니다. 
 
 - 산출물 : 
@@ -251,7 +403,7 @@ Connectivity Room 네트워크 증설 현황
 - 추후계획
     1. Tester 장비 숙달(HIIS, MATE, 다수서버연동 등)
     2. Test 시나리오와 Test Config, Test Case와의 정합성 검토, 
-    3. 5GHz, Static, HISS 연동, MATE 연동결과 등에 대한 세부 Test Case 추가정의 및 Test 가 필요합니다. 
+    3. 5GHz, STATIC, HISS 연동, MATE 연동결과 등에 대한 세부 Test Case 추가정의 및 Test 가 필요합니다. 
     4. WIFI Connectivity 제품별 네트워크시험 환경 정의
     5. Test 프로세스 시스템 정의 및 타부서 협업 연동. 
     6. Test System 도입 제안
@@ -265,7 +417,7 @@ Connectivity Room 네트워크 증설 현황
 - 완료내용
     Test Report 에 대한 Draft 작성을 완료하였으며. 지금까지의 결과는 PASSED 입니다.
     연구소에서 요청하신 온전한 Test 시나리오는 Test Case 정합성 검토가 필요하여, 완전히 테스트하지는 못한 상태이며  
-    5GHz, DHCP/Static, HISS, MATE, 다수서버연동에 대해서는 제외되었으며
+    5GHz, DHCP/STATIC, HISS, MATE, 다수서버연동에 대해서는 제외되었으며
     단품과의 연결에 대한 Operating 중심으로. 핵심기능을 2.4GHz, DHCP 설정으로 빠르게 Smoke Test 검증하였습니다. 
 
 - 산출물 : https://docs.google.com/spreadsheets/d/1CphfBg6d6mOVyiOOxpAZ-HzReFmZTyB_/edit?gid=1074338896#gid=1074338896
@@ -273,7 +425,7 @@ Connectivity Room 네트워크 증설 현황
 - 추후계획
     1. Tester 장비 숙달(HIIS, MATE, 다수서버연동 등)
     2. Test 시나리오와 Test Config, Test Case와의 정합성 검토, 
-    3. 5GHz, Static, HISS 연동, MATE 연동결과 등에 대한 세부 Test Case 추가정의 및 Test 가 필요합니다. 
+    3. 5GHz, STATIC, HISS 연동, MATE 연동결과 등에 대한 세부 Test Case 추가정의 및 Test 가 필요합니다. 
     4. WIFI Connectivity 제품별 네트워크시험 환경 정의
     5. Test 프로세스 시스템 정의 및 타부서 협업 연동. 
     6. Test System 도입 제안
@@ -337,7 +489,7 @@ Connectivity Room 네트워크 증설 현황
     ☑️ WIFI Connectivity 제품별 네트워크시험 Test Case 초안작성 - 2026-04-30
         Operating 중심(server=1:1).
         5GHz 제외
-        Static 제외
+        STATIC 제외
         HISS 제외
         MATE 제외
         Server 재연결 시 복구 Test Case(AP 컷오프 건) 일부미포함 
@@ -349,8 +501,8 @@ Connectivity Room 네트워크 증설 현황
         ☑️ Test Case 작성검증(TBD, 특이사항, 이슈 중심)
     🔳 WIFI Connectivity 제품별 네트워크시험 Test Case v2 작성 
         2.4GHz HDR 4대 - 서버여러대
-        🔳 Static Case Config 추가
-        🔳 Static/DHCP 별 Test Case 추가 
+        🔳 STATIC Case Config 추가
+        🔳 STATIC/DHCP 별 Test Case 추가 
         🔳 Defect(Bug, 결함) 및 특이사항은 Chest Cam활용 촬영
         🔳 공간미분리 
         🔳 공간분리
@@ -393,7 +545,7 @@ Connectivity Room 네트워크 증설 현황
     🔳 HISS 장비 기본조작 및 셋팅 배우기
         MATE 등의 화면 기본조작 및 각 이미지 데이터 시현결과 확인법  
     🔳 Test 시나리오와 Test Config, Test Case와의 정합성 검토
-    🔳 5GHz, Static, HISS 연동, MATE 연동결과 등에 대한 세부 Test Case 추가정의 및 Test 
+    🔳 5GHz, STATIC, HISS 연동, MATE 연동결과 등에 대한 세부 Test Case 추가정의 및 Test 
     🔳 WIFI Connectivity 제품별 네트워크시험 환경 정의
     🔳 Test 프로세스 시스템 정의 및 타부서 협업 연동 
     🔳 Test System 도입 제안
@@ -446,11 +598,8 @@ _________________________________________________ TODO: e2e flow 정합성 검�
 pk 임의 우선 작성한 뒤 > flow 정합성 검토
 
 STR(Step to Reproducing)
-
-
-
 ________________________________________________________ 시험 소요시간 산출
-장비별 TC별 delta time (오늘 중) 
+# 장비별 TC별 delta time (오늘 중) 
 HRK 12 Test Cases (141*0.5 Mins)  70분 * 0.8  
 HLM 7 Test Cases (61*0.5 Mins)   30분 * 0.8  
 HTR 12 Test Cases (91*0.5 Mins)   45분 * 0.8 
@@ -470,8 +619,7 @@ HDC 8 Test Cases (69*0.5 Mins)   34.5분 * 0.8
 HIIS_TBD = 10 : *HIIS 연동 별도측정필요, 지금까지의 평균 Test Procedure는 9.45로 10으로 가정함
 1 TestProcedure = 0.5 Mins 로 가정하였음.	
 0.8 : 장비 사용 숙련이 되면 대략 20% 정도는 빠르게 끝날 수 있어보여 20%를 감축하였음.
-전장비 시험 소요시간= 184.4분 (2.4GHz/공간미분리/DHCP/단독HDR연동/한국향 기준)
-
+전장비 시험 소요시간= 184.4분 (2_4GHz_공간미분리/DHCP/단독HDR연동/한국향 기준)
 
 # 요약
 "예상시험소요시간(분)
@@ -481,12 +629,7 @@ HIIS_TBD = 10 : *HIIS 연동 별도측정필요, 지금까지의 평균 Test Pro
 36분
 41분
 28분
-전장비 시험 소요시간= 184.4분 (2.4GHz/공간미분리/DHCP/단독HDR연동/한국향 기준)
-
-
-
-
-
+전장비 시험 소요시간= 184.4분 (2_4GHz_공간미분리/DHCP/단독HDR연동/한국향 기준)
 _________________________________________________________ STEP 회의(품질회의) PPT
 Wi-Fi Connectivity Test 계획 및 진행현황
 
@@ -495,12 +638,14 @@ Wi-Fi Connectivity Test 계획 및 진행현황
 이번달 남은 워킹데이
 13일(5/12~5/29)
 10(1 항목 / 1일)  +  3(2 항목 1 일)
-________________________________________________________ working
-실확인결과(Actual Result), PASSED 판단 근거
-STR Completion Criteria (Test Case PASSED 판단 근거)
 
 
-________________________________________________________ 필요한것 
+
+________________________________________________________ 필요목록 
+휴비츠 H/W Release Process 이해
+휴비츠 S/W Release Process 이해
+
+
 사용자(검안사|안과)별 e2e Test Senario
 - 근시 안경도수 처방가정 e2e Test Senario 
 - 원시 안경도수 처방가정 e2e Test Senario 
@@ -508,88 +653,11 @@ ________________________________________________________ 필요한것
 (flow 이해 필요, 특히 Eye, Lens 파라미터(Sphere, Cylinder, Axis 등의) 관점)
 
 
-
-
-테스트환경 구성(장비 대수, Device Identifier, 장비필수특성) : 
-- Router(1대, 2232318003141 ,2.4GHz Band) 1대
-
-________________________________________________________ TBD
-# 제품 TEST 관리 전략(Testcollab.io 도입)
-궁극적으로, PLM의 ID DATA들과의 연결도모(실제 PLM 데이터와의 데이터관계성, 작업자/관리자 사용성 확인 필요)
-제품 TRACE ID 관리
-제품 TEST 관리 ARCHITECTURE 설계
-TRACE DEFECT LIFECYCLE 개선 > Test version > Release version  
-
-
-
-# SQA 업무프로세스 관리 전략(몇 가지 업무 flow 가 나눠질 필요가 있다. 신규테스트시나리오추가)
-## ROLE AND WORK TASKS ALLOCATION
-REQ : 타조직(고객|영업조직|시장조사조직|제품연구조직)
-IMPLEMENTATION : 타조직(제품연구조직 개발조직)
-SENARIO 생성 : 타조직(제품연구조직 개발조직)
-SENARIO ID 부여 : SQA TEAM  
-TEST : SQA TEAM
-DEFECT : SQA TEAM
-DEFECT 보고 : SQA TEAM to 타조직(제품연구조직 개발조직) 
-조치 : 타조직(제품연구조직 개발조직)
-Test Version : VAL 및 회귀 테스트 결과 보고.  
-Release : 
-## Test 산출물 : 
-XXX Release TEST REPORT
-
-
-
-
-
-
-TRACE ID 관리 전략
-TEST Schema 설계 
-
-TRACE ID 관리 전략
-Traceability Flow 예시 설계 : 문제점 관리 시트 참고, 일련번호별로 추적가능.
-MANAGEMENT MAP
-TEST_SENARIO_REQ/-TC
-                 -DEFECT
-                 -VAL
-Test항목 별 delta 측정(미숙련자|숙련자 기준)
-Test항목 별 delta 합산 통계 
-
-
-
-
-추적 예시.(Wi-Fi DEFECT 추적)
- 
-
-
-
-
-SENARIO, TEST CASE 정합성 검토회의 
-1. 정하고 싶은것
-
-
-
-# 제품 TEST Data 입력 관리 전략
-용어 정규화/표준화 > 데이터입력 제약 필요
-SERIAL 별로 TEST CASE 나오고 PASSED/FAILED
-
-
-
-# 제품 Display 터치 자동화 Test지그 설계
-1. HUMAN : 제품 및 테스트 환경 구성
-2. HUMAN : TEST FLOW 선택
-4. MACHI : UI COMPONENT 요소 객체인식 # 화면촬영
-5. MACHI : 클릭 
-FIRMWARE DESIGN(박정훈)
-2차원 기구설계 (박정훈)
-
-
-
-
-현철 프로님께 검토 요청
+STR Completion Criteria (Test Case PASSED 판단 근거)
 ________________________________________________________ SQA TEAM 내부용 제품 TEST 문맥작성 표준.md
 # 바이브코딩 : 문서용어 정규화/표준화 자동치환기
 작성규칙위반 = 작성규칙 검사기() # ai 활용
-________________________________________________________ PLAN
+________________________________________________________ TODO
 # ANUAL
 야근 : 주3일 아근, 2달 빡시게하고
 5/15 끝내는 게 매우 중요.
@@ -617,13 +685,8 @@ TEST CASE 관련 업무메일 참조 : 김선웅
 # WIFI Connectivity 테스트 시나리오.xlsx - Google Sheets
 Notion, Jira, Testcollab.io 도입 관리 환경조사
 이현철 프로님 기술자문 요청.
-
-
-
-
-
-
 ________________________________________________________ SQA Test 실무흐름 이해
+# intergration test
 # basic senario == e2e senario
 
 
@@ -699,13 +762,6 @@ OP/QC Settings 화면/commnunication/connection/IP Address/192.168.1.***{IP Addr
 # 네트워크 구성 설정(HDR & OP)
 HDR/Setup/IP ADDRESS/HDR9000_1{IP Address Nickname Example}/192.168.1.***{IP Address Example}
 Activate IP Address to communicate by using V mark
-
-
-OP/QC Settings 화면/commnunication/connection/on
-
-
-# 스캔
-OP/QC Settings 화면/commnunication/connection/AP Name(SSID)/돋보기 아이콘
 
 
 # 1. 연결 가능한 AP 목록 (SSID/RSSI 순서)
