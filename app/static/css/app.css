@@ -353,8 +353,10 @@ button:disabled {
 .basic_table th,
 .basic_table td {
     border: 1px solid var(--color_border);
-    padding: 8px;
+    padding: 6px 10px;
     text-align: left;
+    white-space: nowrap;
+    vertical-align: middle;
 }
 
 .basic_table td.short_value_center {
@@ -386,6 +388,65 @@ button:disabled {
     user-select: none;
     touch-action: none;
     z-index: 3;
+}
+
+/* ── basic_table 공통: 선택 열 ───────────────────────────────────────────── */
+
+/* 선택(체크박스) 첫 번째 열 — 헤더 텍스트 + 패딩 수용 */
+.basic_table td:first-child,
+.basic_table th:first-child {
+    width: 52px;
+    min-width: 52px;
+    text-align: center;
+}
+
+/* ── admin_dashboard 컴팩트 레이아웃 (compact_mode 토글) ──────────────────── */
+
+/* compact_mode 활성: table-layout: fixed → 열 균등 분배, 줄바꿈 표시 */
+.admin_dash_compact.compact_mode .basic_table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+.admin_dash_compact.compact_mode .basic_table th:first-child,
+.admin_dash_compact.compact_mode .basic_table td:first-child {
+    width: 52px;
+    min-width: 52px;
+}
+
+.admin_dash_compact.compact_mode .basic_table th {
+    white-space: nowrap;
+}
+
+.admin_dash_compact.compact_mode .basic_table td {
+    white-space: normal;
+    overflow-wrap: break-word;
+    vertical-align: top;
+}
+
+.admin_dash_compact.compact_mode .basic_table input[type="text"],
+.admin_dash_compact.compact_mode .basic_table input[type="number"],
+.admin_dash_compact.compact_mode .basic_table input[type="date"] {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+@supports (field-sizing: content) {
+    .admin_dash_compact.compact_mode .basic_table input[type="text"],
+    .admin_dash_compact.compact_mode .basic_table input[type="number"],
+    .admin_dash_compact.compact_mode .basic_table input[type="date"] {
+        field-sizing: content;
+        width: auto;
+        min-width: 60px;
+        max-width: 100%;
+    }
+}
+
+.admin_dash_compact.compact_mode .basic_table select {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 #tester_grid_table input[data-field] {

@@ -45,9 +45,11 @@
                     DB_TRUNCATE
                 </button>
                 {% endif %}
-                <a class="qc_mode_button" href="/login">
-                    로그인페이지로 이동
-                </a>
+                {% if request.url.path == '/admin' %}
+                <button id="table_width_toggle_button" type="button" class="qc_mode_action_button">
+                    COMPACT
+                </button>
+                {% endif %}
             </div>
         </div>
     </header>

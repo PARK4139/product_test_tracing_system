@@ -11,6 +11,12 @@ __pycache__/
 .env.*
 
 data/*.db
+data/*.db-wal
+data/*.db-shm
+data/backups/
+data/projects/
 
 .chrome_qc_profile/
 .pk_system/
+
+.claude/settings.local.json

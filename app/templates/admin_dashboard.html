@@ -1,9 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="card">
-    <h3>{{ admin_greeting_text }}</h3>
-</section>
-
+<div class="admin_dash_compact">
 {% if message %}
 <section class="card"><div class="non_modal_notice {{ message_type }}"><div>{{ message }}</div></div></section>
 {% endif %}
@@ -105,30 +102,13 @@
 </datalist>
 
 <section class="card">
-    <div class="section_header_row">
-        <h3>관리자 통합 입력 화면</h3>
-    </div>
-    <div class="detail_guide">
-        `/tester` 입력 화면처럼 각 카드에서 바로 표 형태로 입력하고 저장한다. 페이지 이동 없이 `/admin` 한 화면에서 처리한다. 입력 중에는 브라우저에 자동저장되고, 필수 항목이 완성되면 자동제출된다.
-    </div>
-    <div class="detail_guide">
-        ID 컬럼은 관련 value 입력 시 작성규칙에 맞는 초안이 자동 가이드된다. 필요하면 직접 수정 가능하다.
-    </div>
-    <div class="detail_guide">
-        표의 컬럼명(헤더)을 클릭하면 해당 입력칸으로 스크롤·포커스 이동한다. 선행 입력이 비어 있으면 화면 중앙 비모달 안내 후 먼저 채울 칸으로 이동한다.
-    </div>
-</section>
-
-<section class="card">
     <div class="section_header_row"><h3>Test Release</h3></div>
-    <div class="detail_guide">
-        공식 릴리즈 ID는 upstream·stage 조합으로 자동 채워지며 기본은 읽기 전용입니다. upstream에 넣은 버전 문자열이 ID에 다시 들어가는 것은 명명 규칙이며 별도로 ID를 한 번 더 적는 단계가 아닙니다. ID만 바꿀 때는 해당 칸을 더블클릭한 뒤 수정하세요.
-    </div>
+
     <form method="post" action="/admin/product-test-releases/create" class="admin_autosubmit_form">
         <input type="hidden" name="return_to" value="/admin">
         <div class="tester_table_wrap">
             <table class="basic_table">
-                <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_RELEASE_ID</th><th>UPSTREAM_RELEASE_ID</th><th>UPSTREAM_RELEASE_SYSTEM</th><th>RELEASE_STAGE</th><th>PRODUCT_TEST_RELEASE_STATUS</th><th>REMARK</th></tr></thead>
+                <thead><tr><th>선택</th><th>릴리즈 ID</th><th>상위 릴리즈 ID</th><th>상위 시스템</th><th>단계</th><th>릴리즈 상태</th><th>비고</th></tr></thead>
                 <tbody><tr>
                     <td><input type="checkbox" class="admin_input_row_checkbox"></td>
                     <td><input type="text" name="product_test_release_id" required></td>
@@ -144,7 +124,7 @@
     <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     <div class="tester_table_wrap">
         <table class="basic_table">
-            <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_RELEASE_ID</th><th>UPSTREAM_RELEASE_ID</th><th>UPSTREAM_RELEASE_SYSTEM</th><th>RELEASE_STAGE</th><th>RELEASE_SEQUENCE</th><th>PRODUCT_TEST_RELEASE_STATUS</th><th>REMARK</th></tr></thead>
+            <thead><tr><th>선택</th><th>릴리즈 ID</th><th>상위 릴리즈 ID</th><th>상위 시스템</th><th>단계</th><th>순번</th><th>릴리즈 상태</th><th>비고</th></tr></thead>
             <tbody>{% for row in release_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_release_id }}</td><td>{{ row.upstream_release_id }}</td><td>{{ row.upstream_release_system }}</td><td>{{ row.release_stage }}</td><td>{{ row.release_sequence }}</td><td><span class="status_badge status-{{ row.product_test_release_status|lower }}">{{ row.product_test_release_status }}</span></td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
         </table>
     </div>
@@ -156,7 +136,7 @@
         <input type="hidden" name="return_to" value="/admin">
         <div class="tester_table_wrap">
             <table class="basic_table">
-                <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_TARGET_DEFINITION_ID</th><th>PRODUCT_CODE</th><th>MANUFACTURER</th><th>MODEL_NAME</th><th>HARDWARE_REVISION</th><th>DEFAULT_SOFTWARE_VERSION</th><th>DEFAULT_FIRMWARE_VERSION</th><th>PRODUCT_TEST_TARGET_DEFINITION_STATUS</th><th>REMARK</th></tr></thead>
+                <thead><tr><th>선택</th><th>타겟 정의 ID</th><th>제품 코드</th><th>제조사</th><th>모델명</th><th>HW 리비전</th><th>기본 SW 버전</th><th>기본 FW 버전</th><th>타겟 정의 상태</th><th>비고</th></tr></thead>
                 <tbody><tr>
                     <td><input type="checkbox" class="admin_input_row_checkbox"></td>
                     <td><input type="text" name="product_test_target_definition_id" required></td>
@@ -175,7 +155,7 @@
     <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     <div class="tester_table_wrap">
         <table class="basic_table">
-            <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_TARGET_DEFINITION_ID</th><th>PRODUCT_CODE</th><th>MANUFACTURER</th><th>MODEL_NAME</th><th>HARDWARE_REVISION</th><th>DEFAULT_SOFTWARE_VERSION</th><th>DEFAULT_FIRMWARE_VERSION</th><th>PRODUCT_TEST_TARGET_DEFINITION_STATUS</th><th>REMARK</th></tr></thead>
+            <thead><tr><th>선택</th><th>타겟 정의 ID</th><th>제품 코드</th><th>제조사</th><th>모델명</th><th>HW 리비전</th><th>기본 SW 버전</th><th>기본 FW 버전</th><th>타겟 정의 상태</th><th>비고</th></tr></thead>
             <tbody>{% for row in target_definition_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_target_definition_id }}</td><td>{{ row.product_code }}</td><td>{{ row.manufacturer }}</td><td>{{ row.model_name }}</td><td>{{ row.hardware_revision }}</td><td>{{ row.default_software_version }}</td><td>{{ row.default_firmware_version }}</td><td>{{ row.product_test_target_definition_status }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
         </table>
     </div>
@@ -187,7 +167,7 @@
         <input type="hidden" name="return_to" value="/admin">
         <div class="tester_table_wrap">
             <table class="basic_table">
-                <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_TARGET_ID</th><th>PRODUCT_TEST_TARGET_DEFINITION_ID</th><th>SERIAL_NUMBER</th><th>SOFTWARE_VERSION</th><th>FIRMWARE_VERSION</th><th>MANUFACTURE_LOT</th><th>PRODUCT_TEST_TARGET_STATUS</th><th>REMARK</th></tr></thead>
+                <thead><tr><th>선택</th><th>타겟 ID</th><th>타겟 정의 ID</th><th>시리얼 번호</th><th>SW 버전</th><th>FW 버전</th><th>제조 LOT</th><th>타겟 상태</th><th>비고</th></tr></thead>
                 <tbody><tr>
                     <td><input type="checkbox" class="admin_input_row_checkbox"></td>
                     <td><input type="text" name="product_test_target_id" required></td>
@@ -205,7 +185,7 @@
     <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     <div class="tester_table_wrap">
         <table class="basic_table">
-            <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_TARGET_ID</th><th>PRODUCT_TEST_TARGET_DEFINITION_ID</th><th>SERIAL_NUMBER</th><th>SOFTWARE_VERSION</th><th>FIRMWARE_VERSION</th><th>MANUFACTURE_LOT</th><th>PRODUCT_TEST_TARGET_STATUS</th><th>REMARK</th></tr></thead>
+            <thead><tr><th>선택</th><th>타겟 ID</th><th>타겟 정의 ID</th><th>시리얼 번호</th><th>SW 버전</th><th>FW 버전</th><th>제조 LOT</th><th>타겟 상태</th><th>비고</th></tr></thead>
             <tbody>{% for row in target_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_target_id }}</td><td>{{ row.product_test_target_definition_id }}</td><td>{{ row.serial_number }}</td><td>{{ row.software_version }}</td><td>{{ row.firmware_version }}</td><td>{{ row.manufacture_lot }}</td><td>{{ row.product_test_target_status }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
         </table>
     </div>
@@ -217,7 +197,7 @@
         <input type="hidden" name="return_to" value="/admin">
         <div class="tester_table_wrap">
             <table class="basic_table">
-                <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID</th><th>PRODUCT_TEST_ENVIRONMENT_DEFINITION_NAME</th><th>TEST_COUNTRY</th><th>TEST_CITY</th><th>TEST_COMPANY</th><th>TEST_ROOM</th><th>NETWORK_TYPE</th><th>TEST_COMPUTER_NAME</th><th>OPERATING_SYSTEM_VERSION</th><th>TEST_TOOL_NAME</th><th>TEST_TOOL_VERSION</th><th>POWER_VOLTAGE</th><th>POWER_FREQUENCY</th><th>POWER_CONNECTOR_TYPE</th><th>POWER_CONDITION</th><th>PRODUCT_TEST_ENVIRONMENT_DEFINITION_STATUS</th><th>REMARK</th></tr></thead>
+                <thead><tr><th>선택</th><th>환경 정의 ID</th><th>환경 정의명</th><th>국가</th><th>도시</th><th>시험 업체</th><th>시험 장소</th><th>네트워크 유형</th><th>PC명</th><th>OS 버전</th><th>시험 도구명</th><th>시험 도구 버전</th><th>전압</th><th>주파수</th><th>전원 커넥터 유형</th><th>전원 조건</th><th>환경 정의 상태</th><th>비고</th></tr></thead>
                 <tbody><tr>
                     <td><input type="checkbox" class="admin_input_row_checkbox"></td>
                     <td><input type="text" name="product_test_environment_definition_id" required></td>
@@ -244,7 +224,7 @@
     <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     <div class="tester_table_wrap">
         <table class="basic_table">
-            <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID</th><th>PRODUCT_TEST_ENVIRONMENT_DEFINITION_NAME</th><th>TEST_COUNTRY</th><th>TEST_CITY</th><th>TEST_COMPANY</th><th>TEST_ROOM</th><th>NETWORK_TYPE</th><th>TEST_COMPUTER_NAME</th><th>OPERATING_SYSTEM_VERSION</th><th>TEST_TOOL_NAME</th><th>TEST_TOOL_VERSION</th><th>POWER_VOLTAGE</th><th>POWER_FREQUENCY</th><th>POWER_CONNECTOR_TYPE</th><th>POWER_CONDITION</th><th>PRODUCT_TEST_ENVIRONMENT_DEFINITION_STATUS</th><th>REMARK</th></tr></thead>
+            <thead><tr><th>선택</th><th>환경 정의 ID</th><th>환경 정의명</th><th>국가</th><th>도시</th><th>시험 업체</th><th>시험 장소</th><th>네트워크 유형</th><th>PC명</th><th>OS 버전</th><th>시험 도구명</th><th>시험 도구 버전</th><th>전압</th><th>주파수</th><th>전원 커넥터 유형</th><th>전원 조건</th><th>환경 정의 상태</th><th>비고</th></tr></thead>
             <tbody>{% for row in environment_definition_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_environment_definition_id }}</td><td>{{ row.product_test_environment_definition_name }}</td><td>{{ row.test_country }}</td><td>{{ row.test_city }}</td><td>{{ row.test_company }}</td><td>{{ row.test_room }}</td><td>{{ row.network_type }}</td><td>{{ row.test_computer_name }}</td><td>{{ row.operating_system_version }}</td><td>{{ row.test_tool_name }}</td><td>{{ row.test_tool_version }}</td><td>{{ row.power_voltage }}</td><td>{{ row.power_frequency }}</td><td>{{ row.power_connector_type }}</td><td>{{ row.power_condition }}</td><td>{{ row.product_test_environment_definition_status }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
         </table>
     </div>
@@ -256,7 +236,7 @@
         <input type="hidden" name="return_to" value="/admin">
         <div class="tester_table_wrap">
             <table class="basic_table">
-                <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_ENVIRONMENT_ID</th><th>PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID</th><th>PRODUCT_TEST_ENVIRONMENT_NAME</th><th>TEST_COMPUTER_NAME</th><th>OPERATING_SYSTEM_VERSION</th><th>TEST_TOOL_VERSION</th><th>NETWORK_TYPE</th><th>POWER_VOLTAGE</th><th>POWER_FREQUENCY</th><th>POWER_CONNECTOR_TYPE</th><th>CAPTURED_AT</th><th>PRODUCT_TEST_ENVIRONMENT_STATUS</th><th>REMARK</th></tr></thead>
+                <thead><tr><th>선택</th><th>환경 ID</th><th>환경 정의 ID</th><th>환경명</th><th>PC명</th><th>OS 버전</th><th>시험 도구 버전</th><th>네트워크 유형</th><th>전압</th><th>주파수</th><th>전원 커넥터 유형</th><th>캡처 일시</th><th>환경 상태</th><th>비고</th></tr></thead>
                 <tbody><tr>
                     <td><input type="checkbox" class="admin_input_row_checkbox"></td>
                     <td><input type="text" name="product_test_environment_id" required></td>
@@ -279,7 +259,7 @@
     <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     <div class="tester_table_wrap">
         <table class="basic_table">
-            <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_ENVIRONMENT_ID</th><th>PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID</th><th>PRODUCT_TEST_ENVIRONMENT_NAME</th><th>TEST_COMPUTER_NAME</th><th>OPERATING_SYSTEM_VERSION</th><th>TEST_TOOL_VERSION</th><th>NETWORK_TYPE</th><th>POWER_VOLTAGE</th><th>POWER_FREQUENCY</th><th>POWER_CONNECTOR_TYPE</th><th>CAPTURED_AT</th><th>PRODUCT_TEST_ENVIRONMENT_STATUS</th><th>REMARK</th></tr></thead>
+            <thead><tr><th>선택</th><th>환경 ID</th><th>환경 정의 ID</th><th>환경명</th><th>PC명</th><th>OS 버전</th><th>시험 도구 버전</th><th>네트워크 유형</th><th>전압</th><th>주파수</th><th>전원 커넥터 유형</th><th>캡처 일시</th><th>환경 상태</th><th>비고</th></tr></thead>
             <tbody>{% for row in environment_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_environment_id }}</td><td>{{ row.product_test_environment_definition_id }}</td><td>{{ row.product_test_environment_name }}</td><td>{{ row.test_computer_name }}</td><td>{{ row.operating_system_version }}</td><td>{{ row.test_tool_version }}</td><td>{{ row.network_type }}</td><td>{{ row.power_voltage }}</td><td>{{ row.power_frequency }}</td><td>{{ row.power_connector_type }}</td><td>{{ row.captured_at }}</td><td>{{ row.product_test_environment_status }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
         </table>
     </div>
@@ -291,7 +271,7 @@
         <input type="hidden" name="return_to" value="/admin">
         <div class="tester_table_wrap">
             <table class="basic_table">
-                <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_CASE_ID</th><th>PRODUCT_TEST_CASE_TITLE</th><th>TEST_CATEGORY</th><th>TEST_OBJECTIVE</th><th>PRECONDITION</th><th>EXPECTED_RESULT</th><th>PRODUCT_TEST_CASE_STATUS</th><th>REMARK</th></tr></thead>
+                <thead><tr><th>선택</th><th>케이스 ID</th><th>제목</th><th>분류</th><th>목적</th><th>선행 조건</th><th>기대 결과</th><th>케이스 상태</th><th>비고</th></tr></thead>
                 <tbody><tr>
                     <td><input type="checkbox" class="admin_input_row_checkbox"></td>
                     <td><input type="text" name="product_test_case_id" required></td>
@@ -309,7 +289,7 @@
     <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     <div class="tester_table_wrap">
         <table class="basic_table">
-            <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_CASE_ID</th><th>PRODUCT_TEST_CASE_TITLE</th><th>TEST_CATEGORY</th><th>TEST_OBJECTIVE</th><th>PRECONDITION</th><th>EXPECTED_RESULT</th><th>PRODUCT_TEST_CASE_STATUS</th><th>REMARK</th></tr></thead>
+            <thead><tr><th>선택</th><th>케이스 ID</th><th>제목</th><th>분류</th><th>목적</th><th>선행 조건</th><th>기대 결과</th><th>케이스 상태</th><th>비고</th></tr></thead>
             <tbody>{% for row in case_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_case_id }}</td><td>{{ row.product_test_case_title }}</td><td>{{ row.test_category }}</td><td>{{ row.test_objective }}</td><td>{{ row.precondition }}</td><td>{{ row.expected_result }}</td><td>{{ row.product_test_case_status }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
         </table>
     </div>
@@ -321,7 +301,7 @@
         <input type="hidden" name="return_to" value="/admin">
         <div class="tester_table_wrap">
             <table class="basic_table">
-                <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_PROCEDURE_ID</th><th>PRODUCT_TEST_CASE_ID</th><th>PROCEDURE_SEQUENCE</th><th>PROCEDURE_ACTION</th><th>EXPECTED_RESULT</th><th>ACCEPTANCE_CRITERIA</th><th>REQUIRED_EVIDENCE_TYPE</th><th>PRODUCT_TEST_PROCEDURE_STATUS</th><th>REMARK</th></tr></thead>
+                <thead><tr><th>선택</th><th>절차 ID</th><th>케이스 ID</th><th>순번</th><th>수행 내용</th><th>기대 결과</th><th>합격 기준</th><th>증거 유형</th><th>절차 상태</th><th>비고</th></tr></thead>
                 <tbody><tr>
                     <td><input type="checkbox" class="admin_input_row_checkbox"></td>
                     <td><input type="text" name="product_test_procedure_id" required></td>
@@ -340,7 +320,7 @@
     <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     <div class="tester_table_wrap">
         <table class="basic_table">
-            <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_PROCEDURE_ID</th><th>PRODUCT_TEST_CASE_ID</th><th>PROCEDURE_SEQUENCE</th><th>PROCEDURE_ACTION</th><th>EXPECTED_RESULT</th><th>ACCEPTANCE_CRITERIA</th><th>REQUIRED_EVIDENCE_TYPE</th><th>PRODUCT_TEST_PROCEDURE_STATUS</th><th>REMARK</th></tr></thead>
+            <thead><tr><th>선택</th><th>절차 ID</th><th>케이스 ID</th><th>순번</th><th>수행 내용</th><th>기대 결과</th><th>합격 기준</th><th>증거 유형</th><th>절차 상태</th><th>비고</th></tr></thead>
             <tbody>{% for row in procedure_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_procedure_id }}</td><td>{{ row.product_test_case_id }}</td><td>{{ row.procedure_sequence }}</td><td>{{ row.procedure_action }}</td><td>{{ row.expected_result }}</td><td>{{ row.acceptance_criteria }}</td><td>{{ row.required_evidence_type }}</td><td>{{ row.product_test_procedure_status }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
         </table>
     </div>
@@ -352,7 +332,7 @@
         <input type="hidden" name="return_to" value="/admin">
         <div class="tester_table_wrap">
             <table class="basic_table">
-                <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_RELEASE_ID</th><th>PRODUCT_TEST_REPORT_TYPE</th><th>PRODUCT_TEST_REPORT_TITLE</th><th>REMARK</th></tr></thead>
+                <thead><tr><th>선택</th><th>릴리즈 ID</th><th>보고서 유형</th><th>보고서 제목</th><th>비고</th></tr></thead>
                 <tbody><tr>
                     <td><input type="checkbox" class="admin_input_row_checkbox"></td>
                     <td><select name="product_test_release_id" required><option value=""></option>{% for row in report_release_options %}<option value="{{ row.product_test_release_id }}">{{ row.product_test_release_id }}</option>{% endfor %}</select></td>
@@ -366,7 +346,7 @@
     <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     <div class="tester_table_wrap">
         <table class="basic_table">
-            <thead><tr><th>SELECTED</th><th>PRODUCT_TEST_REPORT_ID</th><th>PRODUCT_TEST_RELEASE_ID</th><th>PRODUCT_TEST_REPORT_TYPE</th><th>PRODUCT_TEST_REPORT_STATUS</th><th>PRODUCT_TEST_REPORT_TITLE</th><th>REMARK</th></tr></thead>
+            <thead><tr><th>선택</th><th>보고서 ID</th><th>릴리즈 ID</th><th>보고서 유형</th><th>보고서 상태</th><th>보고서 제목</th><th>비고</th></tr></thead>
             <tbody>{% for row in report_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_report_id }}</td><td>{{ row.product_test_release_id }}</td><td>{{ row.product_test_report_type }}</td><td><span class="status_badge status-{{ row.product_test_report_status|lower }}">{{ row.product_test_report_status }}</span></td><td>{{ row.product_test_report_title }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
         </table>
     </div>
@@ -779,10 +759,7 @@ void (async () => {
         const matchesAuto = Boolean(candidate && current === candidate);
         releaseIdField.readOnly = matchesAuto && !userLocked;
         releaseIdField.classList.toggle("is_auto_derived_release_id", releaseIdField.readOnly);
-        if (releaseIdField.readOnly) {
-            releaseIdField.title =
-                "upstream_release_id와 release_stage로 자동 생성된 값입니다. 직접 바꾸려면 더블클릭한 뒤 수정하세요.";
-        } else {
+        if (!releaseIdField.readOnly) {
             releaseIdField.removeAttribute("title");
         }
     };
@@ -1687,6 +1664,36 @@ void (async () => {
         }
     }
     Array.from(document.querySelectorAll('form.admin_autosubmit_form input, form.admin_autosubmit_form textarea')).forEach(enhanceFzfLikeInput);
+
+    /* ── 테이블 폭 토글: COMPACT ↔ 히스토리(원본) ──────────────────────── */
+    (function initTableWidthToggle() {
+        const STORAGE_KEY = "admin_table_compact";
+        const wrapper = document.querySelector(".admin_dash_compact");
+        const btn = document.getElementById("table_width_toggle_button");
+        if (!wrapper || !btn) return;
+
+        function applyMode(compact) {
+            if (compact) {
+                wrapper.classList.add("compact_mode");
+                btn.textContent = "히스토리 폭";
+            } else {
+                wrapper.classList.remove("compact_mode");
+                btn.textContent = "COMPACT";
+            }
+        }
+
+        /* localStorage에서 복원, 기본값 = compact */
+        const saved = localStorage.getItem(STORAGE_KEY);
+        applyMode(saved !== "history");
+
+        btn.addEventListener("click", function () {
+            const isCompact = wrapper.classList.contains("compact_mode");
+            const next = !isCompact;
+            localStorage.setItem(STORAGE_KEY, next ? "compact" : "history");
+            applyMode(next);
+        });
+    })();
 })();
 </script>
+</div>{# /admin_dash_compact #}
 {% endblock %}

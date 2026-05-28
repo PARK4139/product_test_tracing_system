@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import socket
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -42,6 +43,39 @@ class AppSettings:
     server_runtime_config: ServerRuntimeConfig
 
 
+def _find_free_port(host: str, preferred_port: int) -> int:
+    """Return preferred_port if available; otherwise scan upward until a free port is found.
+
+    Tries preferred_port first. On failure scans preferred_port+1 … preferred_port+99.
+    Falls back to OS-assigned ephemeral port if none found in that range.
+    Logs to stdout so the operator can see which port is actually used.
+    """
+    for port in range(preferred_port, preferred_port + 100):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            try:
+                s.bind((host, port))
+                if port != preferred_port:
+                    print(
+                        f"[config] port {preferred_port} is in use"
+                        f" — using port {port} instead",
+                        flush=True,
+                    )
+                return port
+            except OSError:
+                continue
+    # Last resort: ask the OS for any free port
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind((host, 0))
+        fallback_port = s.getsockname()[1]
+    print(
+        f"[config] ports {preferred_port}–{preferred_port + 99} all in use"
+        f" — using OS-assigned port {fallback_port}",
+        flush=True,
+    )
+    return fallback_port
+
+
 def _default_server_config_payload() -> dict[str, object]:
     return {
         "host": "127.0.0.1",
@@ -76,6 +110,8 @@ def _load_server_runtime_config(server_config_file_path: Path) -> ServerRuntimeC
         port = int(default_payload["port"])
     if port <= 0:
         port = int(default_payload["port"])
+
+    port = _find_free_port(host, port)
 
     return ServerRuntimeConfig(
         host=host,
