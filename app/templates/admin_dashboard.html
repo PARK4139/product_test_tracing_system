@@ -111,7 +111,7 @@
         <input type="hidden" name="return_to" value="/admin">
         <div class="tester_table_wrap">
             <table class="basic_table">
-                <thead><tr><th>선택</th><th>테스트 릴리즈 ID</th><th>상위 테스트 릴리즈 ID</th><th>상위 시스템</th><th>릴리즈 상태</th><th>비고</th></tr></thead>
+                <thead><tr><th>선택</th><th>시험 릴리즈 ID</th><th>상위 시험 릴리즈 ID</th><th>상위 시스템</th><th>릴리즈 상태</th><th>비고</th></tr></thead>
                 <tbody><tr>
                     <td><input type="checkbox" class="admin_input_row_checkbox"></td>
                     <td><input type="text" name="product_test_release_id" required></td>
@@ -127,7 +127,7 @@
     <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     <div class="tester_table_wrap">
         <table class="basic_table">
-            <thead><tr><th>선택</th><th>테스트 릴리즈 ID</th><th>상위 테스트 릴리즈 ID</th><th>상위 시스템</th><th>순번</th><th>릴리즈 상태</th><th>비고</th></tr></thead>
+            <thead><tr><th>선택</th><th>시험 릴리즈 ID</th><th>상위 시험 릴리즈 ID</th><th>상위 시스템</th><th>순번</th><th>릴리즈 상태</th><th>비고</th></tr></thead>
             <tbody>{% for row in release_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_release_id }}</td><td>{{ row.upstream_release_id }}</td><td>{{ row.upstream_release_system }}</td><td>{{ row.release_sequence }}</td><td><span class="status_badge status-{{ row.product_test_release_status|lower }}">{{ row.product_test_release_status }}</span></td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
         </table>
     </div>
@@ -139,7 +139,7 @@
         <input type="hidden" name="return_to" value="/admin">
         <div class="tester_table_wrap">
             <table class="basic_table">
-                <thead><tr><th>선택</th><th>테스트 릴리즈 ID</th><th>보고서 유형</th><th>보고서 제목</th><th>비고</th></tr></thead>
+                <thead><tr><th>선택</th><th>시험 릴리즈 ID</th><th>보고서 유형</th><th>보고서 제목</th><th>비고</th></tr></thead>
                 <tbody><tr>
                     <td><input type="checkbox" class="admin_input_row_checkbox"></td>
                     <td><select name="product_test_release_id" required><option value=""></option>{% for row in report_release_options %}<option value="{{ row.product_test_release_id }}">{{ row.product_test_release_id }}</option>{% endfor %}</select></td>
@@ -153,7 +153,7 @@
     <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     <div class="tester_table_wrap">
         <table class="basic_table">
-            <thead><tr><th>선택</th><th>보고서 ID</th><th>테스트 릴리즈 ID</th><th>보고서 유형</th><th>보고서 상태</th><th>보고서 제목</th><th>비고</th></tr></thead>
+            <thead><tr><th>선택</th><th>시험 보고서 ID</th><th>시험 릴리즈 ID</th><th>보고서 유형</th><th>보고서 상태</th><th>보고서 제목</th><th>비고</th></tr></thead>
             <tbody>{% for row in report_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_report_id }}</td><td>{{ row.product_test_release_id }}</td><td>{{ row.product_test_report_type }}</td><td><span class="status_badge status-{{ row.product_test_report_status|lower }}">{{ row.product_test_report_status }}</span></td><td>{{ row.product_test_report_title }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
         </table>
     </div>
@@ -669,6 +669,9 @@ void (async () => {
             return;
         }
         tbody.insertAdjacentHTML("afterbegin", rowHtml);
+        /* draft 행 제거 */
+        const draftRow = tbody.querySelector("tr.admin_merged_draft_row");
+        if (draftRow) draftRow.remove();
     };
     const getNextEmptyColumnSuggestion = (form, payload) => {
         const fields = getFields(form);
@@ -2021,3 +2024,4 @@ void (async () => {
 </script>
 </div>{# /admin_dash_compact #}
 {% endblock %}
+                                                                                                                                                                                                                                                                                                                                                                                                                          

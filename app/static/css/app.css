@@ -172,6 +172,14 @@ button:disabled {
     color: #32424A;
 }
 
+.status_badge.status-tbd,
+.status_badge.status-todo {
+    background: #f97316;
+    border-color: #ea6c0a;
+    color: #ffffff;
+    font-weight: 700;
+}
+
 .status_badge.status-drafted,
 .status_badge.status-testing,
 .status_badge.status-running {

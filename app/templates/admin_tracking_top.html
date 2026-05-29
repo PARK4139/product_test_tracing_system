@@ -1,4 +1,4 @@
-{# 테스트 추적 대시보드 (상단 섹션) — admin_dashboard.html 에서 include #}
+{# 시험 추적 대시보드 (상단 섹션) — admin_dashboard.html 에서 include #}
 
 <style>
 /* ── Tracking dashboard styles ─────────────────────────────────── */
@@ -219,11 +219,14 @@
 
     function statusBadge(st) {
         const map = {
-            TESTING: ["status-testing",  "진행 중"],
-            DONE:    ["status-done",      "완료"],
-            DRAFT:   ["status-draft",     "초안"],
-            BLOCKED: ["status-blocked",   "블록됨"],
-            PASSED:  ["status-passed",    "통과"],
+            TESTING:  ["status-testing",  "진행 중"],
+            DONE:     ["status-done",      "완료"],
+            DRAFT:    ["status-draft",     "초안"],
+            BLOCKED:  ["status-blocked",   "블록됨"],
+            PASSED:   ["status-passed",    "통과"],
+            APPROVED: ["status-approved",  "승인"],
+            TBD:      ["status-tbd",       "TBD"],
+            TODO:     ["status-todo",      "TODO"],
         };
         const [cls, label] = map[st] || ["status-draft", st || "-"];
         return `<span class="status_badge ${cls}">${label}</span>`;
@@ -244,7 +247,7 @@
         const releases = data.releases || [];
         const defects  = data.active_defects || [];
 
-        const testing    = releases.filter(r => r.status === "TESTING");
+        const testing    = releases.filter(r => r.status === "TESTING" && !r.id.includes("FALLBACK"));
         const totalResults = testing.reduce((a, r) => a + r.total_results, 0);
         const totalPass    = testing.reduce((a, r) => a + r.passed,       0);
         const totalBlock   = testing.reduce((a, r) => a + r.blocked,      0);
@@ -288,12 +291,11 @@
             /* per-release workday info */
             testing.forEach(r => {
                 const wdText = r.workday
-                    ? `${r.workday}일 (${r.start_date || "?"} ~ ${r.end_date || "?"})`
+                    ? `${r.workday} (${r.start_date || "?"} ~ ${r.end_date || "?"})`
                     : (r.start_date ? `${r.start_date} ~ ${r.end_date || "진행 중"}` : "-");
                 html += `<div class="trk_active_card trk_info">
-                    <div class="trk_card_title">${r.alias || r.id} 테스트 기간</div>
+                    <div class="trk_card_title">${r.alias || r.id} 시험 기간</div>
                     <div class="trk_card_main">${wdText}</div>
-                    <div class="trk_card_sub">단계: ${r.stage || "-"}</div>
                 </div>`;
             });
 
@@ -304,17 +306,18 @@
         html += `<div class="trk_sub_header">릴리즈 이력 타임라인</div>`;
         html += `<div class="trk_timeline_wrap"><table class="trk_timeline_table">
             <thead><tr>
-                <th>순번</th><th>테스트 릴리즈 ID</th><th>상위 테스트 테스트 릴리즈 ID</th>
-                <th>단계</th><th>상태</th>
-                <th>테스트 기간</th><th>근무일수</th>
-                <th>전체 런</th><th>통과 진행률</th>
+                <th>순번</th><th>시험 릴리즈 ID</th><th>상위 시험 릴리즈 ID</th>
+                <th>상태</th>
+                <th>시험 기간</th><th>근무일수</th>
+                <th>전체 결과</th><th>통과 진행률</th>
                 <th>결함 (미결)</th>
             </tr></thead><tbody>`;
 
-        if (releases.length === 0) {
-            html += `<tr><td colspan="10" class="trk_empty">데이터 없음</td></tr>`;
+        const visibleReleases = releases.filter(r => !r.id.includes("FALLBACK"));
+        if (visibleReleases.length === 0) {
+            html += `<tr><td colspan="9" class="trk_empty">데이터 없음</td></tr>`;
         } else {
-            releases.forEach(r => {
+            visibleReleases.forEach(r => {
                 const total   = r.total_results || 0;
                 const passed  = r.passed || 0;
                 const pct     = total > 0 ? Math.round(passed / total * 100) : 0;
@@ -326,7 +329,6 @@
                     <td>${r.sequence || "-"}</td>
                     <td style="font-weight:600">${r.id}</td>
                     <td>${r.upstream_id || "-"}</td>
-                    <td>${stageBadge(r.stage)}</td>
                     <td>${statusBadge(r.status)}</td>
                     <td>${period}</td>
                     <td>${r.workday || "-"}</td>
@@ -358,7 +360,7 @@
                 <thead><tr>
                     <th>결함 ID</th><th>심각도</th><th>우선순위</th>
                     <th>제목</th><th>담당자</th>
-                    <th>예상 해결일</th><th>등록일</th><th>테스트 릴리즈 ID</th>
+                    <th>예상 해결일</th><th>등록일</th><th>시험 릴리즈 ID</th>
                 </tr></thead><tbody>`;
 
             defects.forEach(d => {
@@ -411,4 +413,4 @@
     document.getElementById("trk_refresh_btn")
         && document.getElementById("trk_refresh_btn").addEventListener("click", loadTracking);
 })();
-</script>
+</script>                              

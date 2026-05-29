@@ -73,9 +73,18 @@ def get_tracking_summary(
             elif line.startswith("[Workday]"):
                 workday = line.replace("[Workday]", "").strip()
             elif line.startswith("[Start]"):
-                start_date = line.replace("[Start]", "").strip()
+                rest = line.replace("[Start]", "").strip()
+                if "[End]" in rest:
+                    parts = rest.split("[End]", 1)
+                    sd = parts[0].strip()
+                    ed = parts[1].strip()
+                    start_date = "" if sd in ("", "None") else sd
+                    end_date   = "" if ed in ("", "None") else ed
+                else:
+                    start_date = "" if rest in ("", "None") else rest
             elif line.startswith("[End]"):
-                end_date = line.replace("[End]", "").strip()
+                val = line.replace("[End]", "").strip()
+                end_date = "" if val in ("", "None") else val
 
         releases.append({
             "id": row[0],
