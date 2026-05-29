@@ -434,6 +434,7 @@ class ProductTestDefect(Base):
     defect_priority: Mapped[str] = mapped_column(Text, nullable=False)
     product_test_defect_status: Mapped[str] = mapped_column(Text, nullable=False)
     assigned_to: Mapped[str | None] = mapped_column(Text, nullable=True)
+    expected_resolution_date: Mapped[str | None] = mapped_column(Text, nullable=True)
     fixed_at: Mapped[str | None] = mapped_column(Text, nullable=True)
     fixed_by: Mapped[str | None] = mapped_column(Text, nullable=True)
     fix_description: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -594,3 +595,19 @@ class ProductTestStatusTransition(Base):
     created_at: Mapped[str] = mapped_column(Text, nullable=False)
     created_by: Mapped[str] = mapped_column(Text, nullable=False)
     remark: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class WorkCalendar(Base):
+    """근무일/휴무일 캘린더 — 테스트 기간 산정 기준."""
+    __tablename__ = "work_calendar"
+    __table_args__ = (
+        Index("ix_work_calendar_date", "calendar_date"),
+    )
+
+    work_calendar_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    calendar_date: Mapped[str] = mapped_column(Text, nullable=False, unique=True)  # YYYY-MM-DD
+    is_workday: Mapped[int] = mapped_column(Integer, nullable=False, default=1)    # 1=근무, 0=휴무
+    day_type: Mapped[str] = mapped_column(Text, nullable=False, default="WORKDAY") # WORKDAY / HOLIDAY / WEEKEND
+    note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[str] = mapped_column(Text, nullable=False)
+    created_by: Mapped[str] = mapped_column(Text, nullable=False)

@@ -164,6 +164,7 @@ def initialize_database() -> None:
         _drop_legacy_tables()
         models.Base.metadata.create_all(bind=engine)
         _ensure_user_account_columns()
+        _ensure_defect_columns()
         _ensure_product_test_project_id_columns()
         _ensure_product_test_project_id_indexes()
         _logger.info("[db] DB 초기화 완료  url=%s", app_settings.sqlite_database_url)
@@ -250,6 +251,18 @@ def _ensure_product_test_project_id_indexes() -> None:
                     f"CREATE INDEX IF NOT EXISTS {index_name}"
                     f" ON {table_name} (project_id)"
                 )
+            )
+
+
+def _ensure_defect_columns() -> None:
+    """product_test_defect 에 expected_resolution_date 컬럼 추가 (신규 필드)."""
+    with engine.begin() as connection:
+        existing = {
+            row[1] for row in connection.execute(text("PRAGMA table_info(product_test_defect)"))
+        }
+        if "expected_resolution_date" not in existing:
+            connection.execute(
+                text("ALTER TABLE product_test_defect ADD COLUMN expected_resolution_date TEXT")
             )
 
 

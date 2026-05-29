@@ -730,7 +730,7 @@ def main() -> None:
                        created_at,created_by,updated_at,updated_by,remark)
                     VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
                 """, (rel_id, PROJECT_ID, rid, "EXCEL_MIGRATION",
-                      "TEST", seq, rstatus, NOW, MGRBY, NOW, MGRBY,
+                      "RC", seq, rstatus, NOW, MGRBY, NOW, MGRBY,
                       f"[Report Alias] {rpt['alias']}\n"
                       f"[Workday] {rpt['workday']}\n"
                       f"[Start] {rpt['start']}  [End] {rpt['end']}"))
@@ -748,7 +748,7 @@ def main() -> None:
                created_at,created_by,updated_at,updated_by,remark)
             VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
         """, (FALLBACK_REL, PROJECT_ID, "MIGRATION_FALLBACK",
-              "EXCEL_MIGRATION", "TEST", 99, "IN_PROGRESS",
+              "EXCEL_MIGRATION", "RC", 99, "IN_PROGRESS",
               NOW, MGRBY, NOW, MGRBY,
               "TBD Report IDs가 있는 시험 Report를 위한 fallback release"))
     conn.commit()

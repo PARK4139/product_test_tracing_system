@@ -1,0 +1,414 @@
+{# 테스트 추적 대시보드 (상단 섹션) — admin_dashboard.html 에서 include #}
+
+<style>
+/* ── Tracking dashboard styles ─────────────────────────────────── */
+.tracking_section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* active summary strip */
+.trk_active_strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.trk_active_card {
+    background: var(--color-surface-2, #f4f4f5);
+    border: 1px solid var(--color-border, #e4e4e7);
+    border-radius: 8px;
+    padding: 14px 18px;
+    min-width: 200px;
+    flex: 1 1 200px;
+}
+.trk_active_card .trk_card_title {
+    font-size: 0.78rem;
+    color: var(--color-text-muted, #71717a);
+    margin-bottom: 4px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+}
+.trk_active_card .trk_card_main {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--color-text, #18181b);
+}
+.trk_active_card .trk_card_sub {
+    font-size: 0.78rem;
+    color: var(--color-text-muted, #71717a);
+    margin-top: 4px;
+}
+.trk_active_card.trk_danger { border-left: 4px solid #ef4444; }
+.trk_active_card.trk_warn   { border-left: 4px solid #f59e0b; }
+.trk_active_card.trk_ok     { border-left: 4px solid #22c55e; }
+.trk_active_card.trk_info   { border-left: 4px solid #3b82f6; }
+
+/* timeline table */
+.trk_timeline_wrap {
+    overflow-x: auto;
+}
+.trk_timeline_table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.trk_timeline_table th {
+    background: var(--color-surface-2, #f4f4f5);
+    color: var(--color-text-muted, #71717a);
+    font-weight: 600;
+    text-align: left;
+    padding: 7px 10px;
+    border-bottom: 2px solid var(--color-border, #e4e4e7);
+    white-space: nowrap;
+}
+.trk_timeline_table td {
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--color-border, #e4e4e7);
+    vertical-align: middle;
+    white-space: nowrap;
+}
+.trk_timeline_table tr:hover td {
+    background: var(--color-surface-2, #f9f9fb);
+}
+.trk_bar_wrap {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 160px;
+}
+.trk_bar_bg {
+    flex: 1;
+    height: 10px;
+    background: var(--color-border, #e4e4e7);
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative;
+}
+.trk_bar_fill {
+    height: 100%;
+    border-radius: 5px;
+    background: #22c55e;
+    transition: width 0.4s ease;
+}
+.trk_bar_pct {
+    font-size: 0.75rem;
+    color: var(--color-text-muted, #71717a);
+    min-width: 36px;
+    text-align: right;
+}
+.trk_stage_badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+.trk_stage_rc    { background: #dbeafe; color: #1d4ed8; }
+.trk_stage_test  { background: #fef3c7; color: #92400e; }
+.trk_stage_pvt   { background: #ede9fe; color: #6d28d9; }
+.trk_stage_dvt   { background: #d1fae5; color: #065f46; }
+.trk_stage_other { background: #f3f4f6; color: #374151; }
+
+/* defect table */
+.trk_defect_table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.trk_defect_table th {
+    background: var(--color-surface-2, #f4f4f5);
+    color: var(--color-text-muted, #71717a);
+    font-weight: 600;
+    text-align: left;
+    padding: 7px 10px;
+    border-bottom: 2px solid var(--color-border, #e4e4e7);
+    white-space: nowrap;
+}
+.trk_defect_table td {
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--color-border, #e4e4e7);
+    vertical-align: middle;
+}
+.trk_defect_table tr:hover td { background: var(--color-surface-2, #f9f9fb); }
+.trk_sev {
+    display: inline-block;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 22px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #fff;
+}
+.trk_sev_S { background: #ef4444; }
+.trk_sev_A { background: #f97316; }
+.trk_sev_B { background: #f59e0b; }
+.trk_sev_C { background: #84cc16; }
+.trk_sev_x { background: #94a3b8; }
+.trk_date_overdue { color: #ef4444; font-weight: 600; }
+.trk_date_soon    { color: #f59e0b; font-weight: 600; }
+.trk_date_ok      { color: #22c55e; }
+.trk_empty {
+    text-align: center;
+    color: var(--color-text-muted, #71717a);
+    padding: 24px !important;
+}
+
+/* section sub-header */
+.trk_sub_header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--color-text-muted, #71717a);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+}
+.trk_sub_header::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--color-border, #e4e4e7);
+}
+
+.trk_loading {
+    text-align: center;
+    color: var(--color-text-muted, #71717a);
+    padding: 24px;
+    font-size: 0.85rem;
+}
+</style>
+
+<section class="card" id="tracking_top_section">
+    <div class="section_header_row">
+        <h3>제품 시험 및 개선 추적 현황</h3>
+        <button type="button" id="trk_refresh_btn"
+                style="margin-left:auto;font-size:0.78rem;padding:4px 10px;cursor:pointer;">
+            ↻ 새로고침
+        </button>
+    </div>
+    <div class="tracking_section" id="trk_root">
+        <div class="trk_loading" id="trk_loading_msg">데이터 로딩 중…</div>
+    </div>
+</section>
+
+<script>
+(function () {
+    "use strict";
+
+    /* ── helpers ─────────────────────────────────────────────────── */
+    function stageBadge(stage) {
+        const cls = {
+            RC:  "trk_stage_rc",
+            TEST:"trk_stage_test",
+            PVT: "trk_stage_pvt",
+            DVT: "trk_stage_dvt",
+        }[stage] || "trk_stage_other";
+        return `<span class="trk_stage_badge ${cls}">${stage || "-"}</span>`;
+    }
+
+    function sevBadge(sev) {
+        const s = (sev || "").toUpperCase();
+        const cls = ["S","A","B","C"].includes(s) ? `trk_sev_${s}` : "trk_sev_x";
+        return `<span class="trk_sev ${cls}">${s || "?"}</span>`;
+    }
+
+    function statusBadge(st) {
+        const map = {
+            TESTING: ["status-testing",  "진행 중"],
+            DONE:    ["status-done",      "완료"],
+            DRAFT:   ["status-draft",     "초안"],
+            BLOCKED: ["status-blocked",   "블록됨"],
+            PASSED:  ["status-passed",    "통과"],
+        };
+        const [cls, label] = map[st] || ["status-draft", st || "-"];
+        return `<span class="status_badge ${cls}">${label}</span>`;
+    }
+
+    function dateCls(dateStr) {
+        if (!dateStr) return "";
+        const today = new Date(); today.setHours(0,0,0,0);
+        const d = new Date(dateStr); d.setHours(0,0,0,0);
+        const diff = (d - today) / 86400000;
+        if (diff < 0) return "trk_date_overdue";
+        if (diff <= 3) return "trk_date_soon";
+        return "trk_date_ok";
+    }
+
+    /* ── render ──────────────────────────────────────────────────── */
+    function renderTracking(data) {
+        const releases = data.releases || [];
+        const defects  = data.active_defects || [];
+
+        const testing    = releases.filter(r => r.status === "TESTING");
+        const totalResults = testing.reduce((a, r) => a + r.total_results, 0);
+        const totalPass    = testing.reduce((a, r) => a + r.passed,       0);
+        const totalBlock   = testing.reduce((a, r) => a + r.blocked,      0);
+        const totalOpen    = testing.reduce((a, r) => a + r.open_defects, 0);
+
+        let html = "";
+
+        /* ── 1. Active summary strip ───────────────────────────── */
+        if (testing.length > 0) {
+            const passRate = totalResults > 0
+                ? Math.round(totalPass / totalResults * 100) : 0;
+            const activeNames = testing.map(r => r.alias || r.id).join(", ");
+
+            html += `<div class="trk_sub_header">진행 중 릴리즈</div>`;
+            html += `<div class="trk_active_strip">`;
+
+            html += `<div class="trk_active_card trk_info">
+                <div class="trk_card_title">진행 중 릴리즈</div>
+                <div class="trk_card_main">${testing.length}건</div>
+                <div class="trk_card_sub">${activeNames}</div>
+            </div>`;
+
+            html += `<div class="trk_active_card ${passRate >= 80 ? "trk_ok" : passRate >= 50 ? "trk_warn" : "trk_danger"}">
+                <div class="trk_card_title">통과율</div>
+                <div class="trk_card_main">${passRate}%</div>
+                <div class="trk_card_sub">통과 ${totalPass} / 전체 ${totalResults}건</div>
+            </div>`;
+
+            html += `<div class="trk_active_card ${totalBlock > 0 ? "trk_warn" : "trk_ok"}">
+                <div class="trk_card_title">블록된 항목</div>
+                <div class="trk_card_main">${totalBlock}건</div>
+                <div class="trk_card_sub">진행 중 릴리즈 합산</div>
+            </div>`;
+
+            html += `<div class="trk_active_card ${totalOpen > 0 ? "trk_danger" : "trk_ok"}">
+                <div class="trk_card_title">미결 결함</div>
+                <div class="trk_card_main">${totalOpen}건</div>
+                <div class="trk_card_sub">opened 상태 결함</div>
+            </div>`;
+
+            /* per-release workday info */
+            testing.forEach(r => {
+                const wdText = r.workday
+                    ? `${r.workday}일 (${r.start_date || "?"} ~ ${r.end_date || "?"})`
+                    : (r.start_date ? `${r.start_date} ~ ${r.end_date || "진행 중"}` : "-");
+                html += `<div class="trk_active_card trk_info">
+                    <div class="trk_card_title">${r.alias || r.id} 테스트 기간</div>
+                    <div class="trk_card_main">${wdText}</div>
+                    <div class="trk_card_sub">단계: ${r.stage || "-"}</div>
+                </div>`;
+            });
+
+            html += `</div>`; /* trk_active_strip */
+        }
+
+        /* ── 2. Release timeline ───────────────────────────────── */
+        html += `<div class="trk_sub_header">릴리즈 이력 타임라인</div>`;
+        html += `<div class="trk_timeline_wrap"><table class="trk_timeline_table">
+            <thead><tr>
+                <th>순번</th><th>테스트 릴리즈 ID</th><th>상위 테스트 테스트 릴리즈 ID</th>
+                <th>단계</th><th>상태</th>
+                <th>테스트 기간</th><th>근무일수</th>
+                <th>전체 런</th><th>통과 진행률</th>
+                <th>결함 (미결)</th>
+            </tr></thead><tbody>`;
+
+        if (releases.length === 0) {
+            html += `<tr><td colspan="10" class="trk_empty">데이터 없음</td></tr>`;
+        } else {
+            releases.forEach(r => {
+                const total   = r.total_results || 0;
+                const passed  = r.passed || 0;
+                const pct     = total > 0 ? Math.round(passed / total * 100) : 0;
+                const period  = r.start_date
+                    ? `${r.start_date}${r.end_date ? " ~ " + r.end_date : " ~"}`
+                    : "-";
+
+                html += `<tr>
+                    <td>${r.sequence || "-"}</td>
+                    <td style="font-weight:600">${r.id}</td>
+                    <td>${r.upstream_id || "-"}</td>
+                    <td>${stageBadge(r.stage)}</td>
+                    <td>${statusBadge(r.status)}</td>
+                    <td>${period}</td>
+                    <td>${r.workday || "-"}</td>
+                    <td>${total}</td>
+                    <td>
+                        <div class="trk_bar_wrap">
+                            <div class="trk_bar_bg">
+                                <div class="trk_bar_fill" style="width:${pct}%"></div>
+                            </div>
+                            <span class="trk_bar_pct">${pct}%</span>
+                        </div>
+                    </td>
+                    <td>${r.defect_count} <span style="color:#ef4444">(${r.open_defects})</span></td>
+                </tr>`;
+            });
+        }
+
+        html += `</tbody></table></div>`;
+
+        /* ── 3. Active defects ─────────────────────────────────── */
+        html += `<div class="trk_sub_header">미결 결함 현황 (진행 중 릴리즈)</div>`;
+
+        if (defects.length === 0) {
+            html += `<div style="color:var(--color-text-muted,#71717a);font-size:0.85rem;padding:12px 0">
+                진행 중 릴리즈에 미결 결함이 없습니다. ✅
+            </div>`;
+        } else {
+            html += `<div class="trk_timeline_wrap"><table class="trk_defect_table">
+                <thead><tr>
+                    <th>결함 ID</th><th>심각도</th><th>우선순위</th>
+                    <th>제목</th><th>담당자</th>
+                    <th>예상 해결일</th><th>등록일</th><th>테스트 릴리즈 ID</th>
+                </tr></thead><tbody>`;
+
+            defects.forEach(d => {
+                const dCls = dateCls(d.expected_resolution_date);
+                const expDate = d.expected_resolution_date
+                    ? `<span class="${dCls}">${d.expected_resolution_date}${dCls === "trk_date_overdue" ? " ⚠️" : ""}</span>`
+                    : `<span style="color:#94a3b8">미정</span>`;
+
+                html += `<tr>
+                    <td style="font-size:0.75rem;color:#64748b">${d.id}</td>
+                    <td>${sevBadge(d.severity)}</td>
+                    <td>${d.priority || "-"}</td>
+                    <td style="max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
+                        title="${d.title}">${d.title}</td>
+                    <td>${d.assigned_to}</td>
+                    <td>${expDate}</td>
+                    <td style="font-size:0.75rem;color:#64748b">${(d.created_at||"").slice(0,10)}</td>
+                    <td style="font-size:0.75rem">${d.release_id}</td>
+                </tr>`;
+            });
+
+            html += `</tbody></table></div>`;
+        }
+
+        return html;
+    }
+
+    /* ── fetch & mount ───────────────────────────────────────────── */
+    function loadTracking() {
+        const root    = document.getElementById("trk_root");
+        const loadMsg = document.getElementById("trk_loading_msg");
+        if (loadMsg) loadMsg.style.display = "block";
+
+        fetch("/admin/api/tracking/summary")
+            .then(r => {
+                if (!r.ok) throw new Error("HTTP " + r.status);
+                return r.json();
+            })
+            .then(data => {
+                root.innerHTML = renderTracking(data);
+            })
+            .catch(err => {
+                root.innerHTML = `<div class="trk_loading" style="color:#ef4444">
+                    데이터 로드 실패: ${err.message}
+                </div>`;
+            });
+    }
+
+    document.addEventListener("DOMContentLoaded", loadTracking);
+    document.getElementById("trk_refresh_btn")
+        && document.getElementById("trk_refresh_btn").addEventListener("click", loadTracking);
+})();
+</script>

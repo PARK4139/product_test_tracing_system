@@ -101,6 +101,9 @@
     {% for row in procedure_rows %}{% if row.acceptance_criteria %}<option value="{{ row.acceptance_criteria }}"></option>{% endif %}{% endfor %}
 </datalist>
 
+
+{% include "admin_tracking_top.html" %}
+
 <section class="card">
     <div class="section_header_row"><h3>Test Release</h3></div>
 
@@ -108,13 +111,13 @@
         <input type="hidden" name="return_to" value="/admin">
         <div class="tester_table_wrap">
             <table class="basic_table">
-                <thead><tr><th>선택</th><th>릴리즈 ID</th><th>상위 릴리즈 ID</th><th>상위 시스템</th><th>단계</th><th>릴리즈 상태</th><th>비고</th></tr></thead>
+                <thead><tr><th>선택</th><th>테스트 릴리즈 ID</th><th>상위 테스트 릴리즈 ID</th><th>상위 시스템</th><th>릴리즈 상태</th><th>비고</th></tr></thead>
                 <tbody><tr>
                     <td><input type="checkbox" class="admin_input_row_checkbox"></td>
                     <td><input type="text" name="product_test_release_id" required></td>
-                    <td><input type="text" name="upstream_release_id" required list="admin_release_upstream_release_id_options"></td>
+                    <td><input type="text" name="upstream_release_id" required list="admin_release_upstream_release_id_options" placeholder="예: HRK_9000A_1_1_1D"></td>
                     <td><input type="text" name="upstream_release_system" required list="admin_release_upstream_release_system_options"></td>
-                    <td><select name="release_stage" required><option value=""></option>{% for value in release_stage_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
+                    <input type="hidden" name="release_stage" value="RC">
                     <td><select name="product_test_release_status"><option value=""></option>{% for value in product_test_release_status_values %}<option value="{{ value }}"{% if value == "DRAFT" %} selected{% endif %}>{{ value }}</option>{% endfor %}</select></td>
                     <td><input type="text" name="remark"></td>
                 </tr></tbody>
@@ -124,11 +127,43 @@
     <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     <div class="tester_table_wrap">
         <table class="basic_table">
-            <thead><tr><th>선택</th><th>릴리즈 ID</th><th>상위 릴리즈 ID</th><th>상위 시스템</th><th>단계</th><th>순번</th><th>릴리즈 상태</th><th>비고</th></tr></thead>
-            <tbody>{% for row in release_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_release_id }}</td><td>{{ row.upstream_release_id }}</td><td>{{ row.upstream_release_system }}</td><td>{{ row.release_stage }}</td><td>{{ row.release_sequence }}</td><td><span class="status_badge status-{{ row.product_test_release_status|lower }}">{{ row.product_test_release_status }}</span></td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
+            <thead><tr><th>선택</th><th>테스트 릴리즈 ID</th><th>상위 테스트 릴리즈 ID</th><th>상위 시스템</th><th>순번</th><th>릴리즈 상태</th><th>비고</th></tr></thead>
+            <tbody>{% for row in release_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_release_id }}</td><td>{{ row.upstream_release_id }}</td><td>{{ row.upstream_release_system }}</td><td>{{ row.release_sequence }}</td><td><span class="status_badge status-{{ row.product_test_release_status|lower }}">{{ row.product_test_release_status }}</span></td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
         </table>
     </div>
 </section>
+
+<section class="card">
+    <div class="section_header_row"><h3>Test Report</h3></div>
+    <form method="post" action="/admin/product-test-reports/create" class="admin_autosubmit_form">
+        <input type="hidden" name="return_to" value="/admin">
+        <div class="tester_table_wrap">
+            <table class="basic_table">
+                <thead><tr><th>선택</th><th>테스트 릴리즈 ID</th><th>보고서 유형</th><th>보고서 제목</th><th>비고</th></tr></thead>
+                <tbody><tr>
+                    <td><input type="checkbox" class="admin_input_row_checkbox"></td>
+                    <td><select name="product_test_release_id" required><option value=""></option>{% for row in report_release_options %}<option value="{{ row.product_test_release_id }}">{{ row.product_test_release_id }}</option>{% endfor %}</select></td>
+                    <td><select name="product_test_report_type" required><option value=""></option>{% for value in report_type_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
+                    <td><input type="text" name="product_test_report_title" required></td>
+                    <td><input type="text" name="remark"></td>
+                </tr></tbody>
+            </table>
+        </div>
+    </form>
+    <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
+    <div class="tester_table_wrap">
+        <table class="basic_table">
+            <thead><tr><th>선택</th><th>보고서 ID</th><th>테스트 릴리즈 ID</th><th>보고서 유형</th><th>보고서 상태</th><th>보고서 제목</th><th>비고</th></tr></thead>
+            <tbody>{% for row in report_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_report_id }}</td><td>{{ row.product_test_release_id }}</td><td>{{ row.product_test_report_type }}</td><td><span class="status_badge status-{{ row.product_test_report_status|lower }}">{{ row.product_test_report_status }}</span></td><td>{{ row.product_test_report_title }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
+        </table>
+    </div>
+</section>
+
+{# ── 기준 데이터 구분선 ─────────────────────────────────────────────── #}
+<div style="margin:28px 0 8px;display:flex;align-items:center;gap:10px">
+    <span style="font-size:0.8rem;font-weight:700;color:var(--color-text-muted,#71717a);text-transform:uppercase;letter-spacing:0.07em;white-space:nowrap">기준 데이터</span>
+    <div style="flex:1;height:1px;background:var(--color-border,#e4e4e7)"></div>
+</div>
 
 <section class="card">
     <div class="section_header_row"><h3>Test Target Definition</h3></div>
@@ -326,31 +361,146 @@
     </div>
 </section>
 
-<section class="card">
-    <div class="section_header_row"><h3>Test Report</h3></div>
-    <form method="post" action="/admin/product-test-reports/create" class="admin_autosubmit_form">
-        <input type="hidden" name="return_to" value="/admin">
-        <div class="tester_table_wrap">
-            <table class="basic_table">
-                <thead><tr><th>선택</th><th>릴리즈 ID</th><th>보고서 유형</th><th>보고서 제목</th><th>비고</th></tr></thead>
-                <tbody><tr>
-                    <td><input type="checkbox" class="admin_input_row_checkbox"></td>
-                    <td><select name="product_test_release_id" required><option value=""></option>{% for row in report_release_options %}<option value="{{ row.product_test_release_id }}">{{ row.product_test_release_id }}</option>{% endfor %}</select></td>
-                    <td><select name="product_test_report_type" required><option value=""></option>{% for value in report_type_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
-                    <td><input type="text" name="product_test_report_title" required></td>
-                    <td><input type="text" name="remark"></td>
-                </tr></tbody>
-            </table>
-        </div>
-    </form>
-    <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
+<section class="card" id="work_calendar_card">
+    <div class="section_header_row"><h3>근무 캘린더</h3></div>
+
+    {# 입력 폼 #}
     <div class="tester_table_wrap">
-        <table class="basic_table">
-            <thead><tr><th>선택</th><th>보고서 ID</th><th>릴리즈 ID</th><th>보고서 유형</th><th>보고서 상태</th><th>보고서 제목</th><th>비고</th></tr></thead>
-            <tbody>{% for row in report_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_report_id }}</td><td>{{ row.product_test_release_id }}</td><td>{{ row.product_test_report_type }}</td><td><span class="status_badge status-{{ row.product_test_report_status|lower }}">{{ row.product_test_report_status }}</span></td><td>{{ row.product_test_report_title }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
+        <table class="basic_table" id="wc_input_table">
+            <thead><tr><th>선택</th><th>날짜 (YYYY-MM-DD)</th><th>근무 여부</th><th>유형</th><th>비고</th></tr></thead>
+            <tbody><tr>
+                <td><input type="checkbox" class="admin_input_row_checkbox"></td>
+                <td><input type="date" id="wc_date" style="width:100%;box-sizing:border-box"></td>
+                <td>
+                    <select id="wc_is_workday" style="width:100%;box-sizing:border-box">
+                        <option value="1">근무일</option>
+                        <option value="0">비근무일</option>
+                    </select>
+                </td>
+                <td>
+                    <select id="wc_day_type" style="width:100%;box-sizing:border-box">
+                        <option value="WORKDAY">WORKDAY</option>
+                        <option value="HOLIDAY">HOLIDAY</option>
+                        <option value="WEEKEND">WEEKEND</option>
+                    </select>
+                </td>
+                <td><input type="text" id="wc_note" placeholder="비고" style="width:100%;box-sizing:border-box"></td>
+            </tr></tbody>
+        </table>
+    </div>
+
+    <div class="table_action_bar admin_table_action_bar_top">
+        <button type="button" id="wc_save_btn">저장</button>
+        <button type="button" id="wc_delete_btn" style="margin-left:6px">Remove Rows</button>
+        <span id="wc_msg" style="font-size:0.8rem;margin-left:10px;color:var(--color-text-muted,#71717a)"></span>
+    </div>
+
+    {# 목록 테이블 #}
+    <div class="tester_table_wrap">
+        <table class="basic_table" id="wc_list_table">
+            <thead><tr><th>선택</th><th>날짜</th><th>근무 여부</th><th>유형</th><th>비고</th></tr></thead>
+            <tbody id="wc_tbody">
+                <tr><td colspan="5" style="text-align:center;color:var(--color-text-muted,#71717a);padding:16px">로딩 중…</td></tr>
+            </tbody>
         </table>
     </div>
 </section>
+
+<script>
+(function () {
+    "use strict";
+
+    const DAY_LABEL = { "1": "근무일", "0": "비근무일", 1: "근무일", 0: "비근무일" };
+    const TYPE_LABEL = { WORKDAY: "근무", HOLIDAY: "공휴일", WEEKEND: "주말" };
+
+    function showMsg(text, ok) {
+        const el = document.getElementById("wc_msg");
+        if (!el) return;
+        el.textContent = text;
+        el.style.color = ok ? "var(--color-success,#22c55e)" : "#ef4444";
+        setTimeout(() => { el.textContent = ""; }, 3000);
+    }
+
+    function renderRows(rows) {
+        const tbody = document.getElementById("wc_tbody");
+        if (!tbody) return;
+        if (!rows || rows.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--color-text-muted,#71717a);padding:16px">등록된 캘린더가 없습니다.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = rows.map(r => `<tr data-date="${r.date}">
+            <td><input type="checkbox" disabled></td>
+            <td>${r.date}</td>
+            <td>${DAY_LABEL[r.is_workday] || r.is_workday}</td>
+            <td>${TYPE_LABEL[r.day_type] || r.day_type}</td>
+            <td>${r.note || ""}</td>
+        </tr>`).join("");
+    }
+
+    function loadCalendar() {
+        fetch("/admin/api/work-calendar")
+            .then(r => r.json())
+            .then(renderRows)
+            .catch(err => {
+                const tbody = document.getElementById("wc_tbody");
+                if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="color:#ef4444;text-align:center;padding:16px">로드 실패: ${err.message}</td></tr>`;
+            });
+    }
+
+    function saveCalendar() {
+        const date = (document.getElementById("wc_date") || {}).value || "";
+        const isWorkday = parseInt((document.getElementById("wc_is_workday") || {}).value || "1");
+        const dayType = (document.getElementById("wc_day_type") || {}).value || "WORKDAY";
+        const note = (document.getElementById("wc_note") || {}).value || "";
+
+        if (!date) { showMsg("날짜를 입력하세요.", false); return; }
+
+        fetch("/admin/api/work-calendar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ calendar_date: date, is_workday: isWorkday, day_type: dayType, note }),
+        })
+        .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+        .then(() => { showMsg("저장 완료", true); loadCalendar(); })
+        .catch(err => showMsg("저장 실패: " + err.message, false));
+    }
+
+    function deleteSelected() {
+        const rows = document.querySelectorAll("#wc_tbody tr");
+        const checkboxes = document.querySelectorAll("#wc_list_table tbody input[type=checkbox]:checked");
+        if (checkboxes.length === 0) {
+            // fallback: enable checkboxes first
+            document.querySelectorAll("#wc_list_table tbody input[type=checkbox]").forEach(cb => cb.disabled = false);
+            showMsg("삭제할 행을 선택하세요.", false);
+            return;
+        }
+        const dates = Array.from(checkboxes).map(cb => cb.closest("tr").dataset.date).filter(Boolean);
+        if (dates.length === 0) return;
+
+        Promise.all(dates.map(date =>
+            fetch(`/admin/api/work-calendar/${date}`, { method: "DELETE" })
+        ))
+        .then(() => { showMsg(`${dates.length}건 삭제 완료`, true); loadCalendar(); })
+        .catch(err => showMsg("삭제 실패: " + err.message, false));
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        loadCalendar();
+        const saveBtn = document.getElementById("wc_save_btn");
+        const delBtn  = document.getElementById("wc_delete_btn");
+        if (saveBtn) saveBtn.addEventListener("click", saveCalendar);
+        if (delBtn)  delBtn.addEventListener("click", deleteSelected);
+
+        // Enable checkboxes in list table for selection
+        document.getElementById("wc_list_table") && document.getElementById("wc_list_table")
+            .addEventListener("click", e => {
+                const cb = e.target.closest("input[type=checkbox]");
+                if (cb) cb.disabled = false;
+            });
+    });
+})();
+</script>
+
 <script>
 void (async () => {
     const adminRootPath = window.location.pathname.replace(/\/+$/, "") || "/";
@@ -481,7 +631,7 @@ void (async () => {
     const buildSubmittedRowHtml = (action, row) => {
         const checkbox = '<td><input type="checkbox" class="admin_submitted_row_checkbox"></td>';
         if (action.endsWith("/product-test-releases/create")) {
-            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_release_id)}</td><td>${escapeHtml(row.upstream_release_id)}</td><td>${escapeHtml(row.upstream_release_system)}</td><td>${escapeHtml(row.release_stage)}</td><td>${escapeHtml(row.release_sequence)}</td><td>${toStatusBadgeHtml(row.product_test_release_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
+            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_release_id)}</td><td>${escapeHtml(row.upstream_release_id)}</td><td>${escapeHtml(row.upstream_release_system)}</td><td>${escapeHtml(row.release_sequence)}</td><td>${toStatusBadgeHtml(row.product_test_release_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
         }
         if (action.endsWith("/product-test-target-definitions/create")) {
             return `<tr>${checkbox}<td>${escapeHtml(row.product_test_target_definition_id)}</td><td>${escapeHtml(row.product_code)}</td><td>${escapeHtml(row.manufacturer)}</td><td>${escapeHtml(row.model_name)}</td><td>${escapeHtml(row.hardware_revision)}</td><td>${escapeHtml(row.default_software_version)}</td><td>${escapeHtml(row.default_firmware_version)}</td><td>${escapeHtml(row.product_test_target_definition_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
@@ -595,7 +745,6 @@ void (async () => {
                 fieldCell("product_test_release_id"),
                 fieldCell("upstream_release_id"),
                 fieldCell("upstream_release_system"),
-                fieldCell("release_stage"),
                 buildAutoPlaceholderCell(),
                 fieldCell("product_test_release_status"),
                 fieldCell("remark"),
@@ -771,7 +920,6 @@ void (async () => {
         if (action.endsWith("/product-test-releases/create")) {
             const releaseIdField = form.querySelector('[name="product_test_release_id"]');
             const upstreamField = form.querySelector('[name="upstream_release_id"]');
-            const stageField = form.querySelector('[name="release_stage"]');
             const refresh = async () => {
                 const candidates = await fetchIdCandidates(form, "product_test_release_id");
                 setAutofillValue(releaseIdField, candidates[0] || "");
@@ -779,7 +927,6 @@ void (async () => {
             };
             upstreamField?.addEventListener("input", () => void refresh());
             upstreamField?.addEventListener("change", () => void refresh());
-            stageField?.addEventListener("change", () => void refresh());
             releaseIdField?.addEventListener("dblclick", () => {
                 if (!(releaseIdField instanceof HTMLInputElement) || !releaseIdField.readOnly) {
                     return;
@@ -1665,35 +1812,212 @@ void (async () => {
     }
     Array.from(document.querySelectorAll('form.admin_autosubmit_form input, form.admin_autosubmit_form textarea')).forEach(enhanceFzfLikeInput);
 
-    /* ── 테이블 폭 토글: COMPACT ↔ 히스토리(원본) ──────────────────────── */
-    (function initTableWidthToggle() {
-        const STORAGE_KEY = "admin_table_compact";
-        const wrapper = document.querySelector(".admin_dash_compact");
-        const btn = document.getElementById("table_width_toggle_button");
-        if (!wrapper || !btn) return;
+    /* ── 테이블 폭 토글: 카드별 COMPACT ↔ 히스토리(원본) ───────────────── */
+    (function initCardTableWidthToggle() {
+        const STORAGE_KEY = "card_compact_v1";
 
-        function applyMode(compact) {
+        function loadStates() {
+            try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }
+            catch { return {}; }
+        }
+        function saveState(cardKey, compact) {
+            const s = loadStates();
+            s[cardKey] = compact ? "compact" : "history";
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch {}
+        }
+        function getCardKey(card) {
+            const h3 = card.querySelector("h3");
+            return "card__" + (h3 ? h3.textContent.trim() : Array.from(document.querySelectorAll(".card")).indexOf(card));
+        }
+        function applyMode(card, btn, compact) {
             if (compact) {
-                wrapper.classList.add("compact_mode");
+                card.classList.add("compact_mode");
                 btn.textContent = "히스토리 폭";
             } else {
-                wrapper.classList.remove("compact_mode");
+                card.classList.remove("compact_mode");
                 btn.textContent = "COMPACT";
             }
         }
 
-        /* localStorage에서 복원, 기본값 = compact */
-        const saved = localStorage.getItem(STORAGE_KEY);
-        applyMode(saved !== "history");
+        document.querySelectorAll(".card").forEach(card => {
+            const headerRow = card.querySelector(".section_header_row");
+            if (!headerRow) return;
 
-        btn.addEventListener("click", function () {
-            const isCompact = wrapper.classList.contains("compact_mode");
-            const next = !isCompact;
-            localStorage.setItem(STORAGE_KEY, next ? "compact" : "history");
-            applyMode(next);
+            // 카드별 버튼 주입
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "qc_mode_action_button card_compact_toggle_btn";
+            btn.style.marginLeft = "auto";
+            headerRow.style.display = "flex";
+            headerRow.style.alignItems = "center";
+            headerRow.appendChild(btn);
+
+            const cardKey = getCardKey(card);
+            const states = loadStates();
+            const compact = states[cardKey] === "compact"; // 기본값 history
+            applyMode(card, btn, compact);
+
+            btn.addEventListener("click", () => {
+                const isCompact = card.classList.contains("compact_mode");
+                applyMode(card, btn, !isCompact);
+                saveState(cardKey, !isCompact);
+            });
         });
+
+        // 전역 버튼(base.html) 이 있으면 숨김
+        const globalBtn = document.getElementById("table_width_toggle_button");
+        if (globalBtn) globalBtn.style.display = "none";
     })();
 })();
+
+    // ── 컬럼 드래그앤드롭 순서 변경 (localStorage 유지) ─────────────────────
+    (function initColumnDragDrop() {
+        const STORAGE_KEY = "col_order_v1";
+
+        function loadAllOrders() {
+            try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }
+            catch { return {}; }
+        }
+        function saveAllOrders(obj) {
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(obj)); } catch {}
+        }
+        function getTableKey(table) {
+            const card = table.closest(".card");
+            const h3 = card && card.querySelector("h3");
+            if (h3) return "tbl__" + h3.textContent.trim();
+            const idx = Array.from(document.querySelectorAll("table.basic_table")).indexOf(table);
+            return "tbl__idx_" + idx;
+        }
+
+        // 현재 th 텍스트 배열 반환 (index 0 = 선택 고정이라 제외)
+        function getColLabels(table) {
+            return Array.from(table.querySelectorAll("thead tr th")).map(th => th.textContent.trim());
+        }
+
+        // order = 원래 컬럼 인덱스 배열 (index 0 항상 0 고정)
+        function applyOrder(table, order) {
+            const thead = table.querySelector("thead tr");
+            if (!thead) return;
+            const ths = Array.from(thead.querySelectorAll("th"));
+            if (order.length !== ths.length) return;
+
+            // 헤더 재정렬
+            order.forEach(origIdx => thead.appendChild(ths[origIdx]));
+
+            // 바디 모든 행 재정렬
+            table.querySelectorAll("tbody tr").forEach(row => {
+                const tds = Array.from(row.querySelectorAll("td, th"));
+                if (tds.length !== order.length) return;
+                order.forEach(origIdx => row.appendChild(tds[origIdx]));
+            });
+        }
+
+        function swapCols(table, fromIdx, toIdx) {
+            if (fromIdx === toIdx || fromIdx === 0 || toIdx === 0) return;
+            const ths = Array.from(table.querySelectorAll("thead tr th"));
+            const order = ths.map((_, i) => i);
+            // swap
+            [order[fromIdx], order[toIdx]] = [order[toIdx], order[fromIdx]];
+            applyOrder(table, order);
+
+            // 저장: 현재 th 순서를 라벨 배열로 저장
+            const allOrders = loadAllOrders();
+            allOrders[getTableKey(table)] = getColLabels(table);
+            saveAllOrders(allOrders);
+        }
+
+        function restoreOrder(table) {
+            const allOrders = loadAllOrders();
+            const saved = allOrders[getTableKey(table)];
+            if (!saved || !Array.isArray(saved)) return;
+            const current = getColLabels(table);
+            if (current.length !== saved.length) return;
+            // saved 순서대로 원래 인덱스 매핑
+            const order = saved.map(label => current.indexOf(label));
+            if (order.some(i => i === -1)) return; // 컬럼 구성 바뀐 경우 무시
+            applyOrder(table, order);
+        }
+
+        function bindDragDrop(table) {
+            let dragFromIdx = null;
+
+            table.querySelectorAll("thead tr th").forEach((th, idx) => {
+                if (idx === 0) return; // 선택 컬럼 고정
+                th.draggable = true;
+                th.style.cursor = "grab";
+
+                th.addEventListener("dragstart", e => {
+                    dragFromIdx = idx;
+                    th.classList.add("col_dragging");
+                    e.dataTransfer.effectAllowed = "move";
+                });
+                th.addEventListener("dragend", () => {
+                    th.classList.remove("col_dragging");
+                    table.querySelectorAll("th.col_drag_over").forEach(t => t.classList.remove("col_drag_over"));
+                    dragFromIdx = null;
+                });
+                th.addEventListener("dragover", e => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = "move";
+                    table.querySelectorAll("th.col_drag_over").forEach(t => t.classList.remove("col_drag_over"));
+                    th.classList.add("col_drag_over");
+                });
+                th.addEventListener("dragleave", () => {
+                    th.classList.remove("col_drag_over");
+                });
+                th.addEventListener("drop", e => {
+                    e.preventDefault();
+                    th.classList.remove("col_drag_over");
+                    const ths = Array.from(table.querySelectorAll("thead tr th"));
+                    const toIdx = ths.indexOf(th);
+                    if (dragFromIdx !== null && dragFromIdx !== toIdx) {
+                        swapCols(table, dragFromIdx, toIdx);
+                        // 드롭 후 새 위치의 th에 이벤트 다시 바인딩
+                        bindDragDrop(table);
+                    }
+                    dragFromIdx = null;
+                });
+            });
+
+            // 새 행 추가 감지: tbody에 MutationObserver
+            if (!table._colDndObserver) {
+                table._colDndObserver = new MutationObserver(() => {
+                    const allOrders = loadAllOrders();
+                    const saved = allOrders[getTableKey(table)];
+                    if (!saved) return;
+                    table.querySelectorAll("tbody tr").forEach(row => {
+                        if (row._colOrdered) return;
+                        row._colOrdered = true;
+                        const current = getColLabels(table);
+                        const order = saved.map(label => current.indexOf(label));
+                        if (order.some(i => i === -1)) return;
+                        const tds = Array.from(row.querySelectorAll("td, th"));
+                        if (tds.length !== order.length) return;
+                        order.forEach(origIdx => row.appendChild(tds[origIdx]));
+                    });
+                });
+                table._colDndObserver.observe(table.querySelector("tbody"), { childList: true });
+            }
+        }
+
+        // 데이터 테이블 = form 밖에 있는 basic_table
+        function getDataTables() {
+            return Array.from(document.querySelectorAll("table.basic_table"));
+        }
+
+        // CSS 스타일 주입
+        const style = document.createElement("style");
+        style.textContent = `
+            th.col_dragging { opacity: 0.5; background: var(--color-accent, #4a90d9) !important; color: #fff !important; }
+            th.col_drag_over { outline: 2px dashed var(--color-accent, #4a90d9); outline-offset: -2px; background: rgba(74,144,217,0.12) !important; }
+        `;
+        document.head.appendChild(style);
+
+        getDataTables().forEach(table => {
+            restoreOrder(table);
+            bindDragDrop(table);
+        });
+    })();
 </script>
 </div>{# /admin_dash_compact #}
 {% endblock %}

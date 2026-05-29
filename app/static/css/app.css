@@ -403,39 +403,39 @@ button:disabled {
 /* ── admin_dashboard 컴팩트 레이아웃 (compact_mode 토글) ──────────────────── */
 
 /* compact_mode 활성: table-layout: fixed → 열 균등 분배, 줄바꿈 표시 */
-.admin_dash_compact.compact_mode .basic_table {
+.card.compact_mode .basic_table {
     table-layout: fixed;
     width: 100%;
 }
 
-.admin_dash_compact.compact_mode .basic_table th:first-child,
-.admin_dash_compact.compact_mode .basic_table td:first-child {
+.card.compact_mode .basic_table th:first-child,
+.card.compact_mode .basic_table td:first-child {
     width: 52px;
     min-width: 52px;
 }
 
-.admin_dash_compact.compact_mode .basic_table th {
+.card.compact_mode .basic_table th {
     white-space: nowrap;
 }
 
-.admin_dash_compact.compact_mode .basic_table td {
+.card.compact_mode .basic_table td {
     white-space: normal;
     overflow-wrap: break-word;
     vertical-align: top;
 }
 
-.admin_dash_compact.compact_mode .basic_table input[type="text"],
-.admin_dash_compact.compact_mode .basic_table input[type="number"],
-.admin_dash_compact.compact_mode .basic_table input[type="date"] {
+.card.compact_mode .basic_table input[type="text"],
+.card.compact_mode .basic_table input[type="number"],
+.card.compact_mode .basic_table input[type="date"] {
     width: 100%;
     min-width: 0;
     box-sizing: border-box;
 }
 
 @supports (field-sizing: content) {
-    .admin_dash_compact.compact_mode .basic_table input[type="text"],
-    .admin_dash_compact.compact_mode .basic_table input[type="number"],
-    .admin_dash_compact.compact_mode .basic_table input[type="date"] {
+    .card.compact_mode .basic_table input[type="text"],
+    .card.compact_mode .basic_table input[type="number"],
+    .card.compact_mode .basic_table input[type="date"] {
         field-sizing: content;
         width: auto;
         min-width: 60px;
@@ -443,7 +443,7 @@ button:disabled {
     }
 }
 
-.admin_dash_compact.compact_mode .basic_table select {
+.card.compact_mode .basic_table select {
     width: 100%;
     min-width: 0;
     box-sizing: border-box;
@@ -1020,4 +1020,15 @@ button:disabled {
 
 html {
     scrollbar-width: auto;
+}
+
+/* ── basic_table 입력요소: 셀 폭 100% 채우기 ─────────────────────────────── */
+.basic_table td input[type="text"],
+.basic_table td input[type="number"],
+.basic_table td input[type="date"],
+.basic_table td textarea,
+.basic_table td select {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 }

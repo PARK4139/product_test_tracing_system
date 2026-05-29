@@ -17,6 +17,7 @@ from app.config import app_settings, is_qc_mode_enabled
 from app.db import initialize_database
 from app.routers.admin_router import admin_router
 from app.routers.auth_router import auth_router
+from app.routers.tracking_router import tracking_router
 from app.services.backup_service import start_backup_daemon
 from app.services.logging_service import initialize_logging, get_logger
 
@@ -24,7 +25,6 @@ _logger = get_logger("main")
 
 
 def _bridge_uvicorn_logs_to_app_log() -> None:
-    """uvicorn / sqlalchemy 로그를 우리 product_test 핸들러로 라우팅."""
     app_root = logging.getLogger("product_test")
     for name in ("uvicorn", "uvicorn.error", "uvicorn.access", "sqlalchemy.engine"):
         ext = logging.getLogger(name)
@@ -59,6 +59,7 @@ def create_app() -> FastAPI:
 
     app.include_router(auth_router)
     app.include_router(admin_router)
+    app.include_router(tracking_router)
 
     @app.on_event("startup")
     def on_startup_initialize_database() -> None:
@@ -81,7 +82,6 @@ def create_app() -> FastAPI:
             app_settings.server_runtime_config.port,
         )
 
-    # HTTPException(404, 403, ...) → FastAPI 기본 핸들러 유지
     @app.exception_handler(HTTPException)
     async def _http_exception_handler(request: Request, exc: HTTPException):
         _logger.warning(
@@ -90,7 +90,6 @@ def create_app() -> FastAPI:
         )
         return await http_exception_handler(request, exc)
 
-    # 422 Validation 에러 → FastAPI 기본 핸들러 유지
     @app.exception_handler(RequestValidationError)
     async def _validation_exception_handler(request: Request, exc: RequestValidationError):
         _logger.warning(
@@ -99,11 +98,10 @@ def create_app() -> FastAPI:
         )
         return await request_validation_exception_handler(request, exc)
 
-    # 그 외 예상치 못한 500 에러만 잡음
     @app.exception_handler(Exception)
     async def _global_exception_handler(request: Request, exc: Exception) -> HTMLResponse:
         if isinstance(exc, (HTTPException, RequestValidationError)):
-            raise exc  # 위 핸들러로 다시 넘김
+            raise exc
         _logger.error(
             "[main] 처리되지 않은 예외  method=%s  url=%s\n%s",
             request.method,
