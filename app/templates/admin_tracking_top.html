@@ -132,6 +132,11 @@
     vertical-align: middle;
 }
 .trk_defect_table tr:hover td { background: var(--color-surface-2, #f9f9fb); }
+.trk_sev_wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
 .trk_sev {
     display: inline-block;
     width: 22px; height: 22px;
@@ -144,9 +149,19 @@
 }
 .trk_sev_S { background: #ef4444; }
 .trk_sev_A { background: #f97316; }
-.trk_sev_B { background: #f59e0b; }
-.trk_sev_C { background: #84cc16; }
+.trk_sev_B { background: #f59e0b; color: #333; }
+.trk_sev_C { background: #84cc16; color: #333; }
 .trk_sev_x { background: #94a3b8; }
+.trk_sev_must {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #fff;
+    background: #ef4444;
+    border-radius: 3px;
+    padding: 1px 4px;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
 .trk_date_overdue { color: #ef4444; font-weight: 600; }
 .trk_date_soon    { color: #f59e0b; font-weight: 600; }
 .trk_date_ok      { color: #22c55e; }
@@ -187,6 +202,124 @@
     font-size: 0.85rem;
 }
 
+
+/* ── 간트차트 ───────────────────────────────────────────────── */
+.gantt_wrap { width:100%; overflow-x:auto; font-size:0.82rem; }
+.gantt_header, .gantt_row {
+    display: grid;
+    grid-template-columns: var(--gantt-label-w, 260px) 1fr;
+    border-bottom: 1px solid var(--color-border, #e4e4e7);
+    min-height: 36px;
+}
+.gantt_resize_handle {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 6px;
+    height: 100%;
+    cursor: col-resize;
+    z-index: 10;
+    background: transparent;
+}
+.gantt_resize_handle:hover,
+.gantt_resize_handle.dragging {
+    background: #3b82f6;
+    opacity: 0.5;
+}
+.gantt_header {
+    background: var(--color-surface-2, #f4f4f5);
+    font-weight: 600;
+    color: var(--color-text-muted, #71717a);
+    font-size: 0.78rem;
+    min-height: 28px;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+.gantt_row_active { background: #f0f9ff; }
+.gantt_row:hover { background: var(--color-surface-2, #f9f9fb); }
+.gantt_label_col {
+    padding: 6px 10px;
+    border-right: 1px solid var(--color-border, #e4e4e7);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+    min-width: 0;
+    position: relative;
+}
+.gantt_label_name {
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.82rem;
+}
+.gantt_label_meta {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+.gantt_meta_chip {
+    font-size: 0.7rem;
+    background: var(--color-surface-2, #e4e4e7);
+    border-radius: 3px;
+    padding: 1px 5px;
+    color: var(--color-text-muted, #71717a);
+}
+.gantt_chip_red { background: #fee2e2; color: #ef4444; font-weight:700; }
+.gantt_chart_col {
+    position: relative;
+    overflow: hidden;
+    min-height: 36px;
+    min-width: 400px;
+}
+.gantt_bar {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 20px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    min-width: 4px;
+    cursor: default;
+    transition: opacity 0.15s;
+}
+.gantt_bar:hover { opacity: 0.85; }
+.gantt_bar_nodate { background: #cbd5e1 !important; width: 8px !important; }
+.gantt_bar_label {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.9);
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.gantt_row_child { background: var(--color-surface, #fff); }
+.gantt_row_child .gantt_label_name { font-weight: 500; font-size: 0.78rem; color: var(--color-text-muted, #52525b); }
+.gantt_row_child .gantt_bar { height: 14px; opacity: 0.85; }
+.gantt_child_icon { color: var(--color-text-muted, #a1a1aa); font-size: 0.75rem; margin-right: 2px; flex-shrink: 0; }
+.gantt_today_line {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 2px;
+    background: #f97316;
+    opacity: 0.6;
+    z-index: 1;
+    pointer-events: none;
+}
+.gantt_month_label {
+    position: absolute;
+    top: 4px;
+    font-size: 0.7rem;
+    color: var(--color-text-muted, #94a3b8);
+    white-space: nowrap;
+    transform: translateX(-50%);
+    pointer-events: none;
+}
 /* 상태 인라인 편집 */
 .trk_status_editable {
     cursor: pointer;
@@ -218,6 +351,89 @@
     font-weight: 700;
     background: var(--color-surface-2, #f4f4f5);
 }
+
+/* ── 통계 테이블 ─────────────────────────────────────────────── */
+.trk_stat_table_wrap { overflow-x: auto; }
+.trk_stat_table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.trk_stat_table th {
+    background: var(--color-surface-2, #f4f4f5);
+    color: var(--color-text-muted, #71717a);
+    font-weight: 600;
+    text-align: center;
+    padding: 6px 14px;
+    border: 1px solid var(--color-border, #e4e4e7);
+    font-size: 0.78rem;
+}
+.trk_stat_table td {
+    text-align: center;
+    padding: 8px 14px;
+    border: 1px solid var(--color-border, #e4e4e7);
+    vertical-align: top;
+}
+.trk_stat_num {
+    font-size: 1.1rem;
+    font-weight: 700;
+    display: block;
+}
+.trk_stat_info { color: #3b82f6; }
+.trk_stat_clickable { cursor: pointer; }
+.trk_stat_clickable:hover { opacity: 0.75; text-decoration: underline; }
+.trk_stat_sub {
+    font-size: 0.72rem;
+    color: var(--color-text-muted, #71717a);
+    margin-top: 3px;
+    white-space: normal;
+    line-height: 1.4;
+}
+.trk_stat_popup {
+    position: absolute;
+    background: var(--color-surface, #fff);
+    border: 1px solid var(--color-border, #e4e4e7);
+    border-radius: 6px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    z-index: 9999;
+    min-width: 280px;
+    max-width: 400px;
+    overflow: auto;
+    max-height: 300px;
+}
+.trk_popup_table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+}
+.trk_popup_table th {
+    background: var(--color-surface-2, #f4f4f5);
+    padding: 6px 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border, #e4e4e7);
+    font-weight: 600;
+}
+.trk_popup_table td {
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--color-border, #e4e4e7);
+}
+.trk_popup_table tr:hover td { background: var(--color-surface-2, #f9f9fb); }
+
+
+.gantt_fold_btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.7rem;
+    color: var(--color-text-muted, #71717a);
+    padding: 0 4px 0 0;
+    line-height: 1;
+    flex-shrink: 0;
+}
+.gantt_fold_btn:hover { color: #3b82f6; }
+.gantt_label_col { flex-direction: row; align-items: flex-start; gap: 4px; }
+.gantt_label_col > div { flex: 1; min-width: 0; }
+
 </style>
 
 <section class="card" id="tracking_top_section">
@@ -232,367 +448,4 @@
         <div class="trk_loading" id="trk_loading_msg">데이터 로딩 중…</div>
     </div>
 </section>
-
-<script>
-(function () {
-    "use strict";
-
-    /* ── helpers ─────────────────────────────────────────────────── */
-    function stageBadge(stage) {
-        const cls = {
-            RC:  "trk_stage_rc",
-            TEST:"trk_stage_test",
-            PVT: "trk_stage_pvt",
-            DVT: "trk_stage_dvt",
-        }[stage] || "trk_stage_other";
-        return `<span class="trk_stage_badge ${cls}">${stage || "-"}</span>`;
-    }
-
-    function sevBadge(sev) {
-        const s = (sev || "").toUpperCase();
-        const cls = ["S","A","B","C"].includes(s) ? `trk_sev_${s}` : "trk_sev_x";
-        return `<span class="trk_sev ${cls}">${s || "?"}</span>`;
-    }
-
-    function statusBadge(st) {
-        const map = {
-            TESTING:  ["status-testing",  "진행 중"],
-            DONE:     ["status-done",      "완료"],
-            DRAFT:    ["status-draft",     "초안"],
-            BLOCKED:  ["status-blocked",   "블록됨"],
-            PASSED:   ["status-passed",    "통과"],
-            QI_TEAM_RELEASED: ["status-approved", "QI Team 배포완료"],
-            APPROVED: ["status-approved",  "QI Team 배포완료"],
-            TBD:      ["status-tbd",       "TBD"],
-            TODO:     ["status-todo",      "TODO"],
-        };
-        const [cls, label] = map[st] || ["status-draft", st || "-"];
-        return `<span class="status_badge ${cls}">${label}</span>`;
-    }
-
-    function dateCls(dateStr) {
-        if (!dateStr) return "";
-        const today = new Date(); today.setHours(0,0,0,0);
-        const d = new Date(dateStr); d.setHours(0,0,0,0);
-        const diff = (d - today) / 86400000;
-        if (diff < 0) return "trk_date_overdue";
-        if (diff <= 3) return "trk_date_soon";
-        return "trk_date_ok";
-    }
-
-    /* ── render ──────────────────────────────────────────────────── */
-    function renderTracking(data) {
-        const releases = data.releases || [];
-        const defects  = data.active_defects || [];
-
-        const testing    = releases.filter(r => r.status === "TESTING" && !r.id.includes("FALLBACK"));
-        const totalResults = testing.reduce((a, r) => a + r.total_results, 0);
-        const totalPass    = testing.reduce((a, r) => a + r.passed,       0);
-        const totalBlock   = testing.reduce((a, r) => a + r.blocked,      0);
-        const totalOpen    = testing.reduce((a, r) => a + r.open_defects, 0);
-
-        let html = "";
-
-        /* ── 1. Active summary strip ───────────────────────────── */
-        if (testing.length > 0) {
-            const passRate = totalResults > 0
-                ? Math.round(totalPass / totalResults * 100) : 0;
-            const activeNames = testing.map(r => r.alias || r.id).join(", ");
-
-            html += `<div class="trk_sub_header">진행 중 배포</div>`;
-            html += `<div class="trk_active_strip">`;
-
-            html += `<div class="trk_active_card trk_info">
-                <div class="trk_card_title">진행 중 배포</div>
-                <div class="trk_card_main">${testing.length}건</div>
-                <div class="trk_card_sub">${activeNames}</div>
-            </div>`;
-
-            html += `<div class="trk_active_card ${passRate >= 80 ? "trk_ok" : passRate >= 50 ? "trk_warn" : "trk_danger"}">
-                <div class="trk_card_title">통과율</div>
-                <div class="trk_card_main">${passRate}%</div>
-                <div class="trk_card_sub">통과 ${totalPass} / 전체 ${totalResults}건</div>
-            </div>`;
-
-            html += `<div class="trk_active_card ${totalBlock > 0 ? "trk_warn" : "trk_ok"}">
-                <div class="trk_card_title">블록된 항목</div>
-                <div class="trk_card_main">${totalBlock}건</div>
-                <div class="trk_card_sub">진행 중 배포 합산</div>
-            </div>`;
-
-            html += `<div class="trk_active_card ${totalOpen > 0 ? "trk_danger" : "trk_ok"}">
-                <div class="trk_card_title">미결 결함</div>
-                <div class="trk_card_main">${totalOpen}건</div>
-                <div class="trk_card_sub">opened 상태 결함</div>
-            </div>`;
-
-            html += `</div>`; /* trk_active_strip */
-        }
-
-        /* ── 2. Release timeline ───────────────────────────────── */
-        html += `<div class="trk_sub_header">배포 이력 타임라인</div>`;
-        html += `<div class="trk_timeline_wrap"><table class="trk_timeline_table">
-            <thead><tr>
-                <th>순번</th><th>시험 배포 ID</th><th>상태</th>
-                <th>시험 기간</th><th>근무일수</th>
-                <th>전체 결과</th><th>통과 진행률</th>
-                <th>결함 (미결)</th>
-            </tr></thead><tbody>`;
-
-        const visibleReleases = releases.filter(r => !r.id.includes("FALLBACK"));
-        if (visibleReleases.length === 0) {
-            html += `<tr><td colspan="9" class="trk_empty">데이터 없음</td></tr>`;
-        } else {
-            visibleReleases.forEach(r => {
-                const total   = r.total_results || 0;
-                const passed  = r.passed || 0;
-                const pct     = total > 0 ? Math.round(passed / total * 100) : 0;
-                const period  = r.start_date
-                    ? `${r.start_date}${r.end_date ? " ~ " + r.end_date : " ~"}`
-                    : "-";
-
-                html += `<tr>
-                    <td>${r.sequence || "-"}</td>
-                    <td style="font-weight:600">${r.id}</td>
-                    <td><span class="trk_status_editable" data-release-id="${r.id}" data-status="${r.status}">${statusBadge(r.status)}</span></td>
-                    <td>${period}</td>
-                    <td>${r.workday || "-"}</td>
-                    <td>${total}</td>
-                    <td>
-                        <div class="trk_bar_wrap">
-                            <div class="trk_bar_bg">
-                                <div class="trk_bar_fill" style="width:${pct}%"></div>
-                            </div>
-                            <span class="trk_bar_pct">${pct}%</span>
-                        </div>
-                    </td>
-                    <td>${r.defect_count} <span style="color:#ef4444">(${r.open_defects})</span></td>
-                </tr>`;
-            });
-        }
-
-        html += `</tbody></table></div>`;
-
-        /* ── 3. Active defects ─────────────────────────────────── */
-        html += `<div class="trk_sub_header">미결 결함 현황 (진행 중 배포)</div>`;
-
-        if (defects.length === 0) {
-            html += `<div style="color:var(--color-text-muted,#71717a);font-size:0.85rem;padding:12px 0">
-                진행 중 배포에 미결 결함이 없습니다. ✅
-            </div>`;
-        } else {
-            html += `<div class="trk_timeline_wrap"><table class="trk_defect_table">
-                <thead><tr>
-                    <th>결함 ID</th><th>심각도</th><th>우선순위</th>
-                    <th>제목</th><th>담당자</th>
-                    <th>예상 해결일</th><th>등록일</th><th>시험 배포 ID</th>
-                </tr></thead><tbody>`;
-
-            defects.forEach(d => {
-                const dCls = dateCls(d.expected_resolution_date);
-                const expDate = d.expected_resolution_date
-                    ? `<span class="${dCls}">${d.expected_resolution_date}${dCls === "trk_date_overdue" ? " ⚠️" : ""}</span>`
-                    : `<span style="color:#94a3b8">미정</span>`;
-
-                html += `<tr>
-                    <td style="font-size:0.75rem;color:#64748b">${d.id}</td>
-                    <td>${sevBadge(d.severity)}</td>
-                    <td>${d.priority || "-"}</td>
-                    <td style="max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
-                        title="${d.title}">${d.title}</td>
-                    <td>${d.assigned_to}</td>
-                    <td>${expDate}</td>
-                    <td style="font-size:0.75rem;color:#64748b">${(d.created_at||"").slice(0,10)}</td>
-                    <td style="font-size:0.75rem">${d.release_id}</td>
-                </tr>`;
-            });
-
-            html += `</tbody></table></div>`;
-        }
-
-        return html;
-    }
-
-    /* ── 컬럼 드래그 앤 드롭 + 위치 저장/복원 ──────────────────────── */
-    const TRK_COL_KEY = "trk_col_order";
-
-    function getColKey(table) {
-        return table.classList.contains("trk_timeline_table") ? "timeline" : "defect";
-    }
-
-    function saveColOrder(table) {
-        const key = getColKey(table);
-        const order = Array.from(table.querySelectorAll("thead tr th")).map(th => th.textContent.trim());
-        try {
-            const stored = JSON.parse(localStorage.getItem(TRK_COL_KEY) || "{}");
-            stored[key] = order;
-            localStorage.setItem(TRK_COL_KEY, JSON.stringify(stored));
-        } catch(e) {}
-    }
-
-    function restoreColOrder(table) {
-        const key = getColKey(table);
-        try {
-            const stored = JSON.parse(localStorage.getItem(TRK_COL_KEY) || "{}");
-            const order = stored[key];
-            if (!order || !Array.isArray(order)) return;
-            order.forEach((label, targetIdx) => {
-                const ths = Array.from(table.querySelectorAll("thead tr th"));
-                const srcIdx = ths.findIndex(th => th.textContent.trim() === label);
-                if (srcIdx === -1 || srcIdx === targetIdx) return;
-                const rows = Array.from(table.querySelectorAll("tr"));
-                rows.forEach(row => {
-                    const cells = Array.from(row.children);
-                    if (cells.length <= Math.max(srcIdx, targetIdx)) return;
-                    const a = cells[srcIdx];
-                    const b = cells[targetIdx];
-                    if (srcIdx > targetIdx) b.parentNode.insertBefore(a, b);
-                    else b.parentNode.insertBefore(a, b.nextSibling);
-                });
-            });
-        } catch(e) {}
-    }
-
-    function swapCols(table, srcIdx, dstIdx) {
-        const rows = Array.from(table.querySelectorAll("tr"));
-        rows.forEach(row => {
-            const cells = Array.from(row.children);
-            if (cells.length <= Math.max(srcIdx, dstIdx)) return;
-            const a = cells[srcIdx];
-            const b = cells[dstIdx];
-            if (srcIdx < dstIdx) b.parentNode.insertBefore(a, b.nextSibling);
-            else b.parentNode.insertBefore(a, b);
-        });
-    }
-
-    function bindColumnDragDrop(root) {
-        root.querySelectorAll(".trk_timeline_table, .trk_defect_table").forEach(table => {
-            restoreColOrder(table);
-            let dragSrcIdx = null;
-
-            const rebind = () => {
-                const ths = Array.from(table.querySelectorAll("thead tr th"));
-                ths.forEach((th, idx) => {
-                    th.draggable = true;
-                    th.style.cursor = "grab";
-                    th.ondragstart = e => {
-                        dragSrcIdx = idx;
-                        th.style.opacity = "0.5";
-                        e.dataTransfer.effectAllowed = "move";
-                    };
-                    th.ondragend = () => {
-                        th.style.opacity = "";
-                        ths.forEach(t => t.classList.remove("trk_col_drag_over"));
-                    };
-                    th.ondragover = e => {
-                        e.preventDefault();
-                        ths.forEach(t => t.classList.remove("trk_col_drag_over"));
-                        th.classList.add("trk_col_drag_over");
-                    };
-                    th.ondrop = e => {
-                        e.preventDefault();
-                        const curThs = Array.from(table.querySelectorAll("thead tr th"));
-                        const dstIdx = curThs.indexOf(th);
-                        if (dragSrcIdx === null || dragSrcIdx === dstIdx) return;
-                        swapCols(table, dragSrcIdx, dstIdx);
-                        saveColOrder(table);
-                        dragSrcIdx = null;
-                        rebind();
-                    };
-                });
-            };
-            rebind();
-        });
-    }
-
-    /* ── 상태 인라인 드롭다운 ───────────────────────────────────────── */
-    const STATUS_OPTIONS = [
-        { value: "TESTING",          label: "진행 중"        },
-        { value: "QI_TEAM_RELEASED", label: "QI Team 배포완료" },
-        { value: "BLOCKED",          label: "블록됨"         },
-        { value: "DRAFT",            label: "초안"           },
-    ];
-
-    let _dropdown = null;
-
-    function closeDropdown() {
-        if (_dropdown) { _dropdown.remove(); _dropdown = null; }
-    }
-
-    document.addEventListener("click", (e) => {
-        if (_dropdown && !_dropdown.contains(e.target)) closeDropdown();
-    });
-
-    function openStatusDropdown(trigger, releaseId, currentStatus) {
-        closeDropdown();
-        const rect = trigger.getBoundingClientRect();
-        const dd = document.createElement("div");
-        dd.className = "trk_status_dropdown";
-        dd.style.top  = (rect.bottom + window.scrollY + 4) + "px";
-        dd.style.left = rect.left + "px";
-
-        STATUS_OPTIONS.forEach(opt => {
-            const item = document.createElement("div");
-            item.className = "trk_status_dropdown_item" + (opt.value === currentStatus ? " active" : "");
-            item.innerHTML = statusBadge(opt.value) + ` <span>${opt.label}</span>`;
-            item.addEventListener("click", async (e) => {
-                e.stopPropagation();
-                closeDropdown();
-                if (opt.value === currentStatus) return;
-                try {
-                    const res = await fetch(`/admin/api/release/${encodeURIComponent(releaseId)}/status`, {
-                        method: "PATCH",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ status: opt.value }),
-                    });
-                    if (!res.ok) throw new Error("HTTP " + res.status);
-                    trigger.dataset.status = opt.value;
-                    trigger.innerHTML = statusBadge(opt.value);
-                } catch (err) {
-                    alert("상태 변경 실패: " + err.message);
-                }
-            });
-            dd.appendChild(item);
-        });
-
-        document.body.appendChild(dd);
-        _dropdown = dd;
-    }
-
-    function bindStatusEditable(root) {
-        root.querySelectorAll(".trk_status_editable").forEach(el => {
-            el.addEventListener("click", (e) => {
-                e.stopPropagation();
-                openStatusDropdown(el, el.dataset.releaseId, el.dataset.status);
-            });
-        });
-    }
-
-    /* ── fetch & mount ───────────────────────────────────────────── */
-    function loadTracking() {
-        const root    = document.getElementById("trk_root");
-        const loadMsg = document.getElementById("trk_loading_msg");
-        if (loadMsg) loadMsg.style.display = "block";
-
-        fetch("/admin/api/tracking/summary")
-            .then(r => {
-                if (!r.ok) throw new Error("HTTP " + r.status);
-                return r.json();
-            })
-            .then(data => {
-                root.innerHTML = renderTracking(data);
-                bindStatusEditable(root);
-                bindColumnDragDrop(root);
-            })
-            .catch(err => {
-                root.innerHTML = `<div class="trk_loading" style="color:#ef4444">
-                    데이터 로드 실패: ${err.message}
-                </div>`;
-            });
-    }
-
-    document.addEventListener("DOMContentLoaded", loadTracking);
-    document.getElementById("trk_refresh_btn")
-        && document.getElementById("trk_refresh_btn").addEventListener("click", loadTracking);
-})();
-</script>
+<script src="/static/js/tracking.js"></script>

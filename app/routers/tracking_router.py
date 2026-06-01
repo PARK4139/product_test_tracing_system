@@ -46,6 +46,8 @@ def get_tracking_summary(
             r.release_sequence,
             r.product_test_release_status,
             r.remark,
+            r.upstream_release_system,
+            COALESCE(r.release_visible, 1)                    AS release_visible,
             COUNT(DISTINCT run.product_test_run_id)           AS run_count,
             COUNT(res.product_test_result_id)                 AS total_results,
             SUM(CASE WHEN res.product_test_result_status = 'passed'  THEN 1 ELSE 0 END) AS passed,
@@ -94,16 +96,19 @@ def get_tracking_summary(
             "stage": row[2],
             "sequence": row[3],
             "status": row[4],
+            # row[5] = remark (already parsed)
+            "upstream_system": row[6] or "",
+            "visible": bool(row[7]),
             "workday": workday,
             "start_date": start_date,
             "end_date": end_date,
-            "run_count": row[6] or 0,
-            "total_results": row[7] or 0,
-            "passed": row[8] or 0,
-            "blocked": row[9] or 0,
-            "testing": row[10] or 0,
-            "defect_count": row[11] or 0,
-            "open_defects": row[12] or 0,
+            "run_count": row[8] or 0,
+            "total_results": row[9] or 0,
+            "passed": row[10] or 0,
+            "blocked": row[11] or 0,
+            "testing": row[12] or 0,
+            "defect_count": row[13] or 0,
+            "open_defects": row[14] or 0,
         })
 
     # ── 진행 중 릴리즈 활성 결함 상세 ────────────────────────────────────────
@@ -154,7 +159,7 @@ def get_tracking_summary(
 
 # ── 배포 상태 변경 ───────────────────────────────────────────────────────────
 
-VALID_RELEASE_STATUSES = {"TESTING", "QI_TEAM_RELEASED", "DRAFT", "BLOCKED"}
+VALID_RELEASE_STATUSES = {"TESTING", "QI_TEAM_RELEASED", "QI_TEAM_REVIEWED", "DRAFT", "BLOCKED"}
 
 class ReleaseStatusBody(BaseModel):
     status: str

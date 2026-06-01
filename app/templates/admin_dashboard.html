@@ -485,6 +485,8 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
+        /* 잔여 draft 행 정리 */
+        document.querySelectorAll("tr.admin_merged_draft_row").forEach(r => r.remove());
         loadCalendar();
         const saveBtn = document.getElementById("wc_save_btn");
         const delBtn  = document.getElementById("wc_delete_btn");

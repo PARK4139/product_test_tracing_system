@@ -164,6 +164,7 @@ def initialize_database() -> None:
         _drop_legacy_tables()
         models.Base.metadata.create_all(bind=engine)
         _ensure_user_account_columns()
+        _ensure_release_visible_column()
         _ensure_defect_columns()
         _ensure_product_test_project_id_columns()
         _ensure_product_test_project_id_indexes()
@@ -251,6 +252,18 @@ def _ensure_product_test_project_id_indexes() -> None:
                     f"CREATE INDEX IF NOT EXISTS {index_name}"
                     f" ON {table_name} (project_id)"
                 )
+            )
+
+
+def _ensure_release_visible_column() -> None:
+    """product_test_release 에 release_visible 컬럼 추가."""
+    with engine.begin() as connection:
+        existing = {
+            row[1] for row in connection.execute(text("PRAGMA table_info(product_test_release)"))
+        }
+        if "release_visible" not in existing:
+            connection.execute(
+                text("ALTER TABLE product_test_release ADD COLUMN release_visible INTEGER NOT NULL DEFAULT 1")
             )
 
 

@@ -188,6 +188,12 @@ button:disabled {
     color: #16506B;
 }
 
+.status_badge.status-reviewed {
+    background: #EDE9FE;
+    border-color: #C4B5FD;
+    color: #5B21B6;
+}
+
 .status_badge.status-qi_team_released,
 .status_badge.status-approved,
 .status_badge.status-passed,
@@ -211,7 +217,12 @@ button:disabled {
     color: #8A2D2D;
 }
 
-.status_badge.status-blocked,
+.status_badge.status-blocked {
+    background: #FEF2F2;
+    border-color: #FECACA;
+    color: #B91C1C;
+}
+
 .status_badge.status-skipped,
 .status_badge.status-assigned,
 .status_badge.status-fixed,
