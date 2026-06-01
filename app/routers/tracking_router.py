@@ -111,6 +111,39 @@ def get_tracking_summary(
             "open_defects": row[14] or 0,
         })
 
+    # ── 부모 상태 자동 결정 (자식 상태 기반) ─────────────────────────────────
+    # 우선순위: BLOCKED > TESTING > DRAFT > PASSED/QI_TEAM_RELEASED/APPROVED > QI_TEAM_REVIEWED > DONE
+    STATUS_PRIORITY = {
+        "BLOCKED": 0, "TESTING": 1, "DRAFT": 2,
+        "PASSED": 3, "QI_TEAM_RELEASED": 3, "APPROVED": 3,
+        "QI_TEAM_REVIEWED": 4, "DONE": 5,
+    }
+
+    children_by_parent: dict = {}
+    for r in releases:
+        pid = r["upstream_id"]
+        if pid:
+            children_by_parent.setdefault(pid, []).append(r)
+
+    release_map = {r["id"]: r for r in releases}
+
+    for parent_id, children in children_by_parent.items():
+        parent = release_map.get(parent_id)
+        if not parent:
+            continue
+        # 숨긴 자식(visible=False)만 대상 — 장비별 하위 항목
+        # 보고서 컨테이너(TEST_REPORT_*, TBD_REPORT_*)는 제외
+        child_statuses = [
+            c["status"] for c in children
+            if not c["visible"]
+            and "TEST_REPORT_" not in c["id"]
+            and "TBD_REPORT_" not in c["id"]
+        ]
+        if not child_statuses:
+            continue
+        best = min(child_statuses, key=lambda s: STATUS_PRIORITY.get(s, 99))
+        parent["status"] = best
+
     # ── 진행 중 릴리즈 활성 결함 상세 ────────────────────────────────────────
     active_defects_raw = conn.execute(text("""
         SELECT
@@ -122,19 +155,33 @@ def get_tracking_summary(
             def.assigned_to,
             def.expected_resolution_date,
             def.created_at,
-            run.product_test_release_id
+            run.product_test_release_id,
+            run.product_test_run_id
         FROM product_test_defect def
         JOIN product_test_result  res ON res.product_test_result_id  = def.product_test_result_id
         JOIN product_test_run     run ON run.product_test_run_id     = res.product_test_run_id
-        JOIN product_test_release rel ON rel.product_test_release_id = run.product_test_release_id
         WHERE def.product_test_defect_status = 'opened'
-          AND rel.product_test_release_status = 'TESTING'
         ORDER BY
             CASE def.defect_severity
                 WHEN 'S' THEN 1 WHEN 'A' THEN 2 WHEN 'B' THEN 3 WHEN 'C' THEN 4 ELSE 5
             END,
             def.created_at
     """)).fetchall()
+
+    # Run ID에서 Report ID 추출 → 상위 WIFI 릴리즈 역추적
+    # Run ID 형식: RUN-{REPORT_ID}-{CONFIG_ID}
+    report_upstream = {r["id"]: r["upstream_id"] for r in releases}
+
+    def resolve_wifi_release(run_id: str) -> str:
+        # RUN-REPORT_ID-... 에서 REPORT_ID 추출
+        parts = run_id[4:] if run_id.startswith("RUN-") else run_id
+        # CONFIG 부분 제거: 첫 번째 -CFG_ 앞까지
+        if "-CFG_" in parts:
+            report_part = parts.split("-CFG_")[0]
+        else:
+            report_part = parts
+        release_key = f"TEST_RELEASE-{report_part}"
+        return report_upstream.get(release_key, "")
 
     active_defects = [
         {
@@ -147,6 +194,7 @@ def get_tracking_summary(
             "expected_resolution_date": r[6] or "",
             "created_at": r[7],
             "release_id": r[8],
+            "wifi_release_id": resolve_wifi_release(r[9] or ""),
         }
         for r in active_defects_raw
     ]

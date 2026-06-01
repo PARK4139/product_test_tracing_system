@@ -207,7 +207,7 @@
 .gantt_wrap { width:100%; overflow-x:auto; font-size:0.82rem; }
 .gantt_header, .gantt_row {
     display: grid;
-    grid-template-columns: var(--gantt-label-w, 260px) 1fr;
+    grid-template-columns: var(--gantt-label-w, 380px) 1fr;
     border-bottom: 1px solid var(--color-border, #e4e4e7);
     min-height: 36px;
 }
@@ -242,11 +242,20 @@
     padding: 6px 10px;
     border-right: 1px solid var(--color-border, #e4e4e7);
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 3px;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
     min-width: 0;
     position: relative;
+}
+.gantt_label_main {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+    flex-wrap: nowrap;
+    overflow: hidden;
 }
 .gantt_label_name {
     font-weight: 600;
@@ -254,12 +263,8 @@
     overflow: hidden;
     text-overflow: ellipsis;
     font-size: 0.82rem;
-}
-.gantt_label_meta {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    flex-wrap: wrap;
+    min-width: 0;
+    flex-shrink: 1;
 }
 .gantt_meta_chip {
     font-size: 0.7rem;
@@ -298,9 +303,11 @@
     overflow: hidden;
 }
 
-.gantt_row_child { background: var(--color-surface, #fff); }
+.gantt_row_child { background: var(--color-surface, #fff); cursor: pointer; }
 .gantt_row_child .gantt_label_name { font-weight: 500; font-size: 0.78rem; color: var(--color-text-muted, #52525b); }
 .gantt_row_child .gantt_bar { height: 14px; opacity: 0.85; }
+.gantt_row_child.gantt_row_selected { background: #fef9c3; border-left: 3px solid #eab308; }
+tr.trk_row_highlighted { background: #fef9c3 !important; outline: 2px solid #eab308; }
 .gantt_child_icon { color: var(--color-text-muted, #a1a1aa); font-size: 0.75rem; margin-right: 2px; flex-shrink: 0; }
 .gantt_today_line {
     position: absolute;
@@ -326,6 +333,11 @@
     display: inline-block;
 }
 .trk_status_editable:hover { opacity: 0.8; }
+.trk_status_readonly {
+    cursor: default;
+    display: inline-block;
+    opacity: 0.75;
+}
 .trk_status_dropdown {
     position: fixed;
     background: var(--color-surface, #fff);

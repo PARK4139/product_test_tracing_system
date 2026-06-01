@@ -45,21 +45,22 @@
         return `<span style="display:inline-block;padding:2px 7px;border-radius:4px;font-size:0.72rem;font-weight:700;background:${color};color:#fff">${label}</span>`;
     }
 
-    function statusBadge(st) {
+    function statusBadge(st, short = false) {
         const map = {
             TESTING:          ["status-testing",  "QI Team 시험중"],
             DONE:             ["status-done",     "QI Team 완료"],
             DRAFT:            ["status-draft",    "QI Team 초안"],
-            BLOCKED:          ["status-blocked",  "QI Team 중단판정"],
-            PASSED:           ["status-passed",   "QI Team 통과"],
-            QI_TEAM_RELEASED: ["status-approved",  "QI Team 배포완료"],
+            BLOCKED:          ["status-blocked",  "QI Team 시험중단판정"],
+            PASSED:           ["status-passed",   "QI Team 시험합격판정"],
+            QI_TEAM_RELEASED: ["status-approved",  "QI Team 시험합격판정"],
             QI_TEAM_REVIEWED: ["status-reviewed",  "QI Team 시험완료"],
-            APPROVED:         ["status-approved",  "QI Team 배포완료"],
+            APPROVED:         ["status-approved",  "QI Team 시험합격판정"],
             TBD:      ["status-tbd",       "TBD"],
             TODO:     ["status-todo",      "TODO"],
         };
         const [cls, label] = map[st] || ["status-draft", st || "-"];
-        return `<span class="status_badge ${cls}">${label}</span>`;
+        const displayLabel = short ? label.replace(/^QI Team /, "") : label;
+        return `<span class="status_badge ${cls}">${displayLabel}</span>`;
     }
 
     function normalizeDate(raw) {
@@ -175,7 +176,7 @@
                     ? `<span class="${dCls}">${d.expected_resolution_date}${dCls === "trk_date_overdue" ? " ⚠️" : ""}</span>`
                     : `<span style="color:#94a3b8">미정</span>`;
 
-                html += `<tr>
+                html += `<tr data-release-id="${d.release_id}" data-wifi-release-id="${d.wifi_release_id || ''}">
                     <td style="font-size:0.75rem;color:#64748b">${d.id}</td>
                     <td>${sevBadge(d.severity)}</td>
                     <td>${prioBadge(d.priority)}</td>
@@ -217,16 +218,16 @@
 
         // 부모 / 자식 분리 (upstream_id가 다른 배포 ID면 자식)
         // 뷰 필터: 기본은 시험중(TESTING)만, 토글 시 전체
-        const viewAll = window._trkViewAll === true;
-        const visibleReleases = viewAll ? releases : releases.filter(r => r.status === 'TESTING');
+        // TEST_REPORT_*, TBD_REPORT_* 는 간트에서 항상 숨김 (보고서 컨테이너)
+        const isContainer = r => r.id.includes("TEST_REPORT_") || r.id.includes("TBD_REPORT_");
+        const viewAll = localStorage.getItem('trk_view_all') === '1';
+        const visibleReleases = (viewAll ? releases : releases.filter(r => r.status === 'TESTING'))
+            .filter(r => !isContainer(r));
 
         const releaseIds = new Set(visibleReleases.map(r => r.id));
         const parents = visibleReleases.filter(r => !releaseIds.has(r.upstream_id));
         const childrenMap = {};
         visibleReleases.filter(r => releaseIds.has(r.upstream_id)).forEach(r => {
-            // 구 보고서 컨테이너(TEST_REPORT_*, TBD_REPORT_*) 는 간트에서 숨김
-            const isContainer = r.id.includes("TEST_REPORT_") || r.id.includes("TBD_REPORT_");
-            if (isContainer) return;
             if (!childrenMap[r.upstream_id]) childrenMap[r.upstream_id] = [];
             childrenMap[r.upstream_id].push(r);
         });
@@ -282,16 +283,20 @@
                 : "";
 
             let barHtml = "";
-            if (sd) {
-                const left  = pct(sd);
-                const width = Math.max(0.5, pct(ed) - left);
-                barHtml = `<div class="gantt_bar" style="left:${left}%;width:${width}%;background:${color}"
-                    title="${barTitle}">
-                    <span class="gantt_bar_label">${barDisplayLabel}</span>
-                </div>`;
-            } else {
-                barHtml = `<div class="gantt_bar gantt_bar_nodate" style="left:${todayPct}%;width:1%" title="${barTitle}"></div>`;
+            if (indent === 0) {
+                // 부모 행만 간트 바 표시
+                if (sd) {
+                    const left  = pct(sd);
+                    const width = Math.max(0.5, pct(ed) - left);
+                    barHtml = `<div class="gantt_bar" style="left:${left}%;width:${width}%;background:${color}"
+                        title="${barTitle}">
+                        <span class="gantt_bar_label">${barDisplayLabel}</span>
+                    </div>`;
+                } else {
+                    barHtml = `<div class="gantt_bar gantt_bar_nodate" style="left:${todayPct}%;width:1%" title="${barTitle}"></div>`;
+                }
             }
+            // 자식 행은 바 없음 — 추후 run 기록 기반으로 계산 예정
 
             const indentPx = indent * 20;
             const hasChildren = indent === 0 && (childrenMap[r.id] || []).length > 0;
@@ -299,9 +304,9 @@
                 data-row-id="${r.id}" ${indent > 0 ? `data-parent-id="${r.upstream_id}"` : ''}>
                 <div class="gantt_label_col" style="padding-left:${10 + indentPx}px">
                     ${hasChildren ? `<button class="gantt_fold_btn" data-fold-id="${r.id}" title="접기/펼치기">▼</button>` : (indent > 0 ? '<span class="gantt_child_icon">└</span>' : '<span style="width:18px;display:inline-block"></span>')}
-                    <div class="gantt_label_name" title="${alias}">${alias}</div>
-                    <div class="gantt_label_meta">
-                        <span class="trk_status_editable" data-release-id="${r.id}" data-status="${r.status}">${statusBadge(r.status)}</span>
+                    <div class="gantt_label_main">
+                        <span class="gantt_label_name" title="${alias}">${alias}</span>
+                        <span class="${hasChildren ? 'trk_status_readonly' : 'trk_status_editable'}" data-release-id="${r.id}" data-status="${r.status}" ${hasChildren ? 'title="자식 상태에 의해 자동 결정됨"' : ''}>${statusBadge(r.status)}</span>
                         ${total > 0 ? `<span class="gantt_meta_chip">${pctVal}%</span>` : ""}
                         ${open > 0 ? `<span class="gantt_meta_chip gantt_chip_red">결함 ${open}</span>` : ""}
                     </div>
@@ -322,19 +327,28 @@
                 </div>
             </div>`;
 
+        // 장비 나열 순서: HRK > HTR > HLM > HDR > HDC > HIIS
+        const DEVICE_ORDER = ["HRK", "HTR", "HLM", "HDR", "HDC", "HIIS"];
+        function deviceSortKey(id) {
+            const upper = id.toUpperCase();
+            const idx = DEVICE_ORDER.findIndex(d => upper.includes(d));
+            return idx === -1 ? 99 : idx;
+        }
+
         parents.forEach(p => {
             html += renderBar(p, 0);
-            (childrenMap[p.id] || []).forEach(c => {
+            const children = (childrenMap[p.id] || []).slice().sort((a, b) => deviceSortKey(a.id) - deviceSortKey(b.id));
+            children.forEach(c => {
                 html += renderBar(c, 1);
             });
         });
 
         html += `<div style="text-align:center;padding:10px">
             <button class="gantt_hidden_toggle" onclick="
-                window._trkViewAll = !window._trkViewAll;
+                localStorage.setItem('trk_view_all', localStorage.getItem('trk_view_all') === '1' ? '0' : '1');
                 document.getElementById('trk_refresh_btn').click();
             " style="font-size:0.78rem;padding:4px 12px;cursor:pointer;border:1px solid var(--color-border,#e4e4e7);border-radius:4px;background:var(--color-surface-2,#f4f4f5)">
-                ${window._trkViewAll ? '전체 → 시험중' : '시험중 → 전체'}
+                ${localStorage.getItem('trk_view_all') === '1' ? '전체 → 시험중' : '시험중 → 전체'}
             </button>
         </div>`;
 
@@ -348,7 +362,7 @@
         const handle = wrap.querySelector("#gantt_resize_handle");
         if (!handle) return;
         // 저장된 폭 복원
-        const saved = parseInt(sessionStorage.getItem(GANTT_COL_W_KEY), 10);
+        const saved = parseInt(localStorage.getItem(GANTT_COL_W_KEY), 10);
         if (saved && saved > 80) wrap.style.setProperty("--gantt-label-w", saved + "px");
 
         let startX, startW;
@@ -369,7 +383,7 @@
                 document.body.style.cursor = "";
                 document.body.style.userSelect = "";
                 const w = parseInt(wrap.style.getPropertyValue("--gantt-label-w"), 10);
-                if (w) sessionStorage.setItem(GANTT_COL_W_KEY, w);
+                if (w) localStorage.setItem(GANTT_COL_W_KEY, w);
                 document.removeEventListener("mousemove", onMove);
                 document.removeEventListener("mouseup", onUp);
             }
@@ -437,9 +451,9 @@
     /* ── 상태 인라인 드롭다운 ───────────────────────────────────────── */
     const STATUS_OPTIONS = [
         { value: "TESTING",          label: "QI Team 시험중"   },
-        { value: "QI_TEAM_RELEASED", label: "QI Team 배포완료" },
+        { value: "QI_TEAM_RELEASED", label: "QI Team 시험합격판정" },
         { value: "QI_TEAM_REVIEWED", label: "QI Team 시험완료" },
-        { value: "BLOCKED",          label: "QI Team 중단판정"   },
+        { value: "BLOCKED",          label: "QI Team 시험중단판정"   },
         { value: "DRAFT",            label: "QI Team 초안"     },
     ];
     let _dropdown = null;
@@ -526,6 +540,33 @@ function getFoldState(id) {
 }
 function bindGanttFold(root) {
     // 초기 상태 복원
+    // 자식 행 클릭 → 해당 행 하이라이트 + 연관 테이블 rows 하이라이트
+    root.querySelectorAll(".gantt_row_child").forEach(row => {
+        row.addEventListener("click", e => {
+            if (e.target.closest(".trk_status_editable, .trk_status_readonly")) return;
+            const releaseId = row.dataset.rowId;
+            const isSelected = row.classList.contains("gantt_row_selected");
+
+            // 간트 행 하이라이트 초기화
+            root.querySelectorAll(".gantt_row_child.gantt_row_selected").forEach(r => r.classList.remove("gantt_row_selected"));
+            // 테이블 행 하이라이트 초기화
+            document.querySelectorAll("tr.trk_row_highlighted").forEach(r => r.classList.remove("trk_row_highlighted"));
+
+            if (!isSelected && releaseId) {
+                row.classList.add("gantt_row_selected");
+                // release_id 직접 매칭 또는 wifi_release_id로 상위 시험 매칭
+                const parentId = row.dataset.parentId || "";
+                const matched = document.querySelectorAll(
+                    `tr[data-release-id="${releaseId}"], tr[data-wifi-release-id="${parentId}"]`
+                );
+                matched.forEach(r => r.classList.add("trk_row_highlighted"));
+                if (matched.length > 0) {
+                    matched[0].scrollIntoView({ behavior: "smooth", block: "nearest" });
+                }
+            }
+        });
+    });
+
     root.querySelectorAll(".gantt_fold_btn").forEach(btn => {
         const id = btn.dataset.foldId;
         if (getFoldState(id)) {
