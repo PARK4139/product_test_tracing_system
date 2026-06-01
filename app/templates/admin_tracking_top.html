@@ -175,11 +175,48 @@
     background: var(--color-border, #e4e4e7);
 }
 
+.trk_col_drag_over {
+    background: var(--color-primary-light, #dbeafe) !important;
+    outline: 2px dashed #3b82f6;
+}
+
 .trk_loading {
     text-align: center;
     color: var(--color-text-muted, #71717a);
     padding: 24px;
     font-size: 0.85rem;
+}
+
+/* 상태 인라인 편집 */
+.trk_status_editable {
+    cursor: pointer;
+    display: inline-block;
+}
+.trk_status_editable:hover { opacity: 0.8; }
+.trk_status_dropdown {
+    position: fixed;
+    background: var(--color-surface, #fff);
+    border: 1px solid var(--color-border, #e4e4e7);
+    border-radius: 6px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    z-index: 9999;
+    min-width: 140px;
+    padding: 4px 0;
+}
+.trk_status_dropdown_item {
+    padding: 7px 14px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.trk_status_dropdown_item:hover {
+    background: var(--color-surface-2, #f4f4f5);
+}
+.trk_status_dropdown_item.active {
+    font-weight: 700;
+    background: var(--color-surface-2, #f4f4f5);
 }
 </style>
 
@@ -224,7 +261,8 @@
             DRAFT:    ["status-draft",     "초안"],
             BLOCKED:  ["status-blocked",   "블록됨"],
             PASSED:   ["status-passed",    "통과"],
-            APPROVED: ["status-approved",  "승인"],
+            QI_TEAM_RELEASED: ["status-approved", "QI Team 배포완료"],
+            APPROVED: ["status-approved",  "QI Team 배포완료"],
             TBD:      ["status-tbd",       "TBD"],
             TODO:     ["status-todo",      "TODO"],
         };
@@ -261,11 +299,11 @@
                 ? Math.round(totalPass / totalResults * 100) : 0;
             const activeNames = testing.map(r => r.alias || r.id).join(", ");
 
-            html += `<div class="trk_sub_header">진행 중 릴리즈</div>`;
+            html += `<div class="trk_sub_header">진행 중 배포</div>`;
             html += `<div class="trk_active_strip">`;
 
             html += `<div class="trk_active_card trk_info">
-                <div class="trk_card_title">진행 중 릴리즈</div>
+                <div class="trk_card_title">진행 중 배포</div>
                 <div class="trk_card_main">${testing.length}건</div>
                 <div class="trk_card_sub">${activeNames}</div>
             </div>`;
@@ -279,7 +317,7 @@
             html += `<div class="trk_active_card ${totalBlock > 0 ? "trk_warn" : "trk_ok"}">
                 <div class="trk_card_title">블록된 항목</div>
                 <div class="trk_card_main">${totalBlock}건</div>
-                <div class="trk_card_sub">진행 중 릴리즈 합산</div>
+                <div class="trk_card_sub">진행 중 배포 합산</div>
             </div>`;
 
             html += `<div class="trk_active_card ${totalOpen > 0 ? "trk_danger" : "trk_ok"}">
@@ -288,26 +326,14 @@
                 <div class="trk_card_sub">opened 상태 결함</div>
             </div>`;
 
-            /* per-release workday info */
-            testing.forEach(r => {
-                const wdText = r.workday
-                    ? `${r.workday} (${r.start_date || "?"} ~ ${r.end_date || "?"})`
-                    : (r.start_date ? `${r.start_date} ~ ${r.end_date || "진행 중"}` : "-");
-                html += `<div class="trk_active_card trk_info">
-                    <div class="trk_card_title">${r.alias || r.id} 시험 기간</div>
-                    <div class="trk_card_main">${wdText}</div>
-                </div>`;
-            });
-
             html += `</div>`; /* trk_active_strip */
         }
 
         /* ── 2. Release timeline ───────────────────────────────── */
-        html += `<div class="trk_sub_header">릴리즈 이력 타임라인</div>`;
+        html += `<div class="trk_sub_header">배포 이력 타임라인</div>`;
         html += `<div class="trk_timeline_wrap"><table class="trk_timeline_table">
             <thead><tr>
-                <th>순번</th><th>시험 릴리즈 ID</th><th>상위 시험 릴리즈 ID</th>
-                <th>상태</th>
+                <th>순번</th><th>시험 배포 ID</th><th>상태</th>
                 <th>시험 기간</th><th>근무일수</th>
                 <th>전체 결과</th><th>통과 진행률</th>
                 <th>결함 (미결)</th>
@@ -328,8 +354,7 @@
                 html += `<tr>
                     <td>${r.sequence || "-"}</td>
                     <td style="font-weight:600">${r.id}</td>
-                    <td>${r.upstream_id || "-"}</td>
-                    <td>${statusBadge(r.status)}</td>
+                    <td><span class="trk_status_editable" data-release-id="${r.id}" data-status="${r.status}">${statusBadge(r.status)}</span></td>
                     <td>${period}</td>
                     <td>${r.workday || "-"}</td>
                     <td>${total}</td>
@@ -349,18 +374,18 @@
         html += `</tbody></table></div>`;
 
         /* ── 3. Active defects ─────────────────────────────────── */
-        html += `<div class="trk_sub_header">미결 결함 현황 (진행 중 릴리즈)</div>`;
+        html += `<div class="trk_sub_header">미결 결함 현황 (진행 중 배포)</div>`;
 
         if (defects.length === 0) {
             html += `<div style="color:var(--color-text-muted,#71717a);font-size:0.85rem;padding:12px 0">
-                진행 중 릴리즈에 미결 결함이 없습니다. ✅
+                진행 중 배포에 미결 결함이 없습니다. ✅
             </div>`;
         } else {
             html += `<div class="trk_timeline_wrap"><table class="trk_defect_table">
                 <thead><tr>
                     <th>결함 ID</th><th>심각도</th><th>우선순위</th>
                     <th>제목</th><th>담당자</th>
-                    <th>예상 해결일</th><th>등록일</th><th>시험 릴리즈 ID</th>
+                    <th>예상 해결일</th><th>등록일</th><th>시험 배포 ID</th>
                 </tr></thead><tbody>`;
 
             defects.forEach(d => {
@@ -388,6 +413,161 @@
         return html;
     }
 
+    /* ── 컬럼 드래그 앤 드롭 + 위치 저장/복원 ──────────────────────── */
+    const TRK_COL_KEY = "trk_col_order";
+
+    function getColKey(table) {
+        return table.classList.contains("trk_timeline_table") ? "timeline" : "defect";
+    }
+
+    function saveColOrder(table) {
+        const key = getColKey(table);
+        const order = Array.from(table.querySelectorAll("thead tr th")).map(th => th.textContent.trim());
+        try {
+            const stored = JSON.parse(localStorage.getItem(TRK_COL_KEY) || "{}");
+            stored[key] = order;
+            localStorage.setItem(TRK_COL_KEY, JSON.stringify(stored));
+        } catch(e) {}
+    }
+
+    function restoreColOrder(table) {
+        const key = getColKey(table);
+        try {
+            const stored = JSON.parse(localStorage.getItem(TRK_COL_KEY) || "{}");
+            const order = stored[key];
+            if (!order || !Array.isArray(order)) return;
+            order.forEach((label, targetIdx) => {
+                const ths = Array.from(table.querySelectorAll("thead tr th"));
+                const srcIdx = ths.findIndex(th => th.textContent.trim() === label);
+                if (srcIdx === -1 || srcIdx === targetIdx) return;
+                const rows = Array.from(table.querySelectorAll("tr"));
+                rows.forEach(row => {
+                    const cells = Array.from(row.children);
+                    if (cells.length <= Math.max(srcIdx, targetIdx)) return;
+                    const a = cells[srcIdx];
+                    const b = cells[targetIdx];
+                    if (srcIdx > targetIdx) b.parentNode.insertBefore(a, b);
+                    else b.parentNode.insertBefore(a, b.nextSibling);
+                });
+            });
+        } catch(e) {}
+    }
+
+    function swapCols(table, srcIdx, dstIdx) {
+        const rows = Array.from(table.querySelectorAll("tr"));
+        rows.forEach(row => {
+            const cells = Array.from(row.children);
+            if (cells.length <= Math.max(srcIdx, dstIdx)) return;
+            const a = cells[srcIdx];
+            const b = cells[dstIdx];
+            if (srcIdx < dstIdx) b.parentNode.insertBefore(a, b.nextSibling);
+            else b.parentNode.insertBefore(a, b);
+        });
+    }
+
+    function bindColumnDragDrop(root) {
+        root.querySelectorAll(".trk_timeline_table, .trk_defect_table").forEach(table => {
+            restoreColOrder(table);
+            let dragSrcIdx = null;
+
+            const rebind = () => {
+                const ths = Array.from(table.querySelectorAll("thead tr th"));
+                ths.forEach((th, idx) => {
+                    th.draggable = true;
+                    th.style.cursor = "grab";
+                    th.ondragstart = e => {
+                        dragSrcIdx = idx;
+                        th.style.opacity = "0.5";
+                        e.dataTransfer.effectAllowed = "move";
+                    };
+                    th.ondragend = () => {
+                        th.style.opacity = "";
+                        ths.forEach(t => t.classList.remove("trk_col_drag_over"));
+                    };
+                    th.ondragover = e => {
+                        e.preventDefault();
+                        ths.forEach(t => t.classList.remove("trk_col_drag_over"));
+                        th.classList.add("trk_col_drag_over");
+                    };
+                    th.ondrop = e => {
+                        e.preventDefault();
+                        const curThs = Array.from(table.querySelectorAll("thead tr th"));
+                        const dstIdx = curThs.indexOf(th);
+                        if (dragSrcIdx === null || dragSrcIdx === dstIdx) return;
+                        swapCols(table, dragSrcIdx, dstIdx);
+                        saveColOrder(table);
+                        dragSrcIdx = null;
+                        rebind();
+                    };
+                });
+            };
+            rebind();
+        });
+    }
+
+    /* ── 상태 인라인 드롭다운 ───────────────────────────────────────── */
+    const STATUS_OPTIONS = [
+        { value: "TESTING",          label: "진행 중"        },
+        { value: "QI_TEAM_RELEASED", label: "QI Team 배포완료" },
+        { value: "BLOCKED",          label: "블록됨"         },
+        { value: "DRAFT",            label: "초안"           },
+    ];
+
+    let _dropdown = null;
+
+    function closeDropdown() {
+        if (_dropdown) { _dropdown.remove(); _dropdown = null; }
+    }
+
+    document.addEventListener("click", (e) => {
+        if (_dropdown && !_dropdown.contains(e.target)) closeDropdown();
+    });
+
+    function openStatusDropdown(trigger, releaseId, currentStatus) {
+        closeDropdown();
+        const rect = trigger.getBoundingClientRect();
+        const dd = document.createElement("div");
+        dd.className = "trk_status_dropdown";
+        dd.style.top  = (rect.bottom + window.scrollY + 4) + "px";
+        dd.style.left = rect.left + "px";
+
+        STATUS_OPTIONS.forEach(opt => {
+            const item = document.createElement("div");
+            item.className = "trk_status_dropdown_item" + (opt.value === currentStatus ? " active" : "");
+            item.innerHTML = statusBadge(opt.value) + ` <span>${opt.label}</span>`;
+            item.addEventListener("click", async (e) => {
+                e.stopPropagation();
+                closeDropdown();
+                if (opt.value === currentStatus) return;
+                try {
+                    const res = await fetch(`/admin/api/release/${encodeURIComponent(releaseId)}/status`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ status: opt.value }),
+                    });
+                    if (!res.ok) throw new Error("HTTP " + res.status);
+                    trigger.dataset.status = opt.value;
+                    trigger.innerHTML = statusBadge(opt.value);
+                } catch (err) {
+                    alert("상태 변경 실패: " + err.message);
+                }
+            });
+            dd.appendChild(item);
+        });
+
+        document.body.appendChild(dd);
+        _dropdown = dd;
+    }
+
+    function bindStatusEditable(root) {
+        root.querySelectorAll(".trk_status_editable").forEach(el => {
+            el.addEventListener("click", (e) => {
+                e.stopPropagation();
+                openStatusDropdown(el, el.dataset.releaseId, el.dataset.status);
+            });
+        });
+    }
+
     /* ── fetch & mount ───────────────────────────────────────────── */
     function loadTracking() {
         const root    = document.getElementById("trk_root");
@@ -401,6 +581,8 @@
             })
             .then(data => {
                 root.innerHTML = renderTracking(data);
+                bindStatusEditable(root);
+                bindColumnDragDrop(root);
             })
             .catch(err => {
                 root.innerHTML = `<div class="trk_loading" style="color:#ef4444">
@@ -413,4 +595,4 @@
     document.getElementById("trk_refresh_btn")
         && document.getElementById("trk_refresh_btn").addEventListener("click", loadTracking);
 })();
-</script>                              
+</script>

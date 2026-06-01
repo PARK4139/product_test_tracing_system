@@ -1,9 +1,10 @@
 """
 트래킹 대시보드 API 라우터.
-- GET  /admin/api/tracking/summary   : 진행 중 + 전체 타임라인 요약
-- GET  /admin/api/work-calendar      : 근무일 목록
-- POST /admin/api/work-calendar      : 근무일 등록/수정
-- DELETE /admin/api/work-calendar/{date} : 삭제
+- GET   /admin/api/tracking/summary          : 진행 중 + 전체 타임라인 요약
+- PATCH /admin/api/release/{id}/status       : 배포 상태 변경
+- GET   /admin/api/work-calendar             : 근무일 목록
+- POST  /admin/api/work-calendar             : 근무일 등록/수정
+- DELETE /admin/api/work-calendar/{date}     : 삭제
 """
 from __future__ import annotations
 
@@ -14,7 +15,7 @@ from sqlalchemy import text
 
 from app.auth import ROLE_ADMIN, ROLE_MASTER_ADMIN, ROLE_TESTER
 from app.deps import current_role_name_dependency, database_session_dependency
-from app.models import WorkCalendar, get_utc_now_datetime
+from app.models import WorkCalendar, ProductTestRelease, get_utc_now_datetime
 
 tracking_router = APIRouter()
 
@@ -149,6 +150,35 @@ def get_tracking_summary(
         "releases": releases,
         "active_defects": active_defects,
     })
+
+
+# ── 배포 상태 변경 ───────────────────────────────────────────────────────────
+
+VALID_RELEASE_STATUSES = {"TESTING", "QI_TEAM_RELEASED", "DRAFT", "BLOCKED"}
+
+class ReleaseStatusBody(BaseModel):
+    status: str
+
+@tracking_router.patch("/admin/api/release/{release_id}/status")
+def patch_release_status(
+    release_id: str,
+    body: ReleaseStatusBody,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    _ensure_admin_role(current_role_name)
+    new_status = body.status.upper()
+    if new_status not in VALID_RELEASE_STATUSES:
+        raise HTTPException(status_code=400, detail=f"Invalid status: {new_status}")
+    row = database_session.query(ProductTestRelease).filter_by(
+        product_test_release_id=release_id
+    ).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Release not found.")
+    row.product_test_release_status = new_status
+    row.updated_at = get_utc_now_datetime()
+    database_session.commit()
+    return JSONResponse({"ok": True, "status": new_status})
 
 
 # ── 근무 캘린더 CRUD ──────────────────────────────────────────────────────────

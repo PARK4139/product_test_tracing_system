@@ -188,6 +188,7 @@ button:disabled {
     color: #16506B;
 }
 
+.status_badge.status-qi_team_released,
 .status_badge.status-approved,
 .status_badge.status-passed,
 .status_badge.status-finished,
