@@ -11,8 +11,10 @@ __pycache__/
 .env.*
 
 data/*.db
+!data/product_test_tracking_system.db
 data/*.db-wal
 data/*.db-shm
+data/.fuse_hidden*
 data/backups/
 data/projects/
 
