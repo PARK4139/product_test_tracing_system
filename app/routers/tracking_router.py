@@ -8,10 +8,18 @@
 """
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException, status
+import hashlib
+import shutil
+from pathlib import Path
+
+from fastapi import APIRouter, File, HTTPException, UploadFile, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from sqlalchemy import text
+
+EVIDENCE_UPLOAD_DIR = Path(__file__).resolve().parent.parent / "static" / "uploads" / "evidence"
+EVIDENCE_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
 
 from app.auth import ROLE_ADMIN, ROLE_MASTER_ADMIN, ROLE_TESTER
 from app.deps import current_role_name_dependency, database_session_dependency
@@ -156,7 +164,8 @@ def get_tracking_summary(
             def.expected_resolution_date,
             def.created_at,
             run.product_test_release_id,
-            run.product_test_run_id
+            run.product_test_run_id,
+            def.remark
         FROM product_test_defect def
         JOIN product_test_result  res ON res.product_test_result_id  = def.product_test_result_id
         JOIN product_test_run     run ON run.product_test_run_id     = res.product_test_run_id
@@ -183,6 +192,18 @@ def get_tracking_summary(
         release_key = f"TEST_RELEASE-{report_part}"
         return report_upstream.get(release_key, "")
 
+    def parse_images(remark: str) -> dict:
+        imgs = {"other_device": [], "hdr_screen": [], "general": []}
+        for line in (remark or "").split("\n"):
+            line = line.strip()
+            if line.startswith("[Image:other_device]"):
+                imgs["other_device"].append(line.replace("[Image:other_device]", "").strip())
+            elif line.startswith("[Image:hdr_screen]"):
+                imgs["hdr_screen"].append(line.replace("[Image:hdr_screen]", "").strip())
+            elif line.startswith("[Image]"):
+                imgs["general"].append(line.replace("[Image]", "").strip())
+        return imgs
+
     active_defects = [
         {
             "id": r[0],
@@ -195,6 +216,7 @@ def get_tracking_summary(
             "created_at": r[7],
             "release_id": r[8],
             "wifi_release_id": resolve_wifi_release(r[9] or ""),
+            "images": parse_images(r[10]),
         }
         for r in active_defects_raw
     ]
@@ -232,6 +254,72 @@ def patch_release_status(
     row.updated_at = get_utc_now_datetime()
     database_session.commit()
     return JSONResponse({"ok": True, "status": new_status})
+
+
+# ── 결함 이미지 업로드 ───────────────────────────────────────────────────────
+
+@tracking_router.post("/admin/api/defect/{defect_id}/image")
+async def upload_defect_image(
+    defect_id: str,
+    file: UploadFile = File(...),
+    img_type: str = "other_device",
+    database_session: database_session_dependency = None,
+    current_role_name: current_role_name_dependency = None,
+):
+    if current_role_name not in (ROLE_TESTER, ROLE_ADMIN, ROLE_MASTER_ADMIN):
+        raise HTTPException(status_code=403, detail="Access denied.")
+    if file.content_type not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(status_code=400, detail="이미지 파일만 업로드 가능합니다 (jpg/png/gif/webp).")
+
+    contents = await file.read()
+    file_hash = hashlib.md5(contents).hexdigest()[:12]
+    suffix = Path(file.filename or "image.jpg").suffix.lower() or ".jpg"
+    save_name = f"{defect_id.replace('/', '_')}_{file_hash}{suffix}"
+    save_path = EVIDENCE_UPLOAD_DIR / save_name
+    save_path.write_bytes(contents)
+
+    url = f"/static/uploads/evidence/{save_name}"
+
+    # defect remark에 [Image] 태그 추가
+    from app.models import ProductTestDefect
+    defect = database_session.query(ProductTestDefect).filter_by(
+        product_test_defect_id=defect_id
+    ).first()
+    if not defect:
+        raise HTTPException(status_code=404, detail="결함을 찾을 수 없습니다.")
+    valid_types = {"other_device", "hdr_screen", "general"}
+    tag_type = img_type if img_type in valid_types else "general"
+    defect.remark = (defect.remark or "") + f"\n[Image:{tag_type}] {url}"
+    defect.updated_at = get_utc_now_datetime()
+    database_session.commit()
+
+    return JSONResponse({"ok": True, "url": url, "file_name": file.filename})
+
+
+@tracking_router.delete("/admin/api/defect/{defect_id}/image")
+def delete_defect_image(
+    defect_id: str,
+    url: str,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    if current_role_name not in (ROLE_TESTER, ROLE_ADMIN, ROLE_MASTER_ADMIN):
+        raise HTTPException(status_code=403, detail="Access denied.")
+    from app.models import ProductTestDefect
+    defect = database_session.query(ProductTestDefect).filter_by(
+        product_test_defect_id=defect_id
+    ).first()
+    if not defect:
+        raise HTTPException(status_code=404, detail="결함을 찾을 수 없습니다.")
+    lines = (defect.remark or "").split("\n")
+    defect.remark = "\n".join(l for l in lines if f"[Image] {url}" not in l)
+    defect.updated_at = get_utc_now_datetime()
+    database_session.commit()
+    # 파일 삭제
+    file_path = EVIDENCE_UPLOAD_DIR / Path(url).name
+    if file_path.exists():
+        file_path.unlink()
+    return JSONResponse({"ok": True})
 
 
 # ── 근무 캘린더 CRUD ──────────────────────────────────────────────────────────

@@ -24,7 +24,41 @@ def find_chrome_executable_path() -> str | None:
     return None
 
 
+def _chrome_already_running(debug_port: int = 9222) -> bool:
+    """디버깅 포트로 Chrome이 이미 실행 중인지 확인."""
+    import urllib.request
+    try:
+        with urllib.request.urlopen(f"http://127.0.0.1:{debug_port}/json", timeout=1) as resp:
+            return resp.status == 200
+    except Exception:
+        return False
+
+
+def _activate_existing_chrome_tab(debug_port: int = 9222) -> bool:
+    """기존 Chrome에서 앱 탭을 찾아 활성화."""
+    import urllib.request, json
+    try:
+        with urllib.request.urlopen(f"http://127.0.0.1:{debug_port}/json", timeout=1) as resp:
+            tabs = json.loads(resp.read())
+        target = next(
+            (t for t in tabs if t.get("type") == "page" and "/admin" in t.get("url", "")),
+            next((t for t in tabs if t.get("type") == "page"), None)
+        )
+        if not target:
+            return False
+        tab_id = target.get("id", "")
+        urllib.request.urlopen(f"http://127.0.0.1:{debug_port}/json/activate/{tab_id}", timeout=1)
+        return True
+    except Exception:
+        return False
+
+
 def launch_debuggable_chrome(admin_dashboard_url: str, kiosk_mode_enabled: bool) -> None:
+    # 이미 실행 중이면 기존 창 재활용
+    if _chrome_already_running():
+        _activate_existing_chrome_tab()
+        return
+
     chrome_executable_path = find_chrome_executable_path()
     if chrome_executable_path is None:
         return
@@ -39,11 +73,7 @@ def launch_debuggable_chrome(admin_dashboard_url: str, kiosk_mode_enabled: bool)
         "--disable-features=PasswordManagerOnboarding,PasswordLeakDetection",
     ]
     if kiosk_mode_enabled:
-        chrome_args.extend(
-            [
-                "--kiosk",
-            ]
-        )
+        chrome_args.extend(["--kiosk"])
     chrome_args.append(admin_dashboard_url)
     subprocess.Popen(
         chrome_args,

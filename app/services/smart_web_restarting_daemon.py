@@ -217,8 +217,14 @@ def _fallback_focus_browser_window_by_title_segments() -> bool:
         _log(f"focus: found browser window score={best_score} hwnd={best_hwnd_val}")
         hwnd = ctypes.wintypes.HWND(best_hwnd_val)
 
-        # Restore if minimized
-        user32.ShowWindow(hwnd, _SW_RESTORE)
+        # 최소화된 경우에만 복원 — 창 크기 변경 방지
+        try:
+            user32.IsIconic.argtypes = [ctypes.wintypes.HWND]
+            user32.IsIconic.restype  = ctypes.wintypes.BOOL
+            if user32.IsIconic(hwnd):
+                user32.ShowWindow(hwnd, _SW_RESTORE)
+        except Exception:
+            pass
 
         # ── AttachThreadInput trick ──────────────────────────────────────────
         # Windows blocks SetForegroundWindow from background processes.

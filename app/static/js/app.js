@@ -1,3 +1,52 @@
+/* ── 전역: 테이블 컬럼 헤더 더블클릭 → 클립보드 복사
+         + 값 20자 초과 컬럼 자동 좌측 정렬 ─────────────────── */
+function initTableColumnFeatures(root) {
+    (root || document).querySelectorAll("table").forEach(table => {
+        const headers = Array.from(table.querySelectorAll("thead th"));
+        if (!headers.length) return;
+
+        // 1. 더블클릭 → 클립보드 복사
+        headers.forEach(th => {
+            if (th.dataset.colFeatInit) return;
+            th.dataset.colFeatInit = "1";
+            th.style.userSelect = "none";
+            th.addEventListener("dblclick", () => {
+                const text = (th.querySelector("span") || th).textContent.trim();
+                navigator.clipboard.writeText(text).then(() => {
+                    const orig = th.style.outline;
+                    th.style.outline = "2px solid #3b82f6";
+                    setTimeout(() => th.style.outline = orig, 800);
+                }).catch(() => {});
+            });
+            th.title = (th.title ? th.title + "\n" : "") + "더블클릭: 컬럼명 복사";
+        });
+
+        // 2. 값 20자 초과 컬럼 → 좌측 정렬
+        const rows = Array.from(table.querySelectorAll("tbody tr"));
+        headers.forEach((th, colIdx) => {
+            const hasLong = rows.some(tr => {
+                const td = tr.querySelectorAll("td")[colIdx];
+                return td && (td.textContent || "").trim().length > 20;
+            });
+            if (hasLong) {
+                th.style.textAlign = "left";
+                rows.forEach(tr => {
+                    const td = tr.querySelectorAll("td")[colIdx];
+                    if (td) td.style.textAlign = "left";
+                });
+            }
+        });
+    });
+}
+
+document.addEventListener("DOMContentLoaded", () => initTableColumnFeatures(document));
+const _tableObserver = new MutationObserver(mutations => {
+    mutations.forEach(m => m.addedNodes.forEach(node => {
+        if (node.nodeType === 1) initTableColumnFeatures(node);
+    }));
+});
+_tableObserver.observe(document.body, { childList: true, subtree: true });
+
 (() => {
     const formatModalMessageText = (message) =>
         String(message || "")
