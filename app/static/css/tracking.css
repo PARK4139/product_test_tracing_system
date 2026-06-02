@@ -350,9 +350,26 @@ tr.trk_row_highlighted.hl-default td:first-child { border-left: 3px solid #eab30
     top: 0; bottom: 0;
     width: 2px;
     background: #f97316;
-    opacity: 0.6;
+    opacity: 0.8;
     z-index: 1;
     pointer-events: none;
+}
+.gantt_today_label {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #f97316;
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    white-space: nowrap;
+    padding: 2px 5px;
+    border-radius: 3px;
+    line-height: 1.3;
+    text-align: center;
+    pointer-events: none;
+    margin-bottom: 2px;
 }
 .gantt_month_label {
     position: absolute;
@@ -430,3 +447,22 @@ tr.trk_row_highlighted.hl-default td:first-child { border-left: 3px solid #eab30
     border-bottom: 1px solid var(--color-border, #e4e4e7); font-weight: 600;
 }
 .trk_popup_table td { padding: 5px 10px; border-bottom: 1px solid var(--color-border, #e4e4e7); }
+
+/* ── 데드라인 선 ─────────────────────────────────────────────── */
+.gantt_deadline_line {
+    position: absolute; top: 0; bottom: 0;
+    width: 2px; background: #dc2626;
+    opacity: 0.85; z-index: 2;
+    cursor: ew-resize;
+}
+.gantt_deadline_hidden { display: none; }
+.gantt_deadline_label {
+    position: absolute; bottom: 100%; left: 50%;
+    transform: translateX(-50%);
+    background: #dc2626; color: #fff;
+    font-size: 0.65rem; font-weight: 700;
+    white-space: nowrap; padding: 2px 5px;
+    border-radius: 3px; line-height: 1.3;
+    text-align: center; pointer-events: none;
+    margin-bottom: 2px;
+}

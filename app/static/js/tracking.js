@@ -34,16 +34,16 @@
             LOW: "C", MINOR: "C", TRIVIAL: "C",
         }[raw] || raw;
         const map = {
-            S: ["#ef4444", "즉시수정"],
-            A: ["#f97316", "높음"],
-            B: ["#f59e0b", "보통"],
-            C: ["#84cc16", "낮음"],
+            S: ["#ef4444", "선순위"],
+            A: ["#f97316", "선순위"],
+            B: ["#f59e0b", "차순위"],
+            C: ["#84cc16", "후순위"],
         };
         const [color, label] = map[norm] || ["#94a3b8", raw || "-"];
         const sevNorm = (sev || "").toUpperCase();
-        const mustTag = ["S","A"].includes(sevNorm)
-            ? `<span class="trk_sev_must">필수수정</span> ` : "";
-        return `${mustTag}<span style="display:inline-block;padding:2px 7px;border-radius:4px;font-size:0.72rem;font-weight:700;background:${color};color:#fff">${label}</span>`;
+        const isMust = ["S","A"].includes(sevNorm);
+        if (isMust) return `<span class="trk_sev_must">필수수정</span>`;
+        return `<span style="display:inline-block;padding:2px 7px;border-radius:4px;font-size:0.72rem;font-weight:700;background:${color};color:#fff">${label}</span>`;
     }
 
     function statusBadge(st, short = false) {
@@ -361,13 +361,24 @@
             </div>`;
         }
 
+        // 데드라인 위치 복원 (저장 포맷: {pct, date})
+        let _dlSaved = null;
+        try { _dlSaved = JSON.parse(localStorage.getItem("gantt_deadline_pct")); } catch(e) {}
+        const dlPct  = _dlSaved && _dlSaved.pct != null ? _dlSaved.pct : null;
+        const dlDate = _dlSaved && _dlSaved.date ? _dlSaved.date : "";
+
         let html = `<div class="gantt_wrap">
             <div class="gantt_header">
                 <div class="gantt_label_col">시험명<div class="gantt_resize_handle" id="gantt_resize_handle"></div></div>
                 <div class="gantt_status_col" style="font-weight:600;font-size:0.8rem;border-right:1px solid var(--color-border,#e4e4e7)">상태</div>
                 <div class="gantt_chart_col" style="position:relative">
                     ${monthLabels()}
-                    <div class="gantt_today_line" style="left:${todayPct}%"></div>
+                    <div class="gantt_today_line" style="left:${todayPct}%">
+                        <span class="gantt_today_label">오늘날짜 표시선<br>${today.toLocaleDateString('ko-KR',{month:'2-digit',day:'2-digit'})}</span>
+                    </div>
+                    <div class="gantt_deadline_line${dlPct === null ? ' gantt_deadline_hidden' : ''}" id="gantt_deadline_line" style="left:${dlPct ?? 50}%">
+                        <span class="gantt_deadline_label">종료예정일<br>${dlDate}</span>
+                    </div>
                 </div>
             </div>`;
 
@@ -423,6 +434,41 @@
                 document.removeEventListener("mousemove", onMove);
                 document.removeEventListener("mouseup", onUp);
             }
+            document.addEventListener("mousemove", onMove);
+            document.addEventListener("mouseup", onUp);
+        });
+    }
+
+    /* ── 데드라인 선 드래그 ──────────────────────────────────────── */
+    const DEADLINE_KEY = "gantt_deadline_pct";
+
+    function calcDateFromPct(chartCol, p) {
+        const d = new Date(minD.getTime() + (p / 100) * totalMs);
+        return isNaN(d) ? "" : d.toLocaleDateString('ko-KR', {year:'numeric', month:'2-digit', day:'2-digit'});
+    }
+
+    function initDeadlineDrag(wrap) {
+        const line = wrap.querySelector("#gantt_deadline_line");
+        if (!line) return;
+        const chartCol = wrap.querySelector(".gantt_header .gantt_chart_col");
+        if (!chartCol) return;
+
+        line.addEventListener("mousedown", e => {
+            e.preventDefault();
+            const onMove = mv => {
+                const rect = chartCol.getBoundingClientRect();
+                const p = Math.max(0, Math.min(100, (mv.clientX - rect.left) / rect.width * 100));
+                const dateStr = calcDateFromPct(chartCol, p);
+                line.style.left = p + "%";
+                line.classList.remove("gantt_deadline_hidden");
+                const lbl = line.querySelector(".gantt_deadline_label");
+                if (lbl) lbl.innerHTML = `종료예정일<br>${dateStr}`;
+                localStorage.setItem(DEADLINE_KEY, JSON.stringify({pct: p, date: dateStr}));
+            };
+            const onUp = () => {
+                document.removeEventListener("mousemove", onMove);
+                document.removeEventListener("mouseup", onUp);
+            };
             document.addEventListener("mousemove", onMove);
             document.addEventListener("mouseup", onUp);
         });
@@ -567,9 +613,11 @@
         const loadMsg = document.getElementById("trk_loading_msg");
         if (loadMsg) loadMsg.style.display = "block";
 
+        let _httpStatus = null;
         fetch("/admin/api/tracking/summary")
             .then(r => {
-                if (!r.ok) throw new Error("HTTP " + r.status);
+                _httpStatus = r.status;
+                if (!r.ok) return r.text().then(t => { throw new Error("HTTP " + r.status + "\n" + t); });
                 return r.json();
             })
             .then(data => {
@@ -579,15 +627,20 @@
                 initStatClickable(root);
                 bindGanttFold(root);
                 const ganttWrap = root.querySelector(".gantt_wrap");
-                if (ganttWrap) initGanttResize(ganttWrap);
+                if (ganttWrap) { initGanttResize(ganttWrap); initDeadlineDrag(ganttWrap); }
                 bindHighlights(root);
                 bindDefectImages(root);
                 initDefectColResize(root);
                 if (typeof initTableColumnFeatures === "function") initTableColumnFeatures(root);
             })
             .catch(err => {
-                root.innerHTML = `<div class="trk_loading" style="color:#ef4444">
-                    데이터 로드 실패: ${err.message}
+                console.error("[tracking] loadTracking 실패", err);
+                root.innerHTML = `<div class="trk_loading" style="color:#ef4444;font-family:monospace;white-space:pre-wrap;font-size:0.8rem;padding:16px">
+<b>데이터 로드 실패</b> (HTTP ${_httpStatus ?? "연결불가"})
+
+${err.message}
+
+<span style="color:#94a3b8;font-size:0.75rem">브라우저 콘솔(F12 → Console)에서 자세한 스택 확인 가능</span>
                 </div>`;
             });
     }
