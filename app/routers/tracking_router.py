@@ -5,6 +5,7 @@
 - GET   /admin/api/work-calendar             : 근무일 목록
 - POST  /admin/api/work-calendar             : 근무일 등록/수정
 - DELETE /admin/api/work-calendar/{date}     : 삭제
+- POST  /admin/api/client-log               : 프런트엔드 로그 파일 기록
 """
 from __future__ import annotations
 
@@ -12,7 +13,10 @@ import hashlib
 import shutil
 from pathlib import Path
 
-from fastapi import APIRouter, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, File, HTTPException, Request, UploadFile, status
+from app.services.logging_service import get_logger
+
+_client_log = get_logger("client")
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from sqlalchemy import text
@@ -388,4 +392,22 @@ def delete_work_calendar(
         raise HTTPException(status_code=404, detail="Not found.")
     database_session.delete(row)
     database_session.commit()
+    return JSONResponse({"ok": True})
+                                                              
+
+# ── 프런트엔드 클라이언트 로그 ────────────────────────────────────────────────
+@tracking_router.post("/admin/api/client-log")
+async def post_client_log(request: Request):
+    """JS console.log 대신 파일에 기록 — Claude가 읽을 수 있도록."""
+    body = await request.json()
+    level = str(body.get("level", "info")).lower()
+    msg   = str(body.get("msg", ""))
+    data  = body.get("data", "")
+    full  = f"{msg}  {data}" if data else msg
+    if level == "error":
+        _client_log.error("[frontend] %s", full)
+    elif level == "warn":
+        _client_log.warning("[frontend] %s", full)
+    else:
+        _client_log.info("[frontend] %s", full)
     return JSONResponse({"ok": True})

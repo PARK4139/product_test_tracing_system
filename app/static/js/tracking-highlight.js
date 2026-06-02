@@ -60,9 +60,11 @@ function bindHighlights(root) {
             clearAllHighlights();
             if (isSelected) return;
             const deviceRowId = tr.dataset.parentReleaseId || "";
+            clientLog("[HL] defect click", {parentReleaseId: deviceRowId});
             tr.classList.add("trk_row_highlighted", "hl-blocked");
             if (deviceRowId) {
                 const deviceRow = root.querySelector(`.gantt_row_child[data-row-id="${deviceRowId}"]`);
+                clientLog("[HL] deviceRow", deviceRow ? deviceRow.dataset.rowId : "NOT FOUND");
                 if (deviceRow) {
                     deviceRow.classList.add("gantt_hl", statusHighlightClass(deviceRow.dataset.status));
                     const parentId = deviceRow.dataset.parentId;

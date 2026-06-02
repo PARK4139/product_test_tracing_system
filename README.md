@@ -226,3 +226,24 @@ rg -n -i "elt" .
 - 실제 운영 계정 정책과 QC_MODE 강제 admin 모드 분리
 - API/화면 테스트 추가
 - 기존 ELT 데이터 이관 정책 확정
+
+## 개발 규칙
+
+### 프런트엔드 디버그 로그 — 파일 기록 필수
+
+`console.log` 대신 반드시 `window.clientLog()`를 사용한다.  
+`clientLog`는 `/admin/api/client-log` 엔드포인트를 통해 서버의 `data/logs/app.log`에 기록된다.  
+이렇게 하면 Claude가 직접 로그 파일을 읽어 디버깅할 수 있다.
+
+```js
+// 올바른 방법
+clientLog("[HL] defect click", {parentReleaseId: deviceRowId});
+clientLog("error detail", errorObj, "error");   // level: "info"|"warn"|"error"
+
+// 금지
+console.log("...");
+```
+
+로그 파일 경로: `data/logs/app.log`  
+로그 유틸 파일: `app/static/js/tracking-client-log.js`  
+서버 엔드포인트: `POST /admin/api/client-log` (`app/routers/tracking_router.py`)
