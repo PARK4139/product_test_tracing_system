@@ -395,3 +395,38 @@ tr.trk_row_highlighted.hl-default td:first-child { border-left: 3px solid #eab30
 .trk_status_dropdown_item:hover {
     background: var(--color-surface-2, #f4f4f5);
 }
+
+/* ── 통계 테이블 ─────────────────────────────────────────────── */
+.trk_stat_table_wrap { overflow-x: auto; margin-bottom: 8px; }
+.trk_stat_table {
+    width: 100%; border-collapse: collapse; font-size: 0.85rem;
+}
+.trk_stat_table th {
+    background: var(--color-surface-2, #f4f4f5);
+    color: var(--color-text-muted, #71717a);
+    font-weight: 600; text-align: center;
+    padding: 7px 14px;
+    border-bottom: 2px solid var(--color-border, #e4e4e7);
+    white-space: nowrap;
+}
+.trk_stat_table td {
+    padding: 10px 14px; text-align: center;
+    border-bottom: 1px solid var(--color-border, #e4e4e7);
+    vertical-align: middle;
+}
+.trk_stat_num {
+    font-size: 1.5rem; font-weight: 800; display: block; line-height: 1.1;
+}
+.trk_stat_clickable { cursor: pointer; }
+.trk_stat_clickable:hover { opacity: 0.75; }
+.trk_stat_sub {
+    font-size: 0.72rem; color: var(--color-text-muted, #71717a); margin-top: 3px;
+}
+.trk_popup_table {
+    width: 100%; border-collapse: collapse; font-size: 0.8rem;
+}
+.trk_popup_table th {
+    background: var(--color-surface-2, #f4f4f5); padding: 5px 10px;
+    border-bottom: 1px solid var(--color-border, #e4e4e7); font-weight: 600;
+}
+.trk_popup_table td { padding: 5px 10px; border-bottom: 1px solid var(--color-border, #e4e4e7); }

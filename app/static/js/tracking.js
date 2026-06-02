@@ -526,6 +526,41 @@
         });
     }
 
+    function initStatClickable(root) {
+        let _popup = null;
+        root.querySelectorAll(".trk_stat_clickable").forEach(el => {
+            el.addEventListener("click", e => {
+                e.stopPropagation();
+                if (_popup) { _popup.remove(); _popup = null; return; }
+                const detail = el.dataset.detail;
+                let rows = "";
+                try {
+                    const data = JSON.parse(el.dataset.json || "[]");
+                    if (detail === "pass") {
+                        rows = data.map(r => `<tr><td>${r.alias}</td><td>${r.passed}/${r.total}</td><td style="color:${r.total>0&&r.passed/r.total>=0.8?'#22c55e':'#f59e0b'};font-weight:700">${r.total>0?Math.round(r.passed/r.total*100):0}%</td></tr>`).join("");
+                        rows = `<table class="trk_popup_table"><thead><tr><th>배포명</th><th>통과/전체</th><th>통과율</th></tr></thead><tbody>${rows}</tbody></table>`;
+                    } else if (detail === "block") {
+                        rows = data.map(r => `<tr><td>${r.alias}</td><td style="color:${r.blocked>0?'#f59e0b':'#22c55e'};font-weight:700">${r.blocked}건</td></tr>`).join("");
+                        rows = `<table class="trk_popup_table"><thead><tr><th>배포명</th><th>블록</th></tr></thead><tbody>${rows}</tbody></table>`;
+                    } else if (detail === "defect") {
+                        rows = data.map(r => `<tr><td>${r.id}</td><td>${r.title}</td><td>${r.severity}</td></tr>`).join("");
+                        rows = `<table class="trk_popup_table"><thead><tr><th>결함 ID</th><th>제목</th><th>심각도</th></tr></thead><tbody>${rows}</tbody></table>`;
+                    }
+                } catch(err) { rows = "데이터 없음"; }
+                const popup = document.createElement("div");
+                popup.style.cssText = "position:fixed;z-index:9999;background:#fff;border:1px solid #e4e4e7;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.12);padding:12px;max-width:480px;max-height:320px;overflow:auto;font-size:0.8rem";
+                popup.innerHTML = rows;
+                const rect = el.getBoundingClientRect();
+                popup.style.top  = (rect.bottom + 6) + "px";
+                popup.style.left = Math.min(rect.left, window.innerWidth - 490) + "px";
+                document.body.appendChild(popup);
+                _popup = popup;
+                const close = ev => { if (!popup.contains(ev.target) && ev.target !== el) { popup.remove(); _popup = null; document.removeEventListener("click", close); } };
+                setTimeout(() => document.addEventListener("click", close), 0);
+            });
+        });
+    }
+
     /* ── fetch & mount ───────────────────────────────────────────── */
     function loadTracking() {
         const root    = document.getElementById("trk_root");
@@ -545,6 +580,7 @@
                 bindGanttFold(root);
                 const ganttWrap = root.querySelector(".gantt_wrap");
                 if (ganttWrap) initGanttResize(ganttWrap);
+                bindHighlights(root);
                 bindDefectImages(root);
                 initDefectColResize(root);
                 if (typeof initTableColumnFeatures === "function") initTableColumnFeatures(root);
@@ -556,7 +592,120 @@
             });
     }
 
-    /* ── 결함 이미지 업로드 + 라이트박스 ────────────────────────── */
+    /* ── 간트 접기/펼치기 ───────────────────────────────────── */
+    const GANTT_FOLD_KEY = "trk_gantt_fold";
+    function getFoldState(id) {
+        try { return JSON.parse(localStorage.getItem(GANTT_FOLD_KEY) || "{}")[id] === true; } catch(e) { return false; }
+    }
+    function saveFoldState(id, folded) {
+        try { const s = JSON.parse(localStorage.getItem(GANTT_FOLD_KEY) || "{}"); s[id] = folded; localStorage.setItem(GANTT_FOLD_KEY, JSON.stringify(s)); } catch(e) {}
+    }
+    function _applyFold(root, id, folded) {
+        root.querySelectorAll(`[data-parent-id="${id}"]`).forEach(row => { row.style.display = folded ? "none" : ""; });
+    }
+    function bindGanttFold(root) {
+        const viewMode = parseInt(localStorage.getItem('trk_view_mode') || '0', 10);
+        root.querySelectorAll(".gantt_fold_btn").forEach(btn => {
+            const id = btn.dataset.foldId;
+            if (viewMode === 2 && getFoldState(id)) { _applyFold(root, id, true); btn.textContent = "▶"; }
+            btn.addEventListener("click", e => {
+                e.stopPropagation();
+                const folded = btn.textContent === "▼";
+                _applyFold(root, id, folded);
+                btn.textContent = folded ? "▶" : "▼";
+                saveFoldState(id, folded);
+            });
+        });
+    }
+
+    /* ── 하이라이트 ─────────────────────────────────────────── */
+    function statusHighlightClass(status) {
+        const s = (status || "").toUpperCase();
+        if (["PASSED","QI_TEAM_RELEASED","APPROVED"].includes(s)) return "hl-passed";
+        if (s === "BLOCKED") return "hl-blocked";
+        if (s === "TESTING") return "hl-testing";
+        return "hl-default";
+    }
+    function clearAllHighlights() {
+        document.querySelectorAll("tr.trk_row_highlighted").forEach(r => r.classList.remove("trk_row_highlighted","hl-passed","hl-blocked","hl-testing","hl-default"));
+        document.querySelectorAll(".gantt_hl").forEach(r => r.classList.remove("gantt_hl","hl-passed","hl-blocked","hl-testing","hl-default"));
+    }
+    function bindHighlights(root) {
+        // 간트 자식 행 클릭
+        root.querySelectorAll(".gantt_row_child").forEach(row => {
+            row.addEventListener("click", e => {
+                if (e.target.closest(".trk_status_editable,.trk_status_readonly")) return;
+                const releaseId = row.dataset.rowId;
+                const isSelected = row.classList.contains("gantt_hl");
+                clearAllHighlights();
+                if (!isSelected && releaseId) {
+                    row.classList.add("gantt_hl", statusHighlightClass(row.dataset.status));
+                    const matched = document.querySelectorAll(`tr[data-release-id="${releaseId}"]`);
+                    matched.forEach(r => r.classList.add("trk_row_highlighted", statusHighlightClass(row.dataset.status)));
+                    if (matched.length) matched[0].scrollIntoView({ behavior:"smooth", block:"nearest" });
+                }
+            });
+        });
+        // 결함 행 클릭
+        root.querySelectorAll(".trk_defect_table tbody tr").forEach(tr => {
+            tr.style.cursor = "pointer";
+            tr.addEventListener("click", () => {
+                const isSelected = tr.classList.contains("trk_row_highlighted");
+                clearAllHighlights();
+                if (isSelected) return;
+                const wifiRelease = tr.dataset.wifiReleaseId || "";
+                tr.classList.add("trk_row_highlighted", "hl-blocked");
+                if (wifiRelease) {
+                    const parentRow = root.querySelector(`.gantt_row[data-row-id="${wifiRelease}"]`);
+                    if (parentRow) {
+                        parentRow.classList.add("gantt_hl", statusHighlightClass(parentRow.dataset.status));
+                        parentRow.scrollIntoView({ behavior:"smooth", block:"nearest" });
+                    }
+                    root.querySelectorAll(`.gantt_row_child[data-parent-id="${wifiRelease}"]`).forEach(c => {
+                        c.classList.add("gantt_hl", statusHighlightClass(c.dataset.status));
+                    });
+                }
+            });
+        });
+    }
+
+    /* ── 결함 이미지 업로드 + hover 팝업 ───────────────────── */
+    function bindDefectImages(root) {
+        const popup = document.getElementById("trk_img_popup") || (() => {
+            const el = document.createElement("div"); el.id = "trk_img_popup";
+            el.innerHTML = `<img id="trk_popup_img" src="">`;
+            document.body.appendChild(el); return el;
+        })();
+        const popupImg = document.getElementById("trk_popup_img");
+        root.querySelectorAll(".trk_defect_thumb").forEach(img => {
+            img.addEventListener("mouseenter", () => {
+                popupImg.src = img.dataset.src; popup.style.display = "block";
+                const rect = img.getBoundingClientRect();
+                const pw = window.innerWidth * 0.7 + 12, ph = window.innerHeight * 0.7 + 12;
+                let left = rect.right + 10, top = rect.top;
+                if (left + pw > window.innerWidth)  left = Math.max(8, rect.left - pw - 10);
+                if (top  + ph > window.innerHeight) top  = Math.max(8, window.innerHeight - ph - 8);
+                popup.style.left = left + "px"; popup.style.top = top + "px";
+            });
+            img.addEventListener("mouseleave", () => { popup.style.display = "none"; });
+        });
+        root.querySelectorAll(".trk_img_file_input").forEach(input => {
+            input.addEventListener("change", async e => {
+                e.stopPropagation();
+                const file = input.files[0]; if (!file) return;
+                const defectId = input.dataset.defectId;
+                const imgType  = input.dataset.imgType || "other_device";
+                const formData = new FormData();
+                formData.append("file", file); formData.append("img_type", imgType);
+                try {
+                    const resp = await fetch(`/admin/api/defect/${encodeURIComponent(defectId)}/image`, { method:"POST", body:formData });
+                    if (!resp.ok) throw new Error(await resp.text());
+                    document.getElementById("trk_refresh_btn").click();
+                } catch(err) { alert("업로드 실패: " + err.message); }
+            });
+        });
+    }
+
     /* ── 결함 테이블 컬럼 리사이즈 ──────────────────────────── */
     const DEFECT_COL_KEY = "trk_defect_col_widths";
     function initDefectColResize(root) {
@@ -593,255 +742,16 @@
         });
     }
 
-    /* ── 간트 접기/펼치기 ───────────────────────────────────── */
-    const GANTT_FOLD_KEY = "trk_gantt_fold";
-
-    function getFoldState(id) {
-        try { return JSON.parse(localStorage.getItem(GANTT_FOLD_KEY) || "{}")[id] === true; }
-        catch(e) { return false; }
-    }
-    function saveFoldState(id, folded) {
-        try {
-            const s = JSON.parse(localStorage.getItem(GANTT_FOLD_KEY) || "{}");
-            s[id] = folded;
-            localStorage.setItem(GANTT_FOLD_KEY, JSON.stringify(s));
-        } catch(e) {}
-    }
-    function _applyFold(root, id, folded) {
-        root.querySelectorAll(`[data-parent-id="${id}"]`).forEach(row => {
-            row.style.display = folded ? "none" : "";
-        });
-    }
-    function bindGanttFold(root) {
-        const viewMode = parseInt(localStorage.getItem('trk_view_mode') || '0', 10);
-        root.querySelectorAll(".gantt_fold_btn").forEach(btn => {
-            const id = btn.dataset.foldId;
-            // 모드 2(저장상태복구)만 저장된 상태 적용, 나머지는 모두 펼침
-            if (viewMode === 2 && getFoldState(id)) {
-                _applyFold(root, id, true);
-                btn.textContent = "▶";
-            }
-            btn.addEventListener("click", e => {
-                e.stopPropagation();
-                const folded = btn.textContent === "▼";
-                _applyFold(root, id, folded);
-                btn.textContent = folded ? "▶" : "▼";
-                saveFoldState(id, folded);
-            });
-        });
-    }
-
-    function bindDefectImages(root) {
-        // 썸네일 hover → 확대 팝업
-        const popup = document.getElementById("trk_img_popup") || (() => {
-            const el = document.createElement("div");
-            el.id = "trk_img_popup";
-            el.innerHTML = `<img id="trk_popup_img" src="">`;
-            document.body.appendChild(el);
-            return el;
-        })();
-        const popupImg = document.getElementById("trk_popup_img");
-
-        root.querySelectorAll(".trk_defect_thumb").forEach(img => {
-            img.addEventListener("mouseenter", e => {
-                popupImg.src = img.dataset.src;
-                popup.style.display = "block";
-                const rect = img.getBoundingClientRect();
-                const pw = window.innerWidth  * 0.7 + 12;
-                const ph = window.innerHeight * 0.7 + 12;
-                let left = rect.right + 10;
-                let top  = rect.top;
-                if (left + pw > window.innerWidth)  left = Math.max(8, rect.left - pw - 10);
-                if (top  + ph > window.innerHeight) top  = Math.max(8, window.innerHeight - ph - 8);
-                popup.style.left = left + "px";
-                popup.style.top  = top  + "px";
-            });
-            img.addEventListener("mouseleave", () => { popup.style.display = "none"; });
-        });
-
-        // 파일 입력 → 업로드
-        root.querySelectorAll(".trk_img_file_input").forEach(input => {
-            input.addEventListener("change", async e => {
-                e.stopPropagation();
-                const file = input.files[0];
-                if (!file) return;
-                const defectId = input.dataset.defectId;
-                const imgType = input.dataset.imgType || "other_device";
-                const formData = new FormData();
-                formData.append("file", file);
-                formData.append("img_type", imgType);
-                try {
-                    const resp = await fetch(`/admin/api/defect/${encodeURIComponent(defectId)}/image`, {
-                        method: "POST", body: formData
-                    });
-                    if (!resp.ok) throw new Error(await resp.text());
-                    document.getElementById("trk_refresh_btn").click();
-                } catch(err) {
-                    alert("업로드 실패: " + err.message);
-                }
-            });
-        });
-    }
-
     const VIEW_MODE_LABELS = ['전체 보기', '시험중 보기', '저장상태 복구'];
     function updateToggleLabel() {
         const btn = document.getElementById("trk_view_toggle_btn");
         if (!btn) return;
         const mode = parseInt(localStorage.getItem('trk_view_mode') || '0', 10);
-        // 다음 클릭 시 이동할 상태 안내
         btn.textContent = VIEW_MODE_LABELS[(mode + 1) % 3];
-        btn.title = `현재: ${VIEW_MODE_LABELS[mode]} → 클릭하면: ${VIEW_MODE_LABELS[(mode + 1) % 3]}`;
+        btn.title = `현재: ${VIEW_MODE_LABELS[mode]} → 클릭: ${VIEW_MODE_LABELS[(mode + 1) % 3]}`;
     }
 
     document.addEventListener("DOMContentLoaded", () => { updateToggleLabel(); loadTracking(); });
     document.getElementById("trk_refresh_btn")
         && document.getElementById("trk_refresh_btn").addEventListener("click", () => { updateToggleLabel(); loadTracking(); });
 })();
-
-
-/* ── 간트차트 접기/펼치기 ─────────────────────────────────────── */
-const GANTT_FOLD_KEY = "trk_gantt_fold";
-function saveFoldState(id, folded) {
-    try {
-        const s = JSON.parse(localStorage.getItem(GANTT_FOLD_KEY) || "{}");
-        s[id] = folded;
-        localStorage.setItem(GANTT_FOLD_KEY, JSON.stringify(s));
-    } catch(e) {}
-}
-function getFoldState(id) {
-    try {
-        const s = JSON.parse(localStorage.getItem(GANTT_FOLD_KEY) || "{}");
-        return s[id] === true; // 기본 펼침
-    } catch(e) { return false; }
-}
-function bindGanttFold(root) {
-    // 초기 상태 복원
-    // 자식 행 클릭 → 해당 행 하이라이트 + 연관 테이블 rows 하이라이트
-    // 상태별 하이라이트 클래스 결정
-    function statusHighlightClass(status) {
-        if (!status) return "hl-default";
-        const s = status.toUpperCase();
-        if (["PASSED","QI_TEAM_RELEASED","APPROVED"].includes(s)) return "hl-passed";
-        if (["BLOCKED"].includes(s)) return "hl-blocked";
-        if (["TESTING"].includes(s)) return "hl-testing";
-        return "hl-default";
-    }
-
-    function clearAllHighlights() {
-        document.querySelectorAll("tr.trk_row_highlighted").forEach(r => {
-            r.classList.remove("trk_row_highlighted","hl-passed","hl-blocked","hl-testing","hl-default");
-        });
-        root.querySelectorAll(".gantt_row.gantt_hl").forEach(r => {
-            r.classList.remove("gantt_hl","hl-passed","hl-blocked","hl-testing","hl-default");
-        });
-    }
-
-    root.querySelectorAll(".gantt_row_child").forEach(row => {
-        row.addEventListener("click", e => {
-            if (e.target.closest(".trk_status_editable, .trk_status_readonly")) return;
-            const releaseId = row.dataset.rowId;
-            const isSelected = row.classList.contains("gantt_hl");
-
-            clearAllHighlights();
-            if (!isSelected && releaseId) {
-                const hlCls = statusHighlightClass(row.dataset.status);
-                row.classList.add("gantt_hl", hlCls);
-                const matched = document.querySelectorAll(`tr[data-release-id="${releaseId}"]`);
-                matched.forEach(r => r.classList.add("trk_row_highlighted", hlCls));
-                if (matched.length > 0) matched[0].scrollIntoView({ behavior: "smooth", block: "nearest" });
-            }
-        });
-    });
-
-    // 결함 행 클릭 → 연관 데이터 하이라이트
-    root.querySelectorAll(".trk_defect_table tbody tr").forEach(tr => {
-        tr.style.cursor = "pointer";
-        tr.addEventListener("click", () => {
-            const isSelected = tr.classList.contains("trk_row_highlighted");
-            clearAllHighlights();
-            if (isSelected) return;
-
-            const wifiRelease = tr.dataset.wifiReleaseId || "";
-            // 결함 행 자체는 blocked 색상
-            tr.classList.add("trk_row_highlighted", "hl-blocked");
-
-            if (wifiRelease) {
-                const parentRow = root.querySelector(`.gantt_row[data-row-id="${wifiRelease}"]`);
-                if (parentRow) {
-                    const hlCls = statusHighlightClass(parentRow.dataset.status);
-                    parentRow.classList.add("gantt_hl", hlCls);
-                    parentRow.scrollIntoView({ behavior: "smooth", block: "nearest" });
-                }
-                root.querySelectorAll(`.gantt_row_child[data-parent-id="${wifiRelease}"]`).forEach(c => {
-                    c.classList.add("gantt_hl", statusHighlightClass(c.dataset.status));
-                });
-            }
-        });
-    });
-
-    root.querySelectorAll(".gantt_fold_btn").forEach(btn => {
-        const id = btn.dataset.foldId;
-        if (getFoldState(id)) {
-            _applyFold(root, id, true);
-            btn.textContent = "▶";
-        }
-        btn.addEventListener("click", e => {
-            e.stopPropagation();
-            const folded = btn.textContent === "▼";
-            _applyFold(root, id, folded);
-            btn.textContent = folded ? "▶" : "▼";
-            saveFoldState(id, folded);
-        });
-    });
-}
-function _applyFold(root, parentId, folded) {
-    root.querySelectorAll(`[data-parent-id="${parentId}"]`).forEach(row => {
-        row.style.display = folded ? "none" : "";
-    });
-}
-
-/* ── 통계 테이블 클릭 상세 팝업 ───────────────────────────────── */
-function initStatClickable(root) {
-    let popup = null;
-    function closePopup() { if (popup) { popup.remove(); popup = null; } }
-    document.addEventListener("click", e => { if (popup && !popup.contains(e.target)) closePopup(); });
-
-    root.querySelectorAll(".trk_stat_clickable").forEach(el => {
-        el.addEventListener("click", e => {
-            e.stopPropagation();
-            closePopup();
-            const detail = el.dataset.detail;
-            const data = JSON.parse(el.dataset.json || "[]");
-            let rows = "";
-
-            if (detail === "releases") {
-                rows = data.map(r => `<tr><td>${r.alias}</td><td>${statusBadge(r.status)}</td></tr>`).join("");
-                rows = `<table class="trk_popup_table"><thead><tr><th>배포명</th><th>상태</th></tr></thead><tbody>${rows}</tbody></table>`;
-            } else if (detail === "pass") {
-                rows = data.map(r => {
-                    const pct = r.total > 0 ? Math.round(r.passed/r.total*100) : 0;
-                    return `<tr><td>${r.alias}</td><td>${r.passed}/${r.total}</td><td style="color:${pct>=80?'#22c55e':pct>=50?'#f59e0b':'#ef4444'};font-weight:700">${pct}%</td></tr>`;
-                }).join("");
-                rows = `<table class="trk_popup_table"><thead><tr><th>배포명</th><th>통과/전체</th><th>통과율</th></tr></thead><tbody>${rows}</tbody></table>`;
-            } else if (detail === "block") {
-                rows = data.map(r => `<tr><td>${r.alias}</td><td style="color:${r.blocked>0?'#f59e0b':'#22c55e'};font-weight:700">${r.blocked}건</td></tr>`).join("");
-                rows = `<table class="trk_popup_table"><thead><tr><th>배포명</th><th>블록</th></tr></thead><tbody>${rows}</tbody></table>`;
-            } else if (detail === "defect") {
-                if (!data.length) {
-                    rows = `<div style="padding:12px;color:#22c55e">미결 결함 없음 ✅</div>`;
-                } else {
-                    rows = data.map(d => `<tr><td>${sevBadge(d.severity)}</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${d.title}">${d.title}</td><td>${d.assigned_to}</td></tr>`).join("");
-                    rows = `<table class="trk_popup_table"><thead><tr><th>심각도</th><th>제목</th><th>담당</th></tr></thead><tbody>${rows}</tbody></table>`;
-                }
-            }
-
-            const rect = el.getBoundingClientRect();
-            popup = document.createElement("div");
-            popup.className = "trk_stat_popup";
-            popup.style.top  = (rect.bottom + window.scrollY + 6) + "px";
-            popup.style.left = Math.min(rect.left, window.innerWidth - 320) + "px";
-            popup.innerHTML = rows;
-            document.body.appendChild(popup);
-        });
-    });
-}
