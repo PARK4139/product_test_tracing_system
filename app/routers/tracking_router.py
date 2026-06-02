@@ -177,20 +177,17 @@ def get_tracking_summary(
             def.created_at
     """)).fetchall()
 
-    # Run ID에서 Report ID 추출 → 상위 WIFI 릴리즈 역추적
-    # Run ID 형식: RUN-{REPORT_ID}-{CONFIG_ID}
-    report_upstream = {r["id"]: r["upstream_id"] for r in releases}
+    # release_id → 상위 장비행 ID 맵 (RC → 장비행, 장비행은 그대로)
+    # 구조: RC(visible=0) → 장비행(visible=1) → 라운드(parent)
+    release_upstream = {r["id"]: r["upstream_id"] for r in releases}
 
-    def resolve_wifi_release(run_id: str) -> str:
-        # RUN-REPORT_ID-... 에서 REPORT_ID 추출
-        parts = run_id[4:] if run_id.startswith("RUN-") else run_id
-        # CONFIG 부분 제거: 첫 번째 -CFG_ 앞까지
-        if "-CFG_" in parts:
-            report_part = parts.split("-CFG_")[0]
-        else:
-            report_part = parts
-        release_key = f"TEST_RELEASE-{report_part}"
-        return report_upstream.get(release_key, "")
+    def resolve_parent_release(release_id: str) -> str:
+        """run.release_id → 간트 장비 행 ID (visible=1인 상위)"""
+        parent = release_upstream.get(release_id, "")
+        # RC 레벨이면 한 단계 더 올라감 (장비행)
+        if parent and release_upstream.get(parent):
+            return parent
+        return parent
 
     def parse_images(remark: str) -> dict:
         imgs = {"other_device": [], "hdr_screen": [], "general": []}
@@ -215,7 +212,7 @@ def get_tracking_summary(
             "expected_resolution_date": r[6] or "",
             "created_at": r[7],
             "release_id": r[8],
-            "wifi_release_id": resolve_wifi_release(r[9] or ""),
+            "parent_release_id": resolve_parent_release(r[8] or ""),
             "images": parse_images(r[10]),
         }
         for r in active_defects_raw
