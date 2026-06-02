@@ -30,7 +30,7 @@ function buildGantt(releases) {
     const visibleReleases = (viewMode === 1
         ? releases.filter(r => IN_PROGRESS.has(r.status))
         : releases
-    ).filter(r => !isContainer(r));
+    ).filter(r => !isContainer(r) && r.visible !== false);
 
     const releaseIds = new Set(visibleReleases.map(r => r.id));
     const parents = visibleReleases.filter(r => !releaseIds.has(r.upstream_id));

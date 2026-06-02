@@ -8,7 +8,7 @@ function renderTracking(data) {
     const totalResults = testing.reduce((a, r) => a + r.total_results, 0);
     const totalPass    = testing.reduce((a, r) => a + r.passed,       0);
     const totalBlock   = testing.reduce((a, r) => a + r.blocked,      0);
-    const totalOpen    = testing.reduce((a, r) => a + r.open_defects, 0);
+    const totalOpen    = defects.length;
 
     let html = "";
 
