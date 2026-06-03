@@ -81,111 +81,66 @@ function renderTracking(data) {
     let html = "";
 
     /* ── 1. Active summary table ───────────────────────────── */
-    if (testing.length > 0) {
-        const passRate = totalResults > 0
-            ? Math.round(totalPass / totalResults * 100) : 0;
-        const activeNames = testing.map(r => r.alias || r.id).join(", ");
+    const allRuns = data.runs || [];
+    const sumResults = allRuns.reduce((a,r) => a + r.total_results, 0);
+    const sumPassed  = allRuns.reduce((a,r) => a + r.passed, 0);
+    const sumBlocked = allRuns.reduce((a,r) => a + r.blocked, 0);
+    const sumTesting = allRuns.reduce((a,r) => a + r.testing, 0);
+    const passRate   = sumResults > 0 ? Math.round(sumPassed / sumResults * 100) : 0;
 
-        const passColor  = passRate >= 80 ? "#22c55e" : passRate >= 50 ? "#f59e0b" : "#ef4444";
-        const blockColor = totalBlock > 0 ? "#f59e0b" : "#22c55e";
-        const openColor  = totalOpen  > 0 ? "#ef4444" : "#22c55e";
+    const passColor  = passRate >= 80 ? "#22c55e" : passRate >= 50 ? "#f59e0b" : "#ef4444";
+    const blockColor = sumBlocked > 0 ? "#ef4444" : "#22c55e";
+    const openColor  = totalOpen  > 0 ? "#ef4444" : "#22c55e";
 
-        // 상세 팝업용 데이터
-        const detailData = {
-            releases: JSON.stringify(testing.map(r => ({alias: r.alias || r.id, status: r.status, passed: r.passed, total: r.total_results, open: r.open_defects, blocked: r.blocked}))),
-        };
+    html += `<div class="trk_stat_table_wrap">
+        <table class="trk_stat_table">
+            <thead><tr>
+                <th>미결 결함</th>
+                <th>전체 Result</th>
+                <th>통과율</th>
+                <th>차단</th>
+                <th>시험중</th>
+            </tr></thead>
+            <tbody><tr>
+                <td>
+                    <span class="trk_stat_num" style="color:${openColor};font-weight:700">${totalOpen}건</span>
+                    <div class="trk_stat_sub">opened</div>
+                </td>
+                <td>
+                    <span class="trk_stat_num" style="font-weight:700">${sumResults}건</span>
+                    <div class="trk_stat_sub">${allRuns.length} runs</div>
+                </td>
+                <td>
+                    <span class="trk_stat_num" style="color:${passColor};font-weight:700">${passRate}%</span>
+                    <div class="trk_stat_sub">${sumPassed}/${sumResults}</div>
+                </td>
+                <td>
+                    <span class="trk_stat_num" style="color:${blockColor};font-weight:700">${sumBlocked}건</span>
+                    <div class="trk_stat_sub">blocked</div>
+                </td>
+                <td>
+                    <span class="trk_stat_num" style="color:${sumTesting>0?"#2563eb":"#94a3b8"};font-weight:700">${sumTesting}건</span>
+                    <div class="trk_stat_sub">testing</div>
+                </td>
+            </tr></tbody>
+        </table>
+    </div>`;
 
-        html += `<div class="trk_stat_table_wrap">
-            <table class="trk_stat_table">
-                <thead><tr>
-                    <th>미결 결함</th>
-                </tr></thead>
-                <tbody><tr>
-                    <td>
-                        <span class="trk_stat_num trk_stat_clickable"
-                            style="color:${openColor};font-weight:700"
-                            data-detail="defect"
-                            data-json='${JSON.stringify(defects)}'>
-                            ${totalOpen}건
-                        </span>
-                        <div class="trk_stat_sub">opened 상태 결함</div>
-                    </td>
-                </tr></tbody>
-            </table>
-        </div>`;
-    }
-
-    /* ── 2. Release timeline ───────────────────────────────── */
-    html += `<div class="trk_sub_header">배포 이력 타임라인</div>`;
-    html += buildGantt(releases.filter(r => !r.id.includes("FALLBACK")));
-
-    /* ── 3. Active defects ─────────────────────────────────── */
+    /* ── 2. Active defects ─────────────────────────────────── */
     html += buildDefectTable(defects);
 
-    /* ── 4. Run table ─────────────────────────────────────── */
-    const runs = data.runs || [];
-    if (runs.length > 0) {
-        html += `<div class="trk_sub_header">Run 현황</div>`;
-        html += `<div class="trk_timeline_wrap"><table class="trk_run_table">
-            <thead><tr>
-                <th style="width:220px">Run ID</th>
-                <th style="width:200px">구성</th>
-                <th style="width:70px">상태</th>
-                <th style="width:50px">전체</th>
-                <th style="width:50px">합격</th>
-                <th style="width:50px">차단</th>
-                <th style="width:50px">시험중</th>
-            </tr></thead><tbody>`;
-        runs.forEach(r => {
-            const runSt = r.blocked>0?"BLOCKED":r.testing>0?"TESTING":"PASSED";
-            html += `<tr data-run-id="${r.id}" data-parent-release-id="${r.parent_release_id}" data-status="${runSt}" style="cursor:pointer">
-                <td style="font-size:0.72rem;color:#64748b" title="${r.id}">${r.id}</td>
-                <td style="font-size:0.78rem">${extractTopo(r.parent_release_id)}</td>
-                <td>${statusBadge(r.status)}</td>
-                <td style="text-align:center">${r.total_results}</td>
-                <td style="text-align:center;color:#16a34a;font-weight:600">${r.passed}</td>
-                <td style="text-align:center;color:${r.blocked>0?"#dc2626":"#94a3b8"};font-weight:${r.blocked>0?"600":"400"}">${r.blocked}</td>
-                <td style="text-align:center;color:${r.testing>0?"#2563eb":"#94a3b8"}">${r.testing}</td>
-            </tr>`;
-        });
-        html += `</tbody></table></div>`;
-    }
+    /* ── 3. Release timeline ───────────────────────────────── */
+    const viewLabels = ['보기모드: 전체','보기모드: 시험중','보기모드: 중단판정'];
+    const curView = parseInt(localStorage.getItem('trk_view_mode') || '0', 10);
+    html += `<div class="trk_sub_header">배포 이력 타임라인
+        <button type="button" id="trk_view_toggle_btn" class="trk_view_mode_btn"
+            onclick="var l=['보기모드: 전체','보기모드: 시험중','보기모드: 중단판정'];var c=parseInt(localStorage.getItem('trk_view_mode')||'0',10);var n=(c+1)%3;localStorage.setItem('trk_view_mode',n);this.textContent=l[n];document.getElementById('trk_refresh_btn').click();">
+            ${viewLabels[curView] || viewLabels[0]}
+        </button>
+    </div>`;
+    html += buildGantt(releases.filter(r => !r.id.includes("FALLBACK")));
 
-    /* ── 4. Result summary (case level) ───────────────────── */
-    const resultsSummary = data.results_summary || [];
-    if (resultsSummary.length > 0) {
-        html += `<div class="trk_sub_header">Result 요약 (Case 단위)</div>`;
-        html += `<div class="trk_timeline_wrap"><table class="trk_result_table">
-            <thead><tr>
-                <th style="width:360px">Test Case</th>
-                <th style="width:50px">전체</th>
-                <th style="width:50px">합격</th>
-                <th style="width:50px">차단</th>
-                <th style="width:50px">시험중</th>
-                <th style="width:50px">결함</th>
-            </tr></thead><tbody>`;
-        resultsSummary.forEach(r => {
-            const hd = r.defect_ids && r.defect_ids.length > 0;
-            const resSt = r.blocked>0?"BLOCKED":r.testing>0?"TESTING":"PASSED";
-            const caseDisplay = extractTopo(r.parent_release_id) + "-" + (r.case_id||"").replace(/^(TEST_CASE|DEPRECATED_TEST_CASE)-[^-]+-/,"");
-            html += `<tr data-parent-release-id="${r.parent_release_id}"
-                         data-case-id="${r.case_id}"
-                         data-result-ids='${JSON.stringify(r.result_ids||[])}'
-                         data-defect-ids='${JSON.stringify(r.defect_ids||[])}'
-                         data-status="${resSt}"
-                         style="cursor:pointer">
-                <td style="font-size:0.75rem;max-width:360px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${caseDisplay}">${caseDisplay}</td>
-                <td style="text-align:center">${r.total}</td>
-                <td style="text-align:center;color:#16a34a;font-weight:600">${r.passed}</td>
-                <td style="text-align:center;color:${r.blocked>0?"#dc2626":"#94a3b8"};font-weight:${r.blocked>0?"600":"400"}">${r.blocked}</td>
-                <td style="text-align:center;color:${r.testing>0?"#2563eb":"#94a3b8"}">${r.testing}</td>
-                <td style="text-align:center;color:${hd?"#dc2626":"#94a3b8"};font-weight:${hd?"700":"400"}">${hd?r.defect_ids.length:"-"}</td>
-            </tr>`;
-        });
-        html += `</tbody></table></div>`;
-    }
-
-    /* ── 5. Procedure Results ─────────────────────────────── */
+    /* ── 4. Procedure Results ─────────────────────────────── */
     const procResults = data.procedure_results || [];
     if (procResults.length > 0) {
         html += `<div class="trk_sub_header">Procedure Result 현황</div>`;

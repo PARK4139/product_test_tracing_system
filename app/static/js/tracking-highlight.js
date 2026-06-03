@@ -43,6 +43,16 @@ function bindHighlights(root) {
         return first;
     }
 
+    // scroll to defect table area
+    function scrollToDefects(firstDefect) {
+        if (firstDefect) {
+            firstDefect.scrollIntoView({ behavior:"smooth", block:"center" });
+        } else {
+            const header = root.querySelector(".trk_defect_table") || root.querySelector(".trk_sub_header");
+            if (header) header.scrollIntoView({ behavior:"smooth", block:"start" });
+        }
+    }
+
     // ── gantt parent row click ──
     root.querySelectorAll(".gantt_row:not(.gantt_row_child)").forEach(row => {
         row.addEventListener("click", e => {
@@ -57,7 +67,8 @@ function bindHighlights(root) {
                 const topoIds = childRows.map(c => c.dataset.rowId).filter(Boolean);
                 if (!topoIds.length) topoIds.push(releaseId);
                 topoIds.forEach(id => hlAllTablesByTopo(id));
-                hlDefectsByTopoIds(topoIds);
+                const first = hlDefectsByTopoIds(topoIds);
+                scrollToDefects(first);
             }
         });
     });
@@ -73,7 +84,7 @@ function bindHighlights(root) {
                 row.classList.add("gantt_hl", statusHighlightClass(row.dataset.status));
                 hlAllTablesByTopo(rowId);
                 const first = hlDefectsByTopoIds([rowId]);
-                if (first) first.scrollIntoView({ behavior:"smooth", block:"nearest" });
+                scrollToDefects(first);
             }
         });
     });

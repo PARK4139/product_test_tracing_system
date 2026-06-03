@@ -244,6 +244,20 @@
     height: 1px;
     background: var(--color-border, #e4e4e7);
 }
+.trk_view_mode_btn {
+    font-size: 0.72rem;
+    padding: 2px 10px;
+    border: 1px solid var(--color-border, #e4e4e7);
+    border-radius: 4px;
+    background: var(--color-surface, #fff);
+    color: var(--color-text-muted, #71717a);
+    cursor: pointer;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+    white-space: nowrap;
+}
+.trk_view_mode_btn:hover { background: var(--color-surface-2, #f4f4f5); }
 
 .trk_col_drag_over {
     background: var(--color-primary-light, #dbeafe) !important;
