@@ -112,7 +112,12 @@
 .trk_run_table,
 .trk_result_table,
 .trk_proc_result_table,
-.trk_evidence_table {
+.trk_evidence_table,
+.trk_report_table,
+.trk_target_table,
+.trk_env_table,
+.trk_case_table,
+.trk_procedure_table {
     width: 100%;
     border-collapse: collapse;
     font-size: 0.82rem;
@@ -121,7 +126,12 @@
 .trk_run_table th,
 .trk_result_table th,
 .trk_proc_result_table th,
-.trk_evidence_table th {
+.trk_evidence_table th,
+.trk_report_table th,
+.trk_target_table th,
+.trk_env_table th,
+.trk_case_table th,
+.trk_procedure_table th {
     background: var(--color-surface-2, #f4f4f5);
     color: var(--color-text-muted, #71717a);
     font-weight: 600;
@@ -134,7 +144,12 @@
 .trk_run_table td,
 .trk_result_table td,
 .trk_proc_result_table td,
-.trk_evidence_table td {
+.trk_evidence_table td,
+.trk_report_table td,
+.trk_target_table td,
+.trk_env_table td,
+.trk_case_table td,
+.trk_procedure_table td {
     padding: 7px 10px;
     border-bottom: 1px solid var(--color-border, #e4e4e7);
     vertical-align: middle;
@@ -146,6 +161,11 @@
 .trk_result_table tr:hover td { background: #f0f9ff; }
 .trk_proc_result_table tr:hover td { background: #f0f9ff; }
 .trk_evidence_table tr:hover td { background: #f0f9ff; }
+.trk_report_table tr:hover td { background: #f0f9ff; }
+.trk_target_table tr:hover td { background: #f0f9ff; }
+.trk_env_table tr:hover td { background: #f0f9ff; }
+.trk_case_table tr:hover td { background: #f0f9ff; }
+.trk_procedure_table tr:hover td { background: #f0f9ff; }
 
 /* defect table */
 .trk_defect_table {

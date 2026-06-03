@@ -27,6 +27,11 @@ function bindHighlights(root) {
         });
     }
     function hlAllTablesByTopo(topoId) {
+        hlByTopo("trk_report_table", topoId);
+        hlByTopo("trk_target_table", topoId);
+        hlByTopo("trk_env_table", topoId);
+        hlByTopo("trk_case_table", topoId);
+        hlByTopo("trk_procedure_table", topoId);
         hlByTopo("trk_run_table", topoId);
         hlByTopo("trk_result_table", topoId);
         hlByTopo("trk_proc_result_table", topoId);
@@ -193,6 +198,32 @@ function bindHighlights(root) {
                 hlAllTablesByTopo(topoId);
                 hlDefectsByTopoIds([topoId]);
             }
+        });
+    });
+
+    // ── generic click for report/target/env/case/procedure tables ──
+    const genericTables = [
+        "trk_report_table", "trk_target_table", "trk_env_table",
+        "trk_case_table", "trk_procedure_table"
+    ];
+    genericTables.forEach(cls => {
+        root.querySelectorAll(`.${cls} tbody tr`).forEach(tr => {
+            tr.addEventListener("click", () => {
+                const isSelected = tr.classList.contains("trk_row_highlighted");
+                clearAllHighlights();
+                if (isSelected) return;
+                const topoId = tr.dataset.parentReleaseId || "";
+                const st = tr.dataset.status || "";
+                tr.classList.add("trk_row_highlighted", statusHighlightClass(st));
+                if (topoId) {
+                    const topoRow = findGanttRowById(topoId);
+                    if (topoRow) {
+                        topoRow.classList.add("gantt_hl", statusHighlightClass(topoRow.dataset.status));
+                    }
+                    hlAllTablesByTopo(topoId);
+                    hlDefectsByTopoIds([topoId]);
+                }
+            });
         });
     });
 }

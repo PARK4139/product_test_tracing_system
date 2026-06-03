@@ -419,6 +419,115 @@ def get_tracking_summary(
         for r in evidence_raw
     ]
 
+    # ── Reports ────────────────────────────────────────────────────────────────
+    reports_raw = conn.execute(text("""
+        SELECT product_test_report_id, product_test_release_id,
+               product_test_report_type, product_test_report_status,
+               product_test_report_title, created_at
+        FROM product_test_report
+        ORDER BY created_at
+    """)).fetchall()
+
+    reports = [
+        {
+            "id": r[0],
+            "release_id": r[1],
+            "parent_release_id": resolve_parent_release(r[1] or ""),
+            "type": r[2] or "",
+            "status": r[3] or "",
+            "title": r[4] or "",
+            "created_at": r[5] or "",
+        }
+        for r in reports_raw
+    ]
+
+    # ── Targets (via runs) ────────────────────────────────────────────────────
+    targets_raw = conn.execute(text("""
+        SELECT DISTINCT
+            t.product_test_target_id,
+            td.product_test_target_definition_id,
+            run.product_test_release_id
+        FROM product_test_run run
+        JOIN product_test_target t ON t.product_test_target_id = run.product_test_target_id
+        JOIN product_test_target_definition td
+            ON td.product_test_target_definition_id = REPLACE(
+                SUBSTR(t.product_test_target_id, 1, INSTR(t.product_test_target_id || '-', '-') - 1)
+                || '_' ||
+                SUBSTR(t.product_test_target_id, INSTR(t.product_test_target_id || '-', '-') + 1),
+                'TARGET-', 'TARGET_DEF-'
+            )
+        WHERE EXISTS (SELECT 1 FROM product_test_result res WHERE res.product_test_run_id = run.product_test_run_id)
+    """)).fetchall()
+
+    # simpler approach: just get unique targets from runs
+    target_ids_seen = set()
+    targets = []
+    for r in conn.execute(text("""
+        SELECT DISTINCT run.product_test_target_id, run.product_test_release_id
+        FROM product_test_run run
+        JOIN product_test_result res ON res.product_test_run_id = run.product_test_run_id
+    """)).fetchall():
+        tid = r[0]
+        parent = resolve_parent_release(r[1] or "")
+        if tid not in target_ids_seen:
+            target_ids_seen.add(tid)
+        targets.append({"id": tid, "parent_release_id": parent})
+
+    # ── Environments (via runs) ───────────────────────────────────────────────
+    environments = []
+    for r in conn.execute(text("""
+        SELECT DISTINCT run.product_test_environment_id, run.product_test_release_id
+        FROM product_test_run run
+        JOIN product_test_result res ON res.product_test_run_id = run.product_test_run_id
+    """)).fetchall():
+        parent = resolve_parent_release(r[1] or "")
+        environments.append({"id": r[0], "parent_release_id": parent})
+
+    # ── Cases + Procedures (via results) ──────────────────────────────────────
+    cases_raw = conn.execute(text("""
+        SELECT DISTINCT
+            res.product_test_case_id,
+            c.product_test_case_title,
+            run.product_test_release_id
+        FROM product_test_result res
+        JOIN product_test_run run ON run.product_test_run_id = res.product_test_run_id
+        LEFT JOIN product_test_case c ON c.product_test_case_id = res.product_test_case_id
+        ORDER BY res.product_test_case_id
+    """)).fetchall()
+
+    cases = [
+        {
+            "id": r[0],
+            "title": (r[1] or "")[:120],
+            "parent_release_id": resolve_parent_release(r[2] or ""),
+        }
+        for r in cases_raw
+    ]
+
+    procedures_raw = conn.execute(text("""
+        SELECT DISTINCT
+            p.product_test_procedure_id,
+            p.product_test_case_id,
+            p.procedure_sequence,
+            p.procedure_action,
+            run.product_test_release_id
+        FROM product_test_procedure p
+        JOIN product_test_result res ON res.product_test_case_id = p.product_test_case_id
+        JOIN product_test_run run ON run.product_test_run_id = res.product_test_run_id
+        ORDER BY p.product_test_case_id, p.procedure_sequence
+    """)).fetchall()
+
+    procedures = [
+        {
+            "id": r[0],
+            "case_id": r[1],
+            "sequence": r[2],
+            "action": (r[3] or "")[:120],
+            "parent_release_id": resolve_parent_release(r[4] or ""),
+        }
+        for r in procedures_raw
+    ]
+
     return JSONResponse({
         "releases": releases,
         "active_defects": active_defects,
@@ -426,6 +535,11 @@ def get_tracking_summary(
         "results_summary": results_summary,
         "procedure_results": procedure_results,
         "evidence": evidence,
+        "reports": reports,
+        "targets": targets,
+        "environments": environments,
+        "cases": cases,
+        "procedures": procedures,
     })
 
 

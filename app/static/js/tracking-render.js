@@ -140,7 +140,103 @@ function renderTracking(data) {
     </div>`;
     html += buildGantt(releases.filter(r => !r.id.includes("FALLBACK")));
 
-    /* ── 4. Procedure Results ─────────────────────────────── */
+    /* ── 4. Reports ───────────────────────────────────────── */
+    const reps = data.reports || [];
+    if (reps.length > 0) {
+        html += `<div class="trk_sub_header">Report 현황</div>`;
+        html += `<div class="trk_timeline_wrap"><table class="trk_report_table">
+            <thead><tr>
+                <th style="width:280px">Report ID</th>
+                <th style="width:80px">유형</th>
+                <th style="width:80px">상태</th>
+                <th style="width:250px">제목</th>
+                <th style="width:90px">생성일</th>
+            </tr></thead><tbody>`;
+        reps.forEach(r => {
+            html += `<tr data-parent-release-id="${r.parent_release_id}" data-status="${r.status}" style="cursor:pointer">
+                <td style="font-size:0.72rem;color:#64748b" title="${r.id}">${r.id}</td>
+                <td style="font-size:0.78rem">${r.type}</td>
+                <td>${statusBadge(r.status)}</td>
+                <td style="font-size:0.75rem;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.title}">${r.title}</td>
+                <td style="font-size:0.75rem;color:#64748b">${(r.created_at||"").slice(0,10)}</td>
+            </tr>`;
+        });
+        html += `</tbody></table></div>`;
+    }
+
+    /* ── 5. Target / Environment ──────────────────────────── */
+    const tgts = data.targets || [];
+    const envs = data.environments || [];
+    if (tgts.length > 0 || envs.length > 0) {
+        html += `<div class="trk_sub_header">Target / Environment</div>`;
+        if (tgts.length > 0) {
+            html += `<div class="trk_timeline_wrap"><table class="trk_target_table">
+                <thead><tr>
+                    <th style="width:300px">Target ID</th>
+                    <th style="width:200px">구성</th>
+                </tr></thead><tbody>`;
+            tgts.forEach(t => {
+                html += `<tr data-parent-release-id="${t.parent_release_id}" style="cursor:pointer">
+                    <td style="font-size:0.75rem;color:#64748b" title="${t.id}">${t.id}</td>
+                    <td style="font-size:0.75rem">${extractTopo(t.parent_release_id)}</td>
+                </tr>`;
+            });
+            html += `</tbody></table></div>`;
+        }
+        if (envs.length > 0) {
+            html += `<div class="trk_timeline_wrap" style="margin-top:6px"><table class="trk_env_table">
+                <thead><tr>
+                    <th style="width:400px">Environment ID</th>
+                    <th style="width:200px">구성</th>
+                </tr></thead><tbody>`;
+            envs.forEach(e => {
+                html += `<tr data-parent-release-id="${e.parent_release_id}" style="cursor:pointer">
+                    <td style="font-size:0.72rem;color:#64748b" title="${e.id}">${e.id}</td>
+                    <td style="font-size:0.75rem">${extractTopo(e.parent_release_id)}</td>
+                </tr>`;
+            });
+            html += `</tbody></table></div>`;
+        }
+    }
+
+    /* ── 6. Case / Procedure ──────────────────────────────── */
+    const caseList = data.cases || [];
+    const procList = data.procedures || [];
+    if (caseList.length > 0) {
+        html += `<div class="trk_sub_header">Test Case / Procedure</div>`;
+        html += `<div class="trk_timeline_wrap"><table class="trk_case_table">
+            <thead><tr>
+                <th style="width:350px">Test Case</th>
+                <th style="width:200px">제목</th>
+            </tr></thead><tbody>`;
+        caseList.forEach(c => {
+            const caseDisplay = extractTopo(c.parent_release_id) + "-" + (c.id||"").replace(/^(TEST_CASE|DEPRECATED_TEST_CASE)-[^-]+-/,"");
+            html += `<tr data-parent-release-id="${c.parent_release_id}" data-case-id="${c.id}" style="cursor:pointer">
+                <td style="font-size:0.75rem" title="${c.id}">${caseDisplay}</td>
+                <td style="font-size:0.72rem;color:#64748b;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${c.title}">${c.title}</td>
+            </tr>`;
+        });
+        html += `</tbody></table></div>`;
+        if (procList.length > 0) {
+            html += `<div class="trk_timeline_wrap" style="margin-top:6px"><table class="trk_procedure_table">
+                <thead><tr>
+                    <th style="width:30px">Seq</th>
+                    <th style="width:350px">Test Case</th>
+                    <th style="width:300px">Action</th>
+                </tr></thead><tbody>`;
+            procList.forEach(p => {
+                const caseDisplay = extractTopo(p.parent_release_id) + "-" + (p.case_id||"").replace(/^(TEST_CASE|DEPRECATED_TEST_CASE)-[^-]+-/,"");
+                html += `<tr data-parent-release-id="${p.parent_release_id}" data-case-id="${p.case_id}" style="cursor:pointer">
+                    <td style="text-align:center">${p.sequence}</td>
+                    <td style="font-size:0.72rem;color:#64748b" title="${p.case_id}">${caseDisplay}</td>
+                    <td style="font-size:0.72rem;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.action}">${p.action}</td>
+                </tr>`;
+            });
+            html += `</tbody></table></div>`;
+        }
+    }
+
+    /* ── 7. Procedure Results ─────────────────────────────── */
     const procResults = data.procedure_results || [];
     if (procResults.length > 0) {
         html += `<div class="trk_sub_header">Procedure Result 현황</div>`;
