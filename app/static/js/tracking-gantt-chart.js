@@ -128,7 +128,7 @@ function buildGantt(releases) {
         </div>`;
     }
 
-    let html = `<div class="gantt_wrap">
+    let html = `<div class="gantt_wrap" data-min-date="${minD.toISOString()}" data-total-ms="${totalMs}">
         <div class="gantt_header">
             <div class="gantt_label_col">시험명<div class="gantt_resize_handle" id="gantt_resize_handle"></div></div>
             <div class="gantt_status_col" style="font-weight:600;font-size:0.8rem;border-right:1px solid var(--color-border,#e4e4e7)">상태</div>

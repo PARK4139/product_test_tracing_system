@@ -35,6 +35,11 @@ function initGanttResize(wrap) {
 const DEADLINE_KEY = "gantt_deadline_pct";
 
 function calcDateFromPct(chartCol, p) {
+    const wrap = chartCol.closest(".gantt_wrap");
+    const minDateRaw = wrap ? wrap.dataset.minDate : "";
+    const totalMs = wrap ? parseFloat(wrap.dataset.totalMs || "0") : 0;
+    const minD = minDateRaw ? new Date(minDateRaw) : null;
+    if (!minD || Number.isNaN(minD.getTime()) || !totalMs) return "";
     const d = new Date(minD.getTime() + (p / 100) * totalMs);
     return isNaN(d) ? "" : d.toLocaleDateString('ko-KR', {year:'numeric', month:'2-digit', day:'2-digit'});
 }

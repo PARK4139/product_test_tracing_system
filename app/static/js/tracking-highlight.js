@@ -12,6 +12,11 @@ function clearAllHighlights() {
     document.querySelectorAll(".gantt_hl").forEach(r => r.classList.remove("gantt_hl","hl-passed","hl-blocked","hl-testing","hl-default"));
 }
 function bindHighlights(root) {
+    function findGanttRowById(rowId) {
+        if (!rowId) return null;
+        return root.querySelector(`.gantt_row[data-row-id="${rowId}"]`);
+    }
+
     function highlightDefectsByDeviceRows(deviceRowIds) {
         let first = null;
         deviceRowIds.forEach(id => {
@@ -63,7 +68,7 @@ function bindHighlights(root) {
             clientLog("[HL] defect click", {parentReleaseId: deviceRowId});
             tr.classList.add("trk_row_highlighted", "hl-blocked");
             if (deviceRowId) {
-                const deviceRow = root.querySelector(`.gantt_row_child[data-row-id="${deviceRowId}"]`);
+                const deviceRow = findGanttRowById(deviceRowId);
                 clientLog("[HL] deviceRow", deviceRow ? deviceRow.dataset.rowId : "NOT FOUND");
                 if (deviceRow) {
                     deviceRow.classList.add("gantt_hl", statusHighlightClass(deviceRow.dataset.status));
@@ -78,4 +83,3 @@ function bindHighlights(root) {
         });
     });
 }
-

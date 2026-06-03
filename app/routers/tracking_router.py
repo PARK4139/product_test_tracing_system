@@ -393,7 +393,7 @@ def delete_work_calendar(
     database_session.delete(row)
     database_session.commit()
     return JSONResponse({"ok": True})
-                                                              
+
 
 # ── 프런트엔드 클라이언트 로그 ────────────────────────────────────────────────
 @tracking_router.post("/admin/api/client-log")
