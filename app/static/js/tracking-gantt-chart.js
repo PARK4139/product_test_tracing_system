@@ -100,9 +100,15 @@ function buildGantt(releases) {
         const barTitle = r.workday
             ? `${r.workday} (${sdStr !== "-" ? sdStr : "?"} ~ ${endLabel})`
             : `${sdStr !== "-" ? sdStr : "?"} ~ ${endLabel}`;
+        let deltaLabel = "";
+        if (sd && ed) {
+            const diffMs = ed - sd;
+            const diffDays = Math.round(diffMs / 86400000);
+            deltaLabel = diffDays + "d";
+        }
         const barDisplayLabel = r.workday
             ? `${r.workday} (${sdStr !== "-" ? sdStr : "?"} ~ ${edStr !== "-" ? edStr : "?"})`
-            : "";
+            : (sd && ed ? `${deltaLabel} (${sdStr} ~ ${edStr})` : "");
 
         let barHtml = "";
         if (indent === 0) {
