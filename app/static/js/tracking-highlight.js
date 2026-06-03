@@ -48,6 +48,15 @@ function bindHighlights(root) {
         return first;
     }
 
+    function hlByCaseId(caseId) {
+        if (!caseId) return;
+        ["trk_case_table", "trk_procedure_table", "trk_proc_result_table"].forEach(cls => {
+            root.querySelectorAll(`.${cls} tbody tr[data-case-id="${caseId}"]`).forEach(r => {
+                r.classList.add("trk_row_highlighted", "hl-default");
+            });
+        });
+    }
+
     // scroll to defect table area
     function scrollToDefects(firstDefect) {
         if (firstDefect) {
@@ -131,6 +140,14 @@ function bindHighlights(root) {
                 }
                 hlAllTablesByTopo(topoId);
                 hlDefectsByTopoIds([topoId]);
+                const runId = tr.dataset.runId || "";
+                if (runId) {
+                    root.querySelectorAll(".trk_result_table tbody tr").forEach(r => {
+                        if ((r.dataset.runIds || "").split(",").includes(runId)) {
+                            r.classList.add("trk_row_highlighted", "hl-testing");
+                        }
+                    });
+                }
             }
         });
     });
@@ -150,6 +167,7 @@ function bindHighlights(root) {
                     topoRow.scrollIntoView({ behavior:"smooth", block:"nearest" });
                 }
                 hlAllTablesByTopo(topoId);
+                hlByCaseId(tr.dataset.caseId || "");
                 let defectIds = [];
                 try { defectIds = JSON.parse(tr.dataset.defectIds || "[]"); } catch(e) {}
                 defectIds.forEach(did => {

@@ -140,6 +140,38 @@ function renderTracking(data) {
     </div>`;
     html += buildGantt(releases.filter(r => !r.id.includes("FALLBACK")));
 
+    
+    /* ── 3.5 Run 현황 ───────────────────────────────────────── */
+    const runList = data.runs || [];
+    if (runList.length > 0) {
+        html += `<div class="trk_sub_header">Run 현황</div>`;
+        html += `<div class="trk_timeline_wrap"><table class="trk_run_table">
+            <thead><tr>
+                <th style="width:340px">Run ID</th>
+                <th style="width:200px">구성</th>
+                <th style="width:70px">상태</th>
+                <th style="width:80px">시작일</th>
+                <th style="width:80px">종료일</th>
+                <th style="width:45px">전체</th>
+                <th style="width:45px">통과</th>
+                <th style="width:45px">차단</th>
+            </tr></thead><tbody>`;
+        runList.forEach(r => {
+            const topoShort = (r.parent_release_id || "").replace("TEST_RELEASE-", "");
+            html += `<tr data-parent-release-id="${r.parent_release_id}" data-run-id="${r.id}" style="cursor:pointer">
+                <td style="font-size:0.72rem;color:#64748b" title="${r.id}">${r.id}</td>
+                <td style="font-size:0.75rem">${topoShort}</td>
+                <td>${statusBadge(r.status)}</td>
+                <td style="font-size:0.75rem;color:#64748b">${(r.started_at || "").slice(0, 10)}</td>
+                <td style="font-size:0.75rem;color:#64748b">${(r.finished_at || "").slice(0, 10) || "-"}</td>
+                <td style="text-align:center">${r.total_results}</td>
+                <td style="text-align:center;color:#22c55e;font-weight:${r.passed > 0 ? "700" : "400"}">${r.passed}</td>
+                <td style="text-align:center;color:${r.blocked > 0 ? "#ef4444" : "#94a3b8"};font-weight:${r.blocked > 0 ? "700" : "400"}">${r.blocked}</td>
+            </tr>`;
+        });
+        html += `</tbody></table></div>`;
+    }
+
     /* ── 4. Reports ───────────────────────────────────────── */
     const reps = data.reports || [];
     if (reps.length > 0) {
@@ -197,6 +229,42 @@ function renderTracking(data) {
             });
             html += `</tbody></table></div>`;
         }
+    }
+
+    
+    /* ── 5.5 Result 요약 (케이스별) ─────────────────────────── */
+    const resultsSummary = data.results_summary || [];
+    if (resultsSummary.length > 0) {
+        html += `<div class="trk_sub_header">Result 요약 (케이스별)</div>`;
+        html += `<div class="trk_timeline_wrap"><table class="trk_result_table">
+            <thead><tr>
+                <th style="width:200px">구성</th>
+                <th style="width:240px">Test Case ID</th>
+                <th style="width:45px">전체</th>
+                <th style="width:45px">통과</th>
+                <th style="width:45px">차단</th>
+                <th style="width:45px">시험중</th>
+                <th style="width:45px">결함</th>
+            </tr></thead><tbody>`;
+        resultsSummary.forEach(r => {
+            const topoShort = (r.parent_release_id || "").replace("TEST_RELEASE-", "");
+            const caseShort = (r.case_id || "").replace(/^(TEST_CASE|DEPRECATED_TEST_CASE)-[^-]+-/, "");
+            const defectCount = (r.defect_ids || []).length;
+            const rowStyle = r.blocked > 0 ? "background:rgba(239,68,68,0.05);" : "";
+            html += `<tr data-parent-release-id="${r.parent_release_id}"
+                         data-case-id="${r.case_id}"
+                         data-defect-ids='${JSON.stringify(r.defect_ids || [])}'
+                         style="${rowStyle}cursor:pointer">
+                <td style="font-size:0.75rem;color:#64748b">${topoShort}</td>
+                <td style="font-size:0.75rem" title="${r.case_id}">${caseShort}</td>
+                <td style="text-align:center">${r.total}</td>
+                <td style="text-align:center;color:#22c55e;font-weight:${r.passed > 0 ? "700" : "400"}">${r.passed}</td>
+                <td style="text-align:center;color:${r.blocked > 0 ? "#ef4444" : "#94a3b8"};font-weight:${r.blocked > 0 ? "700" : "400"}">${r.blocked}</td>
+                <td style="text-align:center;color:${r.testing > 0 ? "#2563eb" : "#94a3b8"}">${r.testing}</td>
+                <td style="text-align:center;color:${defectCount > 0 ? "#ef4444" : "#94a3b8"};font-weight:${defectCount > 0 ? "700" : "400"}">${defectCount || "-"}</td>
+            </tr>`;
+        });
+        html += `</tbody></table></div>`;
     }
 
     /* ── 6. Case / Procedure ──────────────────────────────── */
