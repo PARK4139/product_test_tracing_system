@@ -229,14 +229,203 @@ def get_tracking_summary(
             "created_at": r[7],
             "release_id": r[8],
             "parent_release_id": resolve_parent_release(r[8] or ""),
+            "run_id": r[9],
             "images": parse_images(r[10]),
         }
         for r in active_defects_raw
     ]
 
+    # ── 구성별 Run 목록 ──────────────────────────────────────────────────────
+    runs_raw = conn.execute(text("""
+        SELECT
+            run.product_test_run_id,
+            run.product_test_release_id,
+            run.product_test_run_status,
+            run.started_at,
+            run.finished_at,
+            COUNT(res.product_test_result_id)                                    AS total_results,
+            SUM(CASE WHEN res.product_test_result_status = 'passed'  THEN 1 ELSE 0 END) AS passed,
+            SUM(CASE WHEN res.product_test_result_status = 'blocked' THEN 1 ELSE 0 END) AS blocked,
+            SUM(CASE WHEN res.product_test_result_status = 'testing' THEN 1 ELSE 0 END) AS testing
+        FROM product_test_run run
+        LEFT JOIN product_test_result res ON res.product_test_run_id = run.product_test_run_id
+        GROUP BY run.product_test_run_id
+        HAVING total_results > 0
+        ORDER BY run.started_at
+    """)).fetchall()
+
+    runs = [
+        {
+            "id": r[0],
+            "release_id": r[1],
+            "parent_release_id": resolve_parent_release(r[1] or ""),
+            "status": r[2],
+            "started_at": r[3],
+            "finished_at": r[4],
+            "total_results": r[5] or 0,
+            "passed": r[6] or 0,
+            "blocked": r[7] or 0,
+            "testing": r[8] or 0,
+        }
+        for r in runs_raw
+    ]
+
+    # ── 구성별 Result 요약 (case 단위 집계) ──────────────────────────────────
+    results_summary_raw = conn.execute(text("""
+        SELECT
+            run.product_test_release_id,
+            res.product_test_case_id,
+            res.product_test_result_status,
+            COUNT(*)                          AS cnt,
+            res.product_test_run_id,
+            res.product_test_result_id,
+            def.product_test_defect_id
+        FROM product_test_result res
+        JOIN product_test_run run ON run.product_test_run_id = res.product_test_run_id
+        LEFT JOIN product_test_defect def ON def.product_test_result_id = res.product_test_result_id
+            AND def.product_test_defect_status = 'opened'
+        GROUP BY run.product_test_release_id, res.product_test_case_id,
+                 res.product_test_result_status, res.product_test_run_id,
+                 res.product_test_result_id, def.product_test_defect_id
+        ORDER BY run.product_test_release_id, res.product_test_case_id
+    """)).fetchall()
+
+    # case 단위로 집계
+    case_map: dict[tuple, dict] = {}
+    for r in results_summary_raw:
+        rc_release_id = r[0]
+        case_id = r[1]
+        result_status = r[2]
+        run_id = r[4]
+        result_id = r[5]
+        defect_id = r[6]
+        parent = resolve_parent_release(rc_release_id or "")
+        key = (parent, case_id)
+        if key not in case_map:
+            case_map[key] = {
+                "parent_release_id": parent,
+                "case_id": case_id,
+                "passed": 0,
+                "blocked": 0,
+                "testing": 0,
+                "total": 0,
+                "run_ids": set(),
+                "result_ids": [],
+                "defect_ids": [],
+            }
+        entry = case_map[key]
+        entry["total"] += 1
+        if result_status == "passed":
+            entry["passed"] += 1
+        elif result_status == "blocked":
+            entry["blocked"] += 1
+        elif result_status == "testing":
+            entry["testing"] += 1
+        entry["run_ids"].add(run_id)
+        entry["result_ids"].append(result_id)
+        if defect_id:
+            entry["defect_ids"].append(defect_id)
+
+    results_summary = [
+        {
+            "parent_release_id": v["parent_release_id"],
+            "case_id": v["case_id"],
+            "passed": v["passed"],
+            "blocked": v["blocked"],
+            "testing": v["testing"],
+            "total": v["total"],
+            "run_ids": sorted(v["run_ids"]),
+            "result_ids": v["result_ids"],
+            "defect_ids": v["defect_ids"],
+        }
+        for v in case_map.values()
+    ]
+
+    # ── Procedure Results ────────────────────────────────────────────────────
+    procedure_results_raw = conn.execute(text("""
+        SELECT
+            pr.product_test_procedure_result_id,
+            pr.product_test_result_id,
+            pr.product_test_procedure_id,
+            pr.product_test_procedure_result_status,
+            pr.actual_result,
+            pr.judgement_reason,
+            pr.judged_at,
+            pr.judged_by,
+            p.product_test_case_id,
+            p.procedure_sequence,
+            p.procedure_action,
+            run.product_test_release_id
+        FROM product_test_procedure_result pr
+        JOIN product_test_procedure p ON p.product_test_procedure_id = pr.product_test_procedure_id
+        JOIN product_test_result res ON res.product_test_result_id = pr.product_test_result_id
+        JOIN product_test_run run ON run.product_test_run_id = res.product_test_run_id
+        ORDER BY p.product_test_case_id, p.procedure_sequence
+    """)).fetchall()
+
+    procedure_results = [
+        {
+            "id": r[0],
+            "result_id": r[1],
+            "procedure_id": r[2],
+            "status": r[3],
+            "actual_result": r[4] or "",
+            "judgement_reason": r[5] or "",
+            "judged_at": r[6] or "",
+            "judged_by": r[7] or "",
+            "case_id": r[8],
+            "sequence": r[9],
+            "action": (r[10] or "")[:120],
+            "parent_release_id": resolve_parent_release(r[11] or ""),
+        }
+        for r in procedure_results_raw
+    ]
+
+    # ── Evidence ──────────────────────────────────────────────────────────────
+    evidence_raw = conn.execute(text("""
+        SELECT
+            ev.product_test_evidence_id,
+            ev.product_test_result_id,
+            ev.product_test_procedure_result_id,
+            ev.product_test_defect_id,
+            ev.product_test_evidence_type,
+            ev.file_name,
+            ev.file_path,
+            ev.captured_at,
+            ev.captured_by,
+            COALESCE(run.product_test_release_id, run2.product_test_release_id) AS release_id
+        FROM product_test_evidence ev
+        LEFT JOIN product_test_result res ON res.product_test_result_id = ev.product_test_result_id
+        LEFT JOIN product_test_run run ON run.product_test_run_id = res.product_test_run_id
+        LEFT JOIN product_test_defect def ON def.product_test_defect_id = ev.product_test_defect_id
+        LEFT JOIN product_test_result res2 ON res2.product_test_result_id = def.product_test_result_id
+        LEFT JOIN product_test_run run2 ON run2.product_test_run_id = res2.product_test_run_id
+        ORDER BY ev.captured_at
+    """)).fetchall()
+
+    evidence = [
+        {
+            "id": r[0],
+            "result_id": r[1] or "",
+            "procedure_result_id": r[2] or "",
+            "defect_id": r[3] or "",
+            "type": r[4] or "",
+            "file_name": r[5] or "",
+            "file_path": r[6] or "",
+            "captured_at": r[7] or "",
+            "captured_by": r[8] or "",
+            "parent_release_id": resolve_parent_release(r[9] or "") if r[9] else "",
+        }
+        for r in evidence_raw
+    ]
+
     return JSONResponse({
         "releases": releases,
         "active_defects": active_defects,
+        "runs": runs,
+        "results_summary": results_summary,
+        "procedure_results": procedure_results,
+        "evidence": evidence,
     })
 
 

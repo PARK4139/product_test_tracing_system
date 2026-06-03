@@ -1,5 +1,5 @@
-// tracking-highlight.js — gantt ↔ defect row highlight
-/* ── 하이라이트 ─────────────────────────────────────────── */
+// tracking-highlight.js — full cross-table highlight
+/* ── highlight ─────────────────────────────────────────── */
 function statusHighlightClass(status) {
     const s = (status || "").toUpperCase();
     if (["PASSED","QI_TEAM_RELEASED","APPROVED"].includes(s)) return "hl-passed";
@@ -8,26 +8,41 @@ function statusHighlightClass(status) {
     return "hl-default";
 }
 function clearAllHighlights() {
-    document.querySelectorAll("tr.trk_row_highlighted").forEach(r => r.classList.remove("trk_row_highlighted","hl-passed","hl-blocked","hl-testing","hl-default"));
-    document.querySelectorAll(".gantt_hl").forEach(r => r.classList.remove("gantt_hl","hl-passed","hl-blocked","hl-testing","hl-default"));
+    const cls = ["trk_row_highlighted","hl-passed","hl-blocked","hl-testing","hl-default"];
+    document.querySelectorAll("tr.trk_row_highlighted").forEach(r => r.classList.remove(...cls));
+    document.querySelectorAll(".gantt_hl").forEach(r => r.classList.remove("gantt_hl",...cls));
 }
+
 function bindHighlights(root) {
     function findGanttRowById(rowId) {
         if (!rowId) return null;
         return root.querySelector(`.gantt_row[data-row-id="${rowId}"]`);
     }
 
-    function highlightDefectsByDeviceRows(deviceRowIds) {
+    // ── per-table highlight helpers ──
+    function hlByTopo(tableClass, topoId, hlClass) {
+        root.querySelectorAll(`.${tableClass} tbody tr[data-parent-release-id="${topoId}"]`).forEach(r => {
+            r.classList.add("trk_row_highlighted", hlClass || "hl-blocked");
+        });
+    }
+    function hlAllTablesByTopo(topoId) {
+        hlByTopo("trk_run_table", topoId);
+        hlByTopo("trk_result_table", topoId);
+        hlByTopo("trk_proc_result_table", topoId);
+        hlByTopo("trk_evidence_table", topoId);
+    }
+    function hlDefectsByTopoIds(topoIds) {
         let first = null;
-        deviceRowIds.forEach(id => {
-            root.querySelectorAll(`tr[data-parent-release-id="${id}"]`).forEach(r => {
+        topoIds.forEach(id => {
+            root.querySelectorAll(`.trk_defect_table tbody tr[data-parent-release-id="${id}"]`).forEach(r => {
                 r.classList.add("trk_row_highlighted", "hl-blocked");
                 if (!first) first = r;
             });
         });
-        if (first) first.scrollIntoView({ behavior:"smooth", block:"nearest" });
+        return first;
     }
-    // 간트 부모 행 클릭 → 자식 장비행 기준으로 결함 하이라이트
+
+    // ── gantt parent row click ──
     root.querySelectorAll(".gantt_row:not(.gantt_row_child)").forEach(row => {
         row.addEventListener("click", e => {
             if (e.target.closest(".trk_status_editable,.trk_status_readonly,.gantt_fold_btn")) return;
@@ -38,13 +53,15 @@ function bindHighlights(root) {
                 row.classList.add("gantt_hl", statusHighlightClass(row.dataset.status));
                 const childRows = Array.from(root.querySelectorAll(`.gantt_row_child[data-parent-id="${releaseId}"]`));
                 childRows.forEach(c => c.classList.add("gantt_hl", statusHighlightClass(c.dataset.status)));
-                const deviceIds = childRows.map(c => c.dataset.rowId).filter(Boolean);
-                if (!deviceIds.length) deviceIds.push(releaseId);
-                highlightDefectsByDeviceRows(deviceIds);
+                const topoIds = childRows.map(c => c.dataset.rowId).filter(Boolean);
+                if (!topoIds.length) topoIds.push(releaseId);
+                topoIds.forEach(id => hlAllTablesByTopo(id));
+                hlDefectsByTopoIds(topoIds);
             }
         });
     });
-    // 간트 자식 행 클릭 → 해당 장비행(rowId) 기준 결함 하이라이트
+
+    // ── gantt child (topology) row click ──
     root.querySelectorAll(".gantt_row_child").forEach(row => {
         row.addEventListener("click", e => {
             if (e.target.closest(".trk_status_editable,.trk_status_readonly")) return;
@@ -53,28 +70,116 @@ function bindHighlights(root) {
             clearAllHighlights();
             if (!isSelected && rowId) {
                 row.classList.add("gantt_hl", statusHighlightClass(row.dataset.status));
-                highlightDefectsByDeviceRows([rowId]);
+                hlAllTablesByTopo(rowId);
+                const first = hlDefectsByTopoIds([rowId]);
+                if (first) first.scrollIntoView({ behavior:"smooth", block:"nearest" });
             }
         });
     });
-    // 결함 행 클릭 → 간트 장비행 + 부모 행 하이라이트
+
+    // ── defect row click ──
     root.querySelectorAll(".trk_defect_table tbody tr").forEach(tr => {
         tr.style.cursor = "pointer";
         tr.addEventListener("click", () => {
             const isSelected = tr.classList.contains("trk_row_highlighted");
             clearAllHighlights();
             if (isSelected) return;
-            const deviceRowId = tr.dataset.parentReleaseId || "";
-            clientLog("[HL] defect click", {parentReleaseId: deviceRowId});
+            const topoId = tr.dataset.parentReleaseId || "";
+            clientLog("[HL] defect click", {parentReleaseId: topoId});
             tr.classList.add("trk_row_highlighted", "hl-blocked");
-            if (deviceRowId) {
-                const deviceRow = findGanttRowById(deviceRowId);
-                clientLog("[HL] deviceRow", deviceRow ? deviceRow.dataset.rowId : "NOT FOUND");
-                if (deviceRow) {
-                    deviceRow.classList.add("gantt_hl", "hl-blocked");
-                    // 부모 라운드행은 하이라이트하지 않음 — 결함이 속한 장비행만 강조
-                    deviceRow.scrollIntoView({ behavior:"smooth", block:"nearest" });
+            if (topoId) {
+                const topoRow = findGanttRowById(topoId);
+                if (topoRow) {
+                    topoRow.classList.add("gantt_hl", "hl-blocked");
+                    topoRow.scrollIntoView({ behavior:"smooth", block:"nearest" });
                 }
+                hlAllTablesByTopo(topoId);
+            }
+        });
+    });
+
+    // ── run table row click ──
+    root.querySelectorAll(".trk_run_table tbody tr").forEach(tr => {
+        tr.addEventListener("click", () => {
+            const isSelected = tr.classList.contains("trk_row_highlighted");
+            clearAllHighlights();
+            if (isSelected) return;
+            const topoId = tr.dataset.parentReleaseId || "";
+            tr.classList.add("trk_row_highlighted", "hl-testing");
+            if (topoId) {
+                const topoRow = findGanttRowById(topoId);
+                if (topoRow) {
+                    topoRow.classList.add("gantt_hl", statusHighlightClass(topoRow.dataset.status));
+                    topoRow.scrollIntoView({ behavior:"smooth", block:"nearest" });
+                }
+                hlAllTablesByTopo(topoId);
+                hlDefectsByTopoIds([topoId]);
+            }
+        });
+    });
+
+    // ── result table row click ──
+    root.querySelectorAll(".trk_result_table tbody tr").forEach(tr => {
+        tr.addEventListener("click", () => {
+            const isSelected = tr.classList.contains("trk_row_highlighted");
+            clearAllHighlights();
+            if (isSelected) return;
+            const topoId = tr.dataset.parentReleaseId || "";
+            tr.classList.add("trk_row_highlighted", "hl-testing");
+            if (topoId) {
+                const topoRow = findGanttRowById(topoId);
+                if (topoRow) {
+                    topoRow.classList.add("gantt_hl", statusHighlightClass(topoRow.dataset.status));
+                    topoRow.scrollIntoView({ behavior:"smooth", block:"nearest" });
+                }
+                hlAllTablesByTopo(topoId);
+                let defectIds = [];
+                try { defectIds = JSON.parse(tr.dataset.defectIds || "[]"); } catch(e) {}
+                defectIds.forEach(did => {
+                    root.querySelectorAll(`.trk_defect_table tbody tr[data-defect-id="${did}"]`).forEach(r => {
+                        r.classList.add("trk_row_highlighted", "hl-blocked");
+                    });
+                });
+            }
+        });
+    });
+
+    // ── procedure result table row click ──
+    root.querySelectorAll(".trk_proc_result_table tbody tr").forEach(tr => {
+        tr.addEventListener("click", () => {
+            const isSelected = tr.classList.contains("trk_row_highlighted");
+            clearAllHighlights();
+            if (isSelected) return;
+            const topoId = tr.dataset.parentReleaseId || "";
+            tr.classList.add("trk_row_highlighted", "hl-testing");
+            if (topoId) {
+                const topoRow = findGanttRowById(topoId);
+                if (topoRow) {
+                    topoRow.classList.add("gantt_hl", statusHighlightClass(topoRow.dataset.status));
+                    topoRow.scrollIntoView({ behavior:"smooth", block:"nearest" });
+                }
+                hlAllTablesByTopo(topoId);
+                hlDefectsByTopoIds([topoId]);
+            }
+        });
+    });
+
+    // ── evidence table row click ──
+    root.querySelectorAll(".trk_evidence_table tbody tr").forEach(tr => {
+        tr.addEventListener("click", () => {
+            const isSelected = tr.classList.contains("trk_row_highlighted");
+            clearAllHighlights();
+            if (isSelected) return;
+            const topoId = tr.dataset.parentReleaseId || "";
+            tr.classList.add("trk_row_highlighted", "hl-testing");
+            if (topoId) {
+                const topoRow = findGanttRowById(topoId);
+                if (topoRow) {
+                    topoRow.classList.add("gantt_hl", statusHighlightClass(topoRow.dataset.status));
+                    topoRow.scrollIntoView({ behavior:"smooth", block:"nearest" });
+                }
+                hlAllTablesByTopo(topoId);
+                hlDefectsByTopoIds([topoId]);
             }
         });
     });

@@ -24,11 +24,14 @@ function buildGantt(releases) {
     // 뷰 필터: 기본은 시험중(TESTING)만, 토글 시 전체
     // TEST_REPORT_*, TBD_REPORT_* 는 간트에서 항상 숨김 (보고서 컨테이너)
     const isContainer = r => r.id.includes("TEST_REPORT_") || r.id.includes("TBD_REPORT_");
-    // 뷰 모드: 0=전체, 1=시험중(TESTING+BLOCKED), 2=저장상태복구
+    // 뷰 모드: 0=전체, 1=시험중(TESTING+BLOCKED), 2=중단판정(BLOCKED만)
     const viewMode = parseInt(localStorage.getItem('trk_view_mode') || '0', 10);
     const IN_PROGRESS = new Set(['TESTING','BLOCKED']);
+    const BLOCKED_ONLY = new Set(['BLOCKED']);
     const visibleReleases = (viewMode === 1
         ? releases.filter(r => IN_PROGRESS.has(r.status))
+        : viewMode === 2
+        ? releases.filter(r => BLOCKED_ONLY.has(r.status))
         : releases
     ).filter(r => !isContainer(r) && r.visible !== false);
 

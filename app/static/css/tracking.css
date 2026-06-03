@@ -108,6 +108,45 @@
 .trk_stage_dvt   { background: #d1fae5; color: #065f46; }
 .trk_stage_other { background: #f3f4f6; color: #374151; }
 
+/* run table */
+.trk_run_table,
+.trk_result_table,
+.trk_proc_result_table,
+.trk_evidence_table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    table-layout: fixed;
+}
+.trk_run_table th,
+.trk_result_table th,
+.trk_proc_result_table th,
+.trk_evidence_table th {
+    background: var(--color-surface-2, #f4f4f5);
+    color: var(--color-text-muted, #71717a);
+    font-weight: 600;
+    text-align: left;
+    padding: 7px 10px;
+    border-bottom: 2px solid var(--color-border, #e4e4e7);
+    white-space: nowrap;
+    font-size: 0.78rem;
+}
+.trk_run_table td,
+.trk_result_table td,
+.trk_proc_result_table td,
+.trk_evidence_table td {
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--color-border, #e4e4e7);
+    vertical-align: middle;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.trk_run_table tr:hover td { background: #f0f9ff; }
+.trk_result_table tr:hover td { background: #f0f9ff; }
+.trk_proc_result_table tr:hover td { background: #f0f9ff; }
+.trk_evidence_table tr:hover td { background: #f0f9ff; }
+
 /* defect table */
 .trk_defect_table {
     width: 100%;
