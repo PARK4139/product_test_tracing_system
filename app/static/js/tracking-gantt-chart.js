@@ -166,7 +166,8 @@ function buildGantt(releases) {
         return idx === -1 ? 99 : idx;
     }
 
-    parents.forEach(p => {
+    parents.forEach((p, idx) => {
+        if (idx > 0) html += `<div class="gantt_round_divider"></div>`;
         html += renderBar(p, 0);
         const children = (childrenMap[p.id] || []).slice().sort((a, b) => deviceSortKey(a.id) - deviceSortKey(b.id));
         children.forEach(c => {

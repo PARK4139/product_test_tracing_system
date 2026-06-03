@@ -177,8 +177,7 @@
     border-bottom: 1px solid var(--color-border, #e4e4e7);
     vertical-align: middle;
 }
-.trk_defect_table tr:hover td { background: #fee2e2; color: #b91c1c; }
-.trk_defect_table tr:hover td:first-child { border-left: 3px solid #dc2626; }
+.trk_defect_table tbody tr { cursor: pointer; }
 .trk_defect_img_cell { display:flex; align-items:center; gap:3px; flex-wrap:nowrap; min-width:52px; }
 .trk_defect_thumb { width:22px; height:22px; object-fit:cover; border-radius:3px; cursor:zoom-in; border:1px solid var(--color-border,#e4e4e7); flex-shrink:0; vertical-align:middle; }
 .trk_defect_thumb:hover { outline:2px solid #2563eb; }
@@ -396,6 +395,11 @@ tr.trk_row_highlighted.hl-default td:first-child { border-left: 3px solid #eab30
 .gantt_hl.hl-blocked { background: #fee2e2 !important; border-left: 3px solid #dc2626; }
 .gantt_hl.hl-testing { background: #dbeafe !important; border-left: 3px solid #2563eb; }
 .gantt_hl.hl-default { background: #fef9c3 !important; border-left: 3px solid #eab308; }
+.gantt_round_divider {
+    height: 0;
+    border-top: 2px solid var(--color-border, #e4e4e7);
+    margin: 4px 0;
+}
 .gantt_child_icon { color: var(--color-text-muted, #a1a1aa); font-size: 0.75rem; margin-right: 2px; flex-shrink: 0; }
 .gantt_fold_btn { background: none; border: none; padding: 0; margin: 0; cursor: pointer; font-size: 0.7rem; color: var(--color-text-muted, #71717a); width: 18px; flex-shrink: 0; line-height: 1; }
 .gantt_today_line {
