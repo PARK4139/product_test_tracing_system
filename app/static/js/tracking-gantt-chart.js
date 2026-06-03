@@ -28,12 +28,23 @@ function buildGantt(releases) {
     const viewMode = parseInt(localStorage.getItem('trk_view_mode') || '0', 10);
     const IN_PROGRESS = new Set(['TESTING','BLOCKED']);
     const BLOCKED_ONLY = new Set(['BLOCKED']);
-    const visibleReleases = (viewMode === 1
-        ? releases.filter(r => IN_PROGRESS.has(r.status))
-        : viewMode === 2
-        ? releases.filter(r => BLOCKED_ONLY.has(r.status))
-        : releases
-    ).filter(r => !isContainer(r) && r.visible !== false);
+    const baseReleases = releases.filter(r => !isContainer(r) && r.visible !== false);
+
+    // 필터 적용: 자식이 통과하면 부모도 반드시 포함
+    let visibleReleases;
+    if (viewMode === 0) {
+        visibleReleases = baseReleases;
+    } else {
+        const filterSet = viewMode === 2 ? BLOCKED_ONLY : IN_PROGRESS;
+        const passIds = new Set();
+        // 1단계: 필터 통과하는 release 수집
+        baseReleases.forEach(r => { if (filterSet.has(r.status)) passIds.add(r.id); });
+        // 2단계: 자식이 통과하면 부모(upstream)도 포함
+        baseReleases.forEach(r => {
+            if (passIds.has(r.id) && r.upstream_id) passIds.add(r.upstream_id);
+        });
+        visibleReleases = baseReleases.filter(r => passIds.has(r.id));
+    }
 
     const releaseIds = new Set(visibleReleases.map(r => r.id));
     const parents = visibleReleases.filter(r => !releaseIds.has(r.upstream_id));

@@ -140,7 +140,7 @@ function renderTracking(data) {
             const runSt = r.blocked>0?"BLOCKED":r.testing>0?"TESTING":"PASSED";
             html += `<tr data-run-id="${r.id}" data-parent-release-id="${r.parent_release_id}" data-status="${runSt}" style="cursor:pointer">
                 <td style="font-size:0.72rem;color:#64748b" title="${r.id}">${r.id}</td>
-                <td style="font-size:0.78rem">${(r.parent_release_id||"").replace("TEST_RELEASE-","")}</td>
+                <td style="font-size:0.78rem">${extractTopo(r.parent_release_id)}</td>
                 <td>${statusBadge(r.status)}</td>
                 <td style="text-align:center">${r.total_results}</td>
                 <td style="text-align:center;color:#16a34a;font-weight:600">${r.passed}</td>
@@ -174,8 +174,8 @@ function renderTracking(data) {
                          data-defect-ids='${JSON.stringify(r.defect_ids||[])}'
                          data-status="${resSt}"
                          style="cursor:pointer">
-                <td style="font-size:0.75rem;color:#64748b" title="${r.parent_release_id}">${(r.parent_release_id||"").replace("TEST_RELEASE-","")}</td>
-                <td style="font-size:0.75rem;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.case_id}">${(r.case_id||"").replace("TEST_CASE-","")}</td>
+                <td style="font-size:0.75rem;color:#64748b" title="${r.parent_release_id}">${extractTopo(r.parent_release_id)}</td>
+                <td style="font-size:0.75rem;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.case_id}">${extractTopo(r.parent_release_id) + "-" + (r.case_id||"").replace(/^(TEST_CASE|DEPRECATED_TEST_CASE)-[^-]+-/,"")}</td>
                 <td style="text-align:center">${r.total}</td>
                 <td style="text-align:center;color:#16a34a;font-weight:600">${r.passed}</td>
                 <td style="text-align:center;color:${r.blocked>0?"#dc2626":"#94a3b8"};font-weight:${r.blocked>0?"600":"400"}">${r.blocked}</td>

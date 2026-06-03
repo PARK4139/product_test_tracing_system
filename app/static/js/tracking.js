@@ -55,9 +55,9 @@ function updateToggleLabel() {
     const btn = document.getElementById("trk_view_toggle_btn");
     if (!btn) return;
     const mode = parseInt(localStorage.getItem('trk_view_mode') || '0', 10);
-    const VIEW_MODE_LABELS = ['전체 보기', '시험중 보기', '저장상태 복구'];
-    btn.textContent = VIEW_MODE_LABELS[(mode + 1) % 3];
-    btn.title = `현재: ${VIEW_MODE_LABELS[mode]} -> 클릭: ${VIEW_MODE_LABELS[(mode + 1) % 3]}`;
+    const VIEW_MODE_LABELS = ['보기모드: 전체', '보기모드: 시험중', '보기모드: 중단판정'];
+    btn.textContent = VIEW_MODE_LABELS[mode] || VIEW_MODE_LABELS[0];
+    btn.title = VIEW_MODE_LABELS[mode] || VIEW_MODE_LABELS[0];
 }
 
 document.addEventListener("DOMContentLoaded", () => { updateToggleLabel(); loadTracking(); });
