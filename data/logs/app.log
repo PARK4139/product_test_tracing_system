@@ -22814,3 +22814,5 @@ FROM work_calendar ORDER BY work_calendar.calendar_date
 2026-06-03T12:14:36.034Z [INFO] 127.0.0.1:14530 - "POST /admin/api/product-test/ui/id-candidates HTTP/1.1" 200
 2026-06-03T12:14:36.057Z [INFO] 127.0.0.1:11266 - "POST /admin/api/product-test/ui/id-candidates HTTP/1.1" 200
 2026-06-03T12:14:36.064Z [INFO] 127.0.0.1:10155 - "POST /admin/api/product-test/ui/id-candidates HTTP/1.1" 200
+2026-06-03T16:02:06.933Z [INFO] [frontend] [HL] defect click  {"parentReleaseId":"TEST_RELEASE-WIFI_1ST-1AP_1HLM_4HDR"}
+2026-06-03T16:02:06.934Z [INFO] 127.0.0.1:6288 - "POST /admin/api/client-log HTTP/1.1" 200
