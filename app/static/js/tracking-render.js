@@ -157,8 +157,7 @@ function renderTracking(data) {
         html += `<div class="trk_sub_header">Result 요약 (Case 단위)</div>`;
         html += `<div class="trk_timeline_wrap"><table class="trk_result_table">
             <thead><tr>
-                <th style="width:200px">구성</th>
-                <th style="width:260px">Test Case</th>
+                <th style="width:360px">Test Case</th>
                 <th style="width:50px">전체</th>
                 <th style="width:50px">합격</th>
                 <th style="width:50px">차단</th>
@@ -168,14 +167,14 @@ function renderTracking(data) {
         resultsSummary.forEach(r => {
             const hd = r.defect_ids && r.defect_ids.length > 0;
             const resSt = r.blocked>0?"BLOCKED":r.testing>0?"TESTING":"PASSED";
+            const caseDisplay = extractTopo(r.parent_release_id) + "-" + (r.case_id||"").replace(/^(TEST_CASE|DEPRECATED_TEST_CASE)-[^-]+-/,"");
             html += `<tr data-parent-release-id="${r.parent_release_id}"
                          data-case-id="${r.case_id}"
                          data-result-ids='${JSON.stringify(r.result_ids||[])}'
                          data-defect-ids='${JSON.stringify(r.defect_ids||[])}'
                          data-status="${resSt}"
                          style="cursor:pointer">
-                <td style="font-size:0.75rem;color:#64748b" title="${r.parent_release_id}">${extractTopo(r.parent_release_id)}</td>
-                <td style="font-size:0.75rem;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.case_id}">${extractTopo(r.parent_release_id) + "-" + (r.case_id||"").replace(/^(TEST_CASE|DEPRECATED_TEST_CASE)-[^-]+-/,"")}</td>
+                <td style="font-size:0.75rem;max-width:360px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${caseDisplay}">${caseDisplay}</td>
                 <td style="text-align:center">${r.total}</td>
                 <td style="text-align:center;color:#16a34a;font-weight:600">${r.passed}</td>
                 <td style="text-align:center;color:${r.blocked>0?"#dc2626":"#94a3b8"};font-weight:${r.blocked>0?"600":"400"}">${r.blocked}</td>

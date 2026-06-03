@@ -17224,3 +17224,196 @@ FROM work_calendar ORDER BY work_calendar.calendar_date
 2026-06-03T07:25:12.668Z [INFO] [main] 서버 시작 완료  host=127.0.0.1  port=8008
 2026-06-03T07:25:12.669Z [INFO] Application startup complete.
 2026-06-03T07:25:12.669Z [INFO] Uvicorn running on http://127.0.0.1:8008 (Press CTRL+C to quit)
+2026-06-03T07:28:24.338Z [INFO] BEGIN (implicit)
+2026-06-03T07:28:24.570Z [INFO] SELECT product_test_release.product_test_release_id, product_test_release.project_id, product_test_release.upstream_release_id, product_test_release.upstream_release_system, product_test_release.release_stage, product_test_release.release_sequence, product_test_release.product_test_release_status, product_test_release.created_at, product_test_release.created_by, product_test_release.updated_at, product_test_release.updated_by, product_test_release.remark 
+FROM product_test_release ORDER BY product_test_release.created_at
+2026-06-03T07:28:24.575Z [INFO] [generated in 0.00612s] ()
+2026-06-03T07:28:24.634Z [INFO] SELECT product_test_target_definition.product_test_target_definition_id, product_test_target_definition.project_id, product_test_target_definition.product_code, product_test_target_definition.manufacturer, product_test_target_definition.model_name, product_test_target_definition.hardware_revision, product_test_target_definition.default_software_version, product_test_target_definition.default_firmware_version, product_test_target_definition.product_test_target_definition_status, product_test_target_definition.created_at, product_test_target_definition.created_by, product_test_target_definition.updated_at, product_test_target_definition.updated_by, product_test_target_definition.remark 
+FROM product_test_target_definition ORDER BY product_test_target_definition.created_at
+2026-06-03T07:28:24.637Z [INFO] [generated in 0.00353s] ()
+2026-06-03T07:28:24.657Z [INFO] SELECT product_test_target.product_test_target_id, product_test_target.project_id, product_test_target.product_test_target_definition_id, product_test_target.serial_number, product_test_target.software_version, product_test_target.firmware_version, product_test_target.manufacture_lot, product_test_target.product_test_target_status, product_test_target.created_at, product_test_target.created_by, product_test_target.updated_at, product_test_target.updated_by, product_test_target.remark 
+FROM product_test_target ORDER BY product_test_target.created_at
+2026-06-03T07:28:24.659Z [INFO] [generated in 0.00182s] ()
+2026-06-03T07:28:24.679Z [INFO] SELECT product_test_environment_definition.product_test_environment_definition_id, product_test_environment_definition.project_id, product_test_environment_definition.product_test_environment_definition_name, product_test_environment_definition.test_country, product_test_environment_definition.test_city, product_test_environment_definition.test_company, product_test_environment_definition.test_building, product_test_environment_definition.test_floor, product_test_environment_definition.test_room, product_test_environment_definition.network_type, product_test_environment_definition.test_computer_name, product_test_environment_definition.operating_system_version, product_test_environment_definition.test_tool_name, product_test_environment_definition.test_tool_version, product_test_environment_definition.power_voltage, product_test_environment_definition.power_frequency, product_test_environment_definition.power_connector_type, product_test_environment_definition.power_condition, product_test_environment_definition.product_test_environment_definition_status, product_test_environment_definition.created_at, product_test_environment_definition.created_by, product_test_environment_definition.updated_at, product_test_environment_definition.updated_by, product_test_environment_definition.remark 
+FROM product_test_environment_definition ORDER BY product_test_environment_definition.created_at
+2026-06-03T07:28:24.681Z [INFO] [generated in 0.00417s] ()
+2026-06-03T07:28:24.689Z [INFO] SELECT product_test_environment.product_test_environment_id, product_test_environment.project_id, product_test_environment.product_test_environment_definition_id, product_test_environment.product_test_environment_name, product_test_environment.test_computer_name, product_test_environment.operating_system_version, product_test_environment.test_tool_version, product_test_environment.network_type, product_test_environment.power_voltage, product_test_environment.power_frequency, product_test_environment.power_connector_type, product_test_environment.captured_at, product_test_environment.product_test_environment_status, product_test_environment.created_at, product_test_environment.created_by, product_test_environment.updated_at, product_test_environment.updated_by, product_test_environment.remark 
+FROM product_test_environment ORDER BY product_test_environment.created_at
+2026-06-03T07:28:24.691Z [INFO] [generated in 0.00150s] ()
+2026-06-03T07:28:24.705Z [INFO] SELECT product_test_case.product_test_case_id, product_test_case.project_id, product_test_case.product_test_case_title, product_test_case.test_category, product_test_case.test_objective, product_test_case.precondition, product_test_case.expected_result, product_test_case.product_test_case_status, product_test_case.created_at, product_test_case.created_by, product_test_case.updated_at, product_test_case.updated_by, product_test_case.remark 
+FROM product_test_case ORDER BY product_test_case.created_at
+2026-06-03T07:28:24.706Z [INFO] [generated in 0.00094s] ()
+2026-06-03T07:28:24.719Z [INFO] SELECT product_test_procedure.product_test_procedure_id, product_test_procedure.project_id, product_test_procedure.product_test_case_id, product_test_procedure.procedure_sequence, product_test_procedure.procedure_action, product_test_procedure.expected_result, product_test_procedure.acceptance_criteria, product_test_procedure.required_evidence_type, product_test_procedure.product_test_procedure_status, product_test_procedure.created_at, product_test_procedure.created_by, product_test_procedure.updated_at, product_test_procedure.updated_by, product_test_procedure.remark 
+FROM product_test_procedure ORDER BY product_test_procedure.product_test_case_id
+2026-06-03T07:28:24.720Z [INFO] [generated in 0.00101s] ()
+2026-06-03T07:28:24.739Z [INFO] SELECT product_test_report.product_test_report_id, product_test_report.project_id, product_test_report.product_test_release_id, product_test_report.product_test_report_type, product_test_report.product_test_report_status, product_test_report.product_test_report_title, product_test_report.created_at, product_test_report.created_by, product_test_report.updated_at, product_test_report.updated_by, product_test_report.approved_at, product_test_report.approved_by, product_test_report.rejected_at, product_test_report.rejected_by, product_test_report.rejection_reason, product_test_report.remark 
+FROM product_test_report ORDER BY product_test_report.created_at
+2026-06-03T07:28:24.749Z [INFO] [generated in 0.00132s] ()
+2026-06-03T07:28:24.754Z [INFO] SELECT product_test_release.product_test_release_id, product_test_release.project_id, product_test_release.upstream_release_id, product_test_release.upstream_release_system, product_test_release.release_stage, product_test_release.release_sequence, product_test_release.product_test_release_status, product_test_release.created_at, product_test_release.created_by, product_test_release.updated_at, product_test_release.updated_by, product_test_release.remark 
+FROM product_test_release ORDER BY product_test_release.created_at
+2026-06-03T07:28:24.755Z [INFO] [cached since 0.1868s ago] ()
+2026-06-03T07:28:24.842Z [INFO] 127.0.0.1:3885 - "GET /admin HTTP/1.1" 200
+2026-06-03T07:28:24.846Z [INFO] ROLLBACK
+2026-06-03T07:28:25.425Z [INFO] 127.0.0.1:3885 - "GET /static/css/app.css HTTP/1.1" 200
+2026-06-03T07:28:25.439Z [INFO] 127.0.0.1:6425 - "GET /static/images/huvitz_logo.svg HTTP/1.1" 200
+2026-06-03T07:28:25.442Z [INFO] 127.0.0.1:2178 - "GET /static/css/tracking.css HTTP/1.1" 200
+2026-06-03T07:28:25.446Z [INFO] 127.0.0.1:10494 - "GET /static/js/tracking-client-log.js HTTP/1.1" 200
+2026-06-03T07:28:25.449Z [INFO] 127.0.0.1:11429 - "GET /static/js/tracking-helpers.js HTTP/1.1" 200
+2026-06-03T07:28:25.452Z [INFO] 127.0.0.1:12331 - "GET /static/js/tracking-gantt-chart.js HTTP/1.1" 200
+2026-06-03T07:28:25.494Z [INFO] 127.0.0.1:2178 - "GET /static/js/tracking-gantt-resize.js HTTP/1.1" 200
+2026-06-03T07:28:25.536Z [INFO] 127.0.0.1:12331 - "GET /static/js/tracking-gantt-fold.js HTTP/1.1" 200
+2026-06-03T07:28:25.540Z [INFO] 127.0.0.1:6425 - "GET /static/js/tracking-highlight.js HTTP/1.1" 200
+2026-06-03T07:28:25.544Z [INFO] 127.0.0.1:10494 - "GET /static/js/tracking-defect.js HTTP/1.1" 200
+2026-06-03T07:28:25.547Z [INFO] 127.0.0.1:11429 - "GET /static/js/tracking-col-drag.js HTTP/1.1" 200
+2026-06-03T07:28:25.553Z [INFO] 127.0.0.1:2178 - "GET /static/js/tracking-status.js HTTP/1.1" 200
+2026-06-03T07:28:25.564Z [INFO] 127.0.0.1:3885 - "GET /static/js/tracking-render.js HTTP/1.1" 200
+2026-06-03T07:28:25.592Z [INFO] 127.0.0.1:12331 - "GET /static/js/tracking.js HTTP/1.1" 200
+2026-06-03T07:28:25.623Z [INFO] 127.0.0.1:2178 - "GET /static/js/app.js HTTP/1.1" 200
+2026-06-03T07:28:26.090Z [INFO] 127.0.0.1:2178 - "GET /admin/api/product-test/ui/client-config HTTP/1.1" 200
+2026-06-03T07:28:26.999Z [INFO] BEGIN (implicit)
+2026-06-03T07:28:27.001Z [INFO] 
+        SELECT
+            r.product_test_release_id,
+            r.upstream_release_id,
+            r.release_stage,
+            r.release_sequence,
+            r.product_test_release_status,
+            r.remark,
+            r.upstream_release_system,
+            COALESCE(r.release_visible, 1)                    AS release_visible,
+            COUNT(DISTINCT run.product_test_run_id)           AS run_count,
+            COUNT(res.product_test_result_id)                 AS total_results,
+            SUM(CASE WHEN res.product_test_result_status = 'passed'  THEN 1 ELSE 0 END) AS passed,
+            SUM(CASE WHEN res.product_test_result_status = 'blocked' THEN 1 ELSE 0 END) AS blocked,
+            SUM(CASE WHEN res.product_test_result_status = 'testing' THEN 1 ELSE 0 END) AS testing,
+            COUNT(DISTINCT def.product_test_defect_id)        AS defect_count,
+            SUM(CASE WHEN def.product_test_defect_status = 'opened' THEN 1 ELSE 0 END)  AS open_defects
+        FROM product_test_release r
+        LEFT JOIN product_test_run  run ON run.product_test_release_id = r.product_test_release_id
+        LEFT JOIN product_test_result res ON res.product_test_run_id   = run.product_test_run_id
+        LEFT JOIN product_test_defect def ON def.product_test_result_id = res.product_test_result_id
+        GROUP BY r.product_test_release_id
+        ORDER BY r.release_sequence, r.product_test_release_id
+    
+2026-06-03T07:28:27.002Z [INFO] [generated in 0.00138s] ()
+2026-06-03T07:28:27.008Z [INFO] BEGIN (implicit)
+2026-06-03T07:28:27.016Z [INFO] SELECT work_calendar.work_calendar_id AS work_calendar_work_calendar_id, work_calendar.calendar_date AS work_calendar_calendar_date, work_calendar.is_workday AS work_calendar_is_workday, work_calendar.day_type AS work_calendar_day_type, work_calendar.note AS work_calendar_note, work_calendar.created_at AS work_calendar_created_at, work_calendar.created_by AS work_calendar_created_by 
+FROM work_calendar ORDER BY work_calendar.calendar_date
+2026-06-03T07:28:27.018Z [INFO] [generated in 0.00275s] ()
+2026-06-03T07:28:27.025Z [INFO] 
+        SELECT
+            def.product_test_defect_id,
+            def.defect_title,
+            def.defect_severity,
+            def.defect_priority,
+            def.product_test_defect_status,
+            def.assigned_to,
+            def.expected_resolution_date,
+            def.created_at,
+            run.product_test_release_id,
+            run.product_test_run_id,
+            def.remark
+        FROM product_test_defect def
+        JOIN product_test_result  res ON res.product_test_result_id  = def.product_test_result_id
+        JOIN product_test_run     run ON run.product_test_run_id     = res.product_test_run_id
+        WHERE def.product_test_defect_status = 'opened'
+        ORDER BY
+            CASE def.defect_severity
+                WHEN 'S' THEN 1 WHEN 'A' THEN 2 WHEN 'B' THEN 3 WHEN 'C' THEN 4 ELSE 5
+            END,
+            def.created_at
+    
+2026-06-03T07:28:27.027Z [INFO] 127.0.0.1:12331 - "GET /admin/api/work-calendar HTTP/1.1" 200
+2026-06-03T07:28:27.027Z [INFO] [generated in 0.00242s] ()
+2026-06-03T07:28:27.030Z [INFO] ROLLBACK
+2026-06-03T07:28:27.032Z [INFO] 
+        SELECT
+            run.product_test_run_id,
+            run.product_test_release_id,
+            run.product_test_run_status,
+            run.started_at,
+            run.finished_at,
+            COUNT(res.product_test_result_id)                                    AS total_results,
+            SUM(CASE WHEN res.product_test_result_status = 'passed'  THEN 1 ELSE 0 END) AS passed,
+            SUM(CASE WHEN res.product_test_result_status = 'blocked' THEN 1 ELSE 0 END) AS blocked,
+            SUM(CASE WHEN res.product_test_result_status = 'testing' THEN 1 ELSE 0 END) AS testing
+        FROM product_test_run run
+        LEFT JOIN product_test_result res ON res.product_test_run_id = run.product_test_run_id
+        GROUP BY run.product_test_run_id
+        HAVING total_results > 0
+        ORDER BY run.started_at
+    
+2026-06-03T07:28:27.033Z [INFO] [generated in 0.00068s] ()
+2026-06-03T07:28:27.035Z [INFO] 
+        SELECT
+            run.product_test_release_id,
+            res.product_test_case_id,
+            res.product_test_result_status,
+            COUNT(*)                          AS cnt,
+            res.product_test_run_id,
+            res.product_test_result_id,
+            def.product_test_defect_id
+        FROM product_test_result res
+        JOIN product_test_run run ON run.product_test_run_id = res.product_test_run_id
+        LEFT JOIN product_test_defect def ON def.product_test_result_id = res.product_test_result_id
+            AND def.product_test_defect_status = 'opened'
+        GROUP BY run.product_test_release_id, res.product_test_case_id,
+                 res.product_test_result_status, res.product_test_run_id,
+                 res.product_test_result_id, def.product_test_defect_id
+        ORDER BY run.product_test_release_id, res.product_test_case_id
+    
+2026-06-03T07:28:27.036Z [INFO] [generated in 0.00080s] ()
+2026-06-03T07:28:27.050Z [INFO] 
+        SELECT
+            pr.product_test_procedure_result_id,
+            pr.product_test_result_id,
+            pr.product_test_procedure_id,
+            pr.product_test_procedure_result_status,
+            pr.actual_result,
+            pr.judgement_reason,
+            pr.judged_at,
+            pr.judged_by,
+            p.product_test_case_id,
+            p.procedure_sequence,
+            p.procedure_action,
+            run.product_test_release_id
+        FROM product_test_procedure_result pr
+        JOIN product_test_procedure p ON p.product_test_procedure_id = pr.product_test_procedure_id
+        JOIN product_test_result res ON res.product_test_result_id = pr.product_test_result_id
+        JOIN product_test_run run ON run.product_test_run_id = res.product_test_run_id
+        ORDER BY p.product_test_case_id, p.procedure_sequence
+    
+2026-06-03T07:28:27.050Z [INFO] [generated in 0.00113s] ()
+2026-06-03T07:28:27.052Z [INFO] 
+        SELECT
+            ev.product_test_evidence_id,
+            ev.product_test_result_id,
+            ev.product_test_procedure_result_id,
+            ev.product_test_defect_id,
+            ev.product_test_evidence_type,
+            ev.file_name,
+            ev.file_path,
+            ev.captured_at,
+            ev.captured_by,
+            COALESCE(run.product_test_release_id, run2.product_test_release_id) AS release_id
+        FROM product_test_evidence ev
+        LEFT JOIN product_test_result res ON res.product_test_result_id = ev.product_test_result_id
+        LEFT JOIN product_test_run run ON run.product_test_run_id = res.product_test_run_id
+        LEFT JOIN product_test_defect def ON def.product_test_defect_id = ev.product_test_defect_id
+        LEFT JOIN product_test_result res2 ON res2.product_test_result_id = def.product_test_result_id
+        LEFT JOIN product_test_run run2 ON run2.product_test_run_id = res2.product_test_run_id
+        ORDER BY ev.captured_at
+    
+2026-06-03T07:28:27.053Z [INFO] [generated in 0.00086s] ()
+2026-06-03T07:28:27.062Z [INFO] 127.0.0.1:2178 - "GET /admin/api/tracking/summary HTTP/1.1" 200
+2026-06-03T07:28:27.064Z [INFO] ROLLBACK
+2026-06-03T07:28:27.266Z [INFO] 127.0.0.1:12331 - "POST /admin/api/product-test/ui/id-candidates HTTP/1.1" 200
+2026-06-03T07:28:27.272Z [INFO] 127.0.0.1:2178 - "POST /admin/api/product-test/ui/id-candidates HTTP/1.1" 200
+2026-06-03T07:28:27.641Z [INFO] 127.0.0.1:2178 - "GET /static/images/favicon.svg HTTP/1.1" 200
+2026-06-03T07:28:27.902Z [INFO] 127.0.0.1:2178 - "POST /admin/api/product-test/ui/id-candidates HTTP/1.1" 200
+2026-06-03T07:28:27.924Z [INFO] 127.0.0.1:2178 - "POST /admin/api/product-test/ui/id-candidates HTTP/1.1" 200
+2026-06-03T07:28:28.055Z [INFO] 127.0.0.1:12331 - "POST /admin/api/product-test/ui/id-candidates HTTP/1.1" 200
+2026-06-03T07:28:28.069Z [INFO] 127.0.0.1:6425 - "POST /admin/api/product-test/ui/id-candidates HTTP/1.1" 200
+2026-06-03T07:28:28.076Z [INFO] 127.0.0.1:10494 - "POST /admin/api/product-test/ui/id-candidates HTTP/1.1" 200
+2026-06-03T07:28:28.081Z [INFO] 127.0.0.1:3885 - "POST /admin/api/product-test/ui/id-candidates HTTP/1.1" 200
+2026-06-03T07:28:28.084Z [INFO] 127.0.0.1:2178 - "POST /admin/api/product-test/ui/id-candidates HTTP/1.1" 200
