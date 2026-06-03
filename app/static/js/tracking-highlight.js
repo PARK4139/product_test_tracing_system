@@ -71,12 +71,8 @@ function bindHighlights(root) {
                 const deviceRow = findGanttRowById(deviceRowId);
                 clientLog("[HL] deviceRow", deviceRow ? deviceRow.dataset.rowId : "NOT FOUND");
                 if (deviceRow) {
-                    deviceRow.classList.add("gantt_hl", statusHighlightClass(deviceRow.dataset.status));
-                    const parentId = deviceRow.dataset.parentId;
-                    if (parentId) {
-                        const parentRow = root.querySelector(`.gantt_row[data-row-id="${parentId}"]`);
-                        if (parentRow) parentRow.classList.add("gantt_hl", statusHighlightClass(parentRow.dataset.status));
-                    }
+                    deviceRow.classList.add("gantt_hl", "hl-blocked");
+                    // 부모 라운드행은 하이라이트하지 않음 — 결함이 속한 장비행만 강조
                     deviceRow.scrollIntoView({ behavior:"smooth", block:"nearest" });
                 }
             }

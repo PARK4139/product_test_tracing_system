@@ -181,17 +181,29 @@ def get_tracking_summary(
             def.created_at
     """)).fetchall()
 
-    # release_id → 상위 장비행 ID 맵 (RC → 장비행, 장비행은 그대로)
+    # release_id → 상위 ID 맵 + visible 맵
     # 구조: RC(visible=0) → 장비행(visible=1) → 라운드(parent)
     release_upstream = {r["id"]: r["upstream_id"] for r in releases}
+    release_visible = {r["id"]: r["visible"] for r in releases}
 
     def resolve_parent_release(release_id: str) -> str:
-        """run.release_id → 간트 장비 행 ID (visible=1인 상위)"""
-        parent = release_upstream.get(release_id, "")
-        # RC 레벨이면 한 단계 더 올라감 (장비행)
-        if parent and release_upstream.get(parent):
-            return parent
-        return parent
+        """run.release_id → 간트 장비 행 ID (visible=1인 자식 행)"""
+        cur = release_id
+        # 최대 5단계까지 올라가며 visible=1인 자식 행 찾기
+        for _ in range(5):
+            if cur and release_visible.get(cur, False):
+                # 현재가 visible이고, 부모도 있으면 → 이것이 장비행
+                parent = release_upstream.get(cur, "")
+                if parent and release_visible.get(parent, False):
+                    # 부모도 visible → cur는 장비행(자식)
+                    return cur
+                # 부모가 없거나 invisible → cur 자체가 최상위
+                return cur
+            # 현재가 invisible이면 위로 올라감
+            cur = release_upstream.get(cur, "")
+            if not cur:
+                break
+        return release_id  # fallback
 
     def parse_images(remark: str) -> dict:
         imgs = {"other_device": [], "hdr_screen": [], "general": []}
