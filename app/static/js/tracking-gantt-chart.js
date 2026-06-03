@@ -122,7 +122,7 @@ function buildGantt(releases) {
                 </div>
             </div>
             <div class="gantt_status_col">
-                <span class="${hasChildren ? 'trk_status_readonly' : 'trk_status_editable'}" data-release-id="${r.id}" data-status="${r.status}" ${hasChildren ? 'title="자식 상태에 의해 자동 결정됨"' : ''}>${statusBadge(r.status)}</span>
+                <span class="trk_status_readonly" data-release-id="${r.id}" data-status="${r.status}" title="하위 시험 결과로부터 자동 결정">${statusBadge(r.status)}</span>
             </div>
             <div class="gantt_chart_col">
                 <div class="gantt_today_line" style="left:${todayPct}%"></div>

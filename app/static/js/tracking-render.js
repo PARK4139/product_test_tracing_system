@@ -137,7 +137,8 @@ function renderTracking(data) {
                 <th style="width:50px">시험중</th>
             </tr></thead><tbody>`;
         runs.forEach(r => {
-            html += `<tr data-run-id="${r.id}" data-parent-release-id="${r.parent_release_id}" style="cursor:pointer">
+            const runSt = r.blocked>0?"BLOCKED":r.testing>0?"TESTING":"PASSED";
+            html += `<tr data-run-id="${r.id}" data-parent-release-id="${r.parent_release_id}" data-status="${runSt}" style="cursor:pointer">
                 <td style="font-size:0.72rem;color:#64748b" title="${r.id}">${r.id}</td>
                 <td style="font-size:0.78rem">${(r.parent_release_id||"").replace("TEST_RELEASE-","")}</td>
                 <td>${statusBadge(r.status)}</td>
@@ -166,10 +167,12 @@ function renderTracking(data) {
             </tr></thead><tbody>`;
         resultsSummary.forEach(r => {
             const hd = r.defect_ids && r.defect_ids.length > 0;
+            const resSt = r.blocked>0?"BLOCKED":r.testing>0?"TESTING":"PASSED";
             html += `<tr data-parent-release-id="${r.parent_release_id}"
                          data-case-id="${r.case_id}"
                          data-result-ids='${JSON.stringify(r.result_ids||[])}'
                          data-defect-ids='${JSON.stringify(r.defect_ids||[])}'
+                         data-status="${resSt}"
                          style="cursor:pointer">
                 <td style="font-size:0.75rem;color:#64748b" title="${r.parent_release_id}">${(r.parent_release_id||"").replace("TEST_RELEASE-","")}</td>
                 <td style="font-size:0.75rem;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.case_id}">${(r.case_id||"").replace("TEST_CASE-","")}</td>

@@ -20,9 +20,10 @@ function bindHighlights(root) {
     }
 
     // ── per-table highlight helpers ──
-    function hlByTopo(tableClass, topoId, hlClass) {
+    function hlByTopo(tableClass, topoId) {
         root.querySelectorAll(`.${tableClass} tbody tr[data-parent-release-id="${topoId}"]`).forEach(r => {
-            r.classList.add("trk_row_highlighted", hlClass || "hl-blocked");
+            const st = r.dataset.status || "";
+            r.classList.add("trk_row_highlighted", statusHighlightClass(st));
         });
     }
     function hlAllTablesByTopo(topoId) {
