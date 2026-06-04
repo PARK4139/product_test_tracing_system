@@ -2,7 +2,11 @@
 "use strict";
 
 /* ── fetch & mount ───────────────────────────────────────────── */
-function loadTracking() {
+function loadTracking(options) {
+    const opts = options || {};
+    const restoreScroll = opts.preserveScroll
+        ? { x: window.scrollX || 0, y: window.scrollY || 0 }
+        : null;
     const root    = document.getElementById("trk_root");
     const loadMsg = document.getElementById("trk_loading_msg");
     if (loadMsg) loadMsg.style.display = "block";
@@ -37,7 +41,11 @@ function loadTracking() {
                 bindDefectImages(root);
                 initDefectColResize(root);
                 if (typeof initTableColumnFeatures === "function") initTableColumnFeatures(root);
-                window.scrollTo({ top: 0, behavior: "instant" });
+                if (restoreScroll) {
+                    window.scrollTo(restoreScroll.x, restoreScroll.y);
+                } else {
+                    window.scrollTo({ top: 0, behavior: "instant" });
+                }
             } catch(renderErr) {
                 showError(`렌더링 오류: ${renderErr.message}\n${renderErr.stack}`);
             }
@@ -63,5 +71,11 @@ function updateToggleLabel() {
 
 document.addEventListener("DOMContentLoaded", () => { updateToggleLabel(); loadTracking(); });
 document.getElementById("trk_refresh_btn")
-    && document.getElementById("trk_refresh_btn").addEventListener("click", () => { updateToggleLabel(); loadTracking(); });
+    && document.getElementById("trk_refresh_btn").addEventListener("click", event => {
+        const btn = event.currentTarget;
+        const preserveScroll = btn && btn.dataset.preserveScroll === "1";
+        if (btn) delete btn.dataset.preserveScroll;
+        updateToggleLabel();
+        loadTracking({ preserveScroll });
+    });
 })();
