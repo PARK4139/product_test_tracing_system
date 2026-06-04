@@ -143,13 +143,17 @@ function renderTracking(data) {
     
     /* ── 3.5 Run 현황 ───────────────────────────────────────── */
     const runList = data.runs || [];
+    // target/env 상세 조회용 맵
+    const tgtMap = Object.fromEntries((data.targets||[]).map(t => [t.id, t]));
+    const envMap = Object.fromEntries((data.environments||[]).map(e => [e.id, e]));
     if (runList.length > 0) {
         html += `<div class="trk_sub_header">Run 현황</div>`;
         html += `<div class="trk_timeline_wrap"><table class="trk_run_table">
             <thead><tr>
-                <th style="width:340px">Run ID</th>
-                <th style="width:200px">구성</th>
+                <th style="width:300px">Run ID</th>
                 <th style="width:70px">상태</th>
+                <th style="width:160px">Target</th>
+                <th style="width:200px">Environment</th>
                 <th style="width:80px">시작일</th>
                 <th style="width:80px">종료일</th>
                 <th style="width:45px">전체</th>
@@ -157,11 +161,15 @@ function renderTracking(data) {
                 <th style="width:45px">차단</th>
             </tr></thead><tbody>`;
         runList.forEach(r => {
-            const topoShort = (r.parent_release_id || "").replace("TEST_RELEASE-", "");
             html += `<tr data-parent-release-id="${r.parent_release_id}" data-run-id="${r.id}" style="cursor:pointer">
                 <td style="font-size:0.72rem;color:#64748b" title="${r.id}">${r.id}</td>
-                <td style="font-size:0.75rem">${topoShort}</td>
                 <td>${statusBadge(r.status)}</td>
+                <td style="font-size:0.72rem;color:#64748b" title="${r.target_id}">
+                    ${tgtMap[r.target_id] ? `<span style="font-weight:600">${tgtMap[r.target_id].model_name}</span> <span style="color:#94a3b8">${tgtMap[r.target_id].sw_version}</span>` : (r.target_id || "-")}
+                </td>
+                <td style="font-size:0.72rem;color:#64748b" title="${r.environment_id}">
+                    ${envMap[r.environment_id] ? envMap[r.environment_id].name : (r.environment_id || "-")}
+                </td>
                 <td style="font-size:0.75rem;color:#64748b">${(r.started_at || "").slice(0, 10)}</td>
                 <td style="font-size:0.75rem;color:#64748b">${(r.finished_at || "").slice(0, 10) || "-"}</td>
                 <td style="text-align:center">${r.total_results}</td>
@@ -178,25 +186,50 @@ function renderTracking(data) {
     if (tgts.length > 0 || envs.length > 0) {
         html += `<div class="trk_sub_header">Target / Environment</div>`;
         if (tgts.length > 0) {
+            // 자동완성용 datalist
+            const tgtDatalistId = "trk_target_id_list";
+            html += `<datalist id="${tgtDatalistId}">` +
+                tgts.map(t => `<option value="${t.id}">${t.model_name} ${t.sw_version} (${t.serial_number})</option>`).join("") +
+                `</datalist>`;
             html += `<div class="trk_timeline_wrap"><table class="trk_target_table">
                 <thead><tr>
-                    <th style="width:600px">Target ID</th>
+                    <th style="width:260px">Target ID</th>
+                    <th style="width:110px">모델명</th>
+                    <th style="width:80px">SW 버전</th>
+                    <th style="width:150px">S/N</th>
                 </tr></thead><tbody>`;
             tgts.forEach(t => {
                 html += `<tr style="cursor:pointer">
-                    <td style="font-size:0.75rem;color:#64748b" title="${t.id}">${t.id}</td>
+                    <td>
+                        <input list="${tgtDatalistId}" value="${t.id}" readonly
+                            style="font-size:0.72rem;color:#64748b;background:transparent;border:none;width:100%;cursor:pointer"
+                            title="${t.id}">
+                    </td>
+                    <td style="font-size:0.78rem;font-weight:600">${t.model_name || "-"}</td>
+                    <td style="font-size:0.78rem">${t.sw_version || "-"}</td>
+                    <td style="font-size:0.75rem;color:#64748b">${t.serial_number || "-"}</td>
                 </tr>`;
             });
             html += `</tbody></table></div>`;
         }
         if (envs.length > 0) {
+            const envDatalistId = "trk_env_id_list";
+            html += `<datalist id="${envDatalistId}">` +
+                envs.map(e => `<option value="${e.id}">${e.name}</option>`).join("") +
+                `</datalist>`;
             html += `<div class="trk_timeline_wrap" style="margin-top:6px"><table class="trk_env_table">
                 <thead><tr>
-                    <th style="width:600px">Environment ID</th>
+                    <th style="width:260px">Environment ID</th>
+                    <th style="width:400px">환경 이름</th>
                 </tr></thead><tbody>`;
             envs.forEach(e => {
                 html += `<tr style="cursor:pointer">
-                    <td style="font-size:0.72rem;color:#64748b" title="${e.id}">${e.id}</td>
+                    <td>
+                        <input list="${envDatalistId}" value="${e.id}" readonly
+                            style="font-size:0.72rem;color:#64748b;background:transparent;border:none;width:100%;cursor:pointer"
+                            title="${e.id}">
+                    </td>
+                    <td style="font-size:0.75rem" title="${e.name}">${e.name || "-"}</td>
                 </tr>`;
             });
             html += `</tbody></table></div>`;
@@ -219,8 +252,7 @@ function renderTracking(data) {
                 <th style="width:45px">결함</th>
             </tr></thead><tbody>`;
         resultsSummary.forEach(r => {
-            const topoShort = (r.parent_release_id || "").replace("TEST_RELEASE-", "");
-            const caseShort = (r.case_id || "").replace(/^(TEST_CASE|DEPRECATED_TEST_CASE)-[^-]+-/, "");
+            const caseShort = r.case_id || "";
             const defectCount = (r.defect_ids || []).length;
             const rowStyle = r.blocked > 0 ? "background:rgba(239,68,68,0.05);" : "";
             html += `<tr data-parent-release-id="${r.parent_release_id}"
@@ -250,7 +282,7 @@ function renderTracking(data) {
                 <th style="width:200px">제목</th>
             </tr></thead><tbody>`;
         caseList.forEach(c => {
-            const caseDisplay = extractTopo(c.parent_release_id) + "-" + (c.id||"").replace(/^(TEST_CASE|DEPRECATED_TEST_CASE)-[^-]+-/,"");
+            const caseDisplay = c.id || "";
             html += `<tr data-parent-release-id="${c.parent_release_id}" data-case-id="${c.id}" style="cursor:pointer">
                 <td style="font-size:0.75rem" title="${c.id}">${caseDisplay}</td>
                 <td style="font-size:0.72rem;color:#64748b;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${c.title}">${c.title}</td>
@@ -265,7 +297,7 @@ function renderTracking(data) {
                     <th style="width:300px">Action</th>
                 </tr></thead><tbody>`;
             procList.forEach(p => {
-                const caseDisplay = extractTopo(p.parent_release_id) + "-" + (p.case_id||"").replace(/^(TEST_CASE|DEPRECATED_TEST_CASE)-[^-]+-/,"");
+                const caseDisplay = p.case_id || "";
                 html += `<tr data-parent-release-id="${p.parent_release_id}" data-case-id="${p.case_id}" style="cursor:pointer">
                     <td style="text-align:center">${p.sequence}</td>
                     <td style="font-size:0.72rem;color:#64748b" title="${p.case_id}">${caseDisplay}</td>
@@ -292,7 +324,7 @@ function renderTracking(data) {
             </tr></thead><tbody>`;
         procResults.forEach(pr => {
             const topoShort = (pr.parent_release_id||"").replace("TEST_RELEASE-","");
-            const caseShort = (pr.case_id||"").replace("TEST_CASE-","");
+            const caseShort = pr.case_id || "";
             html += `<tr data-parent-release-id="${pr.parent_release_id}"
                          data-result-id="${pr.result_id}"
                          data-procedure-result-id="${pr.id}"

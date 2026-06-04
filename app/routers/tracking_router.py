@@ -247,7 +247,9 @@ def get_tracking_summary(
             COUNT(res.product_test_result_id)                                    AS total_results,
             SUM(CASE WHEN res.product_test_result_status = 'passed'  THEN 1 ELSE 0 END) AS passed,
             SUM(CASE WHEN res.product_test_result_status = 'blocked' THEN 1 ELSE 0 END) AS blocked,
-            SUM(CASE WHEN res.product_test_result_status = 'testing' THEN 1 ELSE 0 END) AS testing
+            SUM(CASE WHEN res.product_test_result_status = 'testing' THEN 1 ELSE 0 END) AS testing,
+            run.product_test_target_id,
+            run.product_test_environment_id
         FROM product_test_run run
         LEFT JOIN product_test_result res ON res.product_test_run_id = run.product_test_run_id
         GROUP BY run.product_test_run_id
@@ -267,6 +269,8 @@ def get_tracking_summary(
             "passed": r[6] or 0,
             "blocked": r[7] or 0,
             "testing": r[8] or 0,
+            "target_id": r[9] or "",
+            "environment_id": r[10] or "",
         }
         for r in runs_raw
     ]
@@ -442,33 +446,54 @@ def get_tracking_summary(
         for r in reports_raw
     ]
 
-    # ── Targets (via runs, 중복 제거) ────────────────────────────────────────
+    # ── Targets (via runs, 중복 제거 + 상세 정보 포함) ──────────────────────
     seen_tgt = set()
     targets = []
     for r in conn.execute(text("""
-        SELECT DISTINCT run.product_test_target_id
+        SELECT DISTINCT
+            t.product_test_target_id,
+            td.model_name,
+            t.software_version,
+            t.serial_number,
+            t.remark
         FROM product_test_run run
         JOIN product_test_result res ON res.product_test_run_id = run.product_test_run_id
-        ORDER BY run.product_test_target_id
+        LEFT JOIN product_test_target t ON t.product_test_target_id = run.product_test_target_id
+        LEFT JOIN product_test_target_definition td
+            ON td.product_test_target_definition_id = t.product_test_target_definition_id
+        ORDER BY t.product_test_target_id
     """)).fetchall():
         tid = r[0]
         if tid and tid not in seen_tgt:
             seen_tgt.add(tid)
-            targets.append({"id": tid})
+            targets.append({
+                "id": tid,
+                "model_name": r[1] or "",
+                "sw_version": r[2] or "",
+                "serial_number": r[3] or "",
+                "remark": r[4] or "",
+            })
 
-    # ── Environments (via runs, 중복 제거) ───────────────────────────────────
+    # ── Environments (via runs, 중복 제거 + 상세 정보 포함) ──────────────────
     seen_env = set()
     environments = []
     for r in conn.execute(text("""
-        SELECT DISTINCT run.product_test_environment_id
+        SELECT DISTINCT
+            run.product_test_environment_id,
+            e.product_test_environment_name
         FROM product_test_run run
         JOIN product_test_result res ON res.product_test_run_id = run.product_test_run_id
+        LEFT JOIN product_test_environment e
+            ON e.product_test_environment_id = run.product_test_environment_id
         ORDER BY run.product_test_environment_id
     """)).fetchall():
         env_id = r[0]
         if env_id and env_id not in seen_env:
             seen_env.add(env_id)
-            environments.append({"id": env_id})
+            environments.append({
+                "id": env_id,
+                "name": r[1] or "",
+            })
 
     # ── Cases + Procedures (via results) ──────────────────────────────────────
     cases_raw = conn.execute(text("""
