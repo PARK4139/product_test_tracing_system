@@ -748,6 +748,10 @@
     };
 
     document.addEventListener("keydown", (event) => {
+        if (event.ctrlKey || event.metaKey) {
+            return;
+        }
+
         if (event.key === "Escape") {
             multiEditSnapshots = [];
             endMultiEdit();

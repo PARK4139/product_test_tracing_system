@@ -392,6 +392,7 @@ function beginSheetTabRename(tab, id, labelStorageKey) {
     input.select();
     input.addEventListener("click", event => event.stopPropagation());
     input.addEventListener("keydown", event => {
+        if (event.ctrlKey || event.metaKey) return;
         event.stopPropagation();
         if (event.key === "Enter") {
             event.preventDefault();

@@ -589,6 +589,53 @@ void (async () => {
         const allTableBodies = Array.from(card.querySelectorAll(".tester_table_wrap table.basic_table tbody"));
         return allTableBodies.length >= 2 ? allTableBodies[1] : null;
     };
+    const getEntityTypeForAction = (action) => {
+        if (action.endsWith("/product-test-releases/create")) return "product_test_release";
+        if (action.endsWith("/product-test-target-definitions/create")) return "product_test_target_definition";
+        if (action.endsWith("/product-test-targets/create")) return "product_test_target";
+        if (action.endsWith("/product-test-environment-definitions/create")) return "product_test_environment_definition";
+        if (action.endsWith("/product-test-environments/create")) return "product_test_environment";
+        if (action.endsWith("/product-test-cases/create")) return "product_test_case";
+        if (action.endsWith("/product-test-procedures/create")) return "product_test_procedure";
+        if (action.endsWith("/product-test-reports/create")) return "product_test_report";
+        return "";
+    };
+    const getSubmittedRowId = (row) => {
+        const checkbox = row?.querySelector?.(".admin_submitted_row_checkbox");
+        return String(checkbox?.dataset?.entityId || row?.dataset?.entityId || row?.children?.[1]?.textContent || "").trim();
+    };
+    const deleteSubmittedRows = async (form, rows) => {
+        const entityType = getEntityTypeForAction(String(form.getAttribute("action") || ""));
+        const entityIds = rows.map(getSubmittedRowId).filter(Boolean);
+        if (!entityType || entityIds.length === 0) {
+            showNotice({ message: "삭제할 제출 행 ID를 찾지 못했습니다.", level: "error", mode: "non_modal" });
+            return;
+        }
+        const response = await fetch("/admin/api/product-test/entities/bulk-delete", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "X-Requested-With": "XMLHttpRequest",
+            },
+            body: JSON.stringify({ entity_type: entityType, entity_ids: entityIds }),
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || result.ok === false) {
+            showNotice({
+                message: result.message || "제출된 목록 행 삭제에 실패했습니다.",
+                level: "error",
+                mode: "non_modal",
+            });
+            return;
+        }
+        rows.forEach(row => row.remove());
+        showNotice({
+            message: `${result.deleted ?? entityIds.length}개 행을 삭제했습니다.`,
+            level: "success",
+            mode: "non_modal",
+        });
+    };
     const buildSubmittedRowHtml = (action, row) => {
         const checkbox = '<td><input type="checkbox" class="admin_submitted_row_checkbox"></td>';
         if (action.endsWith("/product-test-releases/create")) {
@@ -630,6 +677,7 @@ void (async () => {
             return;
         }
         tbody.insertAdjacentHTML("afterbegin", rowHtml);
+        setupSubmittedTableSelection(form);
         /* draft 행 제거 */
         const draftRow = tbody.querySelector("tr.admin_merged_draft_row");
         if (draftRow) draftRow.remove();
@@ -668,6 +716,14 @@ void (async () => {
         outputTable.querySelectorAll('input[type="checkbox"][disabled]').forEach((checkbox) => {
             checkbox.disabled = false;
             checkbox.classList.add("admin_submitted_row_checkbox");
+        });
+        outputTable.querySelectorAll(".admin_submitted_row_checkbox").forEach((checkbox) => {
+            const row = checkbox.closest("tr");
+            const entityId = getSubmittedRowId(row);
+            if (entityId) {
+                checkbox.dataset.entityId = entityId;
+                if (row) row.dataset.entityId = entityId;
+            }
         });
         const actionBar = card.querySelector(".admin_table_action_bar_top");
         if (!actionBar || actionBar.querySelector(".admin_select_all_submitted_button")) {
@@ -1733,6 +1789,12 @@ void (async () => {
             removeButton.addEventListener("click", () => {
                 const card = form.closest(".card");
                 const draftCheckbox = form.querySelector(".admin_input_row_checkbox");
+                const submittedRows = card
+                    ? Array.from(card.querySelectorAll(".admin_submitted_row_checkbox:checked"))
+                        .map(checkbox => checkbox.closest("tr"))
+                        .filter(Boolean)
+                        .filter(row => !row.classList.contains("admin_merged_draft_row"))
+                    : [];
                 const anySelectedCheckbox = card
                     ? card.querySelector('input[type="checkbox"]:checked')
                     : null;
@@ -1740,6 +1802,10 @@ void (async () => {
                     if (window.openMessageModal) {
                         window.openMessageModal("Remove Rows 전에 Selected checkbox를 선택해 주세요.");
                     }
+                    return;
+                }
+                if (submittedRows.length > 0) {
+                    void deleteSubmittedRows(form, submittedRows);
                     return;
                 }
                 if (draftCheckbox && !draftCheckbox.checked) {

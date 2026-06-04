@@ -480,3 +480,49 @@ def bulk_update_product_test_fields(
 
     database_session.commit()
     return {"updated": updated_count, "skipped": max(0, len(updates) - len(deduped))}
+
+
+def bulk_delete_product_test_entities(
+    database_session: Session,
+    *,
+    entity_type: str,
+    entity_ids: list[str],
+) -> dict[str, Any]:
+    entity_type_value = str(entity_type or "").strip()
+    if entity_type_value not in ENTITY_MODEL_MAP:
+        raise ValueError(f"Unsupported entity_type: {entity_type_value}")
+
+    deduped_ids = []
+    seen_ids = set()
+    for raw_id in entity_ids:
+        entity_id = str(raw_id or "").strip()
+        if not entity_id or entity_id in seen_ids:
+            continue
+        seen_ids.add(entity_id)
+        deduped_ids.append(entity_id)
+
+    if not deduped_ids:
+        return {"deleted": 0, "skipped": len(entity_ids)}
+
+    model = ENTITY_MODEL_MAP[entity_type_value]
+    deleted_count = 0
+    for entity_id in deduped_ids:
+        if entity_type_value == "product_test_release":
+            _ensure_release_not_locked_for_source_mutation(
+                database_session,
+                product_test_release_id=entity_id,
+            )
+        elif entity_type_value == "product_test_defect":
+            _ensure_defect_not_locked_for_source_mutation(
+                database_session,
+                product_test_defect_id=entity_id,
+            )
+
+        row = database_session.get(model, entity_id)
+        if row is None:
+            raise LookupError(f"{entity_type_value} not found: {entity_id}")
+        database_session.delete(row)
+        deleted_count += 1
+
+    database_session.commit()
+    return {"deleted": deleted_count, "skipped": max(0, len(entity_ids) - len(deduped_ids))}

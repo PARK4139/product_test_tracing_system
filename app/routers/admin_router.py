@@ -22,7 +22,7 @@ from app.services.admin_product_test_ui_service import (
     validate_product_test_identifier_values,
 )
 from app.services.admin_qc_e2e_service import start_admin_qc_e2e_fill
-from app.services.product_test_field_update_service import bulk_update_product_test_fields
+from app.services.product_test_field_update_service import bulk_delete_product_test_entities, bulk_update_product_test_fields
 from app.services.product_test_run_service import (
     MASTER_ACTIVE_STATUS_VALUES,
     REPORT_STATUS_VALUES,
@@ -248,6 +248,11 @@ class AdminProductTestBulkFieldUpdateRequest(BaseModel):
     updates: list[AdminProductTestFieldUpdateItem] = Field(default_factory=list)
 
 
+class AdminProductTestBulkDeleteRequest(BaseModel):
+    entity_type: str
+    entity_ids: list[str] = Field(default_factory=list)
+
+
 @admin_router.get("/api/product-test/ui/client-config")
 def admin_product_test_ui_get_client_config(
     current_role_name: current_role_name_dependency,
@@ -313,6 +318,28 @@ def admin_product_test_bulk_field_update(
             updated_by=actor_name,
         )
     except (ValueError, LookupError) as exception:
+        database_session.rollback()
+        return JSONResponse(
+            status_code=400,
+            content={"ok": False, "message": str(exception)},
+        )
+    return JSONResponse({"ok": True, **result})
+
+
+@admin_router.post("/api/product-test/entities/bulk-delete")
+def admin_product_test_bulk_delete_entities(
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+    payload: AdminProductTestBulkDeleteRequest,
+):
+    _ensure_admin_role(current_role_name)
+    try:
+        result = bulk_delete_product_test_entities(
+            database_session,
+            entity_type=payload.entity_type,
+            entity_ids=payload.entity_ids,
+        )
+    except Exception as exception:
         database_session.rollback()
         return JSONResponse(
             status_code=400,
@@ -1217,4 +1244,3 @@ def admin_qc_db_truncate_route(
     truncate_application_data()
     database_session.expire_all()
     return JSONResponse({"ok": True, "message": "Database truncated."})
-
