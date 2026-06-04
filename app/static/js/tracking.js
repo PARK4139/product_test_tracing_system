@@ -320,9 +320,8 @@ function bindSheetTabDragDrop(options) {
 
 function initAdminMasterDataTabs() {
     const workCalendar = document.getElementById("work_calendar_card");
-    const trackingTop = document.getElementById("tracking_top_section");
     if (document.querySelector(".admin_master_data_tabs")) return true;
-    if (!workCalendar || !trackingTop) return false;
+    if (!workCalendar) return false;
 
     const labelByAction = [
         ["/admin/product-test-releases/create", "Test Release"],
@@ -333,33 +332,36 @@ function initAdminMasterDataTabs() {
         ["/admin/product-test-cases/create", "Test Case"],
         ["/admin/product-test-procedures/create", "Test Procedure"]
     ];
-    const groups = [];
-    let firstCard = null;
-    let cursor = trackingTop.nextElementSibling;
-
-    while (cursor && cursor !== workCalendar) {
-        const next = cursor.nextElementSibling;
-        const actions = Array.from(cursor.querySelectorAll?.("form[action]") || [])
+    const cards = Array.from(document.querySelectorAll("section.card"));
+    const groups = cards
+        .filter(card => card.compareDocumentPosition(workCalendar) & Node.DOCUMENT_POSITION_FOLLOWING)
+        .map(card => {
+            const actions = Array.from(card.querySelectorAll("form[action]"))
             .map(form => form.getAttribute("action") || "");
-        const labelMatch = labelByAction.find(([action]) => actions.includes(action));
-        if (cursor.matches?.("section.card") && labelMatch) {
-            if (!firstCard) firstCard = cursor;
+            const labelMatch = labelByAction.find(([action]) => actions.includes(action));
+            if (!labelMatch) return null;
             const title = labelMatch[1];
-            groups.push({
+            return {
                 id: `admin_master_tab_${title.replace(/\W+/g, "_").toLowerCase()}`,
                 label: title,
-                count: cursor.querySelectorAll("tbody tr").length,
-                node: cursor
-            });
-        } else if (firstCard) {
-            cursor.hidden = true;
-        }
+                count: card.querySelectorAll("tbody tr").length,
+                node: card
+            };
+        })
+        .filter(Boolean);
+
+    if (groups.length <= 1) return false;
+
+    const firstCard = groups[0].node;
+    const hostParent = firstCard.parentNode;
+    const groupNodes = new Set(groups.map(group => group.node));
+    let cursor = firstCard.nextElementSibling;
+    while (cursor && cursor !== workCalendar) {
+        const next = cursor.nextElementSibling;
+        if (!groupNodes.has(cursor)) cursor.hidden = true;
         cursor = next;
     }
 
-    if (!firstCard || groups.length <= 1) return false;
-
-    const hostParent = firstCard.parentNode;
     const tabsRoot = document.createElement("section");
     tabsRoot.className = "trk_data_tabs admin_master_data_tabs";
     const tabbar = document.createElement("div");
@@ -422,10 +424,26 @@ function initAdminMasterDataTabs() {
     return true;
 }
 
+let adminMasterDataTabsObserver = null;
 function scheduleAdminMasterDataTabs(attempt) {
     const attemptNo = attempt || 0;
-    if (initAdminMasterDataTabs()) return;
-    if (attemptNo >= 20) return;
+    if (initAdminMasterDataTabs()) {
+        if (adminMasterDataTabsObserver) {
+            adminMasterDataTabsObserver.disconnect();
+            adminMasterDataTabsObserver = null;
+        }
+        return;
+    }
+    if (!adminMasterDataTabsObserver && document.body) {
+        adminMasterDataTabsObserver = new MutationObserver(() => {
+            if (initAdminMasterDataTabs()) {
+                adminMasterDataTabsObserver.disconnect();
+                adminMasterDataTabsObserver = null;
+            }
+        });
+        adminMasterDataTabsObserver.observe(document.body, { childList: true, subtree: true });
+    }
+    if (attemptNo >= 60) return;
     setTimeout(() => scheduleAdminMasterDataTabs(attemptNo + 1), 100);
 }
 
