@@ -161,7 +161,7 @@ function renderTracking(data) {
                 <th style="width:45px">차단</th>
             </tr></thead><tbody>`;
         runList.forEach(r => {
-            html += `<tr data-parent-release-id="${r.parent_release_id}" data-run-id="${r.id}" style="cursor:pointer">
+            html += `<tr data-parent-release-id="${r.parent_release_id}" data-run-id="${r.id}" data-status="${r.status}" style="cursor:pointer">
                 <td style="font-size:0.72rem;color:#64748b" title="${r.id}">${r.id}</td>
                 <td>${statusBadge(r.status)}</td>
                 <td style="font-size:0.72rem;color:#64748b" title="${r.target_id}">
@@ -255,11 +255,13 @@ function renderTracking(data) {
             const caseShort = r.case_id || "";
             const defectCount = (r.defect_ids || []).length;
             const rowStyle = r.blocked > 0 ? "background:rgba(239,68,68,0.05);" : "";
+            const rowStatus = r.blocked > 0 ? "BLOCKED" : r.testing > 0 ? "TESTING" : r.passed > 0 ? "PASSED" : "";
             html += `<tr data-parent-release-id="${r.parent_release_id}"
                          data-case-id="${r.case_id}"
                          data-defect-ids='${JSON.stringify(r.defect_ids || [])}'
+                         data-status="${rowStatus}"
                          style="${rowStyle}cursor:pointer">
-                <td style="font-size:0.75rem;color:#64748b">${topoShort}</td>
+                <td style="font-size:0.75rem;color:#64748b">${(r.parent_release_id||"").replace("TEST_RELEASE-","")}</td>
                 <td style="font-size:0.75rem" title="${r.case_id}">${caseShort}</td>
                 <td style="text-align:center">${r.total}</td>
                 <td style="text-align:center;color:#22c55e;font-weight:${r.passed > 0 ? "700" : "400"}">${r.passed}</td>

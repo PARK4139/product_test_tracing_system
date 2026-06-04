@@ -183,9 +183,9 @@ button:disabled {
 .status_badge.status-drafted,
 .status_badge.status-testing,
 .status_badge.status-running {
-    background: #E8F4FB;
-    border-color: #9DCAE2;
-    color: #16506B;
+    background: #dbeafe;
+    border-color: #93c5fd;
+    color: #1d4ed8;
 }
 
 .status_badge.status-reviewed {
@@ -201,9 +201,9 @@ button:disabled {
 .status_badge.status-closed,
 .status_badge.status-active,
 .status_badge.status-retested {
-    background: #EAF7EE;
-    border-color: #A8D5B4;
-    color: #1F5C2E;
+    background: #dcfce7;
+    border-color: #86efac;
+    color: #15803d;
 }
 
 .status_badge.status-failed,
@@ -218,9 +218,9 @@ button:disabled {
 }
 
 .status_badge.status-blocked {
-    background: #FEF2F2;
-    border-color: #FECACA;
-    color: #B91C1C;
+    background: #fee2e2;
+    border-color: #fca5a5;
+    color: #b91c1c;
 }
 
 .status_badge.status-skipped,

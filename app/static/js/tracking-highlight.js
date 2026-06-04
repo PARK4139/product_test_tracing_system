@@ -158,7 +158,7 @@ function bindHighlights(root) {
             clearAllHighlights();
             if (isSelected) return;
             const topoId = tr.dataset.parentReleaseId || "";
-            tr.classList.add("trk_row_highlighted", "hl-testing");
+            tr.classList.add("trk_row_highlighted", statusHighlightClass(tr.dataset.status || ""));
             if (topoId) {
                 const topoRow = findGanttRowById(topoId);
                 if (topoRow) {
@@ -178,7 +178,7 @@ function bindHighlights(root) {
             clearAllHighlights();
             if (isSelected) return;
             const topoId = tr.dataset.parentReleaseId || "";
-            tr.classList.add("trk_row_highlighted", "hl-testing");
+            tr.classList.add("trk_row_highlighted", statusHighlightClass(tr.dataset.status || ""));
             if (topoId) {
                 const topoRow = findGanttRowById(topoId);
                 if (topoRow) {
@@ -204,7 +204,7 @@ function bindHighlights(root) {
             clearAllHighlights();
             if (isSelected) return;
             const topoId = tr.dataset.parentReleaseId || "";
-            tr.classList.add("trk_row_highlighted", "hl-testing");
+            tr.classList.add("trk_row_highlighted", statusHighlightClass(tr.dataset.status || ""));
             if (topoId) {
                 const topoRow = findGanttRowById(topoId);
                 if (topoRow) {
@@ -224,7 +224,7 @@ function bindHighlights(root) {
             clearAllHighlights();
             if (isSelected) return;
             const topoId = tr.dataset.parentReleaseId || "";
-            tr.classList.add("trk_row_highlighted", "hl-testing");
+            tr.classList.add("trk_row_highlighted", statusHighlightClass(tr.dataset.status || ""));
             if (topoId) {
                 const topoRow = findGanttRowById(topoId);
                 if (topoRow) {
