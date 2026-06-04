@@ -112,7 +112,11 @@ function initTrackingDataTabs(root) {
         }
 
         const hasDataView = nodes.some(node =>
-            node.querySelector && (node.querySelector("table") || node.querySelector(".gantt_wrap"))
+            node.querySelector && (
+                node.matches?.(".gantt_wrap")
+                || node.querySelector("table")
+                || node.querySelector(".gantt_wrap")
+            )
         );
         if (!hasDataView) return;
 
