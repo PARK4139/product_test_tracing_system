@@ -158,7 +158,7 @@ function initTrackingDataTabs(root) {
         tab.dataset.trkTab = group.id;
         tab.setAttribute("role", "tab");
         tab.setAttribute("aria-selected", group.id === activeGroup.id ? "true" : "false");
-        tab.innerHTML = `<span>${group.label}</span><span class="trk_sheet_count">${group.count}</span>`;
+        tab.innerHTML = `<span class="trk_sheet_label">${escapeSheetTabText(getSheetTabLabel("trk_data_tab_labels", group.id, group.label))}</span><span class="trk_sheet_count">${group.count}</span>`;
         tabbar.appendChild(tab);
 
         const panel = document.createElement("div");
@@ -213,7 +213,8 @@ function initTrackingDataTabs(root) {
         panelSelector: "[data-trk-panel]",
         tabId: tab => tab.dataset.trkTab,
         panelId: panel => panel.dataset.trkPanel,
-        storageKey: "trk_data_tab_order"
+        storageKey: "trk_data_tab_order",
+        labelStorageKey: "trk_data_tab_labels"
     });
 
     root.querySelectorAll(dataTableSelector).forEach(table => {
@@ -235,6 +236,7 @@ function bindSheetTabDragDrop(options) {
     const tabId = options.tabId;
     const panelId = options.panelId;
     const storageKey = options.storageKey;
+    const labelStorageKey = options.labelStorageKey;
     let dragId = "";
 
     function readOrder() {
@@ -315,7 +317,89 @@ function bindSheetTabDragDrop(options) {
             tab.classList.remove("trk_sheet_tab_drag_over");
             moveBefore(dragId || event.dataTransfer.getData("text/plain"), tabId(tab));
         });
+        tab.addEventListener("keydown", event => {
+            if (event.key !== "F2") return;
+            event.preventDefault();
+            event.stopPropagation();
+            beginSheetTabRename(tab, tabId(tab), labelStorageKey);
+        });
     });
+}
+
+function escapeSheetTabText(value) {
+    return String(value == null ? "" : value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
+function readSheetTabMap(storageKey) {
+    try {
+        const parsed = JSON.parse(localStorage.getItem(storageKey) || "{}");
+        return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+    } catch (_) {
+        return {};
+    }
+}
+
+function getSheetTabLabel(storageKey, id, fallback) {
+    const labels = readSheetTabMap(storageKey);
+    return labels[id] || fallback;
+}
+
+function setSheetTabLabel(storageKey, id, label) {
+    const labels = readSheetTabMap(storageKey);
+    const nextLabel = String(label || "").trim();
+    if (nextLabel) {
+        labels[id] = nextLabel;
+    } else {
+        delete labels[id];
+    }
+    localStorage.setItem(storageKey, JSON.stringify(labels));
+}
+
+function beginSheetTabRename(tab, id, labelStorageKey) {
+    if (!labelStorageKey || tab.querySelector(".trk_sheet_label_input")) return;
+    const labelSpan = tab.querySelector(".trk_sheet_label");
+    if (!labelSpan) return;
+
+    const previousLabel = labelSpan.textContent || "";
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "trk_sheet_label_input";
+    input.value = previousLabel;
+    input.setAttribute("aria-label", "Tab name");
+
+    let finished = false;
+    function finish(save) {
+        if (finished) return;
+        finished = true;
+        const nextLabel = save ? input.value.trim() : previousLabel;
+        labelSpan.textContent = nextLabel || previousLabel;
+        if (save) setSheetTabLabel(labelStorageKey, id, nextLabel || previousLabel);
+        input.replaceWith(labelSpan);
+        tab.draggable = true;
+        tab.focus();
+    }
+
+    tab.draggable = false;
+    labelSpan.replaceWith(input);
+    input.focus();
+    input.select();
+    input.addEventListener("click", event => event.stopPropagation());
+    input.addEventListener("keydown", event => {
+        event.stopPropagation();
+        if (event.key === "Enter") {
+            event.preventDefault();
+            finish(true);
+        } else if (event.key === "Escape") {
+            event.preventDefault();
+            finish(false);
+        }
+    });
+    input.addEventListener("blur", () => finish(true));
 }
 
 function initAdminMasterDataTabs() {
@@ -381,7 +465,7 @@ function initAdminMasterDataTabs() {
         tab.dataset.adminMasterTab = group.id;
         tab.setAttribute("role", "tab");
         tab.setAttribute("aria-selected", group.id === activeGroup.id ? "true" : "false");
-        tab.innerHTML = `<span>${group.label}</span><span class="trk_sheet_count">${group.count}</span>`;
+        tab.innerHTML = `<span class="trk_sheet_label">${escapeSheetTabText(getSheetTabLabel("admin_master_data_tab_labels", group.id, group.label))}</span><span class="trk_sheet_count">${group.count}</span>`;
         tabbar.appendChild(tab);
 
         const panel = document.createElement("div");
@@ -419,7 +503,8 @@ function initAdminMasterDataTabs() {
         panelSelector: "[data-admin-master-panel]",
         tabId: tab => tab.dataset.adminMasterTab,
         panelId: panel => panel.dataset.adminMasterPanel,
-        storageKey: "admin_master_data_tab_order"
+        storageKey: "admin_master_data_tab_order",
+        labelStorageKey: "admin_master_data_tab_labels"
     });
     return true;
 }

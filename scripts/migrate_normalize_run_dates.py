@@ -89,10 +89,12 @@ def normalize_remark_dates(remark: str | None) -> str | None:
     def replace_date(m):
         tag = m.group(1)      # "Start" or "End"
         date = m.group(2)     # "2026 04 22" or "2026_05_26_0000" or "None"
-        normalized = normalize_date_only(date) if date != "None" else date
+        normalized = normalize_date_only(date.strip()) if date.strip() != "None" else date.strip()
         return f"[{tag}] {normalized}"
 
-    return re.sub(r'\[(Start|End)\] ([^\[\n]+)', replace_date, remark)
+    # 날짜 패턴만 정밀 매칭: "YYYY MM DD", "YYYY_MM_DD_HHMM", "YYYY-MM-DD", "None"
+    DATE_PATTERN = r'(\d{4} \d{2} \d{2}|\d{4}_\d{2}_\d{2}_\d{4}|\d{4}-\d{2}-\d{2}|None)'
+    return re.sub(r'\[(Start|End)\] ' + DATE_PATTERN, replace_date, remark)
 
 
 def main():
