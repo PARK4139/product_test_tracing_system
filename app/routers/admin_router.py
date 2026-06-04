@@ -22,6 +22,7 @@ from app.services.admin_product_test_ui_service import (
     validate_product_test_identifier_values,
 )
 from app.services.admin_qc_e2e_service import start_admin_qc_e2e_fill
+from app.services.product_test_field_update_service import bulk_update_product_test_fields
 from app.services.product_test_run_service import (
     MASTER_ACTIVE_STATUS_VALUES,
     REPORT_STATUS_VALUES,
@@ -236,6 +237,17 @@ class AdminProductTestBlockingPrerequisiteRequest(BaseModel):
     values: dict[str, str] = Field(default_factory=dict)
 
 
+class AdminProductTestFieldUpdateItem(BaseModel):
+    entity_type: str
+    entity_id: str
+    field_name: str
+    value: str = ""
+
+
+class AdminProductTestBulkFieldUpdateRequest(BaseModel):
+    updates: list[AdminProductTestFieldUpdateItem] = Field(default_factory=list)
+
+
 @admin_router.get("/api/product-test/ui/client-config")
 def admin_product_test_ui_get_client_config(
     current_role_name: current_role_name_dependency,
@@ -283,6 +295,30 @@ def admin_product_test_ui_post_first_blocking_prerequisite(
         values=payload.values,
     )
     return {"ok": True, "blocking_field_name": blocking}
+
+
+@admin_router.post("/api/product-test/fields/bulk-update")
+def admin_product_test_bulk_field_update(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+    payload: AdminProductTestBulkFieldUpdateRequest,
+):
+    _ensure_admin_role(current_role_name)
+    actor_name = _admin_actor_name(database_session, request)
+    try:
+        result = bulk_update_product_test_fields(
+            database_session,
+            updates=[item.model_dump() for item in payload.updates],
+            updated_by=actor_name,
+        )
+    except (ValueError, LookupError) as exception:
+        database_session.rollback()
+        return JSONResponse(
+            status_code=400,
+            content={"ok": False, "message": str(exception)},
+        )
+    return JSONResponse({"ok": True, **result})
 
 
 def _admin_identity_context(database_session: Session, request: Request) -> dict:

@@ -581,6 +581,148 @@ def get_tracking_summary(
         for r in reports_raw
     ]
 
+    test_target_definitions = [
+        {
+            "id": r[0] or "",
+            "product_code": r[1] or "",
+            "manufacturer": r[2] or "",
+            "model_name": r[3] or "",
+            "hardware_revision": r[4] or "",
+            "default_software_version": r[5] or "",
+            "default_firmware_version": r[6] or "",
+            "status": r[7] or "",
+            "remark": r[8] or "",
+        }
+        for r in conn.execute(text("""
+            SELECT product_test_target_definition_id, product_code, manufacturer,
+                   model_name, hardware_revision, default_software_version,
+                   default_firmware_version, product_test_target_definition_status, remark
+            FROM product_test_target_definition
+            ORDER BY product_test_target_definition_id
+        """)).fetchall()
+    ]
+
+    test_targets = [
+        {
+            "id": r[0] or "",
+            "definition_id": r[1] or "",
+            "model_name": r[2] or "",
+            "serial_number": r[3] or "",
+            "software_version": r[4] or "",
+            "firmware_version": r[5] or "",
+            "manufacture_lot": r[6] or "",
+            "status": r[7] or "",
+            "remark": r[8] or "",
+        }
+        for r in conn.execute(text("""
+            SELECT t.product_test_target_id, t.product_test_target_definition_id,
+                   d.model_name, t.serial_number, t.software_version, t.firmware_version,
+                   t.manufacture_lot, t.product_test_target_status, t.remark
+            FROM product_test_target t
+            LEFT JOIN product_test_target_definition d
+                ON d.product_test_target_definition_id = t.product_test_target_definition_id
+            ORDER BY t.product_test_target_id
+        """)).fetchall()
+    ]
+
+    test_environment_definitions = [
+        {
+            "id": r[0] or "",
+            "name": r[1] or "",
+            "country": r[2] or "",
+            "city": r[3] or "",
+            "company": r[4] or "",
+            "room": r[5] or "",
+            "network_type": r[6] or "",
+            "computer_name": r[7] or "",
+            "os_version": r[8] or "",
+            "tool_name": r[9] or "",
+            "tool_version": r[10] or "",
+            "power_voltage": r[11] or "",
+            "power_frequency": r[12] or "",
+            "status": r[13] or "",
+            "remark": r[14] or "",
+        }
+        for r in conn.execute(text("""
+            SELECT product_test_environment_definition_id,
+                   product_test_environment_definition_name, test_country, test_city,
+                   test_company, test_room, network_type, test_computer_name,
+                   operating_system_version, test_tool_name, test_tool_version,
+                   power_voltage, power_frequency,
+                   product_test_environment_definition_status, remark
+            FROM product_test_environment_definition
+            ORDER BY product_test_environment_definition_id
+        """)).fetchall()
+    ]
+
+    test_environments = [
+        {
+            "id": r[0] or "",
+            "definition_id": r[1] or "",
+            "name": r[2] or "",
+            "computer_name": r[3] or "",
+            "os_version": r[4] or "",
+            "tool_version": r[5] or "",
+            "network_type": r[6] or "",
+            "power_voltage": r[7] or "",
+            "power_frequency": r[8] or "",
+            "captured_at": r[9] or "",
+            "status": r[10] or "",
+            "remark": r[11] or "",
+        }
+        for r in conn.execute(text("""
+            SELECT product_test_environment_id, product_test_environment_definition_id,
+                   product_test_environment_name, test_computer_name,
+                   operating_system_version, test_tool_version, network_type,
+                   power_voltage, power_frequency, captured_at,
+                   product_test_environment_status, remark
+            FROM product_test_environment
+            ORDER BY product_test_environment_id
+        """)).fetchall()
+    ]
+
+    test_cases = [
+        {
+            "id": r[0] or "",
+            "title": r[1] or "",
+            "category": r[2] or "",
+            "objective": r[3] or "",
+            "precondition": r[4] or "",
+            "expected_result": r[5] or "",
+            "status": r[6] or "",
+            "remark": r[7] or "",
+        }
+        for r in conn.execute(text("""
+            SELECT product_test_case_id, product_test_case_title, test_category,
+                   test_objective, precondition, expected_result,
+                   product_test_case_status, remark
+            FROM product_test_case
+            ORDER BY product_test_case_id
+        """)).fetchall()
+    ]
+
+    test_procedures = [
+        {
+            "id": r[0] or "",
+            "case_id": r[1] or "",
+            "sequence": r[2] or 0,
+            "action": r[3] or "",
+            "expected_result": r[4] or "",
+            "acceptance_criteria": r[5] or "",
+            "required_evidence_type": r[6] or "",
+            "status": r[7] or "",
+            "remark": r[8] or "",
+        }
+        for r in conn.execute(text("""
+            SELECT product_test_procedure_id, product_test_case_id,
+                   procedure_sequence, procedure_action, expected_result,
+                   acceptance_criteria, required_evidence_type,
+                   product_test_procedure_status, remark
+            FROM product_test_procedure
+            ORDER BY product_test_case_id, procedure_sequence, product_test_procedure_id
+        """)).fetchall()
+    ]
+
     # ── Targets (model/SW logical targets via runs) ──────────────────────
     seen_tgt = set()
     targets = []
@@ -674,6 +816,13 @@ def get_tracking_summary(
         "procedure_results": procedure_results,
         "evidence": evidence,
         "reports": reports,
+        "test_releases": releases,
+        "test_target_definitions": test_target_definitions,
+        "test_targets": test_targets,
+        "test_environment_definitions": test_environment_definitions,
+        "test_environments": test_environments,
+        "test_cases": test_cases,
+        "test_procedures": test_procedures,
         "targets": targets,
         "environments": environments,
         "cases": cases,

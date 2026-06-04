@@ -58,7 +58,7 @@ function buildDefectTable(defects) {
                 </label>
             </td>`;
         }
-        html += `<tr data-release-id="${d.release_id}" data-parent-release-id="${d.parent_release_id || ''}" data-defect-id="${d.id}" data-run-id="${d.run_id || ''}">
+        html += `<tr data-entity-type="product_test_defect" data-entity-id="${d.id}" data-release-id="${d.release_id}" data-parent-release-id="${d.parent_release_id || ''}" data-defect-id="${d.id}" data-run-id="${d.run_id || ''}">
             <td style="font-size:0.75rem;color:#64748b">${d.id}</td>
             <td>${sevBadge(d.severity)}</td>
             <td>${prioBadge(d.priority, d.severity)}</td>
@@ -76,6 +76,133 @@ function buildDefectTable(defects) {
 }
 
 /* ── render ──────────────────────────────────────────────────── */
+function buildSimpleDataTableSection(title, className, columns, rows) {
+    if (!rows || rows.length === 0) return "";
+    function escapeHtml(value) {
+        return String(value == null ? "" : value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+    }
+    let html = `<div class="trk_sub_header">${title}</div>`;
+    html += `<div class="trk_timeline_wrap"><table class="${className}"><thead><tr>`;
+    columns.forEach(col => {
+        const width = col.width ? ` style="width:${col.width}"` : "";
+        html += `<th${width}>${col.label}</th>`;
+    });
+    html += `</tr></thead><tbody>`;
+    rows.forEach(row => {
+        html += `<tr style="cursor:pointer">`;
+        columns.forEach(col => {
+            const raw = row[col.key] == null ? "" : String(row[col.key]);
+            const text = raw || "-";
+            html += `<td title="${escapeHtml(raw)}">${escapeHtml(text)}</td>`;
+        });
+        html += `</tr>`;
+    });
+    html += `</tbody></table></div>`;
+    return html;
+}
+
+function buildMasterDataSections(data, releases) {
+    let html = "";
+    html += buildSimpleDataTableSection("Test Release", "trk_test_release_table", [
+        { key: "id", label: "Release ID", width: "280px" },
+        { key: "upstream_id", label: "Upstream", width: "220px" },
+        { key: "stage", label: "Stage", width: "110px" },
+        { key: "status", label: "Status", width: "130px" },
+        { key: "workday", label: "Workday", width: "90px" },
+        { key: "start_date", label: "Start", width: "100px" },
+        { key: "end_date", label: "End", width: "100px" },
+        { key: "run_count", label: "Runs", width: "70px" },
+        { key: "open_defects", label: "Open Defects", width: "100px" }
+    ], data.test_releases || releases || []);
+
+    html += buildSimpleDataTableSection("Test Target Definition", "trk_test_target_definition_table", [
+        { key: "id", label: "Definition ID", width: "330px" },
+        { key: "product_code", label: "Product Code", width: "130px" },
+        { key: "manufacturer", label: "Manufacturer", width: "130px" },
+        { key: "model_name", label: "Model", width: "150px" },
+        { key: "hardware_revision", label: "HW", width: "90px" },
+        { key: "default_software_version", label: "Default SW", width: "120px" },
+        { key: "default_firmware_version", label: "Default FW", width: "120px" },
+        { key: "status", label: "Status", width: "100px" },
+        { key: "remark", label: "Remark", width: "260px" }
+    ], data.test_target_definitions || []);
+
+    html += buildSimpleDataTableSection("Test Target", "trk_test_target_table", [
+        { key: "id", label: "Target ID", width: "300px" },
+        { key: "definition_id", label: "Definition ID", width: "330px" },
+        { key: "model_name", label: "Model", width: "150px" },
+        { key: "serial_number", label: "Serial", width: "140px" },
+        { key: "software_version", label: "SW", width: "100px" },
+        { key: "firmware_version", label: "FW", width: "100px" },
+        { key: "manufacture_lot", label: "Lot", width: "110px" },
+        { key: "status", label: "Status", width: "100px" },
+        { key: "remark", label: "Remark", width: "260px" }
+    ], data.test_targets || []);
+
+    html += buildSimpleDataTableSection("Test Environment Definition", "trk_test_environment_definition_table", [
+        { key: "id", label: "Definition ID", width: "360px" },
+        { key: "name", label: "Name", width: "260px" },
+        { key: "country", label: "Country", width: "100px" },
+        { key: "city", label: "City", width: "100px" },
+        { key: "company", label: "Company", width: "120px" },
+        { key: "room", label: "Room", width: "160px" },
+        { key: "network_type", label: "Network", width: "150px" },
+        { key: "computer_name", label: "Computer", width: "150px" },
+        { key: "os_version", label: "OS", width: "160px" },
+        { key: "tool_name", label: "Tool", width: "130px" },
+        { key: "tool_version", label: "Tool Ver.", width: "110px" },
+        { key: "power_voltage", label: "Voltage", width: "100px" },
+        { key: "power_frequency", label: "Freq.", width: "90px" },
+        { key: "status", label: "Status", width: "100px" },
+        { key: "remark", label: "Remark", width: "260px" }
+    ], data.test_environment_definitions || []);
+
+    html += buildSimpleDataTableSection("Test Environment", "trk_test_environment_table", [
+        { key: "id", label: "Environment ID", width: "330px" },
+        { key: "definition_id", label: "Definition ID", width: "360px" },
+        { key: "name", label: "Name", width: "240px" },
+        { key: "computer_name", label: "Computer", width: "150px" },
+        { key: "os_version", label: "OS", width: "160px" },
+        { key: "tool_version", label: "Tool Ver.", width: "110px" },
+        { key: "network_type", label: "Network", width: "150px" },
+        { key: "power_voltage", label: "Voltage", width: "100px" },
+        { key: "power_frequency", label: "Freq.", width: "90px" },
+        { key: "captured_at", label: "Captured", width: "120px" },
+        { key: "status", label: "Status", width: "100px" },
+        { key: "remark", label: "Remark", width: "260px" }
+    ], data.test_environments || []);
+
+    html += buildSimpleDataTableSection("Test Case", "trk_test_case_master_table", [
+        { key: "id", label: "Case ID", width: "330px" },
+        { key: "title", label: "Title", width: "260px" },
+        { key: "category", label: "Category", width: "130px" },
+        { key: "objective", label: "Objective", width: "260px" },
+        { key: "precondition", label: "Precondition", width: "260px" },
+        { key: "expected_result", label: "Expected Result", width: "260px" },
+        { key: "status", label: "Status", width: "100px" },
+        { key: "remark", label: "Remark", width: "260px" }
+    ], data.test_cases || []);
+
+    html += buildSimpleDataTableSection("Test Procedure", "trk_test_procedure_master_table", [
+        { key: "id", label: "Procedure ID", width: "360px" },
+        { key: "case_id", label: "Case ID", width: "330px" },
+        { key: "sequence", label: "Seq", width: "60px" },
+        { key: "action", label: "Action", width: "300px" },
+        { key: "expected_result", label: "Expected Result", width: "260px" },
+        { key: "acceptance_criteria", label: "Acceptance", width: "260px" },
+        { key: "required_evidence_type", label: "Evidence", width: "120px" },
+        { key: "status", label: "Status", width: "100px" },
+        { key: "remark", label: "Remark", width: "260px" }
+    ], data.test_procedures || []);
+
+    return html;
+}
+
 function renderTracking(data) {
     const releases = data.releases || [];
     const defects  = data.active_defects || [];
@@ -153,6 +280,7 @@ function renderTracking(data) {
         </button>
     </div>`;
     html += buildGantt(releases.filter(r => !r.id.includes("FALLBACK")), data.runs || []);
+    html += buildMasterDataSections(data, releases);
 
     
 /* ── 5. Target / Environment ──────────────────────────── */
@@ -260,7 +388,7 @@ function renderTracking(data) {
             </tr></thead><tbody>`;
         caseList.forEach(c => {
             const caseDisplay = c.id || "";
-            html += `<tr data-parent-release-id="${c.parent_release_id}" data-case-id="${c.id}" style="cursor:pointer">
+            html += `<tr data-entity-type="product_test_case" data-entity-id="${c.id}" data-parent-release-id="${c.parent_release_id}" data-case-id="${c.id}" style="cursor:pointer">
                 <td style="font-size:0.75rem" title="${c.id}">${caseDisplay}</td>
                 <td style="font-size:0.72rem;color:#64748b;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${c.title}">${c.title}</td>
             </tr>`;
@@ -275,7 +403,7 @@ function renderTracking(data) {
                 </tr></thead><tbody>`;
             procList.forEach(p => {
                 const caseDisplay = p.case_id || "";
-                html += `<tr data-parent-release-id="${p.parent_release_id}" data-case-id="${p.case_id}" style="cursor:pointer">
+                html += `<tr data-entity-type="product_test_procedure" data-entity-id="${p.id}" data-parent-release-id="${p.parent_release_id}" data-case-id="${p.case_id}" data-procedure-id="${p.id}" style="cursor:pointer">
                     <td style="text-align:center">${p.sequence}</td>
                     <td style="font-size:0.72rem;color:#64748b" title="${p.case_id}">${caseDisplay}</td>
                     <td style="font-size:0.72rem;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.action}">${p.action}</td>
@@ -302,7 +430,7 @@ function renderTracking(data) {
         procResults.forEach(pr => {
             const topoShort = (pr.parent_release_id||"").replace("TEST_RELEASE-","");
             const caseShort = pr.case_id || "";
-            html += `<tr data-parent-release-id="${pr.parent_release_id}"
+            html += `<tr data-entity-type="product_test_procedure_result" data-entity-id="${pr.id}" data-parent-release-id="${pr.parent_release_id}"
                          data-result-id="${pr.result_id}"
                          data-procedure-result-id="${pr.id}"
                          style="cursor:pointer">
