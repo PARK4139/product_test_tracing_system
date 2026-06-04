@@ -71,6 +71,7 @@ def get_tracking_summary(
         LEFT JOIN product_test_run  run ON run.product_test_release_id = r.product_test_release_id
         LEFT JOIN product_test_result res ON res.product_test_run_id   = run.product_test_run_id
         LEFT JOIN product_test_defect def ON def.product_test_result_id = res.product_test_result_id
+        WHERE (r.release_stage IS NULL OR r.release_stage != 'round_legacy')
         GROUP BY r.product_test_release_id
         ORDER BY r.release_sequence, r.product_test_release_id
     """)).fetchall()
