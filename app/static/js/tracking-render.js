@@ -207,10 +207,10 @@ function renderTracking(data) {
                 `</datalist>`;
             html += `<div class="trk_timeline_wrap"><table class="trk_target_table">
                 <thead><tr>
-                    <th style="width:260px">Target ID</th>
-                    <th style="width:110px">모델명</th>
-                    <th style="width:80px">SW 버전</th>
-                    <th style="width:150px">S/N</th>
+                    <th style="width:300px">Logical Target ID</th>
+                    <th style="width:130px">모델명</th>
+                    <th style="width:90px">SW 버전</th>
+                    <th style="width:220px">Physical Target ID</th>
                 </tr></thead><tbody>`;
             tgts.forEach(t => {
                 html += `<tr style="cursor:pointer">
@@ -221,7 +221,7 @@ function renderTracking(data) {
                     </td>
                     <td style="font-size:0.78rem;font-weight:600">${t.model_name || "-"}</td>
                     <td style="font-size:0.78rem">${t.sw_version || "-"}</td>
-                    <td style="font-size:0.75rem;color:#64748b">${t.serial_number || "-"}</td>
+                    <td style="font-size:0.75rem;color:#64748b">${t.physical_target_id || t.serial_number || "-"}</td>
                 </tr>`;
             });
             html += `</tbody></table></div>`;

@@ -25,7 +25,6 @@ from app.services.admin_qc_e2e_service import start_admin_qc_e2e_fill
 from app.services.product_test_run_service import (
     MASTER_ACTIVE_STATUS_VALUES,
     REPORT_STATUS_VALUES,
-    REPORT_TYPE_VALUES,
     SNAPSHOT_TYPE_VALUES,
     TARGET_STATUS_VALUES,
     ENVIRONMENT_STATUS_VALUES,
@@ -59,13 +58,11 @@ from app.services.product_test_run_service import (
     list_product_test_environment_definitions,
     list_product_test_environments,
     list_product_test_procedures,
-    list_product_test_reports,
     list_product_test_report_snapshots,
     list_product_test_releases,
     list_target_options,
     list_product_test_target_definitions,
     list_product_test_targets,
-    list_report_release_options,
     reject_product_test_report,
 )
 
@@ -121,9 +118,6 @@ def _admin_dashboard_product_tracing_template_context(*, database_session: Sessi
         "procedure_rows": list_product_test_procedures(database_session),
         "procedure_status_values": MASTER_ACTIVE_STATUS_VALUES,
         "evidence_type_values": EVIDENCE_TYPE_VALUES,
-        "report_rows": list_product_test_reports(database_session),
-        "report_release_options": list_report_release_options(database_session),
-        "report_type_values": REPORT_TYPE_VALUES,
     }
 
 
@@ -1187,5 +1181,4 @@ def admin_qc_db_truncate_route(
     truncate_application_data()
     database_session.expire_all()
     return JSONResponse({"ok": True, "message": "Database truncated."})
-
 

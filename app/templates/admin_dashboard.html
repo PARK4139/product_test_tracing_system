@@ -166,7 +166,7 @@
 </div>
 
 <section class="card">
-    <div class="section_header_row"><h3>Test Target Definition</h3></div>
+    <div class="section_header_row"><h3>Test Target</h3></div>
     <form method="post" action="/admin/product-test-target-definitions/create" class="admin_autosubmit_form">
         <input type="hidden" name="return_to" value="/admin">
         <div class="tester_table_wrap">
@@ -194,10 +194,6 @@
             <tbody>{% for row in target_definition_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_target_definition_id }}</td><td>{{ row.product_code }}</td><td>{{ row.manufacturer }}</td><td>{{ row.model_name }}</td><td>{{ row.hardware_revision }}</td><td>{{ row.default_software_version }}</td><td>{{ row.default_firmware_version }}</td><td>{{ row.product_test_target_definition_status }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
         </table>
     </div>
-</section>
-
-<section class="card">
-    <div class="section_header_row"><h3>Test Target</h3></div>
     <form method="post" action="/admin/product-test-targets/create" class="admin_autosubmit_form">
         <input type="hidden" name="return_to" value="/admin">
         <div class="tester_table_wrap">

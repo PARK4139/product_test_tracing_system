@@ -517,33 +517,24 @@ def get_tracking_summary(
         for r in reports_raw
     ]
 
-    # ── Targets (via runs, 중복 제거 + 상세 정보 포함) ──────────────────────
+    # ── Targets (model/SW logical targets via runs) ──────────────────────
     seen_tgt = set()
     targets = []
-    for r in conn.execute(text("""
-        SELECT DISTINCT
-            t.product_test_target_id,
-            td.model_name,
-            t.software_version,
-            t.serial_number,
-            t.remark
-        FROM product_test_run run
-        JOIN product_test_result res ON res.product_test_run_id = run.product_test_run_id
-        LEFT JOIN product_test_target t ON t.product_test_target_id = run.product_test_target_id
-        LEFT JOIN product_test_target_definition td
-            ON td.product_test_target_definition_id = t.product_test_target_definition_id
-        ORDER BY t.product_test_target_id
-    """)).fetchall():
-        tid = r[0]
-        if tid and tid not in seen_tgt:
-            seen_tgt.add(tid)
-            targets.append({
-                "id": tid,
-                "model_name": r[1] or "",
-                "sw_version": r[2] or "",
-                "serial_number": r[3] or "",
-                "remark": r[4] or "",
-            })
+    for run in runs:
+        tid = run.get("target_id") or ""
+        if not tid or tid in seen_tgt:
+            continue
+        seen_tgt.add(tid)
+        targets.append({
+            "id": tid,
+            "model_name": run.get("target_model_name") or "",
+            "sw_version": run.get("target_sw_version") or "",
+            "serial_number": "",
+            "physical_target_id": run.get("physical_target_id") or "",
+            "round_id": run.get("target_round_id") or "",
+            "remark": "logical target by model/software version",
+        })
+    targets.sort(key=lambda t: (t["model_name"], t["sw_version"], t["id"]))
 
     # ── Environments (via runs, 중복 제거 + 상세 정보 포함) ──────────────────
     seen_env = set()
