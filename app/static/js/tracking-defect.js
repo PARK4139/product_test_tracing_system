@@ -9,13 +9,8 @@ function bindDefectImages(root) {
     const popupImg = document.getElementById("trk_popup_img");
     root.querySelectorAll(".trk_defect_thumb").forEach(img => {
         img.addEventListener("mouseenter", () => {
-            popupImg.src = img.dataset.src; popup.style.display = "block";
-            const rect = img.getBoundingClientRect();
-            const pw = window.innerWidth * 0.7 + 12, ph = window.innerHeight * 0.7 + 12;
-            let left = rect.right + 10, top = rect.top;
-            if (left + pw > window.innerWidth)  left = Math.max(8, rect.left - pw - 10);
-            if (top  + ph > window.innerHeight) top  = Math.max(8, window.innerHeight - ph - 8);
-            popup.style.left = left + "px"; popup.style.top = top + "px";
+            popupImg.src = img.dataset.src;
+            popup.style.display = "flex";
         });
         img.addEventListener("mouseleave", () => { popup.style.display = "none"; });
     });

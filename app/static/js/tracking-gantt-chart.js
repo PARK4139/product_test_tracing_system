@@ -231,8 +231,7 @@ function buildGantt(releases, runs) {
         return idx === -1 ? 99 : idx;
     }
 
-    parents.forEach((p, idx) => {
-        if (idx > 0) html += `<div class="gantt_round_divider"></div>`;
+    parents.forEach(p => {
         html += renderBar(p, 0);
         const sessions = (childrenMap[p.id] || []).slice().sort((a, b) => (a.sequence||0) - (b.sequence||0));
         if (sessions.length === 0) return;
