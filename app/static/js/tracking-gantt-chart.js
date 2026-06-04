@@ -111,8 +111,8 @@ function buildGantt(releases) {
             : (sd && ed ? `${deltaLabel} (${sdStr} ~ ${edStr})` : "");
 
         let barHtml = "";
-        if (indent === 0) {
-            // 부모 행만 간트 바 표시
+        if (indent === 0 || indent === 1) {
+            // 라운드/세션 행에 간트 바 표시
             if (sd) {
                 const left  = pct(sd);
                 const width = Math.max(0.5, pct(ed) - left);
@@ -126,14 +126,27 @@ function buildGantt(releases) {
         }
         // 자식 행은 바 없음 — 추후 run 기록 기반으로 계산 예정
 
-        const indentPx = indent * 20;
-        const hasChildren = indent === 0 && (childrenMap[r.id] || []).length > 0;
-        return `<div class="gantt_row${r.status === 'TESTING' ? ' gantt_row_active' : ''}${indent > 0 ? ' gantt_row_child' : ''}"
-            data-row-id="${r.id}" data-status="${r.status}" ${indent > 0 ? `data-parent-id="${r.upstream_id}"` : ''}>
-            <div class="gantt_label_col" style="padding-left:${10 + indentPx}px">
-                ${hasChildren ? `<button class="gantt_fold_btn" data-fold-id="${r.id}" title="접기/펼치기">▼</button>` : (indent > 0 ? '<span class="gantt_child_icon">└</span>' : '<span style="width:18px;display:inline-block"></span>')}
+        const indentPx = indent * 18;
+        // indent: 0=라운드, 1=RunSession, 2=Topology
+        const isRound   = indent === 0;
+        const isSession = indent === 1;
+        const isTopo    = indent === 2;
+        const hasChildren = !isTopo && (childrenMap[r.id] || []).length > 0;
+        const rowClass = isRound ? "gantt_row gantt_row_round"
+            : isSession ? "gantt_row gantt_row_session"
+            : "gantt_row gantt_row_child";
+        const dataParent = !isRound ? `data-parent-id="${r.upstream_id}"` : "";
+        const icon = hasChildren
+            ? `<button class="gantt_fold_btn" data-fold-id="${r.id}" title="접기/펼치기">▼</button>`
+            : isTopo ? '<span class="gantt_child_icon">└</span>'
+            : isSession ? '<span class="gantt_child_icon" style="opacity:0.4">└</span>'
+            : '<span style="width:18px;display:inline-block"></span>';
+        return `<div class="${rowClass}${r.status === 'TESTING' ? ' gantt_row_active' : ''}"
+            data-row-id="${r.id}" data-status="${r.status}" ${dataParent}>
+            <div class="gantt_label_col" style="padding-left:${8 + indentPx}px">
+                ${icon}
                 <div class="gantt_label_main">
-                    <span class="gantt_label_name" title="${alias}">${alias}</span>
+                    <span class="gantt_label_name" title="${r.id}">${alias}</span>
                     ${total > 0 ? `<span class="gantt_meta_chip">${pctVal}%</span>` : ""}
                     ${open > 0 ? `<span class="gantt_meta_chip gantt_chip_red">결함 ${open}</span>` : ""}
                 </div>
@@ -169,10 +182,20 @@ function buildGantt(releases) {
     parents.forEach((p, idx) => {
         if (idx > 0) html += `<div class="gantt_round_divider"></div>`;
         html += renderBar(p, 0);
-        const children = (childrenMap[p.id] || []).slice().sort((a, b) => deviceSortKey(a.id) - deviceSortKey(b.id));
-        children.forEach(c => {
-            html += renderBar(c, 1);
-        });
+        const sessions = (childrenMap[p.id] || []).slice().sort((a, b) => (a.sequence||0) - (b.sequence||0));
+        if (sessions.length === 0) return;
+        // RunSession이 있으면 3단계, 없으면 직접 topology(구 구조 호환)
+        const firstStage = sessions[0] && sessions[0].stage;
+        if (firstStage === 'run_session') {
+            sessions.forEach(sess => {
+                html += renderBar(sess, 1);
+                const topos = (childrenMap[sess.id] || []).slice().sort((a, b) => deviceSortKey(a.id) - deviceSortKey(b.id));
+                topos.forEach(t => { html += renderBar(t, 2); });
+            });
+        } else {
+            // 구 구조: topology 직접 표시
+            sessions.forEach(c => { html += renderBar(c, 1); });
+        }
     });
 
 
