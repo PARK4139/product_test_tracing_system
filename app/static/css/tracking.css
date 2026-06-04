@@ -114,6 +114,13 @@
 .trk_proc_result_table,
 .trk_evidence_table,
 .trk_report_table,
+.trk_test_release_table,
+.trk_test_target_definition_table,
+.trk_test_target_table,
+.trk_test_environment_definition_table,
+.trk_test_environment_table,
+.trk_test_case_master_table,
+.trk_test_procedure_master_table,
 .trk_target_table,
 .trk_env_table,
 .trk_case_table,
@@ -128,6 +135,13 @@
 .trk_proc_result_table th,
 .trk_evidence_table th,
 .trk_report_table th,
+.trk_test_release_table th,
+.trk_test_target_definition_table th,
+.trk_test_target_table th,
+.trk_test_environment_definition_table th,
+.trk_test_environment_table th,
+.trk_test_case_master_table th,
+.trk_test_procedure_master_table th,
 .trk_target_table th,
 .trk_env_table th,
 .trk_case_table th,
@@ -146,6 +160,13 @@
 .trk_proc_result_table td,
 .trk_evidence_table td,
 .trk_report_table td,
+.trk_test_release_table td,
+.trk_test_target_definition_table td,
+.trk_test_target_table td,
+.trk_test_environment_definition_table td,
+.trk_test_environment_table td,
+.trk_test_case_master_table td,
+.trk_test_procedure_master_table td,
 .trk_target_table td,
 .trk_env_table td,
 .trk_case_table td,
@@ -162,6 +183,13 @@
 .trk_proc_result_table tr:hover td { background: #f0f9ff; }
 .trk_evidence_table tr:hover td { background: #f0f9ff; }
 .trk_report_table tr:hover td { background: #f0f9ff; }
+.trk_test_release_table tr:hover td { background: #f0f9ff; }
+.trk_test_target_definition_table tr:hover td { background: #f0f9ff; }
+.trk_test_target_table tr:hover td { background: #f0f9ff; }
+.trk_test_environment_definition_table tr:hover td { background: #f0f9ff; }
+.trk_test_environment_table tr:hover td { background: #f0f9ff; }
+.trk_test_case_master_table tr:hover td { background: #f0f9ff; }
+.trk_test_procedure_master_table tr:hover td { background: #f0f9ff; }
 .trk_target_table tr:hover td { background: #f0f9ff; }
 .trk_env_table tr:hover td { background: #f0f9ff; }
 .trk_case_table tr:hover td { background: #f0f9ff; }
@@ -189,10 +217,10 @@
     display: inline-flex;
     align-items: center;
     gap: 7px;
-    min-width: 112px;
-    max-width: 190px;
+    flex: 0 0 auto;
+    width: max-content;
     height: 31px;
-    padding: 0 11px;
+    padding: 0 9px;
     border: 1px solid var(--color-border, #d4d4d8);
     border-bottom: 0;
     border-radius: 6px 6px 0 0;
@@ -204,8 +232,8 @@
     white-space: nowrap;
 }
 .trk_sheet_tab span:first-child {
-    overflow: hidden;
-    text-overflow: ellipsis;
+    overflow: visible;
+    text-overflow: clip;
 }
 .trk_sheet_tab:hover {
     background: #f8fafc;
@@ -231,6 +259,9 @@
 .trk_sheet_panel {
     display: none;
     padding: 10px;
+}
+.trk_sheet_panel[hidden] {
+    display: none !important;
 }
 .trk_sheet_panel.is-active {
     display: block;

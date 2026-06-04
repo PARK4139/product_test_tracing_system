@@ -117,7 +117,8 @@ function buildMasterDataSections(data, releases) {
         { key: "start_date", label: "Start", width: "100px" },
         { key: "end_date", label: "End", width: "100px" },
         { key: "run_count", label: "Runs", width: "70px" },
-        { key: "open_defects", label: "Open Defects", width: "100px" }
+        { key: "open_defects", label: "Open Defects", width: "100px" },
+        { key: "remark", label: "Remark", width: "300px" }
     ], data.test_releases || releases || []);
 
     html += buildSimpleDataTableSection("Test Target Definition", "trk_test_target_definition_table", [

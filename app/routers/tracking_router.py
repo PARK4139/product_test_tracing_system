@@ -156,7 +156,7 @@ def get_tracking_summary(
             "stage": row[2],
             "sequence": row[3],
             "status": row[4],
-            # row[5] = remark (already parsed)
+            "remark": row[5] or "",
             "upstream_system": row[6] or "",
             "visible": bool(row[7]),
             "workday": work_period["workday"],

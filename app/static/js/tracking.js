@@ -64,7 +64,28 @@ function initTrackingDataTabs(root) {
     const headers = Array.from(root.querySelectorAll(".trk_sub_header"));
     if (headers.length === 0 || root.querySelector(".trk_data_tabs")) return;
 
+    const dataTableSelector = [
+        ".trk_defect_table",
+        ".trk_test_release_table",
+        ".trk_test_target_definition_table",
+        ".trk_test_target_table",
+        ".trk_test_environment_definition_table",
+        ".trk_test_environment_table",
+        ".trk_test_case_master_table",
+        ".trk_test_procedure_master_table",
+        ".trk_target_table",
+        ".trk_env_table",
+        ".trk_result_table",
+        ".trk_case_table",
+        ".trk_procedure_table",
+        ".trk_proc_result_table",
+        ".trk_evidence_table",
+        ".trk_report_table",
+        ".gantt_wrap"
+    ].join(",");
+
     const labelBySelector = [
+        [".gantt_wrap", "Timeline"],
         [".trk_defect_table", "Defects"],
         [".trk_test_release_table", "Test Release"],
         [".trk_test_target_definition_table", "Test Target Definition"],
@@ -83,8 +104,6 @@ function initTrackingDataTabs(root) {
 
     const groups = [];
     headers.forEach((header, index) => {
-        if (header.querySelector("#trk_view_toggle_btn, #trk_sort_toggle_btn")) return;
-
         const nodes = [header];
         let cursor = header.nextElementSibling;
         while (cursor && !cursor.classList.contains("trk_sub_header")) {
@@ -92,15 +111,20 @@ function initTrackingDataTabs(root) {
             cursor = cursor.nextElementSibling;
         }
 
-        const hasTable = nodes.some(node => node.querySelector && node.querySelector("table"));
-        if (!hasTable) return;
+        const hasDataView = nodes.some(node =>
+            node.querySelector && (node.querySelector("table") || node.querySelector(".gantt_wrap"))
+        );
+        if (!hasDataView) return;
 
         const labelMatch = labelBySelector.find(([selector]) =>
             nodes.some(node => node.matches?.(selector) || node.querySelector?.(selector))
         );
-        const rowCount = nodes.reduce((count, node) => (
-            count + (node.querySelectorAll ? node.querySelectorAll("tbody tr").length : 0)
-        ), 0);
+        const rowCount = nodes.reduce((count, node) => {
+            if (!node.querySelectorAll) return count;
+            const tableRows = node.querySelectorAll("tbody tr").length;
+            const ganttRows = node.querySelectorAll(".gantt_row").length;
+            return count + tableRows + ganttRows;
+        }, 0);
 
         groups.push({
             id: `trk_data_tab_${index}`,
@@ -136,13 +160,13 @@ function initTrackingDataTabs(root) {
         const panel = document.createElement("div");
         panel.className = `trk_sheet_panel${group.id === activeGroup.id ? " is-active" : ""}`;
         panel.dataset.trkPanel = group.id;
+        panel.hidden = group.id !== activeGroup.id;
         panel.setAttribute("role", "tabpanel");
         group.nodes.forEach(node => panel.appendChild(node));
         tabsRoot.appendChild(panel);
     });
 
-    const ganttWrap = root.querySelector(".gantt_wrap");
-    const anchor = ganttWrap || root.querySelector(".trk_stat_table_wrap");
+    const anchor = root.querySelector(".trk_stat_table_wrap");
     if (anchor && anchor.parentNode) {
         anchor.parentNode.insertBefore(tabsRoot, anchor.nextSibling);
     } else {
@@ -156,7 +180,9 @@ function initTrackingDataTabs(root) {
             tab.setAttribute("aria-selected", active ? "true" : "false");
         });
         tabsRoot.querySelectorAll("[data-trk-panel]").forEach(panel => {
-            panel.classList.toggle("is-active", panel.dataset.trkPanel === id);
+            const active = panel.dataset.trkPanel === id;
+            panel.classList.toggle("is-active", active);
+            panel.hidden = !active;
         });
         localStorage.setItem("trk_data_tab", id);
 
@@ -164,12 +190,27 @@ function initTrackingDataTabs(root) {
         if (activePanel && typeof initTableColumnFeatures === "function") {
             initTableColumnFeatures(activePanel);
         }
+        const ganttWrap = activePanel && activePanel.querySelector(".gantt_wrap");
+        if (ganttWrap) {
+            initGanttResize(ganttWrap);
+            initDeadlineDrag(ganttWrap);
+        }
     }
 
     tabbar.addEventListener("click", event => {
         const tab = event.target.closest("[data-trk-tab]");
         if (!tab) return;
         activate(tab.dataset.trkTab);
+    });
+
+    root.querySelectorAll(dataTableSelector).forEach(table => {
+        if (table.closest(".trk_data_tabs")) return;
+        const wrap = table.closest(".trk_timeline_wrap") || table;
+        const header = wrap.previousElementSibling;
+        if (header && header.classList.contains("trk_sub_header")) {
+            header.hidden = true;
+        }
+        wrap.hidden = true;
     });
 }
 
