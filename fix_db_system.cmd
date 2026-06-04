@@ -1,7 +1,7 @@
 @echo off
 set ROOT=%~dp0
 set DATA_DIR=%ROOT%data
-set RECOVERED=C:\Users\USER\AppData\Roaming\Claude\local-agent-mode-sessions\30d84356-7c5b-461d-a7ac-d35cab6415a4\db8ae934-8942-4876-a40f-c0ab06a3aeeb\local_3b7a0fc4-4092-4196-b4ff-91587726519e\outputs\product_test_tracking_system_RECOVERED.db
+set RECOVERED=C:\Users\USER\AppData\Roaming\Claude\local-agent-mode-sessions\30d84356-7c5b-461d-a7ac-d35cab6415a4\db8ae934-8942-4876-a40f-c0ab06a3aeeb\local_5bad8d5d-8641-4c83-aad4-61e4567eecab\outputs\product_test_tracking_system_RECOVERED.db
 set DST_DATA=%DATA_DIR%\product_test_tracking_system.db
 set DST_FIXED=%ROOT%..\ai_coworking\product_test_tracking_system_FIXED.db
 
