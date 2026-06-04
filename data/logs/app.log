@@ -50061,3 +50061,652 @@ FROM work_calendar ORDER BY work_calendar.calendar_date
 2026-06-04T05:30:54.426Z [INFO] 127.0.0.1:2539 - "POST /admin/api/product-test/ui/id-candidates HTTP/1.1" 200
 2026-06-04T05:30:54.427Z [INFO] 127.0.0.1:4693 - "POST /admin/api/product-test/ui/id-candidates HTTP/1.1" 200
 2026-06-04T05:30:54.432Z [INFO] 127.0.0.1:14693 - "POST /admin/api/product-test/ui/id-candidates HTTP/1.1" 200
+2026-06-04T06:07:28.049Z [INFO] [logging_service] initialized  path=C:\Users\USER\Downloads\product_test_tracing_system\data\logs\app.log  qc_mode=True
+2026-06-04T06:07:28.056Z [INFO] BEGIN (implicit)
+2026-06-04T06:07:28.057Z [INFO] PRAGMA foreign_keys=OFF
+2026-06-04T06:07:28.058Z [INFO] [generated in 0.00105s] ()
+2026-06-04T06:07:28.059Z [INFO] DROP TABLE IF EXISTS "test_result"
+2026-06-04T06:07:28.059Z [INFO] [generated in 0.00037s] ()
+2026-06-04T06:07:28.060Z [INFO] DROP TABLE IF EXISTS "form_submission"
+2026-06-04T06:07:28.060Z [INFO] [generated in 0.00026s] ()
+2026-06-04T06:07:28.060Z [INFO] DROP TABLE IF EXISTS "dropdown_option"
+2026-06-04T06:07:28.061Z [INFO] [generated in 0.00029s] ()
+2026-06-04T06:07:28.061Z [INFO] DROP TABLE IF EXISTS "ui_sample_profile"
+2026-06-04T06:07:28.061Z [INFO] [generated in 0.00039s] ()
+2026-06-04T06:07:28.062Z [INFO] PRAGMA foreign_keys=ON
+2026-06-04T06:07:28.062Z [INFO] [generated in 0.00027s] ()
+2026-06-04T06:07:28.062Z [INFO] COMMIT
+2026-06-04T06:07:28.063Z [INFO] BEGIN (implicit)
+2026-06-04T06:07:28.063Z [INFO] PRAGMA main.table_info("project")
+2026-06-04T06:07:28.063Z [INFO] [raw sql] ()
+2026-06-04T06:07:28.064Z [INFO] PRAGMA main.table_info("project_membership")
+2026-06-04T06:07:28.064Z [INFO] [raw sql] ()
+2026-06-04T06:07:28.064Z [INFO] PRAGMA main.table_info("user_account")
+2026-06-04T06:07:28.064Z [INFO] [raw sql] ()
+2026-06-04T06:07:28.065Z [INFO] PRAGMA main.table_info("product_test_release")
+2026-06-04T06:07:28.065Z [INFO] [raw sql] ()
+2026-06-04T06:07:28.065Z [INFO] PRAGMA main.table_info("product_test_target_definition")
+2026-06-04T06:07:28.066Z [INFO] [raw sql] ()
+2026-06-04T06:07:28.066Z [INFO] PRAGMA main.table_info("product_test_target")
+2026-06-04T06:07:28.066Z [INFO] [raw sql] ()
+2026-06-04T06:07:28.067Z [INFO] PRAGMA main.table_info("product_test_environment_definition")
+2026-06-04T06:07:28.067Z [INFO] [raw sql] ()
+2026-06-04T06:07:28.067Z [INFO] PRAGMA main.table_info("product_test_environment")
+2026-06-04T06:07:28.068Z [INFO] [raw sql] ()
+2026-06-04T06:07:28.068Z [INFO] PRAGMA main.table_info("product_test_case")
+2026-06-04T06:07:28.068Z [INFO] [raw sql] ()
+2026-06-04T06:07:28.069Z [INFO] PRAGMA main.table_info("product_test_procedure")
+2026-06-04T06:07:28.070Z [INFO] [raw sql] ()
+2026-06-04T06:07:28.070Z [INFO] PRAGMA main.table_info("product_test_run")
+2026-06-04T06:07:28.071Z [INFO] [raw sql] ()
+2026-06-04T06:07:28.072Z [INFO] PRAGMA main.table_info("product_test_result")
+2026-06-04T06:07:28.072Z [INFO] [raw sql] ()
+2026-06-04T06:07:28.072Z [INFO] PRAGMA main.table_info("product_test_procedure_result")
+2026-06-04T06:07:28.074Z [INFO] [raw sql] ()
+2026-06-04T06:07:28.075Z [INFO] PRAGMA main.table_info("product_test_defect")
+2026-06-04T06:07:28.075Z [INFO] [raw sql] ()
+2026-06-04T06:07:28.076Z [INFO] PRAGMA main.table_info("product_test_evidence")
+2026-06-04T06:07:28.076Z [INFO] [raw sql] ()
+2026-06-04T06:07:28.077Z [INFO] PRAGMA main.table_info("product_test_report")
+2026-06-04T06:07:28.077Z [INFO] [raw sql] ()
+2026-06-04T06:07:28.077Z [INFO] PRAGMA main.table_info("product_test_report_snapshot")
+2026-06-04T06:07:28.078Z [INFO] [raw sql] ()
+2026-06-04T06:07:28.078Z [INFO] PRAGMA main.table_info("product_test_status_transition")
+2026-06-04T06:07:28.078Z [INFO] [raw sql] ()
+2026-06-04T06:07:28.079Z [INFO] PRAGMA main.table_info("work_calendar")
+2026-06-04T06:07:28.079Z [INFO] [raw sql] ()
+2026-06-04T06:07:28.080Z [INFO] COMMIT
+2026-06-04T06:07:28.080Z [INFO] BEGIN (implicit)
+2026-06-04T06:07:28.081Z [INFO] PRAGMA table_info(user_account)
+2026-06-04T06:07:28.081Z [INFO] [generated in 0.00028s] ()
+2026-06-04T06:07:28.082Z [INFO] COMMIT
+2026-06-04T06:07:28.082Z [INFO] BEGIN (implicit)
+2026-06-04T06:07:28.082Z [INFO] PRAGMA table_info(product_test_release)
+2026-06-04T06:07:28.083Z [INFO] [generated in 0.00032s] ()
+2026-06-04T06:07:28.083Z [INFO] COMMIT
+2026-06-04T06:07:28.084Z [INFO] BEGIN (implicit)
+2026-06-04T06:07:28.084Z [INFO] PRAGMA table_info(product_test_defect)
+2026-06-04T06:07:28.084Z [INFO] [generated in 0.00037s] ()
+2026-06-04T06:07:28.084Z [INFO] COMMIT
+2026-06-04T06:07:28.086Z [INFO] BEGIN (implicit)
+2026-06-04T06:07:28.086Z [INFO] SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1
+2026-06-04T06:07:28.087Z [INFO] [generated in 0.00034s] ('product_test_release',)
+2026-06-04T06:07:28.088Z [INFO] PRAGMA table_info(product_test_release)
+2026-06-04T06:07:28.088Z [INFO] [cached since 0.005047s ago] ()
+2026-06-04T06:07:28.089Z [INFO] SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1
+2026-06-04T06:07:28.089Z [INFO] [cached since 0.002731s ago] ('product_test_target_definition',)
+2026-06-04T06:07:28.090Z [INFO] PRAGMA table_info(product_test_target_definition)
+2026-06-04T06:07:28.091Z [INFO] [generated in 0.00093s] ()
+2026-06-04T06:07:28.091Z [INFO] SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1
+2026-06-04T06:07:28.091Z [INFO] [cached since 0.005603s ago] ('product_test_target',)
+2026-06-04T06:07:28.092Z [INFO] PRAGMA table_info(product_test_target)
+2026-06-04T06:07:28.092Z [INFO] [generated in 0.00031s] ()
+2026-06-04T06:07:28.092Z [INFO] SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1
+2026-06-04T06:07:28.092Z [INFO] [cached since 0.007292s ago] ('product_test_environment_definition',)
+2026-06-04T06:07:28.094Z [INFO] PRAGMA table_info(product_test_environment_definition)
+2026-06-04T06:07:28.094Z [INFO] [generated in 0.00032s] ()
+2026-06-04T06:07:28.095Z [INFO] SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1
+2026-06-04T06:07:28.095Z [INFO] [cached since 0.009326s ago] ('product_test_environment',)
+2026-06-04T06:07:28.096Z [INFO] PRAGMA table_info(product_test_environment)
+2026-06-04T06:07:28.096Z [INFO] [generated in 0.00027s] ()
+2026-06-04T06:07:28.097Z [INFO] SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1
+2026-06-04T06:07:28.097Z [INFO] [cached since 0.011s ago] ('product_test_case',)
+2026-06-04T06:07:28.097Z [INFO] PRAGMA table_info(product_test_case)
+2026-06-04T06:07:28.098Z [INFO] [generated in 0.00026s] ()
+2026-06-04T06:07:28.098Z [INFO] SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1
+2026-06-04T06:07:28.099Z [INFO] [cached since 0.01269s ago] ('product_test_procedure',)
+2026-06-04T06:07:28.099Z [INFO] PRAGMA table_info(product_test_procedure)
+2026-06-04T06:07:28.099Z [INFO] [generated in 0.00028s] ()
+2026-06-04T06:07:28.100Z [INFO] SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1
+2026-06-04T06:07:28.100Z [INFO] [cached since 0.01434s ago] ('product_test_run',)
+2026-06-04T06:07:28.101Z [INFO] PRAGMA table_info(product_test_run)
+2026-06-04T06:07:28.101Z [INFO] [generated in 0.00029s] ()
+2026-06-04T06:07:28.102Z [INFO] SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1
+2026-06-04T06:07:28.102Z [INFO] [cached since 0.0162s ago] ('product_test_result',)
+2026-06-04T06:07:28.103Z [INFO] PRAGMA table_info(product_test_result)
+2026-06-04T06:07:28.103Z [INFO] [generated in 0.00032s] ()
+2026-06-04T06:07:28.104Z [INFO] SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1
+2026-06-04T06:07:28.104Z [INFO] [cached since 0.01807s ago] ('product_test_procedure_result',)
+2026-06-04T06:07:28.105Z [INFO] PRAGMA table_info(product_test_procedure_result)
+2026-06-04T06:07:28.105Z [INFO] [generated in 0.00060s] ()
+2026-06-04T06:07:28.106Z [INFO] SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1
+2026-06-04T06:07:28.107Z [INFO] [cached since 0.02108s ago] ('product_test_defect',)
+2026-06-04T06:07:28.107Z [INFO] PRAGMA table_info(product_test_defect)
+2026-06-04T06:07:28.108Z [INFO] [cached since 0.02373s ago] ()
+2026-06-04T06:07:28.108Z [INFO] SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1
+2026-06-04T06:07:28.108Z [INFO] [cached since 0.02276s ago] ('product_test_evidence',)
+2026-06-04T06:07:28.109Z [INFO] PRAGMA table_info(product_test_evidence)
+2026-06-04T06:07:28.109Z [INFO] [generated in 0.00026s] ()
+2026-06-04T06:07:28.110Z [INFO] SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1
+2026-06-04T06:07:28.110Z [INFO] [cached since 0.02433s ago] ('product_test_report',)
+2026-06-04T06:07:28.110Z [INFO] PRAGMA table_info(product_test_report)
+2026-06-04T06:07:28.111Z [INFO] [generated in 0.00025s] ()
+2026-06-04T06:07:28.111Z [INFO] SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1
+2026-06-04T06:07:28.111Z [INFO] [cached since 0.02582s ago] ('product_test_report_snapshot',)
+2026-06-04T06:07:28.112Z [INFO] PRAGMA table_info(product_test_report_snapshot)
+2026-06-04T06:07:28.112Z [INFO] [generated in 0.00025s] ()
+2026-06-04T06:07:28.112Z [INFO] SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1
+2026-06-04T06:07:28.112Z [INFO] [cached since 0.02742s ago] ('product_test_status_transition',)
+2026-06-04T06:07:28.114Z [INFO] PRAGMA table_info(product_test_status_transition)
+2026-06-04T06:07:28.114Z [INFO] [generated in 0.00025s] ()
+2026-06-04T06:07:28.115Z [INFO] COMMIT
+2026-06-04T06:07:28.115Z [INFO] BEGIN (implicit)
+2026-06-04T06:07:28.116Z [INFO] CREATE INDEX IF NOT EXISTS ix_product_test_release_project_id ON product_test_release (project_id)
+2026-06-04T06:07:28.116Z [INFO] [generated in 0.00030s] ()
+2026-06-04T06:07:28.116Z [INFO] CREATE INDEX IF NOT EXISTS ix_product_test_target_definition_project_id ON product_test_target_definition (project_id)
+2026-06-04T06:07:28.117Z [INFO] [generated in 0.00024s] ()
+2026-06-04T06:07:28.117Z [INFO] CREATE INDEX IF NOT EXISTS ix_product_test_target_project_id ON product_test_target (project_id)
+2026-06-04T06:07:28.117Z [INFO] [generated in 0.00032s] ()
+2026-06-04T06:07:28.118Z [INFO] CREATE INDEX IF NOT EXISTS ix_product_test_environment_definition_project_id ON product_test_environment_definition (project_id)
+2026-06-04T06:07:28.118Z [INFO] [generated in 0.00024s] ()
+2026-06-04T06:07:28.118Z [INFO] CREATE INDEX IF NOT EXISTS ix_product_test_environment_project_id ON product_test_environment (project_id)
+2026-06-04T06:07:28.119Z [INFO] [generated in 0.00027s] ()
+2026-06-04T06:07:28.119Z [INFO] CREATE INDEX IF NOT EXISTS ix_product_test_case_project_id ON product_test_case (project_id)
+2026-06-04T06:07:28.119Z [INFO] [generated in 0.00030s] ()
+2026-06-04T06:07:28.120Z [INFO] CREATE INDEX IF NOT EXISTS ix_product_test_procedure_project_id ON product_test_procedure (project_id)
+2026-06-04T06:07:28.121Z [INFO] [generated in 0.00054s] ()
+2026-06-04T06:07:28.121Z [INFO] CREATE INDEX IF NOT EXISTS ix_product_test_run_project_id ON product_test_run (project_id)
+2026-06-04T06:07:28.121Z [INFO] [generated in 0.00042s] ()
+2026-06-04T06:07:28.122Z [INFO] CREATE INDEX IF NOT EXISTS ix_product_test_result_project_id ON product_test_result (project_id)
+2026-06-04T06:07:28.122Z [INFO] [generated in 0.00074s] ()
+2026-06-04T06:07:28.124Z [INFO] CREATE INDEX IF NOT EXISTS ix_product_test_procedure_result_project_id ON product_test_procedure_result (project_id)
+2026-06-04T06:07:28.124Z [INFO] [generated in 0.00040s] ()
+2026-06-04T06:07:28.125Z [INFO] CREATE INDEX IF NOT EXISTS ix_product_test_defect_project_id ON product_test_defect (project_id)
+2026-06-04T06:07:28.125Z [INFO] [generated in 0.00032s] ()
+2026-06-04T06:07:28.126Z [INFO] CREATE INDEX IF NOT EXISTS ix_product_test_evidence_project_id ON product_test_evidence (project_id)
+2026-06-04T06:07:28.126Z [INFO] [generated in 0.00031s] ()
+2026-06-04T06:07:28.126Z [INFO] CREATE INDEX IF NOT EXISTS ix_product_test_report_project_id ON product_test_report (project_id)
+2026-06-04T06:07:28.126Z [INFO] [generated in 0.00024s] ()
+2026-06-04T06:07:28.127Z [INFO] CREATE INDEX IF NOT EXISTS ix_product_test_report_snapshot_project_id ON product_test_report_snapshot (project_id)
+2026-06-04T06:07:28.127Z [INFO] [generated in 0.00024s] ()
+2026-06-04T06:07:28.128Z [INFO] CREATE INDEX IF NOT EXISTS ix_product_test_status_transition_project_id ON product_test_status_transition (project_id)
+2026-06-04T06:07:28.128Z [INFO] [generated in 0.00029s] ()
+2026-06-04T06:07:28.128Z [INFO] COMMIT
+2026-06-04T06:07:28.129Z [INFO] [db] DB 초기화 완료  url=sqlite:///C:/Users/USER/Downloads/product_test_tracing_system/data/product_test_tracking_system.db
+2026-06-04T06:07:28.129Z [INFO] [backup_service] backup already exists for 2026-06-04, skipping
+2026-06-04T06:07:28.130Z [INFO] [backup_service] next backup in 64352s (midnight UTC)
+2026-06-04T06:07:28.130Z [INFO] [backup_service] backup daemon started
+2026-06-04T06:07:28.131Z [INFO] [main] 서버 시작 완료  host=127.0.0.1  port=8008
+2026-06-04T06:07:28.131Z [INFO] Application startup complete.
+2026-06-04T06:07:28.132Z [INFO] Uvicorn running on http://127.0.0.1:8008 (Press CTRL+C to quit)
+2026-06-04T06:11:20.461Z [INFO] 127.0.0.1:2624 - "GET / HTTP/1.1" 303
+2026-06-04T06:11:20.475Z [INFO] BEGIN (implicit)
+2026-06-04T06:11:20.529Z [INFO] SELECT product_test_release.product_test_release_id, product_test_release.project_id, product_test_release.upstream_release_id, product_test_release.upstream_release_system, product_test_release.release_stage, product_test_release.release_sequence, product_test_release.product_test_release_status, product_test_release.created_at, product_test_release.created_by, product_test_release.updated_at, product_test_release.updated_by, product_test_release.remark 
+FROM product_test_release ORDER BY product_test_release.created_at
+2026-06-04T06:11:20.529Z [INFO] [generated in 0.00080s] ()
+2026-06-04T06:11:20.543Z [INFO] SELECT product_test_target_definition.product_test_target_definition_id, product_test_target_definition.project_id, product_test_target_definition.product_code, product_test_target_definition.manufacturer, product_test_target_definition.model_name, product_test_target_definition.hardware_revision, product_test_target_definition.default_software_version, product_test_target_definition.default_firmware_version, product_test_target_definition.product_test_target_definition_status, product_test_target_definition.created_at, product_test_target_definition.created_by, product_test_target_definition.updated_at, product_test_target_definition.updated_by, product_test_target_definition.remark 
+FROM product_test_target_definition ORDER BY product_test_target_definition.created_at
+2026-06-04T06:11:20.543Z [INFO] [generated in 0.00072s] ()
+2026-06-04T06:11:20.548Z [INFO] SELECT product_test_target.product_test_target_id, product_test_target.project_id, product_test_target.product_test_target_definition_id, product_test_target.serial_number, product_test_target.software_version, product_test_target.firmware_version, product_test_target.manufacture_lot, product_test_target.product_test_target_status, product_test_target.created_at, product_test_target.created_by, product_test_target.updated_at, product_test_target.updated_by, product_test_target.remark 
+FROM product_test_target ORDER BY product_test_target.created_at
+2026-06-04T06:11:20.549Z [INFO] [generated in 0.00085s] ()
+2026-06-04T06:11:20.556Z [INFO] SELECT product_test_environment_definition.product_test_environment_definition_id, product_test_environment_definition.project_id, product_test_environment_definition.product_test_environment_definition_name, product_test_environment_definition.test_country, product_test_environment_definition.test_city, product_test_environment_definition.test_company, product_test_environment_definition.test_building, product_test_environment_definition.test_floor, product_test_environment_definition.test_room, product_test_environment_definition.network_type, product_test_environment_definition.test_computer_name, product_test_environment_definition.operating_system_version, product_test_environment_definition.test_tool_name, product_test_environment_definition.test_tool_version, product_test_environment_definition.power_voltage, product_test_environment_definition.power_frequency, product_test_environment_definition.power_connector_type, product_test_environment_definition.power_condition, product_test_environment_definition.product_test_environment_definition_status, product_test_environment_definition.created_at, product_test_environment_definition.created_by, product_test_environment_definition.updated_at, product_test_environment_definition.updated_by, product_test_environment_definition.remark 
+FROM product_test_environment_definition ORDER BY product_test_environment_definition.created_at
+2026-06-04T06:11:20.556Z [INFO] [generated in 0.00079s] ()
+2026-06-04T06:11:20.560Z [INFO] SELECT product_test_environment.product_test_environment_id, product_test_environment.project_id, product_test_environment.product_test_environment_definition_id, product_test_environment.product_test_environment_name, product_test_environment.test_computer_name, product_test_environment.operating_system_version, product_test_environment.test_tool_version, product_test_environment.network_type, product_test_environment.power_voltage, product_test_environment.power_frequency, product_test_environment.power_connector_type, product_test_environment.captured_at, product_test_environment.product_test_environment_status, product_test_environment.created_at, product_test_environment.created_by, product_test_environment.updated_at, product_test_environment.updated_by, product_test_environment.remark 
+FROM product_test_environment ORDER BY product_test_environment.created_at
+2026-06-04T06:11:20.560Z [INFO] [generated in 0.00075s] ()
+2026-06-04T06:11:20.564Z [INFO] SELECT product_test_case.product_test_case_id, product_test_case.project_id, product_test_case.product_test_case_title, product_test_case.test_category, product_test_case.test_objective, product_test_case.precondition, product_test_case.expected_result, product_test_case.product_test_case_status, product_test_case.created_at, product_test_case.created_by, product_test_case.updated_at, product_test_case.updated_by, product_test_case.remark 
+FROM product_test_case ORDER BY product_test_case.created_at
+2026-06-04T06:11:20.564Z [INFO] [generated in 0.00043s] ()
+2026-06-04T06:11:20.572Z [INFO] SELECT product_test_procedure.product_test_procedure_id, product_test_procedure.project_id, product_test_procedure.product_test_case_id, product_test_procedure.procedure_sequence, product_test_procedure.procedure_action, product_test_procedure.expected_result, product_test_procedure.acceptance_criteria, product_test_procedure.required_evidence_type, product_test_procedure.product_test_procedure_status, product_test_procedure.created_at, product_test_procedure.created_by, product_test_procedure.updated_at, product_test_procedure.updated_by, product_test_procedure.remark 
+FROM product_test_procedure ORDER BY product_test_procedure.product_test_case_id
+2026-06-04T06:11:20.572Z [INFO] [generated in 0.00071s] ()
+2026-06-04T06:11:20.580Z [INFO] SELECT product_test_report.product_test_report_id, product_test_report.project_id, product_test_report.product_test_release_id, product_test_report.product_test_report_type, product_test_report.product_test_report_status, product_test_report.product_test_report_title, product_test_report.created_at, product_test_report.created_by, product_test_report.updated_at, product_test_report.updated_by, product_test_report.approved_at, product_test_report.approved_by, product_test_report.rejected_at, product_test_report.rejected_by, product_test_report.rejection_reason, product_test_report.remark 
+FROM product_test_report ORDER BY product_test_report.created_at
+2026-06-04T06:11:20.580Z [INFO] [generated in 0.00066s] ()
+2026-06-04T06:11:20.583Z [INFO] SELECT product_test_release.product_test_release_id, product_test_release.project_id, product_test_release.upstream_release_id, product_test_release.upstream_release_system, product_test_release.release_stage, product_test_release.release_sequence, product_test_release.product_test_release_status, product_test_release.created_at, product_test_release.created_by, product_test_release.updated_at, product_test_release.updated_by, product_test_release.remark 
+FROM product_test_release ORDER BY product_test_release.created_at
+2026-06-04T06:11:20.583Z [INFO] [cached since 0.05472s ago] ()
+2026-06-04T06:11:20.617Z [INFO] 127.0.0.1:2624 - "GET /admin HTTP/1.1" 200
+2026-06-04T06:11:20.621Z [INFO] ROLLBACK
+2026-06-04T06:11:20.843Z [INFO] 127.0.0.1:2624 - "GET /static/css/app.css HTTP/1.1" 200
+2026-06-04T06:11:20.848Z [INFO] 127.0.0.1:11866 - "GET /static/images/huvitz_logo.svg HTTP/1.1" 200
+2026-06-04T06:11:20.849Z [INFO] 127.0.0.1:5438 - "GET /static/css/tracking.css HTTP/1.1" 200
+2026-06-04T06:11:20.854Z [INFO] 127.0.0.1:9895 - "GET /static/js/tracking-client-log.js HTTP/1.1" 200
+2026-06-04T06:11:20.857Z [INFO] 127.0.0.1:14300 - "GET /static/js/tracking-helpers.js HTTP/1.1" 200
+2026-06-04T06:11:20.859Z [INFO] 127.0.0.1:11690 - "GET /static/js/tracking-gantt-chart.js HTTP/1.1" 200
+2026-06-04T06:11:20.881Z [INFO] 127.0.0.1:2624 - "GET /static/js/tracking-gantt-resize.js HTTP/1.1" 200
+2026-06-04T06:11:20.891Z [INFO] 127.0.0.1:5438 - "GET /static/js/tracking-gantt-fold.js HTTP/1.1" 200
+2026-06-04T06:11:20.892Z [INFO] 127.0.0.1:11690 - "GET /static/js/tracking-status.js HTTP/1.1" 200
+2026-06-04T06:11:20.895Z [INFO] 127.0.0.1:11866 - "GET /static/js/tracking-col-drag.js HTTP/1.1" 200
+2026-06-04T06:11:20.912Z [INFO] 127.0.0.1:9895 - "GET /static/js/tracking-highlight.js HTTP/1.1" 200
+2026-06-04T06:11:20.917Z [INFO] 127.0.0.1:14300 - "GET /static/js/tracking-defect.js HTTP/1.1" 200
+2026-06-04T06:11:20.920Z [INFO] 127.0.0.1:2624 - "GET /static/js/tracking-render.js HTTP/1.1" 200
+2026-06-04T06:11:20.926Z [INFO] 127.0.0.1:11690 - "GET /static/js/tracking.js HTTP/1.1" 200
+2026-06-04T06:11:20.932Z [INFO] 127.0.0.1:5438 - "GET /static/js/app.js HTTP/1.1" 200
+2026-06-04T06:11:24.075Z [INFO] [logging_service] initialized  path=C:\Users\USER\Downloads\product_test_tracing_system\data\logs\app.log  qc_mode=True
+2026-06-04T06:11:24.081Z [INFO] BEGIN (implicit)
+2026-06-04T06:11:24.082Z [INFO] PRAGMA foreign_keys=OFF
+2026-06-04T06:11:24.082Z [INFO] [generated in 0.00050s] ()
+2026-06-04T06:11:24.083Z [INFO] DROP TABLE IF EXISTS "test_result"
+2026-06-04T06:11:24.083Z [INFO] [generated in 0.00076s] ()
+2026-06-04T06:11:24.085Z [INFO] DROP TABLE IF EXISTS "form_submission"
+2026-06-04T06:11:24.086Z [INFO] [generated in 0.00092s] ()
+2026-06-04T06:11:24.087Z [INFO] DROP TABLE IF EXISTS "dropdown_option"
+2026-06-04T06:11:24.087Z [INFO] [generated in 0.00036s] ()
+2026-06-04T06:11:24.087Z [INFO] DROP TABLE IF EXISTS "ui_sample_profile"
+2026-06-04T06:11:24.088Z [INFO] [generated in 0.00029s] ()
+2026-06-04T06:11:24.088Z [INFO] PRAGMA foreign_keys=ON
+2026-06-04T06:11:24.088Z [INFO] [generated in 0.00025s] ()
+2026-06-04T06:11:24.089Z [INFO] COMMIT
+2026-06-04T06:11:24.089Z [INFO] BEGIN (implicit)
+2026-06-04T06:11:24.089Z [INFO] PRAGMA main.table_info("project")
+2026-06-04T06:11:24.089Z [INFO] [raw sql] ()
+2026-06-04T06:11:24.090Z [INFO] PRAGMA main.table_info("project_membership")
+2026-06-04T06:11:24.090Z [INFO] [raw sql] ()
+2026-06-04T06:11:24.090Z [INFO] PRAGMA main.table_info("user_account")
+2026-06-04T06:11:24.091Z [INFO] [raw sql] ()
+2026-06-04T06:11:24.091Z [INFO] PRAGMA main.table_info("product_test_release")
+2026-06-04T06:11:24.091Z [INFO] [raw sql] ()
+2026-06-04T06:11:24.093Z [INFO] PRAGMA main.table_info("product_test_target_definition")
+2026-06-04T06:11:24.093Z [INFO] [raw sql] ()
+2026-06-04T06:11:24.093Z [INFO] PRAGMA main.table_info("product_test_target")
+2026-06-04T06:11:24.094Z [INFO] [raw sql] ()
+2026-06-04T06:11:24.094Z [INFO] PRAGMA main.table_info("product_test_environment_definition")
+2026-06-04T06:11:24.094Z [INFO] [raw sql] ()
+2026-06-04T06:11:24.095Z [INFO] PRAGMA main.table_info("product_test_environment")
+2026-06-04T06:11:24.095Z [INFO] [raw sql] ()
+2026-06-04T06:11:24.096Z [INFO] PRAGMA main.table_info("product_test_case")
+2026-06-04T06:11:24.096Z [INFO] [raw sql] ()
+2026-06-04T06:11:24.096Z [INFO] PRAGMA main.table_info("product_test_procedure")
+2026-06-04T06:11:24.096Z [INFO] [raw sql] ()
+2026-06-04T06:11:24.097Z [INFO] PRAGMA main.table_info("product_test_run")
+2026-06-04T06:11:24.097Z [INFO] [raw sql] ()
+2026-06-04T06:11:24.097Z [INFO] PRAGMA main.table_info("product_test_result")
+2026-06-04T06:11:24.097Z [INFO] [raw sql] ()
+2026-06-04T06:11:24.098Z [INFO] PRAGMA main.table_info("product_test_procedure_result")
+2026-06-04T06:11:24.098Z [INFO] [raw sql] ()
+2026-06-04T06:11:24.099Z [INFO] PRAGMA main.table_info("product_test_defect")
+2026-06-04T06:11:24.099Z [INFO] [raw sql] ()
+2026-06-04T06:11:24.100Z [INFO] PRAGMA main.table_info("product_test_evidence")
+2026-06-04T06:11:24.101Z [INFO] [raw sql] ()
+2026-06-04T06:11:24.102Z [INFO] PRAGMA main.table_info("product_test_report")
+2026-06-04T06:11:24.102Z [INFO] [raw sql] ()
+2026-06-04T06:11:24.103Z [INFO] PRAGMA main.table_info("product_test_report_snapshot")
+2026-06-04T06:11:24.104Z [INFO] [raw sql] ()
+2026-06-04T06:11:24.104Z [INFO] PRAGMA main.table_info("product_test_status_transition")
+2026-06-04T06:11:24.104Z [INFO] [raw sql] ()
+2026-06-04T06:11:24.105Z [INFO] PRAGMA main.table_info("work_calendar")
+2026-06-04T06:11:24.105Z [INFO] [raw sql] ()
+2026-06-04T06:11:24.106Z [INFO] COMMIT
+2026-06-04T06:11:24.106Z [INFO] BEGIN (implicit)
+2026-06-04T06:11:24.106Z [INFO] PRAGMA table_info(user_account)
+2026-06-04T06:11:24.106Z [INFO] [generated in 0.00021s] ()
+2026-06-04T06:11:24.107Z [INFO] COMMIT
+2026-06-04T06:11:24.107Z [INFO] BEGIN (implicit)
+2026-06-04T06:11:24.107Z [INFO] PRAGMA table_info(product_test_release)
+2026-06-04T06:11:24.108Z [INFO] [generated in 0.00021s] ()
+2026-06-04T06:11:24.108Z [INFO] COMMIT
+2026-06-04T06:11:24.108Z [INFO] BEGIN (implicit)
+2026-06-04T06:11:24.108Z [INFO] PRAGMA table_info(product_test_defect)
+2026-06-04T06:11:24.109Z [INFO] [generated in 0.00020s] ()
+2026-06-04T06:11:24.109Z [INFO] COMMIT
+2026-06-04T06:11:24.109Z [INFO] BEGIN (implicit)
+2026-06-04T06:11:24.110Z [INFO] SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1
+2026-06-04T06:11:24.110Z [INFO] [generated in 0.00025s] ('product_test_release',)
+2026-06-04T06:11:24.110Z [INFO] PRAGMA table_info(product_test_release)
+2026-06-04T06:11:24.110Z [INFO] [cached since 0.003043s ago] ()
+2026-06-04T06:11:24.111Z [INFO] SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1
+2026-06-04T06:11:24.111Z [INFO] [cached since 0.001449s ago] ('product_test_target_definition',)
+2026-06-04T06:11:24.111Z [INFO] PRAGMA table_info(product_test_target_definition)
+2026-06-04T06:11:24.111Z [INFO] [generated in 0.00021s] ()
+2026-06-04T06:11:24.111Z [INFO] SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1
+2026-06-04T06:11:24.113Z [INFO] [cached since 0.002691s ago] ('product_test_target',)
+2026-06-04T06:11:24.113Z [INFO] PRAGMA table_info(product_test_target)
+2026-06-04T06:11:24.114Z [INFO] [generated in 0.00032s] ()
+2026-06-04T06:11:24.114Z [INFO] SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1
+2026-06-04T06:11:24.115Z [INFO] [cached since 0.004469s ago] ('product_test_environment_definition',)
+2026-06-04T06:11:24.115Z [INFO] PRAGMA table_info(product_test_environment_definition)
+2026-06-04T06:11:24.116Z [INFO] [generated in 0.00051s] ()
+2026-06-04T06:11:24.117Z [INFO] SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1
+2026-06-04T06:11:24.117Z [INFO] [cached since 0.007191s ago] ('product_test_environment',)
+2026-06-04T06:11:24.118Z [INFO] PRAGMA table_info(product_test_environment)
+2026-06-04T06:11:24.119Z [INFO] [generated in 0.00061s] ()
+2026-06-04T06:11:24.120Z [INFO] SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1
+2026-06-04T06:11:24.120Z [INFO] [cached since 0.01029s ago] ('product_test_case',)
+2026-06-04T06:11:24.121Z [INFO] PRAGMA table_info(product_test_case)
+2026-06-04T06:11:24.121Z [INFO] [generated in 0.00023s] ()
+2026-06-04T06:11:24.121Z [INFO] SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1
+2026-06-04T06:11:24.122Z [INFO] [cached since 0.01165s ago] ('product_test_procedure',)
+2026-06-04T06:11:24.122Z [INFO] PRAGMA table_info(product_test_procedure)
+2026-06-04T06:11:24.122Z [INFO] [generated in 0.00018s] ()
+2026-06-04T06:11:24.122Z [INFO] SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1
+2026-06-04T06:11:24.123Z [INFO] [cached since 0.01277s ago] ('product_test_run',)
+2026-06-04T06:11:24.123Z [INFO] PRAGMA table_info(product_test_run)
+2026-06-04T06:11:24.123Z [INFO] [generated in 0.00026s] ()
+2026-06-04T06:11:24.124Z [INFO] SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1
+2026-06-04T06:11:24.124Z [INFO] [cached since 0.01453s ago] ('product_test_result',)
+2026-06-04T06:11:24.124Z [INFO] PRAGMA table_info(product_test_result)
+2026-06-04T06:11:24.125Z [INFO] [generated in 0.00020s] ()
+2026-06-04T06:11:24.125Z [INFO] SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1
+2026-06-04T06:11:24.125Z [INFO] [cached since 0.01563s ago] ('product_test_procedure_result',)
+2026-06-04T06:11:24.125Z [INFO] PRAGMA table_info(product_test_procedure_result)
+2026-06-04T06:11:24.126Z [INFO] [generated in 0.00018s] ()
+2026-06-04T06:11:24.126Z [INFO] SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1
+2026-06-04T06:11:24.126Z [INFO] [cached since 0.01671s ago] ('product_test_defect',)
+2026-06-04T06:11:24.126Z [INFO] PRAGMA table_info(product_test_defect)
+2026-06-04T06:11:24.127Z [INFO] [cached since 0.0183s ago] ()
+2026-06-04T06:11:24.127Z [INFO] SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1
+2026-06-04T06:11:24.127Z [INFO] [cached since 0.01771s ago] ('product_test_evidence',)
+2026-06-04T06:11:24.127Z [INFO] PRAGMA table_info(product_test_evidence)
+2026-06-04T06:11:24.128Z [INFO] [generated in 0.00018s] ()
+2026-06-04T06:11:24.128Z [INFO] SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1
+2026-06-04T06:11:24.128Z [INFO] [cached since 0.01869s ago] ('product_test_report',)
+2026-06-04T06:11:24.128Z [INFO] PRAGMA table_info(product_test_report)
+2026-06-04T06:11:24.129Z [INFO] [generated in 0.00022s] ()
+2026-06-04T06:11:24.129Z [INFO] SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1
+2026-06-04T06:11:24.129Z [INFO] [cached since 0.01976s ago] ('product_test_report_snapshot',)
+2026-06-04T06:11:24.130Z [INFO] PRAGMA table_info(product_test_report_snapshot)
+2026-06-04T06:11:24.130Z [INFO] [generated in 0.00018s] ()
+2026-06-04T06:11:24.130Z [INFO] SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1
+2026-06-04T06:11:24.130Z [INFO] [cached since 0.02078s ago] ('product_test_status_transition',)
+2026-06-04T06:11:24.131Z [INFO] PRAGMA table_info(product_test_status_transition)
+2026-06-04T06:11:24.131Z [INFO] [generated in 0.00026s] ()
+2026-06-04T06:11:24.131Z [INFO] COMMIT
+2026-06-04T06:11:24.133Z [INFO] BEGIN (implicit)
+2026-06-04T06:11:24.133Z [INFO] CREATE INDEX IF NOT EXISTS ix_product_test_release_project_id ON product_test_release (project_id)
+2026-06-04T06:11:24.134Z [INFO] [generated in 0.00069s] ()
+2026-06-04T06:11:24.135Z [INFO] CREATE INDEX IF NOT EXISTS ix_product_test_target_definition_project_id ON product_test_target_definition (project_id)
+2026-06-04T06:11:24.135Z [INFO] [generated in 0.00044s] ()
+2026-06-04T06:11:24.136Z [INFO] CREATE INDEX IF NOT EXISTS ix_product_test_target_project_id ON product_test_target (project_id)
+2026-06-04T06:11:24.137Z [INFO] [generated in 0.00078s] ()
+2026-06-04T06:11:24.138Z [INFO] CREATE INDEX IF NOT EXISTS ix_product_test_environment_definition_project_id ON product_test_environment_definition (project_id)
+2026-06-04T06:11:24.138Z [INFO] [generated in 0.00045s] ()
+2026-06-04T06:11:24.138Z [INFO] CREATE INDEX IF NOT EXISTS ix_product_test_environment_project_id ON product_test_environment (project_id)
+2026-06-04T06:11:24.139Z [INFO] [generated in 0.00026s] ()
+2026-06-04T06:11:24.139Z [INFO] CREATE INDEX IF NOT EXISTS ix_product_test_case_project_id ON product_test_case (project_id)
+2026-06-04T06:11:24.139Z [INFO] [generated in 0.00023s] ()
+2026-06-04T06:11:24.140Z [INFO] CREATE INDEX IF NOT EXISTS ix_product_test_procedure_project_id ON product_test_procedure (project_id)
+2026-06-04T06:11:24.140Z [INFO] [generated in 0.00023s] ()
+2026-06-04T06:11:24.140Z [INFO] CREATE INDEX IF NOT EXISTS ix_product_test_run_project_id ON product_test_run (project_id)
+2026-06-04T06:11:24.140Z [INFO] [generated in 0.00027s] ()
+2026-06-04T06:11:24.141Z [INFO] CREATE INDEX IF NOT EXISTS ix_product_test_result_project_id ON product_test_result (project_id)
+2026-06-04T06:11:24.141Z [INFO] [generated in 0.00023s] ()
+2026-06-04T06:11:24.141Z [INFO] CREATE INDEX IF NOT EXISTS ix_product_test_procedure_result_project_id ON product_test_procedure_result (project_id)
+2026-06-04T06:11:24.142Z [INFO] [generated in 0.00021s] ()
+2026-06-04T06:11:24.142Z [INFO] CREATE INDEX IF NOT EXISTS ix_product_test_defect_project_id ON product_test_defect (project_id)
+2026-06-04T06:11:24.142Z [INFO] [generated in 0.00020s] ()
+2026-06-04T06:11:24.142Z [INFO] CREATE INDEX IF NOT EXISTS ix_product_test_evidence_project_id ON product_test_evidence (project_id)
+2026-06-04T06:11:24.143Z [INFO] [generated in 0.00025s] ()
+2026-06-04T06:11:24.143Z [INFO] CREATE INDEX IF NOT EXISTS ix_product_test_report_project_id ON product_test_report (project_id)
+2026-06-04T06:11:24.143Z [INFO] [generated in 0.00020s] ()
+2026-06-04T06:11:24.143Z [INFO] CREATE INDEX IF NOT EXISTS ix_product_test_report_snapshot_project_id ON product_test_report_snapshot (project_id)
+2026-06-04T06:11:24.144Z [INFO] [generated in 0.00021s] ()
+2026-06-04T06:11:24.144Z [INFO] CREATE INDEX IF NOT EXISTS ix_product_test_status_transition_project_id ON product_test_status_transition (project_id)
+2026-06-04T06:11:24.144Z [INFO] [generated in 0.00020s] ()
+2026-06-04T06:11:24.144Z [INFO] COMMIT
+2026-06-04T06:11:24.145Z [INFO] [db] DB 초기화 완료  url=sqlite:///C:/Users/USER/Downloads/product_test_tracing_system/data/product_test_tracking_system.db
+2026-06-04T06:11:24.145Z [INFO] [backup_service] backup already exists for 2026-06-04, skipping
+2026-06-04T06:11:24.146Z [INFO] [backup_service] next backup in 64116s (midnight UTC)
+2026-06-04T06:11:24.146Z [INFO] [backup_service] backup daemon started
+2026-06-04T06:11:24.146Z [INFO] [main] 서버 시작 완료  host=127.0.0.1  port=8008
+2026-06-04T06:11:24.146Z [INFO] Application startup complete.
+2026-06-04T06:11:24.147Z [INFO] Uvicorn running on http://127.0.0.1:8008 (Press CTRL+C to quit)
+2026-06-04T06:11:26.345Z [INFO] BEGIN (implicit)
+2026-06-04T06:11:26.378Z [INFO] SELECT product_test_release.product_test_release_id, product_test_release.project_id, product_test_release.upstream_release_id, product_test_release.upstream_release_system, product_test_release.release_stage, product_test_release.release_sequence, product_test_release.product_test_release_status, product_test_release.created_at, product_test_release.created_by, product_test_release.updated_at, product_test_release.updated_by, product_test_release.remark 
+FROM product_test_release ORDER BY product_test_release.created_at
+2026-06-04T06:11:26.378Z [INFO] [generated in 0.00046s] ()
+2026-06-04T06:11:26.390Z [INFO] SELECT product_test_target_definition.product_test_target_definition_id, product_test_target_definition.project_id, product_test_target_definition.product_code, product_test_target_definition.manufacturer, product_test_target_definition.model_name, product_test_target_definition.hardware_revision, product_test_target_definition.default_software_version, product_test_target_definition.default_firmware_version, product_test_target_definition.product_test_target_definition_status, product_test_target_definition.created_at, product_test_target_definition.created_by, product_test_target_definition.updated_at, product_test_target_definition.updated_by, product_test_target_definition.remark 
+FROM product_test_target_definition ORDER BY product_test_target_definition.created_at
+2026-06-04T06:11:26.390Z [INFO] [generated in 0.00063s] ()
+2026-06-04T06:11:26.395Z [INFO] SELECT product_test_target.product_test_target_id, product_test_target.project_id, product_test_target.product_test_target_definition_id, product_test_target.serial_number, product_test_target.software_version, product_test_target.firmware_version, product_test_target.manufacture_lot, product_test_target.product_test_target_status, product_test_target.created_at, product_test_target.created_by, product_test_target.updated_at, product_test_target.updated_by, product_test_target.remark 
+FROM product_test_target ORDER BY product_test_target.created_at
+2026-06-04T06:11:26.395Z [INFO] [generated in 0.00041s] ()
+2026-06-04T06:11:26.398Z [INFO] SELECT product_test_environment_definition.product_test_environment_definition_id, product_test_environment_definition.project_id, product_test_environment_definition.product_test_environment_definition_name, product_test_environment_definition.test_country, product_test_environment_definition.test_city, product_test_environment_definition.test_company, product_test_environment_definition.test_building, product_test_environment_definition.test_floor, product_test_environment_definition.test_room, product_test_environment_definition.network_type, product_test_environment_definition.test_computer_name, product_test_environment_definition.operating_system_version, product_test_environment_definition.test_tool_name, product_test_environment_definition.test_tool_version, product_test_environment_definition.power_voltage, product_test_environment_definition.power_frequency, product_test_environment_definition.power_connector_type, product_test_environment_definition.power_condition, product_test_environment_definition.product_test_environment_definition_status, product_test_environment_definition.created_at, product_test_environment_definition.created_by, product_test_environment_definition.updated_at, product_test_environment_definition.updated_by, product_test_environment_definition.remark 
+FROM product_test_environment_definition ORDER BY product_test_environment_definition.created_at
+2026-06-04T06:11:26.398Z [INFO] [generated in 0.00034s] ()
+2026-06-04T06:11:26.401Z [INFO] SELECT product_test_environment.product_test_environment_id, product_test_environment.project_id, product_test_environment.product_test_environment_definition_id, product_test_environment.product_test_environment_name, product_test_environment.test_computer_name, product_test_environment.operating_system_version, product_test_environment.test_tool_version, product_test_environment.network_type, product_test_environment.power_voltage, product_test_environment.power_frequency, product_test_environment.power_connector_type, product_test_environment.captured_at, product_test_environment.product_test_environment_status, product_test_environment.created_at, product_test_environment.created_by, product_test_environment.updated_at, product_test_environment.updated_by, product_test_environment.remark 
+FROM product_test_environment ORDER BY product_test_environment.created_at
+2026-06-04T06:11:26.402Z [INFO] [generated in 0.00046s] ()
+2026-06-04T06:11:26.403Z [INFO] SELECT product_test_case.product_test_case_id, product_test_case.project_id, product_test_case.product_test_case_title, product_test_case.test_category, product_test_case.test_objective, product_test_case.precondition, product_test_case.expected_result, product_test_case.product_test_case_status, product_test_case.created_at, product_test_case.created_by, product_test_case.updated_at, product_test_case.updated_by, product_test_case.remark 
+FROM product_test_case ORDER BY product_test_case.created_at
+2026-06-04T06:11:26.405Z [INFO] [generated in 0.00039s] ()
+2026-06-04T06:11:26.407Z [INFO] SELECT product_test_procedure.product_test_procedure_id, product_test_procedure.project_id, product_test_procedure.product_test_case_id, product_test_procedure.procedure_sequence, product_test_procedure.procedure_action, product_test_procedure.expected_result, product_test_procedure.acceptance_criteria, product_test_procedure.required_evidence_type, product_test_procedure.product_test_procedure_status, product_test_procedure.created_at, product_test_procedure.created_by, product_test_procedure.updated_at, product_test_procedure.updated_by, product_test_procedure.remark 
+FROM product_test_procedure ORDER BY product_test_procedure.product_test_case_id
+2026-06-04T06:11:26.407Z [INFO] [generated in 0.00026s] ()
+2026-06-04T06:11:26.412Z [INFO] SELECT product_test_report.product_test_report_id, product_test_report.project_id, product_test_report.product_test_release_id, product_test_report.product_test_report_type, product_test_report.product_test_report_status, product_test_report.product_test_report_title, product_test_report.created_at, product_test_report.created_by, product_test_report.updated_at, product_test_report.updated_by, product_test_report.approved_at, product_test_report.approved_by, product_test_report.rejected_at, product_test_report.rejected_by, product_test_report.rejection_reason, product_test_report.remark 
+FROM product_test_report ORDER BY product_test_report.created_at
+2026-06-04T06:11:26.412Z [INFO] [generated in 0.00042s] ()
+2026-06-04T06:11:26.413Z [INFO] SELECT product_test_release.product_test_release_id, product_test_release.project_id, product_test_release.upstream_release_id, product_test_release.upstream_release_system, product_test_release.release_stage, product_test_release.release_sequence, product_test_release.product_test_release_status, product_test_release.created_at, product_test_release.created_by, product_test_release.updated_at, product_test_release.updated_by, product_test_release.remark 
+FROM product_test_release ORDER BY product_test_release.created_at
+2026-06-04T06:11:26.414Z [INFO] [cached since 0.03625s ago] ()
+2026-06-04T06:11:26.448Z [INFO] 127.0.0.1:12762 - "GET /admin HTTP/1.1" 200
+2026-06-04T06:11:26.452Z [INFO] ROLLBACK
+2026-06-04T06:11:26.651Z [INFO] 127.0.0.1:12762 - "GET /static/css/app.css HTTP/1.1" 200
+2026-06-04T06:11:26.652Z [INFO] 127.0.0.1:4896 - "GET /static/images/huvitz_logo.svg HTTP/1.1" 200
+2026-06-04T06:11:26.653Z [INFO] 127.0.0.1:8437 - "GET /static/css/tracking.css HTTP/1.1" 200
+2026-06-04T06:11:26.654Z [INFO] 127.0.0.1:3912 - "GET /static/js/tracking-client-log.js HTTP/1.1" 200
+2026-06-04T06:11:26.655Z [INFO] 127.0.0.1:5039 - "GET /static/js/tracking-helpers.js HTTP/1.1" 200
+2026-06-04T06:11:26.656Z [INFO] 127.0.0.1:13847 - "GET /static/js/tracking-gantt-chart.js HTTP/1.1" 200
+2026-06-04T06:11:26.686Z [INFO] 127.0.0.1:8437 - "GET /static/js/tracking-gantt-resize.js HTTP/1.1" 200
+2026-06-04T06:11:26.691Z [INFO] 127.0.0.1:5039 - "GET /static/js/tracking-col-drag.js HTTP/1.1" 200
+2026-06-04T06:11:26.694Z [INFO] 127.0.0.1:13847 - "GET /static/js/tracking-gantt-fold.js HTTP/1.1" 200
+2026-06-04T06:11:26.695Z [INFO] 127.0.0.1:3912 - "GET /static/js/tracking-status.js HTTP/1.1" 200
+2026-06-04T06:11:26.696Z [INFO] 127.0.0.1:12762 - "GET /static/js/tracking-highlight.js HTTP/1.1" 200
+2026-06-04T06:11:26.698Z [INFO] 127.0.0.1:4896 - "GET /static/js/tracking-defect.js HTTP/1.1" 200
+2026-06-04T06:11:26.724Z [INFO] 127.0.0.1:13847 - "GET /static/js/app.js HTTP/1.1" 200
+2026-06-04T06:11:26.726Z [INFO] 127.0.0.1:8437 - "GET /static/js/tracking-render.js HTTP/1.1" 200
+2026-06-04T06:11:26.727Z [INFO] 127.0.0.1:5039 - "GET /static/js/tracking.js HTTP/1.1" 200
+2026-06-04T06:11:26.912Z [INFO] 127.0.0.1:13847 - "GET /admin/api/product-test/ui/client-config HTTP/1.1" 200
+2026-06-04T06:11:27.330Z [INFO] BEGIN (implicit)
+2026-06-04T06:11:27.334Z [INFO] 
+        SELECT
+            r.product_test_release_id,
+            r.upstream_release_id,
+            r.release_stage,
+            r.release_sequence,
+            r.product_test_release_status,
+            r.remark,
+            r.upstream_release_system,
+            COALESCE(r.release_visible, 1)                    AS release_visible,
+            COUNT(DISTINCT run.product_test_run_id)           AS run_count,
+            COUNT(res.product_test_result_id)                 AS total_results,
+            SUM(CASE WHEN res.product_test_result_status = 'passed'  THEN 1 ELSE 0 END) AS passed,
+            SUM(CASE WHEN res.product_test_result_status = 'blocked' THEN 1 ELSE 0 END) AS blocked,
+            SUM(CASE WHEN res.product_test_result_status = 'testing' THEN 1 ELSE 0 END) AS testing,
+            COUNT(DISTINCT def.product_test_defect_id)        AS defect_count,
+            SUM(CASE WHEN def.product_test_defect_status = 'opened' THEN 1 ELSE 0 END)  AS open_defects
+        FROM product_test_release r
+        LEFT JOIN product_test_run  run ON run.product_test_release_id = r.product_test_release_id
+        LEFT JOIN product_test_result res ON res.product_test_run_id   = run.product_test_run_id
+        LEFT JOIN product_test_defect def ON def.product_test_result_id = res.product_test_result_id
+        WHERE (r.release_stage IS NULL OR r.release_stage != 'round_legacy')
+        GROUP BY r.product_test_release_id
+        ORDER BY r.release_sequence, r.product_test_release_id
+    
+2026-06-04T06:11:27.334Z [INFO] [generated in 0.00089s] ()
+2026-06-04T06:11:27.340Z [INFO] BEGIN (implicit)
+2026-06-04T06:11:27.343Z [INFO] SELECT work_calendar.work_calendar_id AS work_calendar_work_calendar_id, work_calendar.calendar_date AS work_calendar_calendar_date, work_calendar.is_workday AS work_calendar_is_workday, work_calendar.day_type AS work_calendar_day_type, work_calendar.note AS work_calendar_note, work_calendar.created_at AS work_calendar_created_at, work_calendar.created_by AS work_calendar_created_by 
+FROM work_calendar ORDER BY work_calendar.calendar_date
+2026-06-04T06:11:27.343Z [INFO] [generated in 0.00071s] ()
+2026-06-04T06:11:27.345Z [INFO] 127.0.0.1:8437 - "GET /admin/api/work-calendar HTTP/1.1" 200
+2026-06-04T06:11:27.346Z [INFO] ROLLBACK
+2026-06-04T06:11:27.352Z [INFO] 
+        SELECT
+            def.product_test_defect_id,
+            def.defect_title,
+            def.defect_severity,
+            def.defect_priority,
+            def.product_test_defect_status,
+            def.assigned_to,
+            def.expected_resolution_date,
+            def.created_at,
+            run.product_test_release_id,
+            run.product_test_run_id,
+            def.remark
+        FROM product_test_defect def
+        JOIN product_test_result  res ON res.product_test_result_id  = def.product_test_result_id
+        JOIN product_test_run     run ON run.product_test_run_id     = res.product_test_run_id
+        WHERE def.product_test_defect_status = 'opened'
+        ORDER BY
+            CASE def.defect_severity
+                WHEN 'S' THEN 1 WHEN 'A' THEN 2 WHEN 'B' THEN 3 WHEN 'C' THEN 4 ELSE 5
+            END,
+            def.created_at
+    
+2026-06-04T06:11:27.352Z [INFO] [generated in 0.00072s] ()
+2026-06-04T06:11:27.354Z [INFO] 
+        SELECT
+            run.product_test_run_id,
+            run.product_test_release_id,
+            run.product_test_run_status,
+            run.started_at,
+            run.finished_at,
+            COUNT(res.product_test_result_id)                                    AS total_results,
+            SUM(CASE WHEN res.product_test_result_status = 'passed'  THEN 1 ELSE 0 END) AS passed,
+            SUM(CASE WHEN res.product_test_result_status = 'blocked' THEN 1 ELSE 0 END) AS blocked,
+            SUM(CASE WHEN res.product_test_result_status = 'testing' THEN 1 ELSE 0 END) AS testing,
+            SUM(CASE WHEN res.product_test_result_status = 'failed'  THEN 1 ELSE 0 END) AS failed,
+            SUM(CASE WHEN res.product_test_result_status = 'skipped' THEN 1 ELSE 0 END) AS skipped,
+            SUM(CASE WHEN res.product_test_result_status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled,
+            run.product_test_target_id,
+            run.product_test_environment_id
+        FROM product_test_run run
+        LEFT JOIN product_test_result res ON res.product_test_run_id = run.product_test_run_id
+        GROUP BY run.product_test_run_id
+        HAVING total_results > 0
+        ORDER BY run.started_at
+    
+2026-06-04T06:11:27.355Z [INFO] [generated in 0.00044s] ()
+2026-06-04T06:11:27.357Z [INFO] 
+        SELECT
+            run.product_test_release_id,
+            res.product_test_case_id,
+            res.product_test_result_status,
+            COUNT(*)                          AS cnt,
+            res.product_test_run_id,
+            res.product_test_result_id,
+            def.product_test_defect_id
+        FROM product_test_result res
+        JOIN product_test_run run ON run.product_test_run_id = res.product_test_run_id
+        LEFT JOIN product_test_defect def ON def.product_test_result_id = res.product_test_result_id
+            AND def.product_test_defect_status = 'opened'
+        GROUP BY run.product_test_release_id, res.product_test_case_id,
+                 res.product_test_result_status, res.product_test_run_id,
+                 res.product_test_result_id, def.product_test_defect_id
+        ORDER BY run.product_test_release_id, res.product_test_case_id
+    
+2026-06-04T06:11:27.357Z [INFO] [generated in 0.00051s] ()
+2026-06-04T06:11:27.362Z [INFO] 
+        SELECT
+            pr.product_test_procedure_result_id,
+            pr.product_test_result_id,
+            pr.product_test_procedure_id,
+            pr.product_test_procedure_result_status,
+            pr.actual_result,
+            pr.judgement_reason,
+            pr.judged_at,
+            pr.judged_by,
+            p.product_test_case_id,
+            p.procedure_sequence,
+            p.procedure_action,
+            run.product_test_release_id
+        FROM product_test_procedure_result pr
+        JOIN product_test_procedure p ON p.product_test_procedure_id = pr.product_test_procedure_id
+        JOIN product_test_result res ON res.product_test_result_id = pr.product_test_result_id
+        JOIN product_test_run run ON run.product_test_run_id = res.product_test_run_id
+        ORDER BY p.product_test_case_id, p.procedure_sequence
+    
+2026-06-04T06:11:27.362Z [INFO] [generated in 0.00043s] ()
+2026-06-04T06:11:27.363Z [INFO] 
+        SELECT
+            ev.product_test_evidence_id,
+            ev.product_test_result_id,
+            ev.product_test_procedure_result_id,
+            ev.product_test_defect_id,
+            ev.product_test_evidence_type,
+            ev.file_name,
+            ev.file_path,
+            ev.captured_at,
+            ev.captured_by,
+            COALESCE(run.product_test_release_id, run2.product_test_release_id) AS release_id
+        FROM product_test_evidence ev
+        LEFT JOIN product_test_result res ON res.product_test_result_id = ev.product_test_result_id
+        LEFT JOIN product_test_run run ON run.product_test_run_id = res.product_test_run_id
+        LEFT JOIN product_test_defect def ON def.product_test_defect_id = ev.product_test_defect_id
+        LEFT JOIN product_test_result res2 ON res2.product_test_result_id = def.product_test_result_id
+        LEFT JOIN product_test_run run2 ON run2.product_test_run_id = res2.product_test_run_id
+        ORDER BY ev.captured_at
+    
+2026-06-04T06:11:27.363Z [INFO] [generated in 0.00036s] ()
+2026-06-04T06:11:27.364Z [INFO] 
+        SELECT product_test_report_id, product_test_release_id,
+               product_test_report_type, product_test_report_status,
+               product_test_report_title, created_at
+        FROM product_test_report
+        ORDER BY created_at
+    
+2026-06-04T06:11:27.364Z [INFO] [generated in 0.00050s] ()
+2026-06-04T06:11:27.365Z [INFO] 
+        SELECT DISTINCT
+            t.product_test_target_id,
+            td.model_name,
+            t.software_version,
+            t.serial_number,
+            t.remark
+        FROM product_test_run run
+        JOIN product_test_result res ON res.product_test_run_id = run.product_test_run_id
+        LEFT JOIN product_test_target t ON t.product_test_target_id = run.product_test_target_id
+        LEFT JOIN product_test_target_definition td
+            ON td.product_test_target_definition_id = t.product_test_target_definition_id
+        ORDER BY t.product_test_target_id
+    
+2026-06-04T06:11:27.365Z [INFO] [generated in 0.00049s] ()
+2026-06-04T06:11:27.367Z [INFO] 
+        SELECT DISTINCT
+            run.product_test_environment_id,
+            e.product_test_environment_name
+        FROM product_test_run run
+        JOIN product_test_result res ON res.product_test_run_id = run.product_test_run_id
+        LEFT JOIN product_test_environment e
+            ON e.product_test_environment_id = run.product_test_environment_id
+        ORDER BY run.product_test_environment_id
+    
+2026-06-04T06:11:27.368Z [INFO] [generated in 0.00056s] ()
+2026-06-04T06:11:27.369Z [INFO] 
+        SELECT DISTINCT
+            res.product_test_case_id,
+            c.product_test_case_title,
+            run.product_test_release_id
+        FROM product_test_result res
+        JOIN product_test_run run ON run.product_test_run_id = res.product_test_run_id
+        LEFT JOIN product_test_case c ON c.product_test_case_id = res.product_test_case_id
+        ORDER BY res.product_test_case_id
+    
+2026-06-04T06:11:27.369Z [INFO] [generated in 0.00045s] ()
+2026-06-04T06:11:27.371Z [INFO] 
+        SELECT DISTINCT
+            p.product_test_procedure_id,
+            p.product_test_case_id,
+            p.procedure_sequence,
+            p.procedure_action,
+            run.product_test_release_id
+        FROM product_test_procedure p
+        JOIN product_test_result res ON res.product_test_case_id = p.product_test_case_id
+        JOIN product_test_run run ON run.product_test_run_id = res.product_test_run_id
+        ORDER BY p.product_test_case_id, p.procedure_sequence
+    
+2026-06-04T06:11:27.371Z [INFO] [generated in 0.00047s] ()
+2026-06-04T06:11:27.383Z [INFO] 127.0.0.1:13847 - "GET /admin/api/tracking/summary HTTP/1.1" 200
+2026-06-04T06:11:27.385Z [INFO] ROLLBACK
+2026-06-04T06:11:27.517Z [INFO] 127.0.0.1:13847 - "POST /admin/api/product-test/ui/id-candidates HTTP/1.1" 200
+2026-06-04T06:11:27.524Z [INFO] 127.0.0.1:13847 - "POST /admin/api/product-test/ui/id-candidates HTTP/1.1" 200
+2026-06-04T06:11:27.986Z [INFO] 127.0.0.1:8437 - "GET /static/uploads/evidence/SQA_ISSUE_20260518_001_hdr_screen_07027db2b2.png HTTP/1.1" 200
+2026-06-04T06:11:27.988Z [INFO] 127.0.0.1:5039 - "GET /static/uploads/evidence/SQA_ISSUE_20260519_002_other_device_9f3a4ab8e2.png HTTP/1.1" 200
+2026-06-04T06:11:27.991Z [INFO] 127.0.0.1:4896 - "GET /static/uploads/evidence/SQA_ISSUE_20260507_004_other_device_adeba0148e.png HTTP/1.1" 200
+2026-06-04T06:11:27.992Z [INFO] 127.0.0.1:13847 - "GET /static/uploads/evidence/SQA_ISSUE_20260518_001_other_device_7380477ace.png HTTP/1.1" 200
+2026-06-04T06:11:27.993Z [INFO] 127.0.0.1:12762 - "GET /static/uploads/evidence/SQA_ISSUE_20260518_006_other_device_3fc7a88320.png HTTP/1.1" 200
+2026-06-04T06:11:27.994Z [INFO] 127.0.0.1:3912 - "GET /static/uploads/evidence/SQA_ISSUE_20260518_006_hdr_screen_95dd8f683e.png HTTP/1.1" 200
+2026-06-04T06:11:28.015Z [INFO] 127.0.0.1:3912 - "GET /static/uploads/evidence/SQA_ISSUE_20260519_003_other_device_bcd8b5fae0.png HTTP/1.1" 200
+2026-06-04T06:11:28.018Z [INFO] 127.0.0.1:8437 - "GET /static/uploads/evidence/SQA_ISSUE_20260519_003_other_device_d19c7b70aa.png HTTP/1.1" 200
+2026-06-04T06:11:28.029Z [INFO] 127.0.0.1:12762 - "GET /static/uploads/evidence/SQA_ISSUE_20260519_001_other_device_156b634ffc.png HTTP/1.1" 200
+2026-06-04T06:11:28.033Z [INFO] 127.0.0.1:13847 - "GET /static/uploads/evidence/SQA_ISSUE_20260519_004_hdr_screen_f162317d07.png HTTP/1.1" 200
+2026-06-04T06:11:28.076Z [INFO] 127.0.0.1:13847 - "GET /static/images/favicon.svg HTTP/1.1" 200
+2026-06-04T06:11:28.183Z [INFO] 127.0.0.1:13847 - "POST /admin/api/product-test/ui/id-candidates HTTP/1.1" 200
+2026-06-04T06:11:28.195Z [INFO] 127.0.0.1:13847 - "POST /admin/api/product-test/ui/id-candidates HTTP/1.1" 200
+2026-06-04T06:11:28.207Z [INFO] 127.0.0.1:3912 - "POST /admin/api/product-test/ui/id-candidates HTTP/1.1" 200
+2026-06-04T06:11:28.209Z [INFO] 127.0.0.1:12762 - "POST /admin/api/product-test/ui/id-candidates HTTP/1.1" 200
+2026-06-04T06:11:28.211Z [INFO] 127.0.0.1:13847 - "POST /admin/api/product-test/ui/id-candidates HTTP/1.1" 200
+2026-06-04T06:11:28.213Z [INFO] 127.0.0.1:8437 - "POST /admin/api/product-test/ui/id-candidates HTTP/1.1" 200
+2026-06-04T06:11:28.218Z [INFO] 127.0.0.1:12762 - "POST /admin/api/product-test/ui/id-candidates HTTP/1.1" 200
