@@ -25,7 +25,7 @@ function buildGantt(releases, runs) {
     // 뷰 필터: 기본은 시험중(TESTING)만, 토글 시 전체
     // TEST_REPORT_*, TBD_REPORT_* 는 간트에서 항상 숨김 (보고서 컨테이너)
     const isContainer = r => r.id.includes("TEST_REPORT_") || r.id.includes("TBD_REPORT_");
-    // 뷰 모드: 0=전체, 1=시험중(TESTING+BLOCKED), 2=중단판정(BLOCKED만)
+    // 뷰 모드: 0=전체, 1=시험중(TESTING+BLOCKED), 2=중단판정(BLOCKED만), 3=최상위(라운드만)
     const viewMode = parseInt(localStorage.getItem('trk_view_mode') || '0', 10);
     const IN_PROGRESS = new Set(['TESTING','BLOCKED']);
     const BLOCKED_ONLY = new Set(['BLOCKED']);
@@ -45,6 +45,10 @@ function buildGantt(releases, runs) {
     let visibleReleases;
     if (viewMode === 0) {
         visibleReleases = baseReleases;
+    } else if (viewMode === 3) {
+        // 최상위: 라운드(최상위 행)만 표시 — 하위 토폴로지/런 숨김
+        const baseIds = new Set(baseReleases.map(r => r.id));
+        visibleReleases = baseReleases.filter(r => !baseIds.has(r.upstream_id));
     } else {
         const filterSet = viewMode === 2 ? BLOCKED_ONLY : IN_PROGRESS;
         const byId = Object.fromEntries(baseReleases.map(r => [r.id, r]));

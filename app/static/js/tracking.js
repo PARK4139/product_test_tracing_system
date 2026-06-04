@@ -64,7 +64,7 @@ function updateToggleLabel() {
     const btn = document.getElementById("trk_view_toggle_btn");
     if (!btn) return;
     const mode = parseInt(localStorage.getItem('trk_view_mode') || '0', 10);
-    const VIEW_MODE_LABELS = ['보기모드: 전체', '보기모드: 시험중', '보기모드: 중단판정'];
+    const VIEW_MODE_LABELS = ['보기모드: 전체', '보기모드: 시험중', '보기모드: 중단판정', '보기모드: 최상위'];
     btn.textContent = VIEW_MODE_LABELS[mode] || VIEW_MODE_LABELS[0];
     btn.title = VIEW_MODE_LABELS[mode] || VIEW_MODE_LABELS[0];
 }

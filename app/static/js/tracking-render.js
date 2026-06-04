@@ -138,11 +138,11 @@ function renderTracking(data) {
     html += buildDefectTable(defects);
 
     /* ── 3. Release timeline ───────────────────────────────── */
-    const viewLabels = ['보기모드: 전체','보기모드: 시험중','보기모드: 중단판정'];
+    const viewLabels = ['보기모드: 전체','보기모드: 시험중','보기모드: 중단판정','보기모드: 최상위'];
     const curView = parseInt(localStorage.getItem('trk_view_mode') || '0', 10);
     html += `<div class="trk_sub_header">배포 이력 타임라인
         <button type="button" id="trk_view_toggle_btn" class="trk_view_mode_btn"
-            onclick="var l=['보기모드: 전체','보기모드: 시험중','보기모드: 중단판정'];var c=parseInt(localStorage.getItem('trk_view_mode')||'0',10);var n=(c+1)%3;localStorage.setItem('trk_view_mode',n);this.textContent=l[n];var b=document.getElementById('trk_refresh_btn');if(b){b.dataset.preserveScroll='1';b.click();}">
+            onclick="var l=['보기모드: 전체','보기모드: 시험중','보기모드: 중단판정','보기모드: 최상위'];var c=parseInt(localStorage.getItem('trk_view_mode')||'0',10);var n=(c+1)%4;localStorage.setItem('trk_view_mode',n);this.textContent=l[n];var b=document.getElementById('trk_refresh_btn');if(b){b.dataset.preserveScroll='1';b.click();}">
             ${viewLabels[curView] || viewLabels[0]}
         </button>
     </div>`;
