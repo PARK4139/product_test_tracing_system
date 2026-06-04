@@ -351,6 +351,40 @@ def _now_text() -> str:
     return get_utc_now_datetime().astimezone().strftime("%Y-%m-%d %H:%M:%S")
 
 
+def _parse_release_work_period_remark(remark: str) -> dict[str, str]:
+    workday = ""
+    start_date = ""
+    end_date = ""
+    for line in (remark or "").split("\n"):
+        line = line.strip()
+        if line.startswith("[Workday]"):
+            workday = line.replace("[Workday]", "").strip()
+        elif line.startswith("[Start]"):
+            rest = line.replace("[Start]", "").strip()
+            if "[End]" in rest:
+                start_part, end_part = rest.split("[End]", 1)
+                start_date = "" if start_part.strip() in ("", "None") else start_part.strip()
+                end_date = "" if end_part.strip() in ("", "None") else end_part.strip()
+            else:
+                start_date = "" if rest in ("", "None") else rest
+        elif line.startswith("[End]"):
+            value = line.replace("[End]", "").strip()
+            end_date = "" if value in ("", "None") else value
+    return {"workday": workday, "start_date": start_date, "end_date": end_date}
+
+
+def _release_work_period_remark(remark: str) -> str:
+    period = _parse_release_work_period_remark(remark)
+    parts = []
+    if period["workday"]:
+        parts.append(f"Workday: {period['workday']}")
+    if period["start_date"]:
+        parts.append(f"Start: {period['start_date']}")
+    if period["end_date"]:
+        parts.append(f"End: {period['end_date']}")
+    return f"[Release Work Period] {' / '.join(parts)}" if parts else ""
+
+
 def _normalize_identifier_segment(value: str) -> str:
     normalized = str(value or "").strip()
     normalized = normalized.replace("?", " UNKNOWN ")
@@ -2181,6 +2215,7 @@ def start_run(
     )
     run_id = _next_prefixed_id(database_session, ProductTestRun, "product_test_run_id", "SQA_PRODUCT_TEST_RUN_ID")
     now_text = _now_text()
+    release_work_period_remark = _release_work_period_remark(release.remark or "")
     row = ProductTestRun(
         product_test_run_id=run_id,
         product_test_release_id=release.product_test_release_id,
@@ -2197,7 +2232,7 @@ def start_run(
         created_by=started_by,
         updated_at=now_text,
         updated_by=started_by,
-        remark=None,
+        remark=release_work_period_remark or None,
     )
     database_session.add(row)
     _insert_status_transition(

@@ -1,4 +1,4 @@
-# Handover — 제품 시험 추적 시스템 (2026-06-03 세션2)
+# Handover — 제품 시험 추적 시스템 (2026-06-03 세션2 · 2026-06-04 갱신)
 
 ## 프로젝트 개요
 
@@ -9,6 +9,227 @@
 - **DB**: `data/product_test_tracking_system.db` (WAL 모드)
 - **로그**: `data/logs/app.log`
 - **백업**: `data/product_test_tracking_system.backup_20260603_121153.db` (구성 재편 직전 스냅샷)
+- **DB 직접 수정**: 가능 (SQLite 로컬 파일). 대량 변경 시 서버 중지 + 백업 권장.
+
+---
+
+## 2026-06-04 세션 — 진행 현황 요약
+
+### 완료
+
+| 항목 | 내용 |
+|------|------|
+| Admin 뷰 분석 | `/admin` 통합 대시보드, `tracking_router` API, QC 모드, 자동제출 UX 문서화 |
+| 타임라인 요구사항 정리 | 최상위 12 라운드 + 수행 기간(`remark`의 `[Workday]`/`[Start]`/`[End]`) |
+| RC1 통일 방향 합의 | 구성(토폴로지)마다 RC1 하나, RC2+ Run은 RC1으로 병합 |
+| 스크립트 추가 | `scripts/migrate_excel_rounds_normalize.py` (dry-run 확인, **`--apply` 미실행**) |
+| 정합성 작업 순서 합의 | **Test Case → Procedure → Result → Run/Release(타임라인)** (아래부터) |
+| Test Case 현황 조사 | DB 60건, ID 접두 8종; Result `[연결구성]`과 Case ID 의미 불일치 확인 |
+
+### 미완료 (다음 담당자)
+
+| 순서 | 작업 | 상태 |
+|------|------|------|
+| 1 | Test Case ID 재작성 + Procedure/Result FK 갱신 | **설계만**, 스크립트 없음 |
+| 2 | ROUTER 토폴로지 정본과 DB `[연결구성]` 매핑 확정 | **질문 4건 답 대기** |
+| 3 | `migrate_excel_rounds_normalize.py --apply` | 미실행 |
+| 4 | 타임라인 12라운드 화면 검증 | 미실행 |
+| 5 | `migrate_device_centric_rounds.py` | **WIFI 최상위 유지 시 실행 금지** |
+
+### 타임라인 최상위 12개 (화면·기획 기준)
+
+엑셀 마이그레이션 후 추적 화면에 나와야 할 **캠페인 라운드**(DB PK는 `TEST_RELEASE-*`, 표시는 `TEST_ROUND-*` 권장):
+
+| # | 표시 라운드 | 설명 |
+|---|-------------|------|
+| 1 | TEST_ROUND-WIFI_1ST | 5개 제품 |
+| 2 | TEST_ROUND-WIFI_1ST_IMPROVE | 결함 제품 개선확인 |
+| 3 | TEST_ROUND-WIFI_2ND | 5개 제품 |
+| 4 | TEST_ROUND-WIFI_2ND_IMPROVE | 결함 제품 개선확인 |
+| 5 | TEST_ROUND-HDC_9100_1_0_5A 시험 | 단독 |
+| 6 | TEST_ROUND-HDR_9000_1_1_7E 시험 | 단독 |
+| 7 | TEST_ROUND-HDR_9000_1_1_8 시험 | 단독 |
+| 8 | TEST_ROUND-HLM_9000_1_1_14B 시험 | 단독 |
+| 9 | TEST_ROUND-HRK_9000A_1_1_0A 시험 | 단독 |
+| 10 | TEST_ROUND-HRK_9000A_1_1_1A 시험 | 단독 |
+| 11 | TEST_ROUND-HRK_9000A_1_1_1D 시험 | 단독 |
+| 12 | TEST_ROUND-HTR_1A_1_1_8 시험 | 단독 |
+
+수행 기간은 각 라운드 `product_test_release.remark`에 넣고, `tracking_router`가 파싱한다.
+
+### 엑셀 마이그레이션 후 추적이 안 되는 이유
+
+`scripts/migrate_excel_to_db.py`만 실행한 경우:
+
+- Release ID가 `RELEASE-{엑셀 rid}` 평면 구조 (`release_stage=RC`)
+- 타임라인이 기대하는 **라운드 → 구성(visible=1) → RC1(visible=0) → Run** 트리 없음
+- `migrate_topology_restructure.py`는 이미 `TEST_RELEASE-*` 트리가 있을 때 동작
+
+**권장 실행 순서** (서버 중지 + DB 백업 후):
+
+```text
+1. python scripts/migrate_excel_to_db.py [excel.xlsx]
+2. python scripts/migrate_excel_rounds_normalize.py [excel.xlsx]        # dry-run
+3. python scripts/migrate_excel_rounds_normalize.py [excel.xlsx] --apply
+4. (Test Case 정합성 스크립트 — 작성 예정, 아래 참고)
+5. /admin 추적 새로고침 · tests/test_traceability.py
+```
+
+`migrate_device_centric_rounds.py`는 최상위를 장비별로 쪼개 WIFI_1ST/2ND가 사라질 수 있어 **Case/라운드 정리 전에는 실행하지 않는다.**
+
+### 스크립트: `migrate_excel_rounds_normalize.py`
+
+- 12개 `TEST_RELEASE-{short}` 생성 (`upstream=MULTI_PRODUCT`, `visible=1`, 기간 remark)
+- Result 기준 구성 분류 → **구성당 RC1** (`...-{combo}-RC1`)
+- Run → RC1 연결, RC2+ 병합, `RELEASE-*` → `round_legacy` 숨김
+- dry-run 기준: result 375건 → 약 33구성 / RC1 33개 (적용 시 백업 자동 생성)
+
+---
+
+## Test Case 정합성 (2026-06-04 — 진행 중)
+
+### 문제 정의: Case ID 안의 `1AP_1HDC`는 토폴로지가 아님
+
+예: `TEST_CASE-1AP_1HDC-WIFI-AP_AUTH-001`
+
+| 토큰 | 잘못된 해석 (기존 코드) | 올바른 의미 |
+|------|-------------------------|-------------|
+| `1AP` | 토폴로지의 AP 1대 | **1ROUTER** (라우터 1대) |
+| `1HDC` | 토폴로지 일부 | **시험 대상(DUT)** HDC 1대 |
+| `WIFI-AP_AUTH-001` | 시나리오/절차 슬러그 | 유지 |
+
+`migrate_topology_restructure.py`의 `extract_topo_from_case_id()`는 Case ID 첫 세그먼트를 토폴로지로 **오인**한다.  
+실제 토폴로지는 **Result.remark `[연결구성]`** 또는 **Test Release.remark**(시험 대상·환경·목적)에서 추론해야 한다.
+
+### DB 스냅샷 (조사 시점)
+
+| 항목 | 값 |
+|------|-----|
+| `product_test_case` | 60건 |
+| Case ID 접두 (오인 세그먼트) | `1AP_1HRK` 12, `1AP_1HTR` 12, `1AP_1HDR` 9, `1AP_1HDC` 7, `1AP_1HLM` 7, `25AP_1TEST_TARGET` 7, `20AP` 1, 비정규 한글 ID 3, 기타 |
+| Result `[연결구성]` 상위 | `1AP_1HRK_4HDR` 44, `1AP_1HRK_1HDR` 43, `1AP_4HDR_1HDC` 30, `1AP_1HDC_1HDR` 29, … (레거시 **AP** 표기) |
+| `product_test_procedure` | 171건 (case_id FK) |
+| `product_test_procedure_result` | 0건 |
+
+**불일치 예**: Case는 `1AP_1HDC`(대상 HDC)인데 Result는 `1AP_1HRK_4HDR`(실제 연결)인 행이 다수 → Case ID만으로 Release/구성 매칭 불가.
+
+### 토폴로지 정본 목록 (ROUTER 표기 — 기획 확정분)
+
+아래 목록 기준으로 **토폴로지별 Test Case 세트**를 재구성한다.  
+`1HDC` / `1HDC_1ROUTER`는 HDC WBS 일부 포함·**추후 추가** — **현재 Test Case 없음**.
+
+```text
+1HDC
+1HDC_1ROUTER
+1HDR_1CABLE_1HIIS
+1HDR_1ROUTER
+1HDR_1ROUTER_1HDC
+1HDR_25ROUTER
+1HDR_25ROUTER_1HDC
+1HLM_1ROUTER
+1HLM_1ROUTER_1HDR
+1HLM_1ROUTER_4HDR
+1HLM_25ROUTER
+1HLM_25ROUTER_1HDR
+1HRK_1ROUTER
+1HRK_1ROUTER_1HDR
+1HRK_1ROUTER_1HTR_1HLM_4HDR
+1HRK_1ROUTER_3HDR
+1HRK_1ROUTER_4HDR
+1HRK_25ROUTER
+1HRK_25ROUTER_1HDR
+1HTR_1ROUTER
+1HTR_1ROUTER_1HDR
+1HTR_1ROUTER_2HDR
+1HTR_25ROUTER
+1HTR_25ROUTER_1HDR
+2HDR_1ROUTER
+4HDR_1ROUTER
+4HDR_1ROUTER_1HDC
+4HDR_1ROUTER_1HIIS
+```
+
+(원문에 `1HDR_1CABLE_1HIIS-` trailing `-` 있음 → **미결 질문**)
+
+### 레거시 AP 표기 → ROUTER 정본 매핑 (가설, 확정 전)
+
+Result/Release에 남은 `1AP_*`는 **라우터+장비 수**로 읽고, 정본 토큰 순서로 변환한다.
+
+| 레거시 `[연결구성]` (예) | ROUTER 정본 (가설) |
+|------------------------|-------------------|
+| `1AP_1HRK_4HDR` | `1HRK_1ROUTER_4HDR` |
+| `1AP_1HRK_1HDR` | `1HRK_1ROUTER_1HDR` |
+| `1AP_4HDR_1HDC` | `4HDR_1ROUTER_1HDC` |
+| `1AP_1HDC_1HDR` | `1HDR_1ROUTER_1HDC` (또는 `1HDC_1ROUTER_1HDR` — **확인 필요**) |
+| `1AP_1HRK_1HTR_1HLM_4HDR` | `1HRK_1ROUTER_1HTR_1HLM_4HDR` |
+| `25AP_1HDR_1HDC` | `1HDR_25ROUTER_1HDC` |
+| `25AP_1HRK_1HDR` | `1HRK_25ROUTER_1HDR` |
+| `1AP_1HDC` | `1HDC_1ROUTER` 또는 `1HDC` (**확인 필요**) |
+
+장비 순서 규칙(기존): HRK > HTR > HLM > HDR > HDC > HIIS — **ROUTER는 별도 토큰**으로 정본 목록에만 존재.
+
+### 권장 Case ID 규칙 (안)
+
+```text
+TEST_CASE-{topology}-{dut}-{scenario_slug}-{seq}
+
+예:
+  TEST_CASE-1HRK_1ROUTER_4HDR-HRK-WIFI-AP_AUTH-001
+  TEST_CASE-1HDC_1ROUTER-HDC-WIFI-DHCP_SELECT-001
+```
+
+- `{topology}`: 위 정본 목록 중 하나 (Release remark + Result `[연결구성]`으로 결정)
+- `{dut}`: 시험 대상 장비 약어 (기존 `1AP_1HDC`의 HDC 부분)
+- `{scenario_slug}`: 기존 `WIFI-*` 구간 유지
+- PK 변경 시 **반드시** `product_test_result.product_test_case_id`, `product_test_procedure.product_test_case_id` 일괄 UPDATE
+
+### 토폴로지 추론 우선순위 (안)
+
+1. 동일 Run/Report에 묶인 Result의 `[연결구성]` (다수결 또는 최빈값)
+2. Run이 연결된 Release → 상위 라운드 `remark` (시험 대상·환경·`[Test 대상]` 블록)
+3. Excel Reports 시트의 시험 대상 텍스트
+4. 정본 목록에 없으면 `UNCLASSIFIED` 구성 + remark에 원본 보존
+
+### 검증 (`tests/test_traceability.py`)
+
+Case/Procedure 단계에서 최소 통과 목표:
+
+- **TC-PR01**: Result에 쓰인 모든 case_id에 Procedure 존재
+- **TC-PR02**: Procedure → Case FK 고아 없음
+- **TC-PR03**: case별 `procedure_sequence` 중복 없음
+- **TC-RS02** (존재 시): Result → Case FK 고아 없음
+
+추가 권장: “Case ID의 topology 세그먼트 ∈ 정본 목록” 커스텀 TC (신규).
+
+### 작성 예정 스크립트
+
+`scripts/migrate_test_cases_by_topology.py` (미작성)
+
+- 정본 토폴로지 목록 + 레거시 AP→ROUTER 매핑 테이블 (YAML/상수)
+- Result 375건 기준 (topology, dut, scenario) 그룹핑
+- Case/Procedure ID 재발급 + Result/Procedure FK UPDATE
+- `remark`에 `[구 Case ID]`, `[연결구성]`, `[추론 출처]` 보존
+- dry-run / `--apply` + 자동 백업
+
+---
+
+## 미결 질문 (답변 후 Case 마이그레이션 착수)
+
+1. **AP→ROUTER 전역 치환**  
+   Result/Release/구성행의 `1AP`/`25AP`를 모두 `1ROUTER`/`25ROUTER` 규칙으로 바꿀지? (`migrate_topology_restructure.normalize_combo`도 AP 전제)
+
+2. **`1HDR_1CABLE_1HIIS-`**  
+   trailing `-` 오타인지, 정식 ID는 `1HDR_1CABLE_1HIIS`인지.
+
+3. **Case 복제 단위**  
+   동일 시나리오(`WIFI-AP_AUTH-001` 등)를 **토폴로지마다 1벌**인지, **토폴로지×DUT마다 1벌**인지  
+   (예: `1HRK_1ROUTER_4HDR`에서 HRK 시험 vs HDR 시험 Case 분리 여부).
+
+4. **불일치 시 우선순위**  
+   Case ID 대상(HDC) vs Result `[연결구성]`(예: `1AP_1HRK_4HDR`)이 다를 때 **어느 쪽이 정본**인지.
+
+5. **`1AP_1HDC` only** (연결구성 13건)  
+   정본 `1HDC` vs `1HDC_1ROUTER` 중 어디에 매핑할지.
 
 ---
 
@@ -25,10 +246,15 @@
                       └─ Defect (결함)
 ```
 
-**구성 네이밍 규칙**: `{AP수}AP_{장비수}{장비명}_{장비수}{장비명}_...`
-- 장비 순서: HRK > HTR > HLM > HDR > HDC > HIIS
-- 예: `1AP_1HRK_4HDR` = AP 1대 + HRK 1대 + HDR 4대 연동 시험
-- 모호한 표현(`ALL`, `TARGET` 등) 금지, 항상 장비 명시
+**구성 네이밍 (레거시 — DB/Result 다수)**: `{AP수}AP_{장비수}{장비명}_...`  
+- 코드: `migrate_topology_restructure.normalize_combo`, `extract_topo_from_case_id`  
+- 예: `1AP_1HRK_4HDR` — 여기서 `1AP`는 **라우터 1대** 의미이나 토큰명은 AP
+
+**구성 네이밍 (정본 — Test Case 재구성 목표)**: `{장비}_[N]ROUTER_...`  
+- 정본 목록은 위 **「Test Case 정합성」** 절 참고 (`1HRK_1ROUTER_4HDR` 등)  
+- Case ID의 `1AP_1HDC`는 토폴로지가 **아님** (DUT=HDC + 라우터 표기 혼동)
+
+공통: 장비 순서 HRK > HTR > HLM > HDR > HDC > HIIS, `ALL`/`TARGET` 금지
 
 ### 전체 데이터 연결 체인
 
@@ -307,6 +533,9 @@ WIFI_DOWNGRADE, WIFI_1_1_1D는 하위 UNCLASSIFIED(TESTING) 때문에 TESTING으
 | `app/routers/tracking_router.py` | API 응답 (releases/defects/runs/results/proc/evidence) |
 | `app/static/css/tracking.css` | 하이라이트 색상, 테이블 스타일 |
 | `app/templates/admin_tracking_top.html` | 추적 대시보드 템플릿 (include) |
+| `scripts/migrate_excel_to_db.py` | Excel → DB 1차 적재 |
+| `scripts/migrate_excel_rounds_normalize.py` | 12라운드 + RC1 + Run 연결 (미적용 가능) |
+| `scripts/migrate_test_cases_by_topology.py` | **(예정)** Case/Procedure 토폴로지 재구성 |
 
 ### 핵심 함수
 
@@ -366,3 +595,8 @@ visible=1이면서 부모도 visible=1인 행 = 구성행
 2. **HDR-7100P 장비** — 엑셀에는 있지만 별도 구성으로 분리되지 않음 (HDR 대수에 포함)
 3. **UNCLASSIFIED 구성행 3개** — WIFI_2ND, WIFI_DOWNGRADE, WIFI_1_1_1D에 미분류 result 4건. combo 확정 시 적절한 구성으로 이동 필요
 4. **Test Scenarios 테이블** — DB에 미생성, case remark에 텍스트로 보존 (53/60건). 별도 테이블 마이그레이션 선택적
+5. **엑셀→타임라인 정규화** — `migrate_excel_rounds_normalize.py --apply` 미실행
+6. **Test Case ID vs 토폴로지** — Case ID `1AP_1*` 오인, ROUTER 정본 28종으로 재구성·스크립트 미작성 (HANDOVER 「미결 질문」5건)
+7. **AP vs ROUTER 표기** — Result `[연결구성]`·구성행·`normalize_combo` 전역 정책 미확정
+8. **1HDC / 1HDC_1ROUTER WBS Case** — 추후 추가, 현재 없음
+9. **GET 라우트 누락** — `product_test_*_admin.html` 템플릿 대비 `/admin/product-test-releases` 등 GET 일부 미구현 (E2E만 기대)
