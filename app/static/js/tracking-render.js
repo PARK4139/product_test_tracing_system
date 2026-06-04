@@ -173,6 +173,7 @@ function renderTracking(data) {
                 <th style="width:45px">전체</th>
                 <th style="width:45px">통과</th>
                 <th style="width:45px">차단</th>
+                <th style="width:260px">Remark</th>
             </tr></thead><tbody>`;
         runList.forEach(r => {
             html += `<tr data-parent-release-id="${r.parent_release_id}" data-run-id="${r.id}" data-status="${r.status}" style="cursor:pointer">
@@ -184,11 +185,12 @@ function renderTracking(data) {
                 <td style="font-size:0.72rem;color:#64748b" title="${r.environment_id}">
                     ${envMap[r.environment_id] ? envMap[r.environment_id].name : (r.environment_id || "-")}
                 </td>
-                <td style="font-size:0.75rem;color:#64748b">${(r.started_at || "").slice(0, 10)}</td>
-                <td style="font-size:0.75rem;color:#64748b">${(r.finished_at || "").slice(0, 10) || "-"}</td>
+                <td style="font-size:0.75rem;color:#64748b">${(r.planned_start_date || r.started_at || "").slice(0, 10)}</td>
+                <td style="font-size:0.75rem;color:#64748b">${(r.planned_end_date || r.finished_at || "").slice(0, 10) || "-"}</td>
                 <td style="text-align:center">${r.total_results}</td>
                 <td style="text-align:center;color:#22c55e;font-weight:${r.passed > 0 ? "700" : "400"}">${r.passed}</td>
                 <td style="text-align:center;color:${r.blocked > 0 ? "#ef4444" : "#94a3b8"};font-weight:${r.blocked > 0 ? "700" : "400"}">${r.blocked}</td>
+                <td style="font-size:0.72rem;color:#64748b;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.remark || ""}">${r.remark || "-"}</td>
             </tr>`;
         });
         html += `</tbody></table></div>`;

@@ -37,6 +37,41 @@ def _clean_device_round_alias(display_alias: str) -> str:
     return re.sub(r"\s*\(\d+(?:\.\d+)*[A-Za-z]?\)\s*$", "", display_alias or "").strip()
 
 
+def _parse_release_work_period(remark: str) -> dict[str, str]:
+    workday = ""
+    start_date = ""
+    end_date = ""
+    for line in (remark or "").split("\n"):
+        line = line.strip()
+        if line.startswith("[Workday]"):
+            workday = line.replace("[Workday]", "").strip()
+        elif line.startswith("[Start]"):
+            rest = line.replace("[Start]", "").strip()
+            if "[End]" in rest:
+                parts = rest.split("[End]", 1)
+                sd = parts[0].strip()
+                ed = parts[1].strip()
+                start_date = "" if sd in ("", "None") else sd
+                end_date = "" if ed in ("", "None") else ed
+            else:
+                start_date = "" if rest in ("", "None") else rest
+        elif line.startswith("[End]"):
+            val = line.replace("[End]", "").strip()
+            end_date = "" if val in ("", "None") else val
+    return {"workday": workday, "start_date": start_date, "end_date": end_date}
+
+
+def _format_release_work_period(period: dict[str, str]) -> str:
+    parts = []
+    if period.get("workday"):
+        parts.append(f"Workday: {period['workday']}")
+    if period.get("start_date"):
+        parts.append(f"Start: {period['start_date']}")
+    if period.get("end_date"):
+        parts.append(f"End: {period['end_date']}")
+    return " / ".join(parts)
+
+
 def _ensure_admin_role(role: str) -> None:
     if role not in (ROLE_ADMIN, ROLE_MASTER_ADMIN):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin role required.")
@@ -84,9 +119,7 @@ def get_tracking_summary(
     releases = []
     for row in releases_raw:
         alias = ""
-        workday = ""
-        start_date = ""
-        end_date = ""
+        work_period = _parse_release_work_period(row[5] or "")
         for line in (row[5] or "").split("\n"):
             line = line.strip()
             if line.startswith("[Report Alias]"):
@@ -126,9 +159,9 @@ def get_tracking_summary(
             # row[5] = remark (already parsed)
             "upstream_system": row[6] or "",
             "visible": bool(row[7]),
-            "workday": workday,
-            "start_date": start_date,
-            "end_date": end_date,
+            "workday": work_period["workday"],
+            "start_date": work_period["start_date"],
+            "end_date": work_period["end_date"],
             "run_count": row[8] or 0,
             "total_results": row[9] or 0,
             "passed": row[10] or 0,
@@ -201,6 +234,24 @@ def get_tracking_summary(
     release_upstream = {r["id"]: r["upstream_id"] for r in releases}
     release_visible = {r["id"]: r["visible"] for r in releases}
     release_by_id = {r["id"]: r for r in releases}
+
+    def resolve_release_work_period(release_id: str) -> dict[str, str]:
+        cur = release_id
+        for _ in range(8):
+            row = release_by_id.get(cur)
+            if row:
+                period = {
+                    "workday": row.get("workday") or "",
+                    "start_date": row.get("start_date") or "",
+                    "end_date": row.get("end_date") or "",
+                }
+                if period["workday"] or period["start_date"] or period["end_date"]:
+                    return period
+            parent = release_upstream.get(cur, "")
+            if not parent or parent not in release_by_id:
+                break
+            cur = parent
+        return {"workday": "", "start_date": "", "end_date": ""}
 
     def resolve_parent_release(release_id: str) -> str:
         """run.release_id → 간트 장비 행 ID (visible=1인 자식 행)"""
@@ -304,13 +355,22 @@ def get_tracking_summary(
             SUM(CASE WHEN res.product_test_result_status = 'skipped' THEN 1 ELSE 0 END) AS skipped,
             SUM(CASE WHEN res.product_test_result_status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled,
             run.product_test_target_id,
-            run.product_test_environment_id
+            run.product_test_environment_id,
+            run.remark
         FROM product_test_run run
         LEFT JOIN product_test_result res ON res.product_test_run_id = run.product_test_run_id
         GROUP BY run.product_test_run_id
         HAVING total_results > 0
         ORDER BY run.started_at
     """)).fetchall()
+
+    def _run_display_remark(raw_remark: str, work_period: dict[str, str]) -> str:
+        period_label = _format_release_work_period(work_period)
+        if not period_label:
+            return raw_remark or ""
+        if raw_remark and period_label in raw_remark:
+            return raw_remark
+        return f"{raw_remark}\n[Release Work Period] {period_label}".strip()
 
     runs = [
         {
@@ -329,6 +389,9 @@ def get_tracking_summary(
             "run_status": r[2],
             "started_at": r[3],
             "finished_at": r[4],
+            "planned_workday": resolve_release_work_period(r[1] or "")["workday"],
+            "planned_start_date": resolve_release_work_period(r[1] or "")["start_date"],
+            "planned_end_date": resolve_release_work_period(r[1] or "")["end_date"],
             "total_results": r[5] or 0,
             "passed": r[6] or 0,
             "blocked": r[7] or 0,
@@ -342,6 +405,7 @@ def get_tracking_summary(
             "physical_target_id": r[12] or "",
             "target_round_id": logical_target_from_release(r[1] or "", r[12] or "")["round_id"],
             "environment_id": r[13] or "",
+            "remark": _run_display_remark(r[14] or "", resolve_release_work_period(r[1] or "")),
         }
         for r in runs_raw
     ]

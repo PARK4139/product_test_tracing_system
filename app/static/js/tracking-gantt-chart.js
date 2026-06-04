@@ -139,7 +139,7 @@ function buildGantt(releases, runs) {
         if (ed && (!maxD || ed > maxD)) maxD = ed;
     });
     runs.forEach(r => {
-        const sd = toDate(r.started_at), ed = toDate(r.finished_at);
+        const sd = toDate(r.planned_start_date || r.started_at), ed = toDate(r.planned_end_date || r.finished_at);
         if (sd && (!minD || sd < minD)) minD = sd;
         if (ed && (!maxD || ed > maxD)) maxD = ed;
     });
@@ -253,22 +253,25 @@ function buildGantt(releases, runs) {
 
     function renderRunRow(run, indent, parentId) {
         const color = STATUS_COLOR[run.status] || "#64748b";
-        const sd = toDate(run.started_at);
-        const ed = toDate(run.finished_at) || today;
+        const sd = toDate(run.planned_start_date || run.started_at);
+        const ed = toDate(run.planned_end_date || run.finished_at) || today;
         const total = run.total_results || 0;
         const passed = run.passed || 0;
         const pctVal = total > 0 ? Math.round(passed / total * 100) : 0;
-        const sdStr = normalizeDate(run.started_at);
-        const edStr = normalizeDate(run.finished_at);
+        const sdStr = normalizeDate(run.planned_start_date || run.started_at);
+        const edStr = normalizeDate(run.planned_end_date || run.finished_at);
         // RUN 행은 실제 run ID 를 그대로 표시
         const runLabel = run.id;
-        const title = `${run.id} (${sdStr !== "-" ? sdStr : "?"} ~ ${edStr !== "-" ? edStr : "?"})`;
+        const periodLabel = run.planned_workday
+            ? `${run.planned_workday} (${sdStr !== "-" ? sdStr : "?"} ~ ${edStr !== "-" ? edStr : "?"})`
+            : `${sdStr !== "-" ? sdStr : "?"} ~ ${edStr !== "-" ? edStr : "?"}`;
+        const title = `${run.id} (${periodLabel})`;
         let barHtml = "";
         if (sd) {
             const left = pct(sd);
             const width = Math.max(0.5, pct(ed) - left);
             barHtml = `<div class="gantt_bar gantt_run_bar" style="left:${left}%;width:${width}%;background:${color}" title="${title}">
-                <span class="gantt_bar_label">${sdStr}${edStr !== "-" ? " ~ " + edStr : ""}</span>
+                <span class="gantt_bar_label">${periodLabel}</span>
             </div>`;
         } else {
             barHtml = `<div class="gantt_bar gantt_bar_nodate gantt_run_bar" style="left:${todayPct}%;width:1%" title="${title}"></div>`;

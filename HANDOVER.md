@@ -70,6 +70,93 @@ WIFI_DOWNGRADE, WIFI_1_1_1D는 하위 UNCLASSIFIED(TESTING) 때문에 TESTING으
 
 ---
 
+## TEST_ROUND_ID 필수 규칙 및 수정방안
+
+### 정상 TEST_ROUND_ID 목록
+
+타임라인의 시험 라운드 ID는 반드시 아래 `TEST_ROUND_` prefix 규칙을 따른다.
+현재 DB 내부 FK가 `TEST_RELEASE-*`를 사용하더라도, view/API의 `test_round_id` 또는 화면 표시용 라운드 ID는 아래 값으로 정규화해야 한다.
+
+| TEST_ROUND_ID | 기대 상태 |
+|---|---|
+| TEST_ROUND_HDC_9100_1_0_5A-WIFI_1ST | QI Team 시험중단판정 |
+| TEST_ROUND_HDC_9100_1_0_5A-WIFI_2ND | QI Team 시험중 |
+| TEST_ROUND_HDR_9000_1_1_7E-WIFI_1ST | QI Team 시험중단판정 |
+| TEST_ROUND_HDR_9000_1_1_8-WIFI_1_1_1D | QI Team 시험중 |
+| TEST_ROUND_HDR_9000_1_1_8-WIFI_2ND | QI Team 시험중 |
+| TEST_ROUND_HLM_9000_1_1_14B-WIFI_1ST | QI Team 시험중단판정 |
+| TEST_ROUND_HLM_9000_1_1_14B-WIFI_2ND | QI Team 시험중 |
+| TEST_ROUND_HRK_9000A_1_1_0A-WIFI_DOWNGRADE | QI Team 시험중 |
+| TEST_ROUND_HRK_9000A_1_1_1A-WIFI_1ST | QI Team 시험중단판정 |
+| TEST_ROUND_HRK_9000A_1_1_1A-WIFI_2ND | QI Team 시험중 |
+| TEST_ROUND_HTR_1A_1_1_8-WIFI_1ST | QI Team 시험중단판정 |
+| TEST_ROUND_HTR_1A_1_1_8-WIFI_2ND | QI Team 시험중 |
+
+### 현재 문제
+
+- 일부 라운드는 화면에서 `TEST_RELEASE-*` 원본 ID 또는 prefix 없는 라운드 short id로 보인다.
+- 일부 라운드는 `TEST_ROUND_` prefix가 빠져 TEST_ROUND_ID 규칙을 만족하지 않는다.
+- `HDR-9000 1.1.8 WIFI 시험 (1.1.1D)`처럼 모델/SW 버전과 시험 캠페인 alias가 섞여 보이는 라운드명이 있다.
+- `Target / Environment`는 실제 `product_test_target_id` 기준으로 중복 제거되어 모델/SW별 target이 1개 장비처럼 보일 수 있다.
+
+### 수정방안
+
+1. DB PK/FK는 당장 바꾸지 않는다.
+   - `product_test_release.product_test_release_id`와 하위 FK가 이미 연결되어 있으므로 즉시 PK rename은 위험하다.
+   - 대신 API/view layer에 `test_round_id`를 추가하거나 표시 ID를 정규화한다.
+
+2. `tracking_router.py`에서 device round 응답에 정규화 ID를 내려준다.
+   - 예: `TEST_RELEASE-HDC_9100_1_0_5A-WIFI_1ST` -> `TEST_ROUND_HDC_9100_1_0_5A-WIFI_1ST`
+   - 변환 규칙:
+     ```text
+     remove_prefix("TEST_RELEASE-")
+     if not startswith("TEST_ROUND_"): prepend("TEST_ROUND_")
+     ```
+   - 프론트는 내부 연결용 `id`는 기존 release id를 쓰고, 화면 표시/검색/복사용 ID는 `test_round_id`를 쓴다.
+
+3. 위 정상 목록에 없는 device round를 점검한다.
+   - 점검 SQL 방향:
+     ```sql
+     SELECT product_test_release_id, product_test_release_status, remark
+     FROM product_test_release
+     WHERE release_visible = 1
+       AND release_stage = 'device_round'
+     ORDER BY product_test_release_id;
+     ```
+   - 결과를 정상 TEST_ROUND_ID 목록과 비교해 누락/오타/불필요 라운드를 분류한다.
+
+4. 라운드 alias는 모델/SW와 캠페인명을 분리한다.
+   - 권장 표시:
+     ```text
+     TEST_ROUND_HDR_9000_1_1_8-WIFI_1_1_1D · HDR-9000 1.1.8 WIFI 시험
+     ```
+   - `(...1.1.1D)` 같은 캠페인 설명 괄호는 device round alias 뒤에 붙이지 않는다.
+   - 캠페인 구분은 ID suffix(`WIFI_1_1_1D`)로 충분히 식별한다.
+
+5. 상태는 하위 Result 집계 기준으로 재계산한다.
+   - 우선순위: `FAILED > BLOCKED > TESTING > PASSED > SKIPPED > CANCELLED`
+   - QI Team 라벨 매핑:
+     - `BLOCKED` -> `QI Team 시험중단판정`
+     - `TESTING` -> `QI Team 시험중`
+     - `PASSED` -> `QI Team 시험합격판정`
+
+6. `Target / Environment`는 physical target이 아니라 logical target 기준으로 보여준다.
+   - logical target id 예:
+     ```text
+     TEST_TARGET_HDC_9100_1_0_5A-WIFI_1ST
+     ```
+   - 모델명/SW 버전은 라운드 ID 또는 라운드 alias에서 파생한다.
+   - 물리 target id는 별도 `Physical Target ID` 컬럼으로만 보존한다.
+
+### 검증 기준
+
+- 타임라인 최상위 라운드 행이 위 정상 TEST_ROUND_ID 목록과 1:1로 대응해야 한다.
+- 화면에 `TEST_RELEASE-HDC_...`, `HDC_9100_...`처럼 `TEST_ROUND_`가 빠진 라운드 ID가 보이면 실패.
+- `HDR-9000 1.1.8 WIFI 시험 (1.1.1D)`처럼 alias에 다른 버전 괄호가 섞이면 실패.
+- `Target / Environment`에 모델/SW별 logical target이 12개 라운드 기준으로 분리되어 보여야 한다.
+
+---
+
 ## 이번 세션에서 완료한 작업 (2026-06-03 세션2)
 
 ### 1. 구성(Topology) 기반 Release 구조 재편
