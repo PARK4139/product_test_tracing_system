@@ -27,7 +27,6 @@ function bindHighlights(root) {
         });
     }
     function hlAllTablesByTopo(topoId) {
-        hlByTopo("trk_report_table", topoId);
         hlByTopo("trk_target_table", topoId);
         hlByTopo("trk_env_table", topoId);
         hlByTopo("trk_case_table", topoId);
@@ -221,7 +220,7 @@ function bindHighlights(root) {
 
     // ── generic click for report/target/env/case/procedure tables ──
     const genericTables = [
-        "trk_report_table", "trk_target_table", "trk_env_table",
+        "trk_target_table", "trk_env_table",
         "trk_case_table", "trk_procedure_table"
     ];
     genericTables.forEach(cls => {

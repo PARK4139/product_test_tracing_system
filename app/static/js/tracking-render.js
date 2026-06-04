@@ -172,31 +172,7 @@ function renderTracking(data) {
         html += `</tbody></table></div>`;
     }
 
-    /* ── 4. Reports ───────────────────────────────────────── */
-    const reps = data.reports || [];
-    if (reps.length > 0) {
-        html += `<div class="trk_sub_header">Report 현황</div>`;
-        html += `<div class="trk_timeline_wrap"><table class="trk_report_table">
-            <thead><tr>
-                <th style="width:280px">Report ID</th>
-                <th style="width:80px">유형</th>
-                <th style="width:80px">상태</th>
-                <th style="width:250px">제목</th>
-                <th style="width:90px">생성일</th>
-            </tr></thead><tbody>`;
-        reps.forEach(r => {
-            html += `<tr data-parent-release-id="${r.parent_release_id}" data-status="${r.status}" style="cursor:pointer">
-                <td style="font-size:0.72rem;color:#64748b" title="${r.id}">${r.id}</td>
-                <td style="font-size:0.78rem">${r.type}</td>
-                <td>${statusBadge(r.status)}</td>
-                <td style="font-size:0.75rem;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.title}">${r.title}</td>
-                <td style="font-size:0.75rem;color:#64748b">${(r.created_at||"").slice(0,10)}</td>
-            </tr>`;
-        });
-        html += `</tbody></table></div>`;
-    }
-
-    /* ── 5. Target / Environment ──────────────────────────── */
+/* ── 5. Target / Environment ──────────────────────────── */
     const tgts = data.targets || [];
     const envs = data.environments || [];
     if (tgts.length > 0 || envs.length > 0) {
