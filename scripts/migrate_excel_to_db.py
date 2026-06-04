@@ -5,6 +5,8 @@ Excel Test 관리 이력 → product_test_tracing_system DB 마이그레이션 �
 실행 방법 (Windows, 프로젝트 루트에서):
   python scripts/migrate_excel_to_db.py
   python scripts/migrate_excel_to_db.py "C:\\path\\to\\file.xlsx"
+  python scripts/migrate_excel_rounds_normalize.py [excel.xlsx] --apply
+  (엑셀 적재 후: 12 라운드 + 구성별 RC1 통일 → /admin 타임라인 추적)
 
 의존성:
   - Python 3.8+
