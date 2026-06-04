@@ -606,17 +606,20 @@ def get_tracking_summary(
         {
             "id": r[0] or "",
             "definition_id": r[1] or "",
-            "model_name": r[2] or "",
-            "serial_number": r[3] or "",
-            "software_version": r[4] or "",
-            "firmware_version": r[5] or "",
-            "manufacture_lot": r[6] or "",
-            "status": r[7] or "",
-            "remark": r[8] or "",
+            "product_code": r[2] or "",
+            "model_name": r[3] or "",
+            "hardware_revision": r[4] or "",
+            "serial_number": r[5] or "",
+            "software_version": r[6] or "",
+            "firmware_version": r[7] or "",
+            "manufacture_lot": r[8] or "",
+            "status": r[9] or "",
+            "remark": r[10] or "",
         }
         for r in conn.execute(text("""
             SELECT t.product_test_target_id, t.product_test_target_definition_id,
-                   d.model_name, t.serial_number, t.software_version, t.firmware_version,
+                   d.product_code, d.model_name, d.hardware_revision,
+                   t.serial_number, t.software_version, t.firmware_version,
                    t.manufacture_lot, t.product_test_target_status, t.remark
             FROM product_test_target t
             LEFT JOIN product_test_target_definition d
@@ -701,6 +704,17 @@ def get_tracking_summary(
         """)).fetchall()
     ]
 
+    # procedure → 실행에 사용된 release_id 목록 매핑 (중복 제거)
+    _proc_release_map: dict[str, list[str]] = {}
+    for r in conn.execute(text("""
+        SELECT DISTINCT p.product_test_procedure_id, run.product_test_release_id
+        FROM product_test_procedure p
+        JOIN product_test_result res ON res.product_test_case_id = p.product_test_case_id
+        JOIN product_test_run run ON run.product_test_run_id = res.product_test_run_id
+        ORDER BY p.product_test_procedure_id
+    """)).fetchall():
+        _proc_release_map.setdefault(r[0], []).append(r[1])
+
     test_procedures = [
         {
             "id": r[0] or "",
@@ -712,6 +726,10 @@ def get_tracking_summary(
             "required_evidence_type": r[6] or "",
             "status": r[7] or "",
             "remark": r[8] or "",
+            "used_releases": ", ".join(
+                rid.replace("TEST_RELEASE-", "")
+                for rid in _proc_release_map.get(r[0] or "", [])
+            ),
         }
         for r in conn.execute(text("""
             SELECT product_test_procedure_id, product_test_case_id,

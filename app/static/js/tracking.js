@@ -60,6 +60,132 @@ function loadTracking(options) {
         });
 }
 
+const sheetTabGroups = new Map();
+let sheetTabDragState = null;
+
+function sheetTabId(tab) {
+    return tab?.dataset?.sheetTab || tab?.dataset?.trkTab || tab?.dataset?.adminMasterTab || "";
+}
+
+function sheetPanelId(panel) {
+    return panel?.dataset?.sheetPanel || panel?.dataset?.trkPanel || panel?.dataset?.adminMasterPanel || "";
+}
+
+function readSheetTabLocations() {
+    try {
+        const parsed = JSON.parse(localStorage.getItem("sheet_tab_locations") || "{}");
+        return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+    } catch (_) {
+        return {};
+    }
+}
+
+function readStoredSheetOrder(storageKey) {
+    try {
+        const parsed = JSON.parse(localStorage.getItem(storageKey) || "[]");
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (_) {
+        return [];
+    }
+}
+
+function applyStoredSheetGroupOrder(group) {
+    const order = readStoredSheetOrder(group.storageKey);
+    if (!order.length) return;
+    const tabs = Array.from(group.tabbar.querySelectorAll("[data-sheet-tab]"));
+    const panels = Array.from(group.tabsRoot.querySelectorAll("[data-sheet-panel]"));
+    const tabsById = new Map(tabs.map(tab => [sheetTabId(tab), tab]));
+    const panelsById = new Map(panels.map(panel => [sheetPanelId(panel), panel]));
+    const orderedIds = order.filter(id => tabsById.has(id));
+    tabs.map(sheetTabId).forEach(id => {
+        if (!orderedIds.includes(id)) orderedIds.push(id);
+    });
+    orderedIds.forEach(id => {
+        group.tabbar.appendChild(tabsById.get(id));
+        group.tabsRoot.appendChild(panelsById.get(id));
+    });
+}
+
+function saveAllSheetTabState() {
+    const locations = readSheetTabLocations();
+    sheetTabGroups.forEach(group => {
+        const ids = Array.from(group.tabbar.querySelectorAll("[data-sheet-tab]")).map(sheetTabId);
+        ids.forEach(id => {
+            if (id) locations[id] = group.groupKey;
+        });
+        if (group.storageKey) {
+            localStorage.setItem(group.storageKey, JSON.stringify(ids));
+        }
+    });
+    localStorage.setItem("sheet_tab_locations", JSON.stringify(locations));
+}
+
+function findSheetTabEntry(id) {
+    for (const group of sheetTabGroups.values()) {
+        const tab = Array.from(group.tabbar.querySelectorAll("[data-sheet-tab]")).find(item => sheetTabId(item) === id);
+        const panel = Array.from(group.tabsRoot.querySelectorAll("[data-sheet-panel]")).find(item => sheetPanelId(item) === id);
+        if (tab && panel) return { group, tab, panel };
+    }
+    return null;
+}
+
+function ensureSheetGroupActive(group, preferredId) {
+    const tabs = Array.from(group.tabbar.querySelectorAll("[data-sheet-tab]"));
+    if (!tabs.length) return;
+    const activeId = tabs.some(tab => sheetTabId(tab) === preferredId)
+        ? preferredId
+        : (tabs.find(tab => tab.classList.contains("is-active")) && sheetTabId(tabs.find(tab => tab.classList.contains("is-active")))) || sheetTabId(tabs[0]);
+    group.activate(activeId);
+}
+
+function moveSheetTabToGroup(sourceId, targetGroupKey, targetId) {
+    if (!sourceId || !targetGroupKey) return;
+    const source = findSheetTabEntry(sourceId);
+    const targetGroup = sheetTabGroups.get(targetGroupKey);
+    if (!source || !targetGroup) return;
+
+    const targetTab = targetId
+        ? Array.from(targetGroup.tabbar.querySelectorAll("[data-sheet-tab]")).find(tab => sheetTabId(tab) === targetId)
+        : null;
+    const targetPanel = targetId
+        ? Array.from(targetGroup.tabsRoot.querySelectorAll("[data-sheet-panel]")).find(panel => sheetPanelId(panel) === targetId)
+        : null;
+
+    if (source.tab === targetTab) return;
+    if (targetTab) {
+        targetGroup.tabbar.insertBefore(source.tab, targetTab);
+    } else {
+        targetGroup.tabbar.appendChild(source.tab);
+    }
+    if (targetPanel) {
+        targetGroup.tabsRoot.insertBefore(source.panel, targetPanel);
+    } else {
+        targetGroup.tabsRoot.appendChild(source.panel);
+    }
+
+    source.tab.dataset.sheetCurrentGroup = targetGroupKey;
+    source.panel.dataset.sheetCurrentGroup = targetGroupKey;
+    saveAllSheetTabState();
+    ensureSheetGroupActive(source.group, "");
+    ensureSheetGroupActive(targetGroup, sourceId);
+}
+
+function applySavedSheetTabLocations() {
+    const locations = readSheetTabLocations();
+    Object.entries(locations).forEach(([id, groupKey]) => {
+        const current = findSheetTabEntry(id);
+        if (current && current.group.groupKey !== groupKey && sheetTabGroups.has(groupKey)) {
+            moveSheetTabToGroup(id, groupKey, "");
+        }
+    });
+    sheetTabGroups.forEach(applyStoredSheetGroupOrder);
+}
+
+function registerSheetTabGroup(options) {
+    sheetTabGroups.set(options.groupKey, options);
+    applySavedSheetTabLocations();
+}
+
 function initTrackingDataTabs(root) {
     const headers = Array.from(root.querySelectorAll(".trk_sub_header"));
     if (headers.length === 0 || root.querySelector(".trk_data_tabs")) return;
@@ -144,6 +270,7 @@ function initTrackingDataTabs(root) {
 
     const tabsRoot = document.createElement("section");
     tabsRoot.className = "trk_data_tabs";
+    tabsRoot.dataset.sheetGroup = "user";
     const tabbar = document.createElement("div");
     tabbar.className = "trk_sheet_tabbar";
     tabbar.setAttribute("role", "tablist");
@@ -157,6 +284,9 @@ function initTrackingDataTabs(root) {
         const tab = document.createElement("button");
         tab.type = "button";
         tab.className = `trk_sheet_tab${group.id === activeGroup.id ? " is-active" : ""}`;
+        tab.dataset.sheetTab = group.id;
+        tab.dataset.sheetCurrentGroup = "user";
+        tab.dataset.sheetLabelStorageKey = "trk_data_tab_labels";
         tab.dataset.trkTab = group.id;
         tab.setAttribute("role", "tab");
         tab.setAttribute("aria-selected", group.id === activeGroup.id ? "true" : "false");
@@ -165,6 +295,8 @@ function initTrackingDataTabs(root) {
 
         const panel = document.createElement("div");
         panel.className = `trk_sheet_panel${group.id === activeGroup.id ? " is-active" : ""}`;
+        panel.dataset.sheetPanel = group.id;
+        panel.dataset.sheetCurrentGroup = "user";
         panel.dataset.trkPanel = group.id;
         panel.hidden = group.id !== activeGroup.id;
         panel.setAttribute("role", "tabpanel");
@@ -180,19 +312,19 @@ function initTrackingDataTabs(root) {
     }
 
     function activate(id) {
-        tabsRoot.querySelectorAll("[data-trk-tab]").forEach(tab => {
-            const active = tab.dataset.trkTab === id;
+        tabsRoot.querySelectorAll("[data-sheet-tab]").forEach(tab => {
+            const active = sheetTabId(tab) === id;
             tab.classList.toggle("is-active", active);
             tab.setAttribute("aria-selected", active ? "true" : "false");
         });
-        tabsRoot.querySelectorAll("[data-trk-panel]").forEach(panel => {
-            const active = panel.dataset.trkPanel === id;
+        tabsRoot.querySelectorAll("[data-sheet-panel]").forEach(panel => {
+            const active = sheetPanelId(panel) === id;
             panel.classList.toggle("is-active", active);
             panel.hidden = !active;
         });
         localStorage.setItem("trk_data_tab", id);
 
-        const activePanel = tabsRoot.querySelector(`[data-trk-panel="${id}"]`);
+        const activePanel = Array.from(tabsRoot.querySelectorAll("[data-sheet-panel]")).find(panel => sheetPanelId(panel) === id);
         if (activePanel && typeof initTableColumnFeatures === "function") {
             initTableColumnFeatures(activePanel);
         }
@@ -204,20 +336,23 @@ function initTrackingDataTabs(root) {
     }
 
     tabbar.addEventListener("click", event => {
-        const tab = event.target.closest("[data-trk-tab]");
+        const tab = event.target.closest("[data-sheet-tab]");
         if (!tab) return;
-        activate(tab.dataset.trkTab);
+        activate(sheetTabId(tab));
     });
     bindSheetTabDragDrop({
+        groupKey: "user",
         tabsRoot,
         tabbar,
-        tabSelector: "[data-trk-tab]",
-        panelSelector: "[data-trk-panel]",
-        tabId: tab => tab.dataset.trkTab,
-        panelId: panel => panel.dataset.trkPanel,
+        tabSelector: "[data-sheet-tab]",
+        panelSelector: "[data-sheet-panel]",
+        tabId: sheetTabId,
+        panelId: sheetPanelId,
         storageKey: "trk_data_tab_order",
-        labelStorageKey: "trk_data_tab_labels"
+        labelStorageKey: "trk_data_tab_labels",
+        activate
     });
+    registerSheetTabGroup({ groupKey: "user", tabsRoot, tabbar, storageKey: "trk_data_tab_order", activate });
 
     root.querySelectorAll(dataTableSelector).forEach(table => {
         if (table.closest(".trk_data_tabs")) return;
@@ -231,6 +366,7 @@ function initTrackingDataTabs(root) {
 }
 
 function bindSheetTabDragDrop(options) {
+    const groupKey = options.groupKey;
     const tabsRoot = options.tabsRoot;
     const tabbar = options.tabbar;
     const tabSelector = options.tabSelector;
@@ -239,15 +375,8 @@ function bindSheetTabDragDrop(options) {
     const panelId = options.panelId;
     const storageKey = options.storageKey;
     const labelStorageKey = options.labelStorageKey;
-    let dragId = "";
-
     function readOrder() {
-        try {
-            const parsed = JSON.parse(localStorage.getItem(storageKey) || "[]");
-            return Array.isArray(parsed) ? parsed : [];
-        } catch (_) {
-            return [];
-        }
+        return readStoredSheetOrder(storageKey);
     }
 
     function currentTabs() {
@@ -259,7 +388,7 @@ function bindSheetTabDragDrop(options) {
     }
 
     function saveOrder() {
-        localStorage.setItem(storageKey, JSON.stringify(currentTabs().map(tabId)));
+        saveAllSheetTabState();
     }
 
     function applyOrder(order) {
@@ -276,40 +405,37 @@ function bindSheetTabDragDrop(options) {
         });
     }
 
-    function moveBefore(sourceId, targetId) {
+    function currentGroupKeyForTab(tab) {
+        return tab.closest(".trk_data_tabs")?.dataset?.sheetGroup || groupKey;
+    }
+
+    function moveBefore(sourceId, targetId, targetTab) {
         if (!sourceId || !targetId || sourceId === targetId) return;
-        const tabsById = new Map(currentTabs().map(tab => [tabId(tab), tab]));
-        const panelsById = new Map(currentPanels().map(panel => [panelId(panel), panel]));
-        const sourceTab = tabsById.get(sourceId);
-        const targetTab = tabsById.get(targetId);
-        const sourcePanel = panelsById.get(sourceId);
-        const targetPanel = panelsById.get(targetId);
-        if (!sourceTab || !targetTab || !sourcePanel || !targetPanel) return;
-        tabbar.insertBefore(sourceTab, targetTab);
-        tabsRoot.insertBefore(sourcePanel, targetPanel);
-        saveOrder();
+        moveSheetTabToGroup(sourceId, currentGroupKeyForTab(targetTab), targetId);
     }
 
     applyOrder(readOrder());
     currentTabs().forEach(tab => {
         tab.draggable = true;
         tab.addEventListener("dragstart", event => {
-            dragId = tabId(tab);
+            const id = tabId(tab);
+            sheetTabDragState = { id, groupKey: currentGroupKeyForTab(tab) };
             tab.classList.add("trk_sheet_tab_dragging");
             event.dataTransfer.effectAllowed = "move";
-            event.dataTransfer.setData("text/plain", dragId);
+            event.dataTransfer.setData("text/plain", id);
         });
         tab.addEventListener("dragend", () => {
-            dragId = "";
-            currentTabs().forEach(item => {
-                item.classList.remove("trk_sheet_tab_dragging", "trk_sheet_tab_drag_over");
+            sheetTabDragState = null;
+            document.querySelectorAll(".trk_sheet_tab, .trk_sheet_tabbar").forEach(item => {
+                item.classList.remove("trk_sheet_tab_dragging", "trk_sheet_tab_drag_over", "trk_sheet_tabbar_drag_over");
             });
         });
         tab.addEventListener("dragover", event => {
             event.preventDefault();
             event.dataTransfer.dropEffect = "move";
-            currentTabs().forEach(item => item.classList.remove("trk_sheet_tab_drag_over"));
-            if (dragId && dragId !== tabId(tab)) tab.classList.add("trk_sheet_tab_drag_over");
+            document.querySelectorAll(".trk_sheet_tab_drag_over").forEach(item => item.classList.remove("trk_sheet_tab_drag_over"));
+            const sourceId = sheetTabDragState?.id || event.dataTransfer.getData("text/plain");
+            if (sourceId && sourceId !== tabId(tab)) tab.classList.add("trk_sheet_tab_drag_over");
         });
         tab.addEventListener("dragleave", () => {
             tab.classList.remove("trk_sheet_tab_drag_over");
@@ -317,14 +443,31 @@ function bindSheetTabDragDrop(options) {
         tab.addEventListener("drop", event => {
             event.preventDefault();
             tab.classList.remove("trk_sheet_tab_drag_over");
-            moveBefore(dragId || event.dataTransfer.getData("text/plain"), tabId(tab));
+            moveBefore(sheetTabDragState?.id || event.dataTransfer.getData("text/plain"), tabId(tab), tab);
         });
         tab.addEventListener("keydown", event => {
             if (event.key !== "F2") return;
             event.preventDefault();
             event.stopPropagation();
-            beginSheetTabRename(tab, tabId(tab), labelStorageKey);
+            beginSheetTabRename(tab, tabId(tab), tab.dataset.sheetLabelStorageKey || labelStorageKey);
         });
+    });
+
+    tabbar.addEventListener("dragover", event => {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = "move";
+        tabbar.classList.add("trk_sheet_tabbar_drag_over");
+    });
+    tabbar.addEventListener("dragleave", event => {
+        if (!tabbar.contains(event.relatedTarget)) {
+            tabbar.classList.remove("trk_sheet_tabbar_drag_over");
+        }
+    });
+    tabbar.addEventListener("drop", event => {
+        event.preventDefault();
+        tabbar.classList.remove("trk_sheet_tabbar_drag_over");
+        if (event.target.closest(tabSelector)) return;
+        moveSheetTabToGroup(sheetTabDragState?.id || event.dataTransfer.getData("text/plain"), groupKey, "");
     });
 }
 
@@ -457,6 +600,7 @@ function initAdminMasterDataTabs() {
 
     const tabsRoot = document.createElement("section");
     tabsRoot.className = "trk_data_tabs admin_master_data_tabs";
+    tabsRoot.dataset.sheetGroup = "admin";
     const tabbar = document.createElement("div");
     tabbar.className = "trk_sheet_tabbar";
     tabbar.setAttribute("role", "tablist");
@@ -471,6 +615,9 @@ function initAdminMasterDataTabs() {
         const tab = document.createElement("button");
         tab.type = "button";
         tab.className = `trk_sheet_tab${group.id === activeGroup.id ? " is-active" : ""}`;
+        tab.dataset.sheetTab = group.id;
+        tab.dataset.sheetCurrentGroup = "admin";
+        tab.dataset.sheetLabelStorageKey = "admin_master_data_tab_labels";
         tab.dataset.adminMasterTab = group.id;
         tab.setAttribute("role", "tab");
         tab.setAttribute("aria-selected", group.id === activeGroup.id ? "true" : "false");
@@ -479,6 +626,8 @@ function initAdminMasterDataTabs() {
 
         const panel = document.createElement("div");
         panel.className = `trk_sheet_panel${group.id === activeGroup.id ? " is-active" : ""}`;
+        panel.dataset.sheetPanel = group.id;
+        panel.dataset.sheetCurrentGroup = "admin";
         panel.dataset.adminMasterPanel = group.id;
         panel.hidden = group.id !== activeGroup.id;
         panel.setAttribute("role", "tabpanel");
@@ -487,34 +636,47 @@ function initAdminMasterDataTabs() {
     });
 
     function activate(id) {
-        tabsRoot.querySelectorAll("[data-admin-master-tab]").forEach(tab => {
-            const active = tab.dataset.adminMasterTab === id;
+        tabsRoot.querySelectorAll("[data-sheet-tab]").forEach(tab => {
+            const active = sheetTabId(tab) === id;
             tab.classList.toggle("is-active", active);
             tab.setAttribute("aria-selected", active ? "true" : "false");
         });
-        tabsRoot.querySelectorAll("[data-admin-master-panel]").forEach(panel => {
-            const active = panel.dataset.adminMasterPanel === id;
+        tabsRoot.querySelectorAll("[data-sheet-panel]").forEach(panel => {
+            const active = sheetPanelId(panel) === id;
             panel.classList.toggle("is-active", active);
             panel.hidden = !active;
         });
         localStorage.setItem("admin_master_data_tab", id);
+
+        const activePanel = Array.from(tabsRoot.querySelectorAll("[data-sheet-panel]")).find(panel => sheetPanelId(panel) === id);
+        if (activePanel && typeof initTableColumnFeatures === "function") {
+            initTableColumnFeatures(activePanel);
+        }
+        const ganttWrap = activePanel && activePanel.querySelector(".gantt_wrap");
+        if (ganttWrap) {
+            initGanttResize(ganttWrap);
+            initDeadlineDrag(ganttWrap);
+        }
     }
 
     tabbar.addEventListener("click", event => {
-        const tab = event.target.closest("[data-admin-master-tab]");
+        const tab = event.target.closest("[data-sheet-tab]");
         if (!tab) return;
-        activate(tab.dataset.adminMasterTab);
+        activate(sheetTabId(tab));
     });
     bindSheetTabDragDrop({
+        groupKey: "admin",
         tabsRoot,
         tabbar,
-        tabSelector: "[data-admin-master-tab]",
-        panelSelector: "[data-admin-master-panel]",
-        tabId: tab => tab.dataset.adminMasterTab,
-        panelId: panel => panel.dataset.adminMasterPanel,
+        tabSelector: "[data-sheet-tab]",
+        panelSelector: "[data-sheet-panel]",
+        tabId: sheetTabId,
+        panelId: sheetPanelId,
         storageKey: "admin_master_data_tab_order",
-        labelStorageKey: "admin_master_data_tab_labels"
+        labelStorageKey: "admin_master_data_tab_labels",
+        activate
     });
+    registerSheetTabGroup({ groupKey: "admin", tabsRoot, tabbar, storageKey: "admin_master_data_tab_order", activate });
     return true;
 }
 

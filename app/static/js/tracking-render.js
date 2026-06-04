@@ -121,22 +121,11 @@ function buildMasterDataSections(data, releases) {
         { key: "remark", label: "Remark", width: "300px" }
     ], data.test_releases || releases || []);
 
-    html += buildSimpleDataTableSection("Test Target Definition", "trk_test_target_definition_table", [
-        { key: "id", label: "Definition ID", width: "330px" },
-        { key: "product_code", label: "Product Code", width: "130px" },
-        { key: "manufacturer", label: "Manufacturer", width: "130px" },
-        { key: "model_name", label: "Model", width: "150px" },
-        { key: "hardware_revision", label: "HW", width: "90px" },
-        { key: "default_software_version", label: "Default SW", width: "120px" },
-        { key: "default_firmware_version", label: "Default FW", width: "120px" },
-        { key: "status", label: "Status", width: "100px" },
-        { key: "remark", label: "Remark", width: "260px" }
-    ], data.test_target_definitions || []);
-
-    html += buildSimpleDataTableSection("Test Target", "trk_test_target_table", [
+    html += buildSimpleDataTableSection("Test Targets", "trk_test_target_table", [
         { key: "id", label: "Target ID", width: "300px" },
-        { key: "definition_id", label: "Definition ID", width: "330px" },
-        { key: "model_name", label: "Model", width: "150px" },
+        { key: "product_code", label: "Product Code", width: "120px" },
+        { key: "model_name", label: "Model", width: "140px" },
+        { key: "hardware_revision", label: "HW Rev", width: "80px" },
         { key: "serial_number", label: "Serial", width: "140px" },
         { key: "software_version", label: "SW", width: "100px" },
         { key: "firmware_version", label: "FW", width: "100px" },
@@ -198,6 +187,7 @@ function buildMasterDataSections(data, releases) {
         { key: "acceptance_criteria", label: "Acceptance", width: "260px" },
         { key: "required_evidence_type", label: "Evidence", width: "120px" },
         { key: "status", label: "Status", width: "100px" },
+        { key: "used_releases", label: "Used In", width: "260px" },
         { key: "remark", label: "Remark", width: "260px" }
     ], data.test_procedures || []);
 
@@ -284,38 +274,9 @@ function renderTracking(data) {
     html += buildMasterDataSections(data, releases);
 
     
-/* ── 5. Target / Environment ──────────────────────────── */
-    const tgts = data.targets || [];
+/* ── 5. Environment ───────────────────────────────────── */
     const envs = data.environments || [];
-    if (tgts.length > 0 || envs.length > 0) {
-        if (tgts.length > 0) {
-            html += `<div class="trk_sub_header">Target</div>`;
-            // 자동완성용 datalist
-            const tgtDatalistId = "trk_target_id_list";
-            html += `<datalist id="${tgtDatalistId}">` +
-                tgts.map(t => `<option value="${t.id}">${t.model_name} ${t.sw_version} (${t.serial_number})</option>`).join("") +
-                `</datalist>`;
-            html += `<div class="trk_timeline_wrap"><table class="trk_target_table">
-                <thead><tr>
-                    <th style="width:300px">Logical Target ID</th>
-                    <th style="width:130px">모델명</th>
-                    <th style="width:90px">SW 버전</th>
-                    <th style="width:220px">Physical Target ID</th>
-                </tr></thead><tbody>`;
-            tgts.forEach(t => {
-                html += `<tr style="cursor:pointer">
-                    <td>
-                        <input list="${tgtDatalistId}" value="${t.id}" readonly
-                            style="font-size:0.72rem;color:#64748b;background:transparent;border:none;width:100%;cursor:pointer"
-                            title="${t.id}">
-                    </td>
-                    <td style="font-size:0.78rem;font-weight:600">${t.model_name || "-"}</td>
-                    <td style="font-size:0.78rem">${t.sw_version || "-"}</td>
-                    <td style="font-size:0.75rem;color:#64748b">${t.physical_target_id || t.serial_number || "-"}</td>
-                </tr>`;
-            });
-            html += `</tbody></table></div>`;
-        }
+    if (envs.length > 0) {
         if (envs.length > 0) {
             html += `<div class="trk_sub_header">Environment</div>`;
             const envDatalistId = "trk_env_id_list";
@@ -341,7 +302,6 @@ function renderTracking(data) {
         }
     }
 
-    
     /* ── 5.5 Result 요약 (케이스별) ─────────────────────────── */
     const resultsSummary = data.results_summary || [];
     if (resultsSummary.length > 0) {
@@ -396,24 +356,6 @@ function renderTracking(data) {
             </tr>`;
         });
         html += `</tbody></table></div>`;
-        if (procList.length > 0) {
-            html += `<div class="trk_sub_header">Test Procedure</div>`;
-            html += `<div class="trk_timeline_wrap" style="margin-top:6px"><table class="trk_procedure_table">
-                <thead><tr>
-                    <th style="width:30px">Seq</th>
-                    <th style="width:350px">Test Case</th>
-                    <th style="width:300px">Action</th>
-                </tr></thead><tbody>`;
-            procList.forEach(p => {
-                const caseDisplay = p.case_id || "";
-                html += `<tr data-entity-type="product_test_procedure" data-entity-id="${p.id}" data-parent-release-id="${p.parent_release_id}" data-case-id="${p.case_id}" data-procedure-id="${p.id}" style="cursor:pointer">
-                    <td style="text-align:center">${p.sequence}</td>
-                    <td style="font-size:0.72rem;color:#64748b" title="${p.case_id}">${caseDisplay}</td>
-                    <td style="font-size:0.72rem;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.action}">${p.action}</td>
-                </tr>`;
-            });
-            html += `</tbody></table></div>`;
-        }
     }
 
     /* ── 7. Procedure Results ─────────────────────────────── */
