@@ -67,6 +67,14 @@ function updateToggleLabel() {
     const VIEW_MODE_LABELS = ['보기모드: 전체', '보기모드: 시험중', '보기모드: 중단판정', '보기모드: 최상위'];
     btn.textContent = VIEW_MODE_LABELS[mode] || VIEW_MODE_LABELS[0];
     btn.title = VIEW_MODE_LABELS[mode] || VIEW_MODE_LABELS[0];
+
+    const sortBtn = document.getElementById("trk_sort_toggle_btn");
+    if (sortBtn) {
+        const sm = parseInt(localStorage.getItem('trk_sort_mode') || '0', 10);
+        const SORT_LABELS = ['정렬: 기본', '정렬: 시험종료일자별'];
+        sortBtn.textContent = SORT_LABELS[sm] || SORT_LABELS[0];
+        sortBtn.title = SORT_LABELS[sm] || SORT_LABELS[0];
+    }
 }
 
 document.addEventListener("DOMContentLoaded", () => { updateToggleLabel(); loadTracking(); });

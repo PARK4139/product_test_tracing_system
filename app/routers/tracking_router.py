@@ -200,6 +200,7 @@ def get_tracking_summary(
     # 구조: RC(visible=0) → 장비행(visible=1) → 라운드(parent)
     release_upstream = {r["id"]: r["upstream_id"] for r in releases}
     release_visible = {r["id"]: r["visible"] for r in releases}
+    release_by_id = {r["id"]: r for r in releases}
 
     def resolve_parent_release(release_id: str) -> str:
         """run.release_id → 간트 장비 행 ID (visible=1인 자식 행)"""
@@ -219,6 +220,43 @@ def get_tracking_summary(
             if not cur:
                 break
         return release_id  # fallback
+
+    def resolve_round_release(release_id: str) -> dict | None:
+        cur = release_id
+        last_visible = None
+        for _ in range(8):
+            row = release_by_id.get(cur)
+            if row and row.get("visible"):
+                last_visible = row
+            parent = release_upstream.get(cur, "")
+            if not parent or parent not in release_by_id:
+                break
+            cur = parent
+        return last_visible
+
+    def model_sw_from_round_alias(alias: str) -> tuple[str, str]:
+        match = re.match(r"^(.+?)\s+(\d+(?:\.\d+)*[A-Za-z]?)\s+", alias or "")
+        if match:
+            return match.group(1).strip(), match.group(2).strip()
+        return alias or "", ""
+
+    def logical_target_from_release(release_id: str, fallback_target_id: str = "") -> dict:
+        round_row = resolve_round_release(release_id)
+        if round_row and round_row.get("stage") == "device_round":
+            model_name, sw_version = model_sw_from_round_alias(round_row.get("alias") or "")
+            target_key = round_row["id"].replace("TEST_RELEASE-", "")
+            return {
+                "id": f"TEST_TARGET_{target_key}",
+                "model_name": model_name,
+                "sw_version": sw_version,
+                "round_id": round_row["id"],
+            }
+        return {
+            "id": fallback_target_id,
+            "model_name": "",
+            "sw_version": "",
+            "round_id": "",
+        }
 
     def parse_images(remark: str) -> dict:
         imgs = {"other_device": [], "hdr_screen": [], "general": []}
@@ -298,7 +336,11 @@ def get_tracking_summary(
             "failed": r[9] or 0,
             "skipped": r[10] or 0,
             "cancelled": r[11] or 0,
-            "target_id": r[12] or "",
+            "target_id": logical_target_from_release(r[1] or "", r[12] or "")["id"],
+            "target_model_name": logical_target_from_release(r[1] or "", r[12] or "")["model_name"],
+            "target_sw_version": logical_target_from_release(r[1] or "", r[12] or "")["sw_version"],
+            "physical_target_id": r[12] or "",
+            "target_round_id": logical_target_from_release(r[1] or "", r[12] or "")["round_id"],
             "environment_id": r[13] or "",
         }
         for r in runs_raw

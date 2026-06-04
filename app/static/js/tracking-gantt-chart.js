@@ -101,6 +101,36 @@ function buildGantt(releases, runs) {
         runsByParent[parentId].push(run);
     });
 
+    // ── 정렬 모드: 시험종료일자별 ────────────────────────────────────
+    // 라운드의 실효 종료일 = 자신/하위 토폴로지 end_date, 하위 런 finished_at 중 최신값
+    const sortMode = parseInt(localStorage.getItem('trk_sort_mode') || '0', 10);
+    if (sortMode === 1) {
+        const effEnd = (rel) => {
+            let latest = toDate(rel.end_date);
+            const visit = (id) => {
+                (childrenMap[id] || []).forEach(c => {
+                    const ce = toDate(c.end_date);
+                    if (ce && (!latest || ce > latest)) latest = ce;
+                    visit(c.id);
+                });
+                (runsByParent[id] || []).forEach(run => {
+                    const re = toDate(run.finished_at);
+                    if (re && (!latest || re > latest)) latest = re;
+                });
+            };
+            visit(rel.id);
+            return latest;
+        };
+        parents.forEach(p => { p._effEnd = effEnd(p); });
+        parents.sort((a, b) => {
+            const ea = a._effEnd, eb = b._effEnd;
+            if (!ea && !eb) return 0;
+            if (!ea) return 1;      // 종료일 없는 라운드는 뒤로
+            if (!eb) return -1;
+            return eb - ea;          // 최근 종료가 위로 (내림차순)
+        });
+    }
+
     // 날짜 범위
     let minD = null, maxD = null;
     releases.forEach(r => {
@@ -141,7 +171,7 @@ function buildGantt(releases, runs) {
             return raw.startsWith("TEST_ROUND_") ? raw : `TEST_ROUND_${raw}`;
         }
         const displayName = indent === 0
-            ? `${roundDisplayId(r.id)} · ${alias}`
+            ? roundDisplayId(r.id)   // 라운드는 ID만 표기 (깔끔하게)
             : alias;
         const sd      = toDate(r.start_date);
         const ed      = toDate(r.end_date) || today;
@@ -230,9 +260,8 @@ function buildGantt(releases, runs) {
         const pctVal = total > 0 ? Math.round(passed / total * 100) : 0;
         const sdStr = normalizeDate(run.started_at);
         const edStr = normalizeDate(run.finished_at);
-        // RC 차수 라벨: run.release_id(=RC 배포 ID)에서 RC번호 추출 (예: ...-RC2 → RC2)
-        const rcMatch = String(run.release_id || "").match(/RC(\d+)/i);
-        const rcLabel = rcMatch ? `RC${rcMatch[1]}` : "";
+        // RUN 행은 실제 run ID 를 그대로 표시
+        const runLabel = run.id;
         const title = `${run.id} (${sdStr !== "-" ? sdStr : "?"} ~ ${edStr !== "-" ? edStr : "?"})`;
         let barHtml = "";
         if (sd) {
@@ -248,8 +277,7 @@ function buildGantt(releases, runs) {
             data-row-id="${run.id}" data-parent-id="${parentId}" data-status="${run.status}" data-run-id="${run.id}">
             <div class="gantt_label_col" style="padding-left:${8 + indent * 18}px">
                 <div class="gantt_label_main">
-                    <span class="gantt_label_name" title="${run.id}">${run.id}</span>
-                    ${rcLabel ? `<span class="gantt_meta_chip gantt_chip_rc">${rcLabel}</span>` : ""}
+                    <span class="gantt_label_name" title="${run.id}">${runLabel}</span>
                     ${total > 0 ? `<span class="gantt_meta_chip">${pctVal}%</span>` : ""}
                     ${(run.blocked || 0) > 0 ? `<span class="gantt_meta_chip gantt_chip_red">blocked ${run.blocked}</span>` : ""}
                 </div>
@@ -264,7 +292,7 @@ function buildGantt(releases, runs) {
 
     let html = `<div class="gantt_wrap" data-min-date="${minD.toISOString()}" data-total-ms="${totalMs}">
         <div class="gantt_header">
-            <div class="gantt_label_col">시험명<div class="gantt_resize_handle" id="gantt_resize_handle"></div></div>
+            <div class="gantt_label_col">시험라운드<div class="gantt_resize_handle" id="gantt_resize_handle"></div></div>
             <div class="gantt_status_col" style="font-weight:600;font-size:0.8rem;border-right:1px solid var(--color-border,#e4e4e7)">상태</div>
             <div class="gantt_chart_col" style="position:relative">
                 ${monthLabels()}
