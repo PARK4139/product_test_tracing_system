@@ -179,11 +179,11 @@ for round_row in rounds:
         if not exists:
             conn.execute("""
                 INSERT INTO product_test_release
-                (product_test_release_id, upstream_release_id,
+                (product_test_release_id, upstream_release_id, upstream_release_system,
                  release_stage, release_sequence, release_visible,
                  product_test_release_status,
                  created_at, created_by, updated_at, updated_by, remark)
-                VALUES (?,NULL,'device_round',?,1,'TESTING',?,?,?,?,?)
+                VALUES (?,'MULTI_PRODUCT','INTERNAL','device_round',?,1,'TESTING',?,?,?,?,?)
             """, (dev_round_id, 0, NOW, BY, NOW, BY, dev_display))
             print(f"  [NEW ROUND] {dev_round_id}")
             total_new_rounds += 1
@@ -207,11 +207,11 @@ for round_row in rounds:
             ).fetchone():
                 conn.execute("""
                     INSERT INTO product_test_release
-                    (product_test_release_id, upstream_release_id,
+                    (product_test_release_id, upstream_release_id, upstream_release_system,
                      release_stage, release_sequence, release_visible,
                      product_test_release_status,
                      created_at, created_by, updated_at, updated_by, remark)
-                    VALUES (?,?,'RC',?,1,'TESTING',?,?,?,?,?)
+                    VALUES (?,?,'INTERNAL','RC',?,1,'TESTING',?,?,?,?,?)
                 """, (dev_topo_id, dev_round_id, topo_seq, NOW, BY, NOW, BY,
                       f"[구성] {topo_name}\n[장비] {dev}"))
                 total_new_topos += 1
@@ -236,11 +236,11 @@ for round_row in rounds:
                 ).fetchone():
                     conn.execute("""
                         INSERT INTO product_test_release
-                        (product_test_release_id, upstream_release_id,
+                        (product_test_release_id, upstream_release_id, upstream_release_system,
                          release_stage, release_sequence, release_visible,
                          product_test_release_status,
                          created_at, created_by, updated_at, updated_by, remark)
-                        VALUES (?,?,'RC',?,0,'TESTING',?,?,?,?,?)
+                        VALUES (?,?,'INTERNAL','RC',?,0,'TESTING',?,?,?,?,?)
                     """, (dev_rc_id, dev_topo_id, rc_seq, NOW, BY, NOW, BY,
                           f"[구성] {topo_name} [장비] {dev} RC{rc_seq}"))
 
@@ -383,6 +383,7 @@ for (rc_id,) in new_rcs:
             )
 
 # ── 커밋 및 DB 적용 ─────────────────────────────────────────────
+conn.commit()
 conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
 conn.commit()
 conn.close()
@@ -397,4 +398,4 @@ print(f"\n{'='*60}")
 print(f"완료:")
 print(f"  신규 장비 라운드: {total_new_rounds}개")
 print(f"  신규 Topology:   {total_new_topos}개")
-print(f"  이관 Result:     {total_moved_results}건")
+print(f"  이관 Result:     {total_moved_results}")

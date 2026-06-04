@@ -37,6 +37,7 @@ function loadTracking() {
                 bindDefectImages(root);
                 initDefectColResize(root);
                 if (typeof initTableColumnFeatures === "function") initTableColumnFeatures(root);
+                window.scrollTo({ top: 0, behavior: "instant" });
             } catch(renderErr) {
                 showError(`렌더링 오류: ${renderErr.message}\n${renderErr.stack}`);
             }

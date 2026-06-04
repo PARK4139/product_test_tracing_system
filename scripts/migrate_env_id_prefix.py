@@ -46,6 +46,7 @@ for (old_id,) in envs:
     print(f"  ENV: {old_id} → {new_id}")
 
 conn.execute("PRAGMA foreign_keys=ON")
+conn.commit()
 conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
 conn.commit()
 conn.close()

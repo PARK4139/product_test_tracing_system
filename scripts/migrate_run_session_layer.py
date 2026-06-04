@@ -9,7 +9,7 @@ RunSession 레이어 삽입 마이그레이션
 
 변경 후:
   Round (visible=1)
-    └─ RunSession (visible=1, stage='run_session')  ← NEW
+    └─ RunSession (visible=1, stage='run_session')
          └─ Topology (visible=1)
               └─ RC (visible=0) → Run → Result
 
@@ -17,7 +17,6 @@ RunSession 레이어 삽입 마이그레이션
 """
 import sqlite3, shutil, os, sys
 from datetime import datetime, timezone
-from collections import defaultdict
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DB   = os.path.join(BASE, "data", "product_test_tracking_system.db")
@@ -38,13 +37,11 @@ conn = sqlite3.connect(TMP)
 conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
 conn.row_factory = sqlite3.Row
 
-# ── 처리 대상 라운드 조회 ───────────────────────────────────────
-# visible=1이고 upstream이 없거나 visible=1 집합에 없는 것 = 최상위 라운드
 all_visible = {r[0] for r in conn.execute(
     "SELECT product_test_release_id FROM product_test_release WHERE release_visible=1"
 ).fetchall()}
 
-rounds = [r for r in conn.execute("""
+rounds = conn.execute("""
     SELECT product_test_release_id, release_sequence, remark
     FROM product_test_release
     WHERE release_visible = 1
@@ -54,7 +51,7 @@ rounds = [r for r in conn.execute("""
                FROM product_test_release WHERE release_visible=1
            ))
     ORDER BY release_sequence
-""").fetchall()]
+""").fetchall()
 
 print(f"\n처리할 라운드: {len(rounds)}개")
 for r in rounds: print(f"  {r[0]}")
@@ -67,7 +64,6 @@ for round_row in rounds:
     print(f"\n{'─'*60}")
     print(f"[ROUND] {round_id}")
 
-    # 이 라운드의 topology 목록
     topos = conn.execute("""
         SELECT product_test_release_id, release_sequence, remark
         FROM product_test_release
@@ -79,7 +75,6 @@ for round_row in rounds:
         print("  topology 없음, 스킵")
         continue
 
-    # 이미 run_session이 있으면 스킵 (재실행 방지)
     already = conn.execute("""
         SELECT 1 FROM product_test_release
         WHERE upstream_release_id=? AND release_stage='run_session'
@@ -89,8 +84,7 @@ for round_row in rounds:
         print("  이미 run_session 존재, 스킵")
         continue
 
-    # topology별 RC 목록 조회
-    topo_rcs = {}  # topo_id → [rc_row, ...]
+    topo_rcs = {}
     all_rc_seqs = set()
     for topo in topos:
         rcs = conn.execute("""
@@ -104,92 +98,82 @@ for round_row in rounds:
             all_rc_seqs.add(rc[1] or 1)
 
     if not all_rc_seqs:
-        # RC가 없어도 Session 1 하나 만들어서 topology 재부모
         all_rc_seqs = {1}
 
     print(f"  RC 세션: {sorted(all_rc_seqs)}")
 
-    # ── RunSession release 생성 ─────────────────────────────────
     round_short = round_id.replace("TEST_RELEASE-", "")
     session_ids = {}
     for seq in sorted(all_rc_seqs):
         sid = f"TEST_RELEASE-{round_short}-RUN_RC{seq}"
         conn.execute("""
             INSERT OR IGNORE INTO product_test_release
-            (product_test_release_id, upstream_release_id,
+            (product_test_release_id, upstream_release_id, upstream_release_system,
              release_stage, release_sequence, release_visible,
              product_test_release_status,
-             created_at, created_by, updated_at, updated_by,
-             remark)
-            VALUES (?,?,'run_session',?,1,'TESTING',?,?,?,?,?)
+             created_at, created_by, updated_at, updated_by, remark)
+            VALUES (?,?,'INTERNAL','run_session',?,1,'TESTING',?,?,?,?,?)
         """, (sid, round_id, seq, NOW, BY, NOW, BY,
-              f"RC{seq} 시험 세션"))
+              "RC{} 시험 세션".format(seq)))
         session_ids[seq] = sid
         print(f"  [NEW SESSION] {sid}")
         new_sessions += 1
 
-    # ── topology 재부모 처리 ────────────────────────────────────
     for topo in topos:
         topo_id = topo[0]
         rcs = topo_rcs.get(topo_id, [])
 
         if not rcs:
-            # RC 없는 topology → Session 1에 붙이기
+            first_key = sorted(session_ids.keys())[0]
             conn.execute(
                 "UPDATE product_test_release SET upstream_release_id=? WHERE product_test_release_id=?",
-                (session_ids[1], topo_id)
+                (session_ids[first_key], topo_id)
             )
-            print(f"  [REPARENT] {topo_id} → Session 1 (no RC)")
+            print(f"  [REPARENT] {topo_id} -> Session {first_key} (no RC)")
             continue
 
         rc_seqs = [rc[1] or 1 for rc in rcs]
 
         if len(set(rc_seqs)) == 1:
-            # RC가 1종류 → 해당 세션에 topology 재부모
             seq = rc_seqs[0]
             conn.execute(
                 "UPDATE product_test_release SET upstream_release_id=? WHERE product_test_release_id=?",
                 (session_ids[seq], topo_id)
             )
-            print(f"  [REPARENT] {topo_id} → Session {seq}")
+            print(f"  [REPARENT] {topo_id} -> Session {seq}")
         else:
-            # RC가 여러 세션에 걸침 → topology 복제
             topo_name = topo_id.split(f"-{round_short}-")[-1]
             sorted_seqs = sorted(set(rc_seqs))
-
-            # 첫 번째 RC → 원본 topology 재부모
             first_seq = sorted_seqs[0]
             conn.execute(
                 "UPDATE product_test_release SET upstream_release_id=? WHERE product_test_release_id=?",
                 (session_ids[first_seq], topo_id)
             )
-            print(f"  [REPARENT] {topo_id} → Session {first_seq} (원본)")
+            print(f"  [REPARENT] {topo_id} -> Session {first_seq} (orig)")
 
-            # 나머지 RC → topology 복제 후 해당 RC 재부모
             for seq in sorted_seqs[1:]:
                 new_topo_id = f"TEST_RELEASE-{round_short}-RUN_RC{seq}-{topo_name}"
                 conn.execute("""
                     INSERT OR IGNORE INTO product_test_release
-                    (product_test_release_id, upstream_release_id,
+                    (product_test_release_id, upstream_release_id, upstream_release_system,
                      release_stage, release_sequence, release_visible,
                      product_test_release_status,
                      created_at, created_by, updated_at, updated_by, remark)
-                    SELECT ?,?,release_stage,release_sequence,release_visible,
+                    SELECT ?,?,upstream_release_system,release_stage,release_sequence,release_visible,
                            product_test_release_status,?,?,?,?,remark
                     FROM product_test_release WHERE product_test_release_id=?
                 """, (new_topo_id, session_ids[seq], NOW, BY, NOW, BY, topo_id))
 
-                # 해당 RC를 새 topology 아래로 이동
                 for rc in rcs:
                     if (rc[1] or 1) == seq:
                         conn.execute(
                             "UPDATE product_test_release SET upstream_release_id=? WHERE product_test_release_id=?",
                             (new_topo_id, rc[0])
                         )
-                print(f"  [NEW TOPO ] {new_topo_id} → Session {seq}")
+                print(f"  [NEW TOPO ] {new_topo_id} -> Session {seq}")
                 new_topos += 1
 
-# ── 커밋 및 DB 적용 ─────────────────────────────────────────────
+conn.commit()
 conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
 conn.commit()
 conn.close()
