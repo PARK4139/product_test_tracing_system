@@ -235,6 +235,21 @@
     overflow: visible;
     text-overflow: clip;
 }
+.trk_sheet_label_input {
+    width: 12ch;
+    min-width: 7ch;
+    max-width: 28ch;
+    height: 22px;
+    border: 1px solid #2563eb;
+    border-radius: 3px;
+    padding: 1px 4px;
+    font: inherit;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--color-text, #18181b);
+    background: #fff;
+    outline: none;
+}
 .trk_sheet_tab:hover {
     background: #f8fafc;
     color: var(--color-text, #18181b);

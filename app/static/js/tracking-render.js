@@ -288,8 +288,8 @@ function renderTracking(data) {
     const tgts = data.targets || [];
     const envs = data.environments || [];
     if (tgts.length > 0 || envs.length > 0) {
-        html += `<div class="trk_sub_header">Target / Environment</div>`;
         if (tgts.length > 0) {
+            html += `<div class="trk_sub_header">Target</div>`;
             // 자동완성용 datalist
             const tgtDatalistId = "trk_target_id_list";
             html += `<datalist id="${tgtDatalistId}">` +
@@ -317,6 +317,7 @@ function renderTracking(data) {
             html += `</tbody></table></div>`;
         }
         if (envs.length > 0) {
+            html += `<div class="trk_sub_header">Environment</div>`;
             const envDatalistId = "trk_env_id_list";
             html += `<datalist id="${envDatalistId}">` +
                 envs.map(e => `<option value="${e.id}">${e.name}</option>`).join("") +
@@ -381,7 +382,7 @@ function renderTracking(data) {
     const caseList = data.cases || [];
     const procList = data.procedures || [];
     if (caseList.length > 0) {
-        html += `<div class="trk_sub_header">Test Case / Procedure</div>`;
+        html += `<div class="trk_sub_header">Test Case</div>`;
         html += `<div class="trk_timeline_wrap"><table class="trk_case_table">
             <thead><tr>
                 <th style="width:350px">Test Case</th>
@@ -396,6 +397,7 @@ function renderTracking(data) {
         });
         html += `</tbody></table></div>`;
         if (procList.length > 0) {
+            html += `<div class="trk_sub_header">Test Procedure</div>`;
             html += `<div class="trk_timeline_wrap" style="margin-top:6px"><table class="trk_procedure_table">
                 <thead><tr>
                     <th style="width:30px">Seq</th>

@@ -94,9 +94,11 @@ function initTrackingDataTabs(root) {
         [".trk_test_environment_table", "Test Environment"],
         [".trk_test_case_master_table", "Test Case"],
         [".trk_test_procedure_master_table", "Test Procedure"],
-        [".trk_target_table,.trk_env_table", "Target / Env"],
+        [".trk_target_table", "Target"],
+        [".trk_env_table", "Environment"],
         [".trk_result_table", "Results"],
-        [".trk_case_table,.trk_procedure_table", "Case / Procedure"],
+        [".trk_case_table", "Test Case"],
+        [".trk_procedure_table", "Test Procedure"],
         [".trk_proc_result_table", "Procedure Results"],
         [".trk_evidence_table", "Evidence"],
         [".trk_report_table", "Reports"]
@@ -433,6 +435,12 @@ function initAdminMasterDataTabs() {
             };
         })
         .filter(Boolean);
+    groups.push({
+        id: "admin_master_tab_work_calendar",
+        label: "Work Calendar",
+        count: workCalendar.querySelectorAll("tbody tr").length,
+        node: workCalendar
+    });
 
     if (groups.length <= 1) return false;
 
