@@ -441,47 +441,33 @@ def get_tracking_summary(
         for r in reports_raw
     ]
 
-    # ── Targets (via runs) ────────────────────────────────────────────────────
-    targets_raw = conn.execute(text("""
-        SELECT DISTINCT
-            t.product_test_target_id,
-            td.product_test_target_definition_id,
-            run.product_test_release_id
-        FROM product_test_run run
-        JOIN product_test_target t ON t.product_test_target_id = run.product_test_target_id
-        JOIN product_test_target_definition td
-            ON td.product_test_target_definition_id = REPLACE(
-                SUBSTR(t.product_test_target_id, 1, INSTR(t.product_test_target_id || '-', '-') - 1)
-                || '_' ||
-                SUBSTR(t.product_test_target_id, INSTR(t.product_test_target_id || '-', '-') + 1),
-                'TARGET-', 'TARGET_DEF-'
-            )
-        WHERE EXISTS (SELECT 1 FROM product_test_result res WHERE res.product_test_run_id = run.product_test_run_id)
-    """)).fetchall()
-
-    # simpler approach: just get unique targets from runs
-    target_ids_seen = set()
+    # ── Targets (via runs, 중복 제거) ────────────────────────────────────────
+    seen_tgt = set()
     targets = []
     for r in conn.execute(text("""
-        SELECT DISTINCT run.product_test_target_id, run.product_test_release_id
+        SELECT DISTINCT run.product_test_target_id
         FROM product_test_run run
         JOIN product_test_result res ON res.product_test_run_id = run.product_test_run_id
+        ORDER BY run.product_test_target_id
     """)).fetchall():
         tid = r[0]
-        parent = resolve_parent_release(r[1] or "")
-        if tid not in target_ids_seen:
-            target_ids_seen.add(tid)
-        targets.append({"id": tid, "parent_release_id": parent})
+        if tid and tid not in seen_tgt:
+            seen_tgt.add(tid)
+            targets.append({"id": tid})
 
-    # ── Environments (via runs) ───────────────────────────────────────────────
+    # ── Environments (via runs, 중복 제거) ───────────────────────────────────
+    seen_env = set()
     environments = []
     for r in conn.execute(text("""
-        SELECT DISTINCT run.product_test_environment_id, run.product_test_release_id
+        SELECT DISTINCT run.product_test_environment_id
         FROM product_test_run run
         JOIN product_test_result res ON res.product_test_run_id = run.product_test_run_id
+        ORDER BY run.product_test_environment_id
     """)).fetchall():
-        parent = resolve_parent_release(r[1] or "")
-        environments.append({"id": r[0], "parent_release_id": parent})
+        env_id = r[0]
+        if env_id and env_id not in seen_env:
+            seen_env.add(env_id)
+            environments.append({"id": env_id})
 
     # ── Cases + Procedures (via results) ──────────────────────────────────────
     cases_raw = conn.execute(text("""

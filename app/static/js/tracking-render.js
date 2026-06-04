@@ -180,13 +180,11 @@ function renderTracking(data) {
         if (tgts.length > 0) {
             html += `<div class="trk_timeline_wrap"><table class="trk_target_table">
                 <thead><tr>
-                    <th style="width:300px">Target ID</th>
-                    <th style="width:200px">구성</th>
+                    <th style="width:600px">Target ID</th>
                 </tr></thead><tbody>`;
             tgts.forEach(t => {
-                html += `<tr data-parent-release-id="${t.parent_release_id}" style="cursor:pointer">
+                html += `<tr style="cursor:pointer">
                     <td style="font-size:0.75rem;color:#64748b" title="${t.id}">${t.id}</td>
-                    <td style="font-size:0.75rem">${extractTopo(t.parent_release_id)}</td>
                 </tr>`;
             });
             html += `</tbody></table></div>`;
@@ -194,13 +192,11 @@ function renderTracking(data) {
         if (envs.length > 0) {
             html += `<div class="trk_timeline_wrap" style="margin-top:6px"><table class="trk_env_table">
                 <thead><tr>
-                    <th style="width:400px">Environment ID</th>
-                    <th style="width:200px">구성</th>
+                    <th style="width:600px">Environment ID</th>
                 </tr></thead><tbody>`;
             envs.forEach(e => {
-                html += `<tr data-parent-release-id="${e.parent_release_id}" style="cursor:pointer">
+                html += `<tr style="cursor:pointer">
                     <td style="font-size:0.72rem;color:#64748b" title="${e.id}">${e.id}</td>
-                    <td style="font-size:0.75rem">${extractTopo(e.parent_release_id)}</td>
                 </tr>`;
             });
             html += `</tbody></table></div>`;
