@@ -29,7 +29,17 @@ function buildGantt(releases, runs) {
     const viewMode = parseInt(localStorage.getItem('trk_view_mode') || '0', 10);
     const IN_PROGRESS = new Set(['TESTING','BLOCKED']);
     const BLOCKED_ONLY = new Set(['BLOCKED']);
-    const baseReleases = releases.filter(r => !isContainer(r) && r.visible !== false);
+    const rawReleases = releases.filter(r => !isContainer(r) && r.visible !== false);
+    // ── A안: RunSession 레이어 제거 ─────────────────────────────────
+    // run_session 행은 그리지 않고, 그 자식(토폴로지)을 라운드로 끌어올린다.
+    // 결과 트리: 라운드 → 토폴로지(장비) → 런[RC, 날짜]  (run_session 단계 없음)
+    const sessionToRound = {};
+    rawReleases.forEach(r => { if (r.stage === 'run_session') sessionToRound[r.id] = r.upstream_id; });
+    const baseReleases = rawReleases
+        .filter(r => r.stage !== 'run_session')
+        .map(r => sessionToRound[r.upstream_id]
+            ? Object.assign({}, r, { upstream_id: sessionToRound[r.upstream_id] })
+            : r);
 
     // 필터 적용: 자식이 통과하면 부모도 반드시 포함
     let visibleReleases;
@@ -216,6 +226,9 @@ function buildGantt(releases, runs) {
         const pctVal = total > 0 ? Math.round(passed / total * 100) : 0;
         const sdStr = normalizeDate(run.started_at);
         const edStr = normalizeDate(run.finished_at);
+        // RC 차수 라벨: run.release_id(=RC 배포 ID)에서 RC번호 추출 (예: ...-RC2 → RC2)
+        const rcMatch = String(run.release_id || "").match(/RC(\d+)/i);
+        const rcLabel = rcMatch ? `RC${rcMatch[1]}` : "";
         const title = `${run.id} (${sdStr !== "-" ? sdStr : "?"} ~ ${edStr !== "-" ? edStr : "?"})`;
         let barHtml = "";
         if (sd) {
@@ -232,6 +245,7 @@ function buildGantt(releases, runs) {
             <div class="gantt_label_col" style="padding-left:${8 + indent * 18}px">
                 <div class="gantt_label_main">
                     <span class="gantt_label_name" title="${run.id}">${run.id}</span>
+                    ${rcLabel ? `<span class="gantt_meta_chip gantt_chip_rc">${rcLabel}</span>` : ""}
                     ${total > 0 ? `<span class="gantt_meta_chip">${pctVal}%</span>` : ""}
                     ${(run.blocked || 0) > 0 ? `<span class="gantt_meta_chip gantt_chip_red">blocked ${run.blocked}</span>` : ""}
                 </div>
