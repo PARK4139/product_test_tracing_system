@@ -1,8 +1,9 @@
 // tracking-gantt-chart.js — buildGantt (bar rendering)
 // tracking-gantt.js — buildGantt, resize, deadline drag, fold
 /* ── 간트차트 ────────────────────────────────────────────────── */
-function buildGantt(releases) {
+function buildGantt(releases, runs) {
     if (!releases.length) return `<div class="trk_empty">데이터 없음</div>`;
+    runs = runs || [];
 
     const STATUS_COLOR = {
         TESTING:          "#3b82f6",
@@ -53,11 +54,23 @@ function buildGantt(releases) {
         if (!childrenMap[r.upstream_id]) childrenMap[r.upstream_id] = [];
         childrenMap[r.upstream_id].push(r);
     });
+    const runsByParent = {};
+    runs.forEach(run => {
+        const parentId = run.parent_release_id || run.release_id || "";
+        if (!parentId) return;
+        if (!runsByParent[parentId]) runsByParent[parentId] = [];
+        runsByParent[parentId].push(run);
+    });
 
     // 날짜 범위
     let minD = null, maxD = null;
     releases.forEach(r => {
         const sd = toDate(r.start_date), ed = toDate(r.end_date);
+        if (sd && (!minD || sd < minD)) minD = sd;
+        if (ed && (!maxD || ed > maxD)) maxD = ed;
+    });
+    runs.forEach(r => {
+        const sd = toDate(r.started_at), ed = toDate(r.finished_at);
         if (sd && (!minD || sd < minD)) minD = sd;
         if (ed && (!maxD || ed > maxD)) maxD = ed;
     });
@@ -81,7 +94,7 @@ function buildGantt(releases) {
         return html;
     }
 
-    function renderBar(r, indent) {
+    function renderBar(r, indent, parentIdOverride) {
         const color   = STATUS_COLOR[r.status] || "#94a3b8";
         const alias   = (r.alias && r.alias !== r.upstream_id) ? r.alias : (r.upstream_system || r.id);
         const sd      = toDate(r.start_date);
@@ -111,7 +124,7 @@ function buildGantt(releases) {
             : (sd && ed ? `${deltaLabel} (${sdStr} ~ ${edStr})` : "");
 
         let barHtml = "";
-        if (indent === 0 || indent === 1) {
+        if (indent === 0 || r.stage === 'run_session') {
             // 라운드/세션 행에 간트 바 표시
             if (sd) {
                 const left  = pct(sd);
@@ -127,15 +140,16 @@ function buildGantt(releases) {
         // 자식 행은 바 없음 — 추후 run 기록 기반으로 계산 예정
 
         const indentPx = indent * 18;
-        // indent: 0=라운드, 1=RunSession, 2=Topology
+        // indent: 0=round, 1=test item/session, 2=run/topology child
         const isRound   = indent === 0;
-        const isSession = indent === 1;
-        const isTopo    = indent === 2;
-        const hasChildren = !isTopo && (childrenMap[r.id] || []).length > 0;
+        const isSession = r.stage === 'run_session';
+        const isTopo    = !isRound && !isSession;
+        const hasChildren = ((childrenMap[r.id] || []).length > 0) || ((runsByParent[r.id] || []).length > 0);
         const rowClass = isRound ? "gantt_row gantt_row_round"
             : isSession ? "gantt_row gantt_row_session"
             : "gantt_row gantt_row_child";
-        const dataParent = !isRound ? `data-parent-id="${r.upstream_id}"` : "";
+        const dataParentId = parentIdOverride || r.upstream_id;
+        const dataParent = !isRound ? `data-parent-id="${dataParentId}"` : "";
         const icon = hasChildren
             ? `<button class="gantt_fold_btn" data-fold-id="${r.id}" title="접기/펼치기">▼</button>`
             : isTopo ? '<span class="gantt_child_icon">└</span>'
@@ -154,6 +168,44 @@ function buildGantt(releases) {
             <div class="gantt_status_col">
                 <span class="trk_status_readonly" data-release-id="${r.id}" data-status="${r.status}" title="하위 시험 결과로부터 자동 결정">${statusBadge(r.status)}</span>
             </div>
+            <div class="gantt_chart_col">
+                <div class="gantt_today_line" style="left:${todayPct}%"></div>
+                ${barHtml}
+            </div>
+        </div>`;
+    }
+
+    function renderRunRow(run, indent, parentId) {
+        const color = STATUS_COLOR[run.status] || "#64748b";
+        const sd = toDate(run.started_at);
+        const ed = toDate(run.finished_at) || today;
+        const total = run.total_results || 0;
+        const passed = run.passed || 0;
+        const pctVal = total > 0 ? Math.round(passed / total * 100) : 0;
+        const sdStr = normalizeDate(run.started_at);
+        const edStr = normalizeDate(run.finished_at);
+        const title = `${run.id} (${sdStr !== "-" ? sdStr : "?"} ~ ${edStr !== "-" ? edStr : "?"})`;
+        let barHtml = "";
+        if (sd) {
+            const left = pct(sd);
+            const width = Math.max(0.5, pct(ed) - left);
+            barHtml = `<div class="gantt_bar gantt_run_bar" style="left:${left}%;width:${width}%;background:${color}" title="${title}">
+                <span class="gantt_bar_label">${sdStr}${edStr !== "-" ? " ~ " + edStr : ""}</span>
+            </div>`;
+        } else {
+            barHtml = `<div class="gantt_bar gantt_bar_nodate gantt_run_bar" style="left:${todayPct}%;width:1%" title="${title}"></div>`;
+        }
+        return `<div class="gantt_row gantt_row_run${run.status === 'TESTING' ? ' gantt_row_active' : ''}"
+            data-row-id="${run.id}" data-parent-id="${parentId}" data-status="${run.status}" data-run-id="${run.id}">
+            <div class="gantt_label_col" style="padding-left:${8 + indent * 18}px">
+                <span class="gantt_child_icon">RUN</span>
+                <div class="gantt_label_main">
+                    <span class="gantt_label_name" title="${run.id}">${run.id}</span>
+                    ${total > 0 ? `<span class="gantt_meta_chip">${pctVal}%</span>` : ""}
+                    ${(run.blocked || 0) > 0 ? `<span class="gantt_meta_chip gantt_chip_red">blocked ${run.blocked}</span>` : ""}
+                </div>
+            </div>
+            <div class="gantt_status_col">${statusBadge(run.status)}</div>
             <div class="gantt_chart_col">
                 <div class="gantt_today_line" style="left:${todayPct}%"></div>
                 ${barHtml}
@@ -188,13 +240,22 @@ function buildGantt(releases) {
         const firstStage = sessions[0] && sessions[0].stage;
         if (firstStage === 'run_session') {
             sessions.forEach(sess => {
-                html += renderBar(sess, 1);
                 const topos = (childrenMap[sess.id] || []).slice().sort((a, b) => deviceSortKey(a.id) - deviceSortKey(b.id));
-                topos.forEach(t => { html += renderBar(t, 2); });
+                topos.forEach(t => {
+                    html += renderBar(t, 1, p.id);
+                    (runsByParent[t.id] || []).slice().sort((a, b) => String(a.started_at || "").localeCompare(String(b.started_at || ""))).forEach(run => {
+                        html += renderRunRow(run, 2, t.id);
+                    });
+                });
             });
         } else {
             // 구 구조: topology 직접 표시
-            sessions.forEach(c => { html += renderBar(c, 1); });
+            sessions.forEach(c => {
+                html += renderBar(c, 1);
+                (runsByParent[c.id] || []).slice().sort((a, b) => String(a.started_at || "").localeCompare(String(b.started_at || ""))).forEach(run => {
+                    html += renderRunRow(run, 2, c.id);
+                });
+            });
         }
     });
 

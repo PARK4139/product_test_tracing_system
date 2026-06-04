@@ -402,6 +402,10 @@
 .gantt_row_child { background: var(--color-surface, #fff); cursor: pointer; }
 .gantt_row_child .gantt_label_name { font-weight: 500; font-size: 0.78rem; color: var(--color-text-muted, #52525b); }
 .gantt_row_child .gantt_bar { height: 14px; opacity: 0.85; }
+.gantt_row_run { background: #fbfdff; }
+.gantt_row_run .gantt_label_name { font-weight: 500; font-size: 0.74rem; color: #475569; }
+.gantt_row_run .gantt_child_icon { font-size: 0.62rem; font-weight: 700; letter-spacing: 0; color: #64748b; }
+.gantt_row_run .gantt_run_bar { height: 12px; opacity: 0.9; }
 /* 상태별 하이라이트 */
 tr.trk_row_highlighted.hl-passed  td { background: #dcfce7 !important; color: #15803d; }
 tr.trk_row_highlighted.hl-blocked td { background: #fee2e2 !important; color: #b91c1c; }

@@ -138,7 +138,7 @@ function renderTracking(data) {
             ${viewLabels[curView] || viewLabels[0]}
         </button>
     </div>`;
-    html += buildGantt(releases.filter(r => !r.id.includes("FALLBACK")));
+    html += buildGantt(releases.filter(r => !r.id.includes("FALLBACK")), data.runs || []);
 
     
     /* ── 3.5 Run 현황 ───────────────────────────────────────── */
