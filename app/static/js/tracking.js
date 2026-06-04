@@ -218,6 +218,108 @@ function initTrackingDataTabs(root) {
     });
 }
 
+function initAdminMasterDataTabs() {
+    const workCalendar = document.getElementById("work_calendar_card");
+    const trackingTop = document.getElementById("tracking_top_section");
+    if (document.querySelector(".admin_master_data_tabs")) return true;
+    if (!workCalendar || !trackingTop) return false;
+
+    const labelByAction = [
+        ["/admin/product-test-releases/create", "Test Release"],
+        ["/admin/product-test-target-definitions/create", "Test Target"],
+        ["/admin/product-test-targets/create", "Test Target"],
+        ["/admin/product-test-environment-definitions/create", "Test Environment Definition"],
+        ["/admin/product-test-environments/create", "Test Environment"],
+        ["/admin/product-test-cases/create", "Test Case"],
+        ["/admin/product-test-procedures/create", "Test Procedure"]
+    ];
+    const groups = [];
+    let firstCard = null;
+    let cursor = trackingTop.nextElementSibling;
+
+    while (cursor && cursor !== workCalendar) {
+        const next = cursor.nextElementSibling;
+        const actions = Array.from(cursor.querySelectorAll?.("form[action]") || [])
+            .map(form => form.getAttribute("action") || "");
+        const labelMatch = labelByAction.find(([action]) => actions.includes(action));
+        if (cursor.matches?.("section.card") && labelMatch) {
+            if (!firstCard) firstCard = cursor;
+            const title = labelMatch[1];
+            groups.push({
+                id: `admin_master_tab_${title.replace(/\W+/g, "_").toLowerCase()}`,
+                label: title,
+                count: cursor.querySelectorAll("tbody tr").length,
+                node: cursor
+            });
+        } else if (firstCard) {
+            cursor.hidden = true;
+        }
+        cursor = next;
+    }
+
+    if (!firstCard || groups.length <= 1) return false;
+
+    const hostParent = firstCard.parentNode;
+    const tabsRoot = document.createElement("section");
+    tabsRoot.className = "trk_data_tabs admin_master_data_tabs";
+    const tabbar = document.createElement("div");
+    tabbar.className = "trk_sheet_tabbar";
+    tabbar.setAttribute("role", "tablist");
+    tabbar.setAttribute("aria-label", "Admin master data tables");
+    tabsRoot.appendChild(tabbar);
+    hostParent.insertBefore(tabsRoot, firstCard);
+
+    const storedId = localStorage.getItem("admin_master_data_tab") || "";
+    const activeGroup = groups.find(group => group.id === storedId) || groups[0];
+
+    groups.forEach(group => {
+        const tab = document.createElement("button");
+        tab.type = "button";
+        tab.className = `trk_sheet_tab${group.id === activeGroup.id ? " is-active" : ""}`;
+        tab.dataset.adminMasterTab = group.id;
+        tab.setAttribute("role", "tab");
+        tab.setAttribute("aria-selected", group.id === activeGroup.id ? "true" : "false");
+        tab.innerHTML = `<span>${group.label}</span><span class="trk_sheet_count">${group.count}</span>`;
+        tabbar.appendChild(tab);
+
+        const panel = document.createElement("div");
+        panel.className = `trk_sheet_panel${group.id === activeGroup.id ? " is-active" : ""}`;
+        panel.dataset.adminMasterPanel = group.id;
+        panel.hidden = group.id !== activeGroup.id;
+        panel.setAttribute("role", "tabpanel");
+        panel.appendChild(group.node);
+        tabsRoot.appendChild(panel);
+    });
+
+    function activate(id) {
+        tabsRoot.querySelectorAll("[data-admin-master-tab]").forEach(tab => {
+            const active = tab.dataset.adminMasterTab === id;
+            tab.classList.toggle("is-active", active);
+            tab.setAttribute("aria-selected", active ? "true" : "false");
+        });
+        tabsRoot.querySelectorAll("[data-admin-master-panel]").forEach(panel => {
+            const active = panel.dataset.adminMasterPanel === id;
+            panel.classList.toggle("is-active", active);
+            panel.hidden = !active;
+        });
+        localStorage.setItem("admin_master_data_tab", id);
+    }
+
+    tabbar.addEventListener("click", event => {
+        const tab = event.target.closest("[data-admin-master-tab]");
+        if (!tab) return;
+        activate(tab.dataset.adminMasterTab);
+    });
+    return true;
+}
+
+function scheduleAdminMasterDataTabs(attempt) {
+    const attemptNo = attempt || 0;
+    if (initAdminMasterDataTabs()) return;
+    if (attemptNo >= 20) return;
+    setTimeout(() => scheduleAdminMasterDataTabs(attemptNo + 1), 100);
+}
+
 
 function updateToggleLabel() {
     const btn = document.getElementById("trk_view_toggle_btn");
@@ -236,7 +338,12 @@ function updateToggleLabel() {
     }
 }
 
-document.addEventListener("DOMContentLoaded", () => { updateToggleLabel(); loadTracking(); });
+document.addEventListener("DOMContentLoaded", () => {
+    updateToggleLabel();
+    loadTracking();
+    scheduleAdminMasterDataTabs();
+});
+scheduleAdminMasterDataTabs();
 document.getElementById("trk_refresh_btn")
     && document.getElementById("trk_refresh_btn").addEventListener("click", event => {
         const btn = event.currentTarget;

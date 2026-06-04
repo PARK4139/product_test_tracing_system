@@ -269,6 +269,24 @@
 .trk_sheet_panel .trk_sub_header {
     margin-top: 0;
 }
+.admin_master_data_tabs .trk_sheet_panel {
+    padding: 0;
+}
+.admin_master_data_tabs .card {
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+.admin_master_data_tabs .card > .section_header_row {
+    padding: 12px 14px 4px;
+}
+.admin_master_data_tabs .card > form,
+.admin_master_data_tabs .card > .tester_table_wrap,
+.admin_master_data_tabs .card > .table_action_bar {
+    margin-left: 10px;
+    margin-right: 10px;
+}
 
 /* defect table */
 .trk_defect_table {
