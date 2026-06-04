@@ -206,6 +206,15 @@ function initTrackingDataTabs(root) {
         if (!tab) return;
         activate(tab.dataset.trkTab);
     });
+    bindSheetTabDragDrop({
+        tabsRoot,
+        tabbar,
+        tabSelector: "[data-trk-tab]",
+        panelSelector: "[data-trk-panel]",
+        tabId: tab => tab.dataset.trkTab,
+        panelId: panel => panel.dataset.trkPanel,
+        storageKey: "trk_data_tab_order"
+    });
 
     root.querySelectorAll(dataTableSelector).forEach(table => {
         if (table.closest(".trk_data_tabs")) return;
@@ -215,6 +224,97 @@ function initTrackingDataTabs(root) {
             header.hidden = true;
         }
         wrap.hidden = true;
+    });
+}
+
+function bindSheetTabDragDrop(options) {
+    const tabsRoot = options.tabsRoot;
+    const tabbar = options.tabbar;
+    const tabSelector = options.tabSelector;
+    const panelSelector = options.panelSelector;
+    const tabId = options.tabId;
+    const panelId = options.panelId;
+    const storageKey = options.storageKey;
+    let dragId = "";
+
+    function readOrder() {
+        try {
+            const parsed = JSON.parse(localStorage.getItem(storageKey) || "[]");
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (_) {
+            return [];
+        }
+    }
+
+    function currentTabs() {
+        return Array.from(tabbar.querySelectorAll(tabSelector));
+    }
+
+    function currentPanels() {
+        return Array.from(tabsRoot.querySelectorAll(panelSelector));
+    }
+
+    function saveOrder() {
+        localStorage.setItem(storageKey, JSON.stringify(currentTabs().map(tabId)));
+    }
+
+    function applyOrder(order) {
+        if (!order.length) return;
+        const tabsById = new Map(currentTabs().map(tab => [tabId(tab), tab]));
+        const panelsById = new Map(currentPanels().map(panel => [panelId(panel), panel]));
+        const orderedIds = order.filter(id => tabsById.has(id));
+        currentTabs().map(tabId).forEach(id => {
+            if (!orderedIds.includes(id)) orderedIds.push(id);
+        });
+        orderedIds.forEach(id => {
+            tabbar.appendChild(tabsById.get(id));
+            tabsRoot.appendChild(panelsById.get(id));
+        });
+    }
+
+    function moveBefore(sourceId, targetId) {
+        if (!sourceId || !targetId || sourceId === targetId) return;
+        const tabsById = new Map(currentTabs().map(tab => [tabId(tab), tab]));
+        const panelsById = new Map(currentPanels().map(panel => [panelId(panel), panel]));
+        const sourceTab = tabsById.get(sourceId);
+        const targetTab = tabsById.get(targetId);
+        const sourcePanel = panelsById.get(sourceId);
+        const targetPanel = panelsById.get(targetId);
+        if (!sourceTab || !targetTab || !sourcePanel || !targetPanel) return;
+        tabbar.insertBefore(sourceTab, targetTab);
+        tabsRoot.insertBefore(sourcePanel, targetPanel);
+        saveOrder();
+    }
+
+    applyOrder(readOrder());
+    currentTabs().forEach(tab => {
+        tab.draggable = true;
+        tab.addEventListener("dragstart", event => {
+            dragId = tabId(tab);
+            tab.classList.add("trk_sheet_tab_dragging");
+            event.dataTransfer.effectAllowed = "move";
+            event.dataTransfer.setData("text/plain", dragId);
+        });
+        tab.addEventListener("dragend", () => {
+            dragId = "";
+            currentTabs().forEach(item => {
+                item.classList.remove("trk_sheet_tab_dragging", "trk_sheet_tab_drag_over");
+            });
+        });
+        tab.addEventListener("dragover", event => {
+            event.preventDefault();
+            event.dataTransfer.dropEffect = "move";
+            currentTabs().forEach(item => item.classList.remove("trk_sheet_tab_drag_over"));
+            if (dragId && dragId !== tabId(tab)) tab.classList.add("trk_sheet_tab_drag_over");
+        });
+        tab.addEventListener("dragleave", () => {
+            tab.classList.remove("trk_sheet_tab_drag_over");
+        });
+        tab.addEventListener("drop", event => {
+            event.preventDefault();
+            tab.classList.remove("trk_sheet_tab_drag_over");
+            moveBefore(dragId || event.dataTransfer.getData("text/plain"), tabId(tab));
+        });
     });
 }
 
@@ -309,6 +409,15 @@ function initAdminMasterDataTabs() {
         const tab = event.target.closest("[data-admin-master-tab]");
         if (!tab) return;
         activate(tab.dataset.adminMasterTab);
+    });
+    bindSheetTabDragDrop({
+        tabsRoot,
+        tabbar,
+        tabSelector: "[data-admin-master-tab]",
+        panelSelector: "[data-admin-master-panel]",
+        tabId: tab => tab.dataset.adminMasterTab,
+        panelId: panel => panel.dataset.adminMasterPanel,
+        storageKey: "admin_master_data_tab_order"
     });
     return true;
 }

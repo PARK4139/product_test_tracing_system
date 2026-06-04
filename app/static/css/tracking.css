@@ -239,6 +239,15 @@
     background: #f8fafc;
     color: var(--color-text, #18181b);
 }
+.trk_sheet_tab_dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+}
+.trk_sheet_tab_drag_over {
+    outline: 2px dashed #2563eb;
+    outline-offset: -3px;
+    background: #dbeafe;
+}
 .trk_sheet_tab.is-active {
     height: 34px;
     background: var(--color-surface, #fff);
