@@ -27445,3 +27445,6 @@ FROM work_calendar ORDER BY work_calendar.calendar_date
 2026-06-03T16:38:55.316Z [INFO] [main] 서버 시작 완료  host=127.0.0.1  port=8008
 2026-06-03T16:38:55.316Z [INFO] Application startup complete.
 2026-06-03T16:38:55.317Z [INFO] Uvicorn running on http://127.0.0.1:8008 (Press CTRL+C to quit)
+2026-06-04T00:00:00.050Z [INFO] [backup_service] backed up: product_test_tracking_system.db -> C:\Users\USER\Downloads\product_test_db_backups\2026-06-04\product_test_tracking_system.db
+2026-06-04T00:00:00.051Z [INFO] [backup_service] daily backup complete: 1 file(s) -> C:\Users\USER\Downloads\product_test_db_backups\2026-06-04
+2026-06-04T00:00:00.052Z [INFO] [backup_service] next backup in 86400s (midnight UTC)
