@@ -102,10 +102,17 @@ def get_tracking_summary(
                 val = line.replace("[End]", "").strip()
                 end_date = "" if val in ("", "None") else val
 
+        # device_round / run_session 은 remark 를 표시명으로 사용
+        stage = row[2] or ""
+        if stage in ("device_round", "run_session"):
+            display_alias = (row[5] or "").split("\n")[0].strip() or row[0].replace("TEST_RELEASE-", "")
+        else:
+            display_alias = alias or row[0].replace("TEST_RELEASE-", "")
+
         releases.append({
             "id": row[0],
             "upstream_id": row[1],
-            "alias": alias or row[1],
+            "alias": display_alias,
             "stage": row[2],
             "sequence": row[3],
             "status": row[4],
