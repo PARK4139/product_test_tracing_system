@@ -205,7 +205,7 @@
 .trk_img_upload_btn:hover { background:var(--color-surface-2,#f4f4f5); color:var(--color-text,#18181b); }
 /* 이미지 hover 팝업 */
 #trk_img_popup { display:none; position:fixed; left:50%; top:50%; transform:translate(-50%, -50%); z-index:9999; align-items:center; justify-content:center; width:80vw; height:80vh; background:#fff; border-radius:8px; box-shadow:0 8px 32px rgba(0,0,0,0.3); padding:6px; pointer-events:none; }
-#trk_popup_img { width:auto; height:auto; max-width:100%; max-height:100%; object-fit:contain; display:block; border-radius:4px; }
+#trk_popup_img { width:100%; height:100%; object-fit:contain; display:block; border-radius:4px; }
 .trk_sev_wrap {
     display: inline-flex;
     align-items: center;
@@ -404,7 +404,6 @@
 .gantt_row_child .gantt_bar { height: 14px; opacity: 0.85; }
 .gantt_row_run { background: #fbfdff; }
 .gantt_row_run .gantt_label_name { font-weight: 500; font-size: 0.74rem; color: #475569; }
-.gantt_row_run .gantt_child_icon { font-size: 0.62rem; font-weight: 700; letter-spacing: 0; color: #64748b; }
 .gantt_row_run .gantt_run_bar { height: 12px; opacity: 0.9; }
 /* 상태별 하이라이트 */
 tr.trk_row_highlighted.hl-passed  td { background: #dcfce7 !important; color: #15803d; }

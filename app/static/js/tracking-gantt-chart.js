@@ -198,7 +198,6 @@ function buildGantt(releases, runs) {
         return `<div class="gantt_row gantt_row_run${run.status === 'TESTING' ? ' gantt_row_active' : ''}"
             data-row-id="${run.id}" data-parent-id="${parentId}" data-status="${run.status}" data-run-id="${run.id}">
             <div class="gantt_label_col" style="padding-left:${8 + indent * 18}px">
-                <span class="gantt_child_icon">RUN</span>
                 <div class="gantt_label_main">
                     <span class="gantt_label_name" title="${run.id}">${run.id}</span>
                     ${total > 0 ? `<span class="gantt_meta_chip">${pctVal}%</span>` : ""}

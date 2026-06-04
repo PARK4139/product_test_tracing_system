@@ -255,6 +255,9 @@ def get_tracking_summary(
             SUM(CASE WHEN res.product_test_result_status = 'passed'  THEN 1 ELSE 0 END) AS passed,
             SUM(CASE WHEN res.product_test_result_status = 'blocked' THEN 1 ELSE 0 END) AS blocked,
             SUM(CASE WHEN res.product_test_result_status = 'testing' THEN 1 ELSE 0 END) AS testing,
+            SUM(CASE WHEN res.product_test_result_status = 'failed'  THEN 1 ELSE 0 END) AS failed,
+            SUM(CASE WHEN res.product_test_result_status = 'skipped' THEN 1 ELSE 0 END) AS skipped,
+            SUM(CASE WHEN res.product_test_result_status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled,
             run.product_test_target_id,
             run.product_test_environment_id
         FROM product_test_run run
@@ -269,15 +272,27 @@ def get_tracking_summary(
             "id": r[0],
             "release_id": r[1],
             "parent_release_id": resolve_parent_release(r[1] or ""),
-            "status": r[2],
+            "status": (
+                "FAILED" if (r[9] or 0) > 0 else
+                "BLOCKED" if (r[7] or 0) > 0 else
+                "TESTING" if (r[8] or 0) > 0 else
+                "PASSED" if (r[5] or 0) > 0 and (r[6] or 0) == (r[5] or 0) else
+                "SKIPPED" if (r[5] or 0) > 0 and (r[10] or 0) == (r[5] or 0) else
+                "CANCELLED" if (r[5] or 0) > 0 and (r[11] or 0) == (r[5] or 0) else
+                "TESTING"
+            ),
+            "run_status": r[2],
             "started_at": r[3],
             "finished_at": r[4],
             "total_results": r[5] or 0,
             "passed": r[6] or 0,
             "blocked": r[7] or 0,
             "testing": r[8] or 0,
-            "target_id": r[9] or "",
-            "environment_id": r[10] or "",
+            "failed": r[9] or 0,
+            "skipped": r[10] or 0,
+            "cancelled": r[11] or 0,
+            "target_id": r[12] or "",
+            "environment_id": r[13] or "",
         }
         for r in runs_raw
     ]

@@ -1,7 +1,15 @@
 // tracking-render.js — renderTracking: builds full HTML from API data
 /* ── defect table builder ─────────────────────────────────────── */
 function buildDefectTable(defects) {
-    let html = `<div class="trk_sub_header">미결 결함 현황 (진행 중 배포)</div>`;
+    const isHidden = localStorage.getItem("trk_active_defects_hidden") === "1";
+    const toggleLabel = isHidden ? "보기모드: VIEW 보이기" : "보기모드: VIEW 숨기기";
+    let html = `<div class="trk_sub_header">미결 결함 현황 (진행 중 배포)
+        <button type="button" class="trk_view_mode_btn"
+            onclick="var n=localStorage.getItem('trk_active_defects_hidden')==='1'?'0':'1';localStorage.setItem('trk_active_defects_hidden',n);var b=document.getElementById('trk_refresh_btn');if(b){b.dataset.preserveScroll='1';b.click();}">
+            ${toggleLabel}
+        </button>
+    </div>`;
+    if (isHidden) return html;
     if (defects.length === 0) {
         html += `<div style="color:var(--color-text-muted,#71717a);font-size:0.85rem;padding:12px 0">진행 중 배포에 미결 결함이 없습니다.</div>`;
         return html;

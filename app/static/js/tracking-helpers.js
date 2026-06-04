@@ -50,7 +50,10 @@ function statusBadge(st, short = false) {
         DONE:             ["status-done",     "QI Team 완료"],
         DRAFT:            ["status-draft",    "QI Team 초안"],
         BLOCKED:          ["status-blocked",  "QI Team 시험중단판정"],
+        FAILED:           ["status-failed",   "QI Team 시험실패판정"],
         PASSED:           ["status-passed",   "QI Team 시험합격판정"],
+        SKIPPED:          ["status-skipped",  "QI Team 시험제외"],
+        CANCELLED:        ["status-cancelled", "QI Team 시험취소"],
         QI_TEAM_RELEASED: ["status-approved",  "QI Team 시험합격판정"],
         QI_TEAM_REVIEWED: ["status-reviewed",  "QI Team 시험완료"],
         APPROVED:         ["status-approved",  "QI Team 시험합격판정"],
@@ -86,4 +89,3 @@ function extractTopo(releaseId) {
     const m = (releaseId || "").match(/(\d+AP[_A-Za-z0-9]*|UNCLASSIFIED)$/);
     return m ? m[1] : (releaseId || "").replace("TEST_RELEASE-","");
 }
-

@@ -3,7 +3,7 @@
 function statusHighlightClass(status) {
     const s = (status || "").toUpperCase();
     if (["PASSED","QI_TEAM_RELEASED","APPROVED"].includes(s)) return "hl-passed";
-    if (s === "BLOCKED") return "hl-blocked";
+    if (["BLOCKED","FAILED","CANCELLED"].includes(s)) return "hl-blocked";
     if (s === "TESTING") return "hl-testing";
     return "hl-default";
 }
@@ -48,16 +48,6 @@ function bindHighlights(root) {
         return first;
     }
 
-    // scroll to defect table area
-    function scrollToDefects(firstDefect) {
-        if (firstDefect) {
-            firstDefect.scrollIntoView({ behavior:"smooth", block:"center" });
-        } else {
-            const header = root.querySelector(".trk_defect_table") || root.querySelector(".trk_sub_header");
-            if (header) header.scrollIntoView({ behavior:"smooth", block:"start" });
-        }
-    }
-
     // ── gantt round row click ──
     root.querySelectorAll(".gantt_row_round").forEach(row => {
         row.addEventListener("click", e => {
@@ -86,8 +76,7 @@ function bindHighlights(root) {
                 });
                 if (!topoIds.length) topoIds.push(roundId);
                 topoIds.forEach(id => hlAllTablesByTopo(id));
-                const first = hlDefectsByTopoIds(topoIds);
-                scrollToDefects(first);
+                hlDefectsByTopoIds(topoIds);
             }
         });
     });
@@ -108,8 +97,7 @@ function bindHighlights(root) {
                 });
                 if (!topoIds.length) topoIds.push(sessId);
                 topoIds.forEach(id => hlAllTablesByTopo(id));
-                const first = hlDefectsByTopoIds(topoIds);
-                scrollToDefects(first);
+                hlDefectsByTopoIds(topoIds);
             }
         });
     });
@@ -124,8 +112,7 @@ function bindHighlights(root) {
             if (!isSelected && rowId) {
                 row.classList.add("gantt_hl", statusHighlightClass(row.dataset.status));
                 hlAllTablesByTopo(rowId);
-                const first = hlDefectsByTopoIds([rowId]);
-                scrollToDefects(first);
+                hlDefectsByTopoIds([rowId]);
             }
         });
     });
