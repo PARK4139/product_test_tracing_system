@@ -6,16 +6,15 @@ function saveFoldState(id, folded) {
     try { const s = JSON.parse(localStorage.getItem(GANTT_FOLD_KEY) || "{}"); s[id] = folded; localStorage.setItem(GANTT_FOLD_KEY, JSON.stringify(s)); } catch(e) {}
 }
 function _applyFold(root, id, folded) {
-    // 직계 자식 숨김/표시
+    // 직계 자식 숨김/표시 후, 깊이에 상관없이 재귀로 모든 후손 처리
+    // (라운드 → 세션 → 토폴로지 → 런 4단 계층 지원)
     root.querySelectorAll(`[data-parent-id="${id}"]`).forEach(row => {
         row.style.display = folded ? "none" : "";
-        // 자식이 접혀있지 않으면 손자도 함께 숨김/표시
         const childId = row.dataset.rowId;
         if (childId) {
+            // 자식이 스스로 접혀있으면 그 후손은 계속 숨김
             const childFolded = folded || getFoldState(childId);
-            root.querySelectorAll(`[data-parent-id="${childId}"]`).forEach(grandRow => {
-                grandRow.style.display = childFolded ? "none" : "";
-            });
+            _applyFold(root, childId, childFolded);
         }
     });
 }

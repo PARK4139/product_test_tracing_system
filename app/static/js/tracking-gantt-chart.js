@@ -37,13 +37,38 @@ function buildGantt(releases, runs) {
         visibleReleases = baseReleases;
     } else {
         const filterSet = viewMode === 2 ? BLOCKED_ONLY : IN_PROGRESS;
-        const passIds = new Set();
-        // 1단계: 필터 통과하는 release 수집
-        baseReleases.forEach(r => { if (filterSet.has(r.status)) passIds.add(r.id); });
-        // 2단계: 자식이 통과하면 부모(upstream)도 포함
+        const byId = Object.fromEntries(baseReleases.map(r => [r.id, r]));
+        const allChildrenMap = {};
         baseReleases.forEach(r => {
-            if (passIds.has(r.id) && r.upstream_id) passIds.add(r.upstream_id);
+            if (!r.upstream_id) return;
+            if (!allChildrenMap[r.upstream_id]) allChildrenMap[r.upstream_id] = [];
+            allChildrenMap[r.upstream_id].push(r);
         });
+        const passIds = new Set();
+
+        function includeAncestors(id) {
+            let cur = byId[id];
+            while (cur && cur.upstream_id) {
+                passIds.add(cur.upstream_id);
+                cur = byId[cur.upstream_id];
+            }
+        }
+
+        function includeDescendants(id) {
+            (allChildrenMap[id] || []).forEach(child => {
+                passIds.add(child.id);
+                includeDescendants(child.id);
+            });
+        }
+
+        baseReleases.forEach(r => {
+            if (filterSet.has(r.status)) passIds.add(r.id);
+        });
+        runs.forEach(run => {
+            if (filterSet.has(run.status) && run.parent_release_id) passIds.add(run.parent_release_id);
+        });
+        Array.from(passIds).forEach(includeDescendants);
+        Array.from(passIds).forEach(includeAncestors);
         visibleReleases = baseReleases.filter(r => passIds.has(r.id));
     }
 
@@ -97,6 +122,13 @@ function buildGantt(releases, runs) {
     function renderBar(r, indent, parentIdOverride) {
         const color   = STATUS_COLOR[r.status] || "#94a3b8";
         const alias   = (r.alias && r.alias !== r.upstream_id) ? r.alias : (r.upstream_system || r.id);
+        function roundDisplayId(id) {
+            const raw = String(id || "").replace(/^TEST_RELEASE-/, "");
+            return raw.startsWith("TEST_ROUND_") ? raw : `TEST_ROUND_${raw}`;
+        }
+        const displayName = indent === 0
+            ? `${roundDisplayId(r.id)} · ${alias}`
+            : alias;
         const sd      = toDate(r.start_date);
         const ed      = toDate(r.end_date) || today;
         const total   = r.total_results || 0;
@@ -160,7 +192,7 @@ function buildGantt(releases, runs) {
             <div class="gantt_label_col" style="padding-left:${8 + indentPx}px">
                 ${icon}
                 <div class="gantt_label_main">
-                    <span class="gantt_label_name" title="${r.id}">${alias}</span>
+                    <span class="gantt_label_name" title="${displayName}">${displayName}</span>
                     ${total > 0 ? `<span class="gantt_meta_chip">${pctVal}%</span>` : ""}
                     ${open > 0 ? `<span class="gantt_meta_chip gantt_chip_red">결함 ${open}</span>` : ""}
                 </div>
@@ -238,11 +270,12 @@ function buildGantt(releases, runs) {
         const firstStage = sessions[0] && sessions[0].stage;
         if (firstStage === 'run_session') {
             sessions.forEach(sess => {
+                html += renderBar(sess, 1);
                 const topos = (childrenMap[sess.id] || []).slice().sort((a, b) => deviceSortKey(a.id) - deviceSortKey(b.id));
                 topos.forEach(t => {
-                    html += renderBar(t, 1, p.id);
+                    html += renderBar(t, 2, sess.id);
                     (runsByParent[t.id] || []).slice().sort((a, b) => String(a.started_at || "").localeCompare(String(b.started_at || ""))).forEach(run => {
-                        html += renderRunRow(run, 2, t.id);
+                        html += renderRunRow(run, 3, t.id);
                     });
                 });
             });

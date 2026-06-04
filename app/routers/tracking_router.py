@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import hashlib
+import re
 import shutil
 from pathlib import Path
 
@@ -30,6 +31,10 @@ from app.deps import current_role_name_dependency, database_session_dependency
 from app.models import WorkCalendar, ProductTestRelease, get_utc_now_datetime
 
 tracking_router = APIRouter()
+
+
+def _clean_device_round_alias(display_alias: str) -> str:
+    return re.sub(r"\s*\(\d+(?:\.\d+)*[A-Za-z]?\)\s*$", "", display_alias or "").strip()
 
 
 def _ensure_admin_role(role: str) -> None:
@@ -106,6 +111,8 @@ def get_tracking_summary(
         stage = row[2] or ""
         if stage in ("device_round", "run_session"):
             display_alias = (row[5] or "").split("\n")[0].strip() or row[0].replace("TEST_RELEASE-", "")
+            if stage == "device_round":
+                display_alias = _clean_device_round_alias(display_alias)
         else:
             display_alias = alias or row[0].replace("TEST_RELEASE-", "")
 
