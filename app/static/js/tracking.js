@@ -1274,7 +1274,7 @@ function relocateTrackingSummaryToTabView4(root) {
     if (statWrap && !regionBody.querySelector('[data-admin-tab-label="Statistics"]')) {
         const statCard = createAdminSummaryCard("Statistics", [statWrap]);
         if (statCard) {
-            regionBody.insertBefore(statCard, regionBody.firstElementChild);
+            regionBody.appendChild(statCard);
         }
     }
 
@@ -1290,12 +1290,7 @@ function relocateTrackingSummaryToTabView4(root) {
         }
         const defectCard = createAdminSummaryCard("Open Defects", nodes);
         if (defectCard) {
-            const statCard = regionBody.querySelector('[data-admin-tab-label="Statistics"]');
-            if (statCard && statCard.nextElementSibling) {
-                regionBody.insertBefore(defectCard, statCard.nextElementSibling);
-            } else {
-                regionBody.insertBefore(defectCard, regionBody.firstElementChild);
-            }
+            regionBody.appendChild(defectCard);
         }
     }
 
