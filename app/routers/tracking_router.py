@@ -410,6 +410,32 @@ def get_tracking_summary(
         for r in runs_raw
     ]
 
+    timeline_test_target_by_id: dict[str, dict] = {}
+    for run in runs:
+        target_round_id = run.get("target_round_id") or ""
+        target_id = run.get("target_id") or ""
+        if not target_round_id or not target_id:
+            continue
+        timeline_test_target_by_id.setdefault(target_id, {
+            "id": target_id,
+            "definition_id": "",
+            "product_code": run.get("target_model_name") or "",
+            "model_name": run.get("target_model_name") or "",
+            "hardware_revision": "",
+            "serial_number": "",
+            "software_version": run.get("target_sw_version") or "",
+            "firmware_version": "",
+            "manufacture_lot": "",
+            "status": run.get("status") or "",
+            "round_id": target_round_id,
+            "physical_target_id": run.get("physical_target_id") or "",
+            "remark": "timeline target by test round",
+        })
+    timeline_test_targets = sorted(
+        timeline_test_target_by_id.values(),
+        key=lambda target: (target["round_id"], target["id"]),
+    )
+
     # ── 구성별 Result 요약 (case 단위 집계) ──────────────────────────────────
     results_summary_raw = conn.execute(text("""
         SELECT
@@ -602,9 +628,11 @@ def get_tracking_summary(
         """)).fetchall()
     ]
 
-    test_targets = [
+    physical_test_targets = [
         {
             "id": r[0] or "",
+            "entity_type": "product_test_target",
+            "entity_id": r[0] or "",
             "definition_id": r[1] or "",
             "product_code": r[2] or "",
             "model_name": r[3] or "",
@@ -614,6 +642,8 @@ def get_tracking_summary(
             "firmware_version": r[7] or "",
             "manufacture_lot": r[8] or "",
             "status": r[9] or "",
+            "round_id": "",
+            "physical_target_id": r[0] or "",
             "remark": r[10] or "",
         }
         for r in conn.execute(text("""
@@ -627,6 +657,7 @@ def get_tracking_summary(
             ORDER BY t.product_test_target_id
         """)).fetchall()
     ]
+    test_targets = timeline_test_targets + physical_test_targets
 
     test_environment_definitions = [
         {
@@ -663,24 +694,32 @@ def get_tracking_summary(
             "id": r[0] or "",
             "definition_id": r[1] or "",
             "name": r[2] or "",
-            "computer_name": r[3] or "",
-            "os_version": r[4] or "",
-            "tool_version": r[5] or "",
-            "network_type": r[6] or "",
-            "power_voltage": r[7] or "",
-            "power_frequency": r[8] or "",
-            "captured_at": r[9] or "",
-            "status": r[10] or "",
-            "remark": r[11] or "",
+            "country": r[3] or "",
+            "city": r[4] or "",
+            "company": r[5] or "",
+            "room": r[6] or "",
+            "network_type": r[7] or "",
+            "computer_name": r[8] or "",
+            "os_version": r[9] or "",
+            "tool_version": r[10] or "",
+            "power_voltage": r[11] or "",
+            "power_frequency": r[12] or "",
+            "captured_at": r[13] or "",
+            "status": r[14] or "",
+            "remark": r[15] or "",
         }
         for r in conn.execute(text("""
-            SELECT product_test_environment_id, product_test_environment_definition_id,
-                   product_test_environment_name, test_computer_name,
-                   operating_system_version, test_tool_version, network_type,
-                   power_voltage, power_frequency, captured_at,
-                   product_test_environment_status, remark
-            FROM product_test_environment
-            ORDER BY product_test_environment_id
+            SELECT e.product_test_environment_id, e.product_test_environment_definition_id,
+                   e.product_test_environment_name,
+                   d.test_country, d.test_city, d.test_company, d.test_room,
+                   e.network_type, e.test_computer_name,
+                   e.operating_system_version, e.test_tool_version,
+                   e.power_voltage, e.power_frequency, e.captured_at,
+                   e.product_test_environment_status, e.remark
+            FROM product_test_environment e
+            LEFT JOIN product_test_environment_definition d
+                ON d.product_test_environment_definition_id = e.product_test_environment_definition_id
+            ORDER BY e.product_test_environment_id
         """)).fetchall()
     ]
 

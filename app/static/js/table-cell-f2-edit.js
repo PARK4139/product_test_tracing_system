@@ -147,6 +147,11 @@
             idDataset: "entityId",
             fieldsByIndex: { 3: "procedure_action" },
         },
+        trk_proc_result_table: {
+            entityType: "product_test_procedure_result",
+            idDataset: "entityId",
+            fieldsByIndex: { 4: "product_test_procedure_result_status" },
+        },
     };
 
     const extractCellPersistValue = (cell) => {
@@ -633,10 +638,9 @@
             if (!(td instanceof HTMLTableCellElement)) {
                 return;
             }
-            if (!findEditableInCell(td)) {
-                td.textContent = input.value;
-            }
+            td.textContent = input.value;
             delete td.dataset.syncOriginalHtml;
+            td.classList.remove("table_cell_sync_target", "table_cell_editing");
         });
 
         multiEditCells.forEach((td) => {
@@ -658,6 +662,14 @@
             descriptor: resolveCellSaveDescriptor(td),
             originalValue: extractCellPersistValue(td),
         }));
+        if (!multiEditSnapshots.some((snap) => snap.descriptor)) {
+            if (typeof window.showCenterNonModalV2 === "function") {
+                window.showCenterNonModalV2("DB 저장 매핑이 없는 셀입니다. 원본 DB 컬럼 셀만 편집할 수 있습니다.", "info");
+            }
+            multiEditCells = [];
+            multiEditSnapshots = [];
+            return false;
+        }
         multiEditCells.forEach((td) => td.classList.add("table_cell_sync_target"));
 
         let primary = activateCellEditor(cell) || findEditableInCell(cell);

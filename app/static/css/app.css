@@ -450,6 +450,103 @@ input.table_cell_sync_input {
 
 /* ── admin_dashboard 컴팩트 레이아웃 (compact_mode 토글) ──────────────────── */
 
+/* Tab View 폭: 뷰포트 기준 100% 고정. 테이블 max-content·간트 min-width 가 밖으로 밀지 않게 */
+.admin_dash_compact {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.admin_dash_compact .card {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+/* /admin 상·하 메인 섹션: 추적 카드 ↔ 기준 데이터 탭(host) 폭 통일 (하단 host 기준 100%) */
+.admin_dash_compact > #tracking_top_section.card,
+.admin_dash_compact > .admin_tab_region_shell {
+    width: 100%;
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    box-sizing: border-box;
+}
+
+.admin_tab_region_shell {
+    padding: 0;
+    overflow: hidden;
+}
+
+.admin_dash_compact > #tracking_top_section.card {
+    overflow: hidden;
+}
+
+.admin_tab_region_shell > .admin_tab_region_title,
+.admin_tab_region_shell > .section_header_row.admin_tab_region_title,
+#tracking_top_section > .section_header_row,
+.admin_master_data_tabs .card > .section_header_row,
+.card > .section_header_row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 8px;
+    row-gap: 8px;
+    overflow: visible;
+    position: sticky;
+    top: 0;
+    z-index: 8;
+    background: #fff;
+    box-shadow: 0 1px 0 var(--color_border, #e4e4e7);
+}
+
+.admin_tab_region_body {
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: visible;
+}
+
+.admin_dash_compact #tracking_top_section .tracking_section,
+.admin_dash_compact #trk_root {
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.admin_tab_region_title {
+    padding: 12px 16px 8px;
+    margin: 0;
+}
+
+#tracking_top_section > .table_action_bar[data-header-actions-moved="1"] {
+    display: none !important;
+}
+
+.admin_tab_region_body > .admin_master_data_tabs {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+}
+
+.admin_dash_compact .admin_master_data_tabs .card {
+    width: 100%;
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    overflow: hidden;
+}
+
+.admin_dash_compact #tracking_top_section .trk_data_tabs {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
 /* compact_mode 활성: table-layout: fixed → 열 균등 분배, 줄바꿈 표시 */
 .card.compact_mode .basic_table {
     table-layout: fixed;
@@ -742,15 +839,40 @@ input.table_cell_sync_input {
 }
 
 .section_header_row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
     margin-bottom: 10px;
 }
 
 .section_header_row h3 {
     margin: 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.card_header_actions {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex: 0 0 auto;
+    margin-left: 0;
+    flex-wrap: wrap;
+    max-width: 100%;
+    justify-self: end;
+}
+
+.card_header_actions > .qc_mode_action_button,
+.card_header_actions > button,
+.card_header_actions > a.project_standard_button {
+    flex-shrink: 0;
+}
+
+.card > .table_action_bar.admin_table_action_bar_top:empty,
+.card > .table_action_bar.admin_table_action_bar_top[data-header-actions-moved="1"] {
+    display: none !important;
+    margin: 0;
+    padding: 0;
+    min-height: 0;
 }
 
 .detail_guide {
@@ -925,7 +1047,21 @@ input.table_cell_sync_input {
     max-width: 100%;
     overflow-x: auto;
     resize: horizontal;
-    min-width: 420px;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.card > form,
+.admin_master_data_tabs .card > form {
+    max-width: 100%;
+    overflow-x: auto;
+    box-sizing: border-box;
+}
+
+.admin_master_data_tabs .trk_sheet_panel {
+    max-width: 100%;
+    overflow-x: auto;
+    box-sizing: border-box;
 }
 
 .basic_table button,

@@ -76,7 +76,8 @@ function buildDefectTable(defects) {
 }
 
 /* ── render ──────────────────────────────────────────────────── */
-function buildSimpleDataTableSection(title, className, columns, rows) {
+function buildSimpleDataTableSection(title, className, columns, rows, options) {
+    const opts = options || {};
     if (!rows || rows.length === 0) return "";
     function escapeHtml(value) {
         return String(value == null ? "" : value)
@@ -94,11 +95,19 @@ function buildSimpleDataTableSection(title, className, columns, rows) {
     });
     html += `</tr></thead><tbody>`;
     rows.forEach(row => {
-        html += `<tr style="cursor:pointer">`;
+        const entityType = row.entity_type || opts.entityType || "";
+        const entityId = row.entity_id || (opts.entityIdKey ? row[opts.entityIdKey] : row.id) || "";
+        const rowAttrs = entityType && entityId
+            ? ` data-entity-type="${escapeHtml(entityType)}" data-entity-id="${escapeHtml(entityId)}"`
+            : "";
+        html += `<tr${rowAttrs} style="cursor:pointer">`;
         columns.forEach(col => {
             const raw = row[col.key] == null ? "" : String(row[col.key]);
-            const text = raw || "-";
-            html += `<td title="${escapeHtml(raw)}">${escapeHtml(text)}</td>`;
+            const display = col.transform ? col.transform(raw) : raw;
+            const text = display || "-";
+            const field = col.field || "";
+            const fieldAttr = field ? ` data-field="${escapeHtml(field)}"` : "";
+            html += `<td${fieldAttr} title="${escapeHtml(raw)}">${escapeHtml(text)}</td>`;
         });
         html += `</tr>`;
     });
@@ -110,86 +119,74 @@ function buildMasterDataSections(data, releases) {
     let html = "";
     html += buildSimpleDataTableSection("Test Release", "trk_test_release_table", [
         { key: "id", label: "Release ID", width: "280px" },
-        { key: "upstream_id", label: "Upstream", width: "220px" },
+        { key: "upstream_id", label: "Upstream", width: "220px", field: "upstream_release_id" },
         { key: "stage", label: "Stage", width: "110px" },
-        { key: "status", label: "Status", width: "130px" },
+        { key: "status", label: "Status", width: "130px", field: "product_test_release_status" },
         { key: "workday", label: "Workday", width: "90px" },
         { key: "start_date", label: "Start", width: "100px" },
         { key: "end_date", label: "End", width: "100px" },
         { key: "run_count", label: "Runs", width: "70px" },
         { key: "open_defects", label: "Open Defects", width: "100px" },
-        { key: "remark", label: "Remark", width: "300px" }
-    ], data.test_releases || releases || []);
+        { key: "remark", label: "Remark", width: "300px", field: "remark" }
+    ], data.test_releases || releases || [], { entityType: "product_test_release" });
 
     html += buildSimpleDataTableSection("Test Targets", "trk_test_target_table", [
         { key: "id", label: "Target ID", width: "300px" },
+        { key: "round_id", label: "Timeline Round", width: "300px" },
+        { key: "physical_target_id", label: "Physical Target", width: "240px" },
         { key: "product_code", label: "Product Code", width: "120px" },
         { key: "model_name", label: "Model", width: "140px" },
         { key: "hardware_revision", label: "HW Rev", width: "80px" },
-        { key: "serial_number", label: "Serial", width: "140px" },
-        { key: "software_version", label: "SW", width: "100px" },
-        { key: "firmware_version", label: "FW", width: "100px" },
-        { key: "manufacture_lot", label: "Lot", width: "110px" },
-        { key: "status", label: "Status", width: "100px" },
-        { key: "remark", label: "Remark", width: "260px" }
+        { key: "serial_number", label: "Serial", width: "140px", field: "serial_number" },
+        { key: "software_version", label: "SW", width: "100px", field: "software_version" },
+        { key: "firmware_version", label: "FW", width: "100px", field: "firmware_version" },
+        { key: "manufacture_lot", label: "Lot", width: "110px", field: "manufacture_lot" },
+        { key: "status", label: "Status", width: "100px", field: "product_test_target_status" },
+        { key: "remark", label: "Remark", width: "260px", field: "remark" }
     ], data.test_targets || []);
 
-    html += buildSimpleDataTableSection("Test Environment Definition", "trk_test_environment_definition_table", [
-        { key: "id", label: "Definition ID", width: "360px" },
-        { key: "name", label: "Name", width: "260px" },
-        { key: "country", label: "Country", width: "100px" },
-        { key: "city", label: "City", width: "100px" },
-        { key: "company", label: "Company", width: "120px" },
-        { key: "room", label: "Room", width: "160px" },
-        { key: "network_type", label: "Network", width: "150px" },
-        { key: "computer_name", label: "Computer", width: "150px" },
-        { key: "os_version", label: "OS", width: "160px" },
-        { key: "tool_name", label: "Tool", width: "130px" },
-        { key: "tool_version", label: "Tool Ver.", width: "110px" },
-        { key: "power_voltage", label: "Voltage", width: "100px" },
-        { key: "power_frequency", label: "Freq.", width: "90px" },
-        { key: "status", label: "Status", width: "100px" },
-        { key: "remark", label: "Remark", width: "260px" }
-    ], data.test_environment_definitions || []);
-
-    html += buildSimpleDataTableSection("Test Environment", "trk_test_environment_table", [
-        { key: "id", label: "Environment ID", width: "330px" },
+    html += buildSimpleDataTableSection("Test Configs", "trk_test_environment_table", [
+        { key: "id", label: "Config ID", width: "330px", transform: v => String(v || "").replace(/^TEST_CONFIG-/, "CONFIG-") },
         { key: "definition_id", label: "Definition ID", width: "360px" },
-        { key: "name", label: "Name", width: "240px" },
-        { key: "computer_name", label: "Computer", width: "150px" },
-        { key: "os_version", label: "OS", width: "160px" },
-        { key: "tool_version", label: "Tool Ver.", width: "110px" },
-        { key: "network_type", label: "Network", width: "150px" },
-        { key: "power_voltage", label: "Voltage", width: "100px" },
-        { key: "power_frequency", label: "Freq.", width: "90px" },
-        { key: "captured_at", label: "Captured", width: "120px" },
-        { key: "status", label: "Status", width: "100px" },
-        { key: "remark", label: "Remark", width: "260px" }
-    ], data.test_environments || []);
+        { key: "name", label: "Name", width: "200px", field: "product_test_environment_name" },
+        { key: "country", label: "Country", width: "90px" },
+        { key: "city", label: "City", width: "90px" },
+        { key: "company", label: "Company", width: "120px" },
+        { key: "room", label: "Room", width: "140px" },
+        { key: "network_type", label: "Network", width: "140px", field: "network_type" },
+        { key: "computer_name", label: "Computer", width: "150px", field: "test_computer_name" },
+        { key: "os_version", label: "OS", width: "160px", field: "operating_system_version" },
+        { key: "tool_version", label: "Tool Ver.", width: "110px", field: "test_tool_version" },
+        { key: "power_voltage", label: "Voltage", width: "90px", field: "power_voltage" },
+        { key: "power_frequency", label: "Freq.", width: "80px", field: "power_frequency" },
+        { key: "captured_at", label: "Captured", width: "120px", field: "captured_at" },
+        { key: "status", label: "Status", width: "100px", field: "product_test_environment_status" },
+        { key: "remark", label: "Remark", width: "260px", field: "remark" }
+    ], data.test_environments || [], { entityType: "product_test_environment" });
 
     html += buildSimpleDataTableSection("Test Case", "trk_test_case_master_table", [
         { key: "id", label: "Case ID", width: "330px" },
-        { key: "title", label: "Title", width: "260px" },
-        { key: "category", label: "Category", width: "130px" },
-        { key: "objective", label: "Objective", width: "260px" },
-        { key: "precondition", label: "Precondition", width: "260px" },
-        { key: "expected_result", label: "Expected Result", width: "260px" },
-        { key: "status", label: "Status", width: "100px" },
-        { key: "remark", label: "Remark", width: "260px" }
-    ], data.test_cases || []);
+        { key: "title", label: "Title", width: "260px", field: "product_test_case_title" },
+        { key: "category", label: "Category", width: "130px", field: "test_category" },
+        { key: "objective", label: "Objective", width: "260px", field: "test_objective" },
+        { key: "precondition", label: "Precondition", width: "260px", field: "precondition" },
+        { key: "expected_result", label: "Expected Result", width: "260px", field: "expected_result" },
+        { key: "status", label: "Status", width: "100px", field: "product_test_case_status" },
+        { key: "remark", label: "Remark", width: "260px", field: "remark" }
+    ], data.test_cases || [], { entityType: "product_test_case" });
 
     html += buildSimpleDataTableSection("Test Procedure", "trk_test_procedure_master_table", [
         { key: "id", label: "Procedure ID", width: "360px" },
         { key: "case_id", label: "Case ID", width: "330px" },
         { key: "sequence", label: "Seq", width: "60px" },
-        { key: "action", label: "Action", width: "300px" },
-        { key: "expected_result", label: "Expected Result", width: "260px" },
-        { key: "acceptance_criteria", label: "Acceptance", width: "260px" },
-        { key: "required_evidence_type", label: "Evidence", width: "120px" },
-        { key: "status", label: "Status", width: "100px" },
+        { key: "action", label: "Action", width: "300px", field: "procedure_action" },
+        { key: "expected_result", label: "Expected Result", width: "260px", field: "expected_result" },
+        { key: "acceptance_criteria", label: "Acceptance", width: "260px", field: "acceptance_criteria" },
+        { key: "required_evidence_type", label: "Evidence", width: "120px", field: "required_evidence_type" },
+        { key: "status", label: "Status", width: "100px", field: "product_test_procedure_status" },
         { key: "used_releases", label: "Used In", width: "260px" },
-        { key: "remark", label: "Remark", width: "260px" }
-    ], data.test_procedures || []);
+        { key: "remark", label: "Remark", width: "260px", field: "remark" }
+    ], data.test_procedures || [], { entityType: "product_test_procedure" });
 
     return html;
 }
@@ -274,38 +271,11 @@ function renderTracking(data) {
     html += buildMasterDataSections(data, releases);
 
     
-/* ── 5. Environment ───────────────────────────────────── */
-    const envs = data.environments || [];
-    if (envs.length > 0) {
-        if (envs.length > 0) {
-            html += `<div class="trk_sub_header">Environment</div>`;
-            const envDatalistId = "trk_env_id_list";
-            html += `<datalist id="${envDatalistId}">` +
-                envs.map(e => `<option value="${e.id}">${e.name}</option>`).join("") +
-                `</datalist>`;
-            html += `<div class="trk_timeline_wrap" style="margin-top:6px"><table class="trk_env_table">
-                <thead><tr>
-                    <th style="width:260px">Environment ID</th>
-                    <th style="width:400px">환경 이름</th>
-                </tr></thead><tbody>`;
-            envs.forEach(e => {
-                html += `<tr style="cursor:pointer">
-                    <td>
-                        <input list="${envDatalistId}" value="${e.id}" readonly
-                            style="font-size:0.72rem;color:#64748b;background:transparent;border:none;width:100%;cursor:pointer"
-                            title="${e.id}">
-                    </td>
-                    <td style="font-size:0.75rem" title="${e.name}">${e.name || "-"}</td>
-                </tr>`;
-            });
-            html += `</tbody></table></div>`;
-        }
-    }
 
     /* ── 5.5 Result 요약 (케이스별) ─────────────────────────── */
     const resultsSummary = data.results_summary || [];
     if (resultsSummary.length > 0) {
-        html += `<div class="trk_sub_header">Result 요약 (케이스별)</div>`;
+        html += `<div class="trk_sub_header">Results</div>`;
         html += `<div class="trk_timeline_wrap"><table class="trk_result_table">
             <thead><tr>
                 <th style="width:200px">구성</th>
@@ -361,7 +331,7 @@ function renderTracking(data) {
     /* ── 7. Procedure Results ─────────────────────────────── */
     const procResults = data.procedure_results || [];
     if (procResults.length > 0) {
-        html += `<div class="trk_sub_header">Procedure Result 현황</div>`;
+        html += `<div class="trk_sub_header">Procedure Results</div>`;
         html += `<div class="trk_timeline_wrap"><table class="trk_proc_result_table">
             <thead><tr>
                 <th style="width:180px">구성</th>

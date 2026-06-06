@@ -9,9 +9,10 @@ from sqlalchemy.orm import Session
 
 from app.auth import ROLE_ADMIN, ROLE_MASTER_ADMIN, ROLE_TESTER
 from app.services.logging_service import get_logger
+from app.config import app_settings, is_qc_mode_enabled
 
 _logger = get_logger("admin_router")
-from app.config import is_qc_mode_enabled
+_client_logger = get_logger("client_browser")
 from app.deps import current_role_name_dependency, database_session_dependency
 from app.models import UserAccount, get_utc_now_datetime
 from app.db import truncate_application_data
@@ -26,6 +27,7 @@ from app.services.product_test_field_update_service import bulk_delete_product_t
 from app.services.product_test_run_service import (
     MASTER_ACTIVE_STATUS_VALUES,
     REPORT_STATUS_VALUES,
+    REPORT_TYPE_VALUES,
     SNAPSHOT_TYPE_VALUES,
     TARGET_STATUS_VALUES,
     ENVIRONMENT_STATUS_VALUES,
@@ -61,6 +63,7 @@ from app.services.product_test_run_service import (
     list_product_test_procedures,
     list_product_test_report_snapshots,
     list_product_test_releases,
+    list_product_test_reports,
     list_target_options,
     list_product_test_target_definitions,
     list_product_test_targets,
@@ -69,6 +72,35 @@ from app.services.product_test_run_service import (
 
 
 admin_router = APIRouter(prefix="/admin", tags=["admin"])
+
+
+# ── 브라우저 → 서버 파일 로그 ────────────────────────────────────────────────────
+
+class _ClientLogEntry(BaseModel):
+    level: str = Field(default="info", pattern="^(debug|info|warn|error)$")
+    tag: str = Field(default="client")
+    message: str = Field(max_length=4096)
+
+
+@admin_router.post("/debug/client-log", status_code=204)
+async def post_client_log(entries: list[_ClientLogEntry]) -> None:
+    """브라우저 JS가 보내는 디버그 로그를 data/logs/client.log 에 기록한다."""
+    import logging
+    from datetime import datetime, timezone
+
+    logs_dir = app_settings.data_directory_path / "logs"
+    logs_dir.mkdir(parents=True, exist_ok=True)
+    log_path = logs_dir / "client.log"
+
+    lines: list[str] = []
+    for entry in entries:
+        ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+        line = f"{ts} [{entry.level.upper():5}] [{entry.tag}] {entry.message}"
+        lines.append(line)
+        _client_logger.debug("[client] %s | %s", entry.tag, entry.message)
+
+    with open(log_path, "a", encoding="utf-8") as f:
+        f.write("\n".join(lines) + "\n")
 
 
 ADMIN_FORM_NOTICE_CONFIG = {
@@ -119,6 +151,8 @@ def _admin_dashboard_product_tracing_template_context(*, database_session: Sessi
         "procedure_rows": list_product_test_procedures(database_session),
         "procedure_status_values": MASTER_ACTIVE_STATUS_VALUES,
         "evidence_type_values": EVIDENCE_TYPE_VALUES,
+        "report_rows": list_product_test_reports(database_session),
+        "report_type_values": REPORT_TYPE_VALUES,
     }
 
 

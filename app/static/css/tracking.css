@@ -196,12 +196,27 @@
 .trk_procedure_table tr:hover td { background: #f0f9ff; }
 
 /* Excel-like data sheet tabs */
+.trk_summary_tabs {
+    margin-top: 0;
+    margin-bottom: 12px;
+}
+.trk_summary_tabs .trk_sub_header {
+    margin-top: 0;
+}
+.trk_summary_tabs .trk_stat_table_wrap {
+    margin-bottom: 0;
+}
+
 .trk_data_tabs {
     margin-top: 12px;
     border: 1px solid var(--color-border, #e4e4e7);
     border-radius: 6px;
     background: var(--color-surface, #fff);
     overflow: hidden;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 }
 .trk_sheet_tabbar {
     display: flex;
@@ -263,6 +278,12 @@
     outline-offset: -3px;
     background: #dbeafe;
 }
+.trk_sheet_tab_insert_before {
+    box-shadow: inset 3px 0 0 #2563eb;
+}
+.trk_sheet_tab_insert_after {
+    box-shadow: inset -3px 0 0 #2563eb;
+}
 .trk_sheet_tabbar_drag_over {
     box-shadow: inset 0 0 0 2px #2563eb;
 }
@@ -284,20 +305,107 @@
     text-align: center;
 }
 .trk_sheet_panel {
-    display: none;
+    display: none !important;
     padding: 10px;
 }
 .trk_sheet_panel[hidden] {
     display: none !important;
 }
-.trk_sheet_panel.is-active {
-    display: block;
+.trk_sheet_panel.is-active:not([hidden]) {
+    display: block !important;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    box-sizing: border-box;
+}
+.trk_sheet_panel.is-table-folded {
+    padding: 0;
+    min-height: 0;
+}
+/* 접기: 테이블·폼 본문만 숨김 — 헤더·액션 버튼은 유지 */
+.trk_data_tabs .trk_sheet_panel.is-table-folded .basic_table,
+.trk_data_tabs .trk_sheet_panel.is-table-folded .tester_table_wrap,
+.trk_data_tabs .trk_sheet_panel.is-table-folded form.admin_autosubmit_form,
+.trk_data_tabs .trk_sheet_panel.is-table-folded .gantt_wrap,
+.trk_data_tabs .trk_sheet_panel.is-table-folded .trk_timeline_wrap,
+.trk_data_tabs .trk_sheet_panel.is-table-folded .trk_stat_table_wrap {
+    display: none !important;
+}
+.trk_data_tabs .trk_sheet_panel.is-table-folded > .trk_sub_header ~ * {
+    display: none !important;
+}
+.admin_master_data_tabs .trk_sheet_panel.is-table-folded section.card > *:not(.section_header_row) {
+    display: none !important;
+}
+.trk_tabview_table_fold_btn {
+    flex-shrink: 0;
+    position: relative;
+    z-index: 2;
+}
+/* 탭뷰 접기: 탭바만 유지, 패널·탭바 밖 카드 본문 숨김 */
+.admin_tab_region_shell.is-tabview-region-folded .admin_tab_region_body > section.card,
+.admin_tab_region_shell.is-tabview-region-folded .admin_master_data_tabs.is-tabview-region-folded > :not(.trk_sheet_tabbar),
+.admin_tab_region_shell.is-tabview-region-folded .trk_data_tabs.is-tabview-region-folded > :not(.trk_sheet_tabbar),
+.admin_tab_region_shell.is-tabview-region-folded .trk_sheet_panel,
+.admin_tab_region_shell.is-tabview-region-folded .trk_sheet_panel.is-active,
+.admin_tab_region_shell.is-tabview-region-folded .trk_sheet_panel.is-active:not([hidden]),
+.admin_tab_region_shell.is-tabview-region-folded .trk_sheet_panel[hidden] {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    border: 0 !important;
+    pointer-events: none !important;
+}
+.admin_tab_region_shell.is-tabview-region-folded .admin_master_data_tabs .card,
+.admin_tab_region_shell.is-tabview-region-folded .admin_master_data_tabs .section_header_row {
+    display: none !important;
+}
+.admin_tab_region_shell.is-tabview-region-folded .trk_sheet_tabbar,
+#tracking_top_section.is-tabview-region-folded .trk_sheet_tabbar,
+.admin_tab_region_shell.is-tabview-region-folded .admin_master_data_tabs.is-tabview-region-folded > .trk_sheet_tabbar,
+#tracking_top_section.is-tabview-region-folded .trk_data_tabs.is-tabview-region-folded > .trk_sheet_tabbar {
+    display: flex !important;
+}
+#tracking_top_section.is-tabview-region-folded .trk_data_tabs.is-tabview-region-folded > :not(.trk_sheet_tabbar),
+#tracking_top_section.is-tabview-region-folded .trk_data_tabs .trk_sheet_panel,
+#tracking_top_section.is-tabview-region-folded .trk_data_tabs .trk_sheet_panel.is-active,
+#tracking_top_section.is-tabview-region-folded .trk_data_tabs .trk_sheet_panel.is-active:not([hidden]) {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    border: 0 !important;
+    pointer-events: none !important;
+}
+.trk_sub_header {
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+.trk_sub_header .trk_view_mode_btn,
+.trk_sub_header > button {
+    margin-left: 0;
+    flex-shrink: 0;
+}
+.trk_sub_header::after {
+    display: none;
+}
+.trk_sheet_tabbar .trk_sheet_tab.is-active {
+    z-index: 1;
 }
 .trk_sheet_panel .trk_sub_header {
     margin-top: 0;
 }
 .admin_master_data_tabs .trk_sheet_panel {
     padding: 0;
+    min-width: 0;
+    max-width: 100%;
 }
 .admin_master_data_tabs .card {
     margin: 0;
@@ -309,10 +417,12 @@
     padding: 12px 14px 4px;
 }
 .admin_master_data_tabs .card > form,
-.admin_master_data_tabs .card > .tester_table_wrap,
-.admin_master_data_tabs .card > .table_action_bar {
+.admin_master_data_tabs .card > .tester_table_wrap {
     margin-left: 10px;
     margin-right: 10px;
+    max-width: calc(100% - 20px);
+    overflow-x: auto;
+    box-sizing: border-box;
 }
 
 /* defect table */
@@ -440,7 +550,14 @@
 
 
 /* ── 간트차트 ───────────────────────────────────────────────── */
-.gantt_wrap { width:100%; overflow-x:auto; font-size:0.82rem; }
+.gantt_wrap {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    font-size: 0.82rem;
+    box-sizing: border-box;
+}
 .gantt_header, .gantt_row {
     display: grid;
     grid-template-columns: var(--gantt-label-w, 380px) 150px 1fr;

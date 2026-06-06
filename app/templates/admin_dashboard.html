@@ -104,6 +104,10 @@
 
 {% include "admin_tracking_top.html" %}
 
+<section class="card admin_tab_region_shell" id="admin_tab_region_primary">
+    <div class="section_header_row admin_tab_region_title"><h3>Tab View 2</h3></div>
+    <div class="admin_tab_region_body" data-admin-tab-region="primary" data-tab-aria-label="Tab View 2">
+
 <section class="card">
     <div class="section_header_row"><h3>Test Release</h3></div>
 
@@ -131,6 +135,35 @@
             <tbody>{% for row in release_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_release_id }}</td><td>{{ row.upstream_release_id }}</td><td>{{ row.upstream_release_system }}</td><td>{{ row.release_sequence }}</td><td><span class="status_badge status-{{ row.product_test_release_status|lower }}">{{ row.product_test_release_status }}</span></td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
         </table>
     </div>
+</section>
+<section class="card">
+    <div class="section_header_row"><h3>Test Report</h3></div>
+    <form method="post" action="/admin/product-test-reports/create" class="admin_autosubmit_form">
+        <input type="hidden" name="return_to" value="/admin">
+        <div class="tester_table_wrap">
+            <table class="basic_table">
+                <thead><tr><th>선택</th><th>보고서 ID</th><th>시험 배포 ID</th><th>보고서 유형</th><th>상태</th><th>제목</th><th>비고</th></tr></thead>
+                <tbody><tr>
+                    <td><input type="checkbox" class="admin_input_row_checkbox"></td>
+                    <td><input type="text" name="product_test_report_id" required></td>
+                    <td><input type="text" name="product_test_release_id" required list="admin_report_release_id_options"></td>
+                    <td><select name="product_test_report_type"><option value=""></option>{% for value in report_type_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
+                    <td><input type="text" name="product_test_report_title"></td>
+                    <td><input type="text" name="remark"></td>
+                </tr></tbody>
+            </table>
+        </div>
+    </form>
+    <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
+    <div class="tester_table_wrap">
+        <table class="basic_table">
+            <thead><tr><th>선택</th><th>보고서 ID</th><th>시험 배포 ID</th><th>보고서 유형</th><th>상태</th><th>제목</th><th>비고</th></tr></thead>
+            <tbody>{% for row in report_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_report_id }}</td><td>{{ row.product_test_release_id }}</td><td>{{ row.product_test_report_type }}</td><td>{{ row.product_test_report_status }}</td><td>{{ row.product_test_report_title or '' }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
+        </table>
+    </div>
+    <datalist id="admin_report_release_id_options">
+        {% for row in release_rows %}<option value="{{ row.product_test_release_id }}"></option>{% endfor %}
+    </datalist>
 </section>
 <section class="card">
     <div class="section_header_row"><h3>Test Target</h3></div>
@@ -188,78 +221,14 @@
         </table>
     </div>
 </section>
-<section class="card">
-    <div class="section_header_row"><h3>Test Environment Definition</h3></div>
-    <form method="post" action="/admin/product-test-environment-definitions/create" class="admin_autosubmit_form">
-        <input type="hidden" name="return_to" value="/admin">
-        <div class="tester_table_wrap">
-            <table class="basic_table">
-                <thead><tr><th>선택</th><th>환경 정의 ID</th><th>환경 정의명</th><th>국가</th><th>도시</th><th>시험 업체</th><th>시험 장소</th><th>네트워크 유형</th><th>PC명</th><th>OS 버전</th><th>시험 도구명</th><th>시험 도구 버전</th><th>전압</th><th>주파수</th><th>전원 커넥터 유형</th><th>전원 조건</th><th>환경 정의 상태</th><th>비고</th></tr></thead>
-                <tbody><tr>
-                    <td><input type="checkbox" class="admin_input_row_checkbox"></td>
-                    <td><input type="text" name="product_test_environment_definition_id" required></td>
-                    <td><input type="text" name="product_test_environment_definition_name" required></td>
-                    <td><input type="text" name="test_country" list="admin_environment_definition_country_options"></td>
-                    <td><input type="text" name="test_city" list="admin_environment_definition_city_options"></td>
-                    <td><input type="text" name="test_company" list="admin_environment_definition_company_options"></td>
-                    <td><input type="text" name="test_room" list="admin_environment_definition_room_options"></td>
-                    <td><input type="text" name="network_type" list="admin_environment_definition_network_type_options"></td>
-                    <td><input type="text" name="test_computer_name" list="admin_environment_definition_computer_name_options"></td>
-                    <td><input type="text" name="operating_system_version" list="admin_environment_definition_os_options"></td>
-                    <td><input type="text" name="test_tool_name" list="admin_environment_definition_tool_name_options"></td>
-                    <td><input type="text" name="test_tool_version" list="admin_environment_definition_tool_version_options"></td>
-                    <td><input type="text" name="power_voltage" list="admin_environment_definition_power_voltage_options"></td>
-                    <td><input type="text" name="power_frequency" list="admin_environment_definition_power_frequency_options"></td>
-                    <td><input type="text" name="power_connector_type" list="admin_environment_definition_power_connector_type_options"></td>
-                    <td><input type="text" name="power_condition" list="admin_environment_definition_power_condition_options"></td>
-                    <td><select name="product_test_environment_definition_status"><option value=""></option>{% for value in environment_definition_status_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
-                    <td><input type="text" name="remark"></td>
-                </tr></tbody>
-            </table>
-        </div>
-    </form>
-    <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
-    <div class="tester_table_wrap">
-        <table class="basic_table">
-            <thead><tr><th>선택</th><th>환경 정의 ID</th><th>환경 정의명</th><th>국가</th><th>도시</th><th>시험 업체</th><th>시험 장소</th><th>네트워크 유형</th><th>PC명</th><th>OS 버전</th><th>시험 도구명</th><th>시험 도구 버전</th><th>전압</th><th>주파수</th><th>전원 커넥터 유형</th><th>전원 조건</th><th>환경 정의 상태</th><th>비고</th></tr></thead>
-            <tbody>{% for row in environment_definition_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_environment_definition_id }}</td><td>{{ row.product_test_environment_definition_name }}</td><td>{{ row.test_country }}</td><td>{{ row.test_city }}</td><td>{{ row.test_company }}</td><td>{{ row.test_room }}</td><td>{{ row.network_type }}</td><td>{{ row.test_computer_name }}</td><td>{{ row.operating_system_version }}</td><td>{{ row.test_tool_name }}</td><td>{{ row.test_tool_version }}</td><td>{{ row.power_voltage }}</td><td>{{ row.power_frequency }}</td><td>{{ row.power_connector_type }}</td><td>{{ row.power_condition }}</td><td>{{ row.product_test_environment_definition_status }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
-        </table>
+
     </div>
 </section>
-<section class="card">
-    <div class="section_header_row"><h3>Test Environment</h3></div>
-    <form method="post" action="/admin/product-test-environments/create" class="admin_autosubmit_form">
-        <input type="hidden" name="return_to" value="/admin">
-        <div class="tester_table_wrap">
-            <table class="basic_table">
-                <thead><tr><th>선택</th><th>환경 ID</th><th>환경 정의 ID</th><th>환경명</th><th>PC명</th><th>OS 버전</th><th>시험 도구 버전</th><th>네트워크 유형</th><th>전압</th><th>주파수</th><th>전원 커넥터 유형</th><th>캡처 일시</th><th>환경 상태</th><th>비고</th></tr></thead>
-                <tbody><tr>
-                    <td><input type="checkbox" class="admin_input_row_checkbox"></td>
-                    <td><input type="text" name="product_test_environment_id" required></td>
-                    <td><select name="product_test_environment_definition_id" required><option value=""></option>{% for row in environment_definition_rows %}<option value="{{ row.product_test_environment_definition_id }}">{{ row.product_test_environment_definition_id }}</option>{% endfor %}</select></td>
-                    <td><input type="text" name="product_test_environment_name" required list="admin_environment_name_options"></td>
-                    <td><input type="text" name="test_computer_name" list="admin_environment_definition_computer_name_options"></td>
-                    <td><input type="text" name="operating_system_version" list="admin_environment_definition_os_options"></td>
-                    <td><input type="text" name="test_tool_version" list="admin_environment_definition_tool_version_options"></td>
-                    <td><input type="text" name="network_type" list="admin_environment_definition_network_type_options"></td>
-                    <td><input type="text" name="power_voltage" list="admin_environment_definition_power_voltage_options"></td>
-                    <td><input type="text" name="power_frequency" list="admin_environment_definition_power_frequency_options"></td>
-                    <td><input type="text" name="power_connector_type" list="admin_environment_definition_power_connector_type_options"></td>
-                    <td><input type="text" name="captured_at"></td>
-                    <td><select name="product_test_environment_status"><option value=""></option>{% for value in environment_status_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
-                    <td><input type="text" name="remark"></td>
-                </tr></tbody>
-            </table>
-        </div>
-    </form>
-    <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
-    <div class="tester_table_wrap">
-        <table class="basic_table">
-            <thead><tr><th>선택</th><th>환경 ID</th><th>환경 정의 ID</th><th>환경명</th><th>PC명</th><th>OS 버전</th><th>시험 도구 버전</th><th>네트워크 유형</th><th>전압</th><th>주파수</th><th>전원 커넥터 유형</th><th>캡처 일시</th><th>환경 상태</th><th>비고</th></tr></thead>
-            <tbody>{% for row in environment_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_environment_id }}</td><td>{{ row.product_test_environment_definition_id }}</td><td>{{ row.product_test_environment_name }}</td><td>{{ row.test_computer_name }}</td><td>{{ row.operating_system_version }}</td><td>{{ row.test_tool_version }}</td><td>{{ row.network_type }}</td><td>{{ row.power_voltage }}</td><td>{{ row.power_frequency }}</td><td>{{ row.power_connector_type }}</td><td>{{ row.captured_at }}</td><td>{{ row.product_test_environment_status }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
-        </table>
-    </div>
-</section>
+
+<section class="card admin_tab_region_shell" id="admin_tab_region_secondary">
+    <div class="section_header_row admin_tab_region_title"><h3>Tab View 3</h3></div>
+    <div class="admin_tab_region_body" data-admin-tab-region="secondary" data-tab-aria-label="Tab View 3">
+
 <section class="card">
     <div class="section_header_row"><h3>Test Case</h3></div>
     <form method="post" action="/admin/product-test-cases/create" class="admin_autosubmit_form">
@@ -362,6 +331,26 @@
                 <tr><td colspan="5" style="text-align:center;color:var(--color-text-muted,#71717a);padding:16px">로딩 중…</td></tr>
             </tbody>
         </table>
+    </div>
+</section>
+
+    </div>
+</section>
+
+<section class="card admin_tab_region_shell" id="admin_tab_region_quaternary">
+    <div class="section_header_row admin_tab_region_title"><h3>Tab View 4</h3></div>
+    <div class="admin_tab_region_body" data-admin-tab-region="quaternary" data-tab-aria-label="Tab View 4">
+
+<section class="card" data-admin-tab-label="시험 추적">
+    <div class="section_header_row"><h3>시험 추적</h3></div>
+    <div class="table_action_bar admin_table_action_bar_top">
+        <button type="button" id="trk_refresh_btn">↻ 데이터 새로고침</button>
+    </div>
+    <div class="tracking_section" id="trk_root">
+        <div class="trk_loading" id="trk_loading_msg">데이터 로딩 중…</div>
+    </div>
+</section>
+
     </div>
 </section>
 
@@ -1856,6 +1845,9 @@ void (async () => {
             try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch {}
         }
         function getCardKey(card) {
+            if (card.dataset.cardTitleKey) {
+                return "card__" + card.dataset.cardTitleKey;
+            }
             const h3 = card.querySelector("h3");
             return "card__" + (h3 ? h3.textContent.trim() : Array.from(document.querySelectorAll(".card")).indexOf(card));
         }
@@ -1869,18 +1861,28 @@ void (async () => {
             }
         }
 
+        if (typeof consolidateCardHeaderToolbar === "function") {
+            consolidateCardHeaderToolbar(document);
+        }
+
         document.querySelectorAll(".card").forEach(card => {
-            const headerRow = card.querySelector(".section_header_row");
+            if (card.classList.contains("admin_tab_region_shell") || card.id === "tracking_top_section") {
+                return;
+            }
+            const headerRow = card.querySelector(":scope > .section_header_row");
             if (!headerRow) return;
+            const actionsHost =
+                headerRow.querySelector(":scope > .card_header_actions") ||
+                (typeof ensureCardHeaderActions === "function" ? ensureCardHeaderActions(headerRow) : headerRow);
+            if (actionsHost.querySelector(".card_compact_toggle_btn")) {
+                return;
+            }
 
             // 카드별 버튼 주입
             const btn = document.createElement("button");
             btn.type = "button";
             btn.className = "qc_mode_action_button card_compact_toggle_btn";
-            btn.style.marginLeft = "auto";
-            headerRow.style.display = "flex";
-            headerRow.style.alignItems = "center";
-            headerRow.appendChild(btn);
+            actionsHost.appendChild(btn);
 
             const cardKey = getCardKey(card);
             const states = loadStates();
@@ -2049,5 +2051,16 @@ void (async () => {
         });
     })();
 </script>
+<script src="/static/js/tracking-client-log.js"></script>
+<script src="/static/js/tracking-helpers.js"></script>
+<script src="/static/js/tracking-gantt-chart.js"></script>
+<script src="/static/js/tracking-gantt-resize.js"></script>
+<script src="/static/js/tracking-gantt-fold.js"></script>
+<script src="/static/js/tracking-col-drag.js"></script>
+<script src="/static/js/tracking-status.js"></script>
+<script src="/static/js/tracking-highlight.js"></script>
+<script src="/static/js/tracking-defect.js"></script>
+<script src="/static/js/tracking-render.js"></script>
+<script src="/static/js/tracking.js"></script>
 </div>{# /admin_dash_compact #}
 {% endblock %}
