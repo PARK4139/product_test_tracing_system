@@ -10,11 +10,14 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import re
 import shutil
+import statistics
+import uuid
 from pathlib import Path
 
-from fastapi import APIRouter, File, HTTPException, Request, UploadFile, status
+from fastapi import APIRouter, File, HTTPException, Query, Request, UploadFile, status
 from app.services.logging_service import get_logger
 
 _client_log = get_logger("client")
@@ -28,7 +31,7 @@ ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
 
 from app.auth import ROLE_ADMIN, ROLE_MASTER_ADMIN, ROLE_TESTER
 from app.deps import current_role_name_dependency, database_session_dependency
-from app.models import WorkCalendar, ProductTestRelease, get_utc_now_datetime
+from app.models import CustomSheetTab, UiStatePref, WorkCalendar, ProductTestRelease, get_utc_now_datetime
 
 tracking_router = APIRouter()
 
@@ -1069,4 +1072,392 @@ async def post_client_log(request: Request):
         _client_log.warning("[frontend] %s", full)
     else:
         _client_log.info("[frontend] %s", full)
+    return JSONResponse({"ok": True})
+
+
+# ── 커스텀 스프레드시트 탭 (탭바 '+' 버튼으로 생성) ──────────────────────────
+# GET    /admin/api/custom-sheets?region_key=...        : 탭 목록(시트 포함) 조회
+# POST   /admin/api/custom-sheets                       : 탭 생성
+# PATCH  /admin/api/custom-sheets/{id}                  : 탭 이름/컬럼/행/정렬 수정(자동저장)
+# DELETE /admin/api/custom-sheets/{id}                  : 탭 삭제
+# POST   /admin/api/custom-sheets/{id}/compute          : 컬럼 통계 계산(파이썬 로직, 수식 미지원)
+
+_CUSTOM_SHEET_REGION_KEYS = ("configs", "primary", "secondary", "quaternary")
+_CUSTOM_SHEET_DEFAULT_COLUMNS = [
+    {"key": "col_1", "label": "항목", "type": "text"},
+    {"key": "col_2", "label": "값", "type": "number"},
+    {"key": "col_3", "label": "비고", "type": "text"},
+]
+
+
+def _custom_sheet_to_dict(row: CustomSheetTab) -> dict:
+    try:
+        columns = json.loads(row.columns_json or "[]")
+    except (TypeError, ValueError):
+        columns = []
+    try:
+        rows = json.loads(row.rows_json or "[]")
+    except (TypeError, ValueError):
+        rows = []
+    return {
+        "id": row.custom_sheet_tab_id,
+        "region_key": row.region_key,
+        "tab_label": row.tab_label,
+        "columns": columns,
+        "rows": rows,
+        "sort_order": row.sort_order,
+        "updated_at": row.updated_at,
+        "remark": row.remark or "",
+    }
+
+
+def _custom_sheet_normalize_columns(raw) -> list[dict]:
+    if not isinstance(raw, list) or not raw:
+        return [dict(c) for c in _CUSTOM_SHEET_DEFAULT_COLUMNS]
+    normalized = []
+    for index, item in enumerate(raw):
+        if not isinstance(item, dict):
+            continue
+        key = str(item.get("key") or f"col_{index + 1}").strip() or f"col_{index + 1}"
+        label = str(item.get("label") or key).strip() or key
+        col_type = str(item.get("type") or "text").strip().lower()
+        if col_type not in ("text", "number", "date", "select"):
+            col_type = "text"
+        entry = {"key": key, "label": label, "type": col_type}
+        if col_type == "select" and isinstance(item.get("options"), list):
+            entry["options"] = [str(option) for option in item["options"]][:50]
+        normalized.append(entry)
+    return normalized or [dict(c) for c in _CUSTOM_SHEET_DEFAULT_COLUMNS]
+
+
+def _custom_sheet_normalize_rows(raw, columns: list[dict]) -> list[dict]:
+    if not isinstance(raw, list):
+        return []
+    keys = [c["key"] for c in columns]
+    normalized = []
+    for item in raw[:5000]:
+        if not isinstance(item, dict):
+            continue
+        normalized.append({k: item.get(k, "") for k in keys})
+    return normalized
+
+
+class CustomSheetCreateBody(BaseModel):
+    region_key: str
+    tab_label: str = "새 시트"
+
+
+class CustomSheetUpdateBody(BaseModel):
+    tab_label: str | None = None
+    columns: list | None = None
+    rows: list | None = None
+    sort_order: int | None = None
+    remark: str | None = None
+
+
+class CustomSheetComputeBody(BaseModel):
+    column: str
+    operation: str = "sum"   # sum/avg/min/max/count/median/group_count
+    group_by: str | None = None
+
+
+@tracking_router.get("/admin/api/custom-sheets")
+def list_custom_sheets(
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+    region_key: str = Query(default=""),
+):
+    if current_role_name not in (ROLE_TESTER, ROLE_ADMIN, ROLE_MASTER_ADMIN):
+        raise HTTPException(status_code=403)
+    query = database_session.query(CustomSheetTab)
+    if region_key:
+        query = query.filter_by(region_key=region_key)
+    rows = query.order_by(CustomSheetTab.region_key, CustomSheetTab.sort_order).all()
+    return JSONResponse([_custom_sheet_to_dict(r) for r in rows])
+
+
+@tracking_router.post("/admin/api/custom-sheets")
+def create_custom_sheet(
+    body: CustomSheetCreateBody,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    _ensure_admin_role(current_role_name)
+    region_key = (body.region_key or "").strip().lower()
+    if region_key not in _CUSTOM_SHEET_REGION_KEYS:
+        raise HTTPException(status_code=400, detail="invalid region_key")
+    now = get_utc_now_datetime()
+    max_sort = (
+        database_session.query(CustomSheetTab)
+        .filter_by(region_key=region_key)
+        .count()
+    )
+    new_id = f"sheet_{uuid.uuid4().hex[:12]}"
+    columns = [dict(c) for c in _CUSTOM_SHEET_DEFAULT_COLUMNS]
+    row = CustomSheetTab(
+        custom_sheet_tab_id=new_id,
+        region_key=region_key,
+        tab_label=(body.tab_label or "새 시트").strip()[:80] or "새 시트",
+        columns_json=json.dumps(columns, ensure_ascii=False),
+        rows_json=json.dumps([{c["key"]: "" for c in columns}], ensure_ascii=False),
+        sort_order=max_sort,
+        created_at=now,
+        created_by=current_role_name,
+        updated_at=now,
+        updated_by=current_role_name,
+    )
+    database_session.add(row)
+    database_session.commit()
+    return JSONResponse(_custom_sheet_to_dict(row))
+
+
+@tracking_router.patch("/admin/api/custom-sheets/{sheet_id}")
+def update_custom_sheet(
+    sheet_id: str,
+    body: CustomSheetUpdateBody,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    _ensure_admin_role(current_role_name)
+    row = database_session.query(CustomSheetTab).filter_by(custom_sheet_tab_id=sheet_id).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Not found.")
+
+    columns = json.loads(row.columns_json or "[]")
+    if body.columns is not None:
+        columns = _custom_sheet_normalize_columns(body.columns)
+        row.columns_json = json.dumps(columns, ensure_ascii=False)
+    if body.rows is not None:
+        row.rows_json = json.dumps(_custom_sheet_normalize_rows(body.rows, columns), ensure_ascii=False)
+    if body.tab_label is not None:
+        label = body.tab_label.strip()[:80]
+        row.tab_label = label or row.tab_label
+    if body.sort_order is not None:
+        row.sort_order = int(body.sort_order)
+    if body.remark is not None:
+        row.remark = body.remark.strip() or None
+
+    row.updated_at = get_utc_now_datetime()
+    row.updated_by = current_role_name
+    database_session.commit()
+    return JSONResponse(_custom_sheet_to_dict(row))
+
+
+@tracking_router.delete("/admin/api/custom-sheets/{sheet_id}")
+def delete_custom_sheet(
+    sheet_id: str,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    _ensure_admin_role(current_role_name)
+    row = database_session.query(CustomSheetTab).filter_by(custom_sheet_tab_id=sheet_id).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Not found.")
+    database_session.delete(row)
+    database_session.commit()
+    return JSONResponse({"ok": True})
+
+
+def _custom_sheet_numeric(value) -> float | None:
+    if value is None:
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    text_value = str(value).strip().replace(",", "")
+    if not text_value:
+        return None
+    try:
+        return float(text_value)
+    except ValueError:
+        return None
+
+
+@tracking_router.post("/admin/api/custom-sheets/{sheet_id}/compute")
+def compute_custom_sheet(
+    sheet_id: str,
+    body: CustomSheetComputeBody,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    """시트 컬럼에 대한 통계 계산 — 사용자 수식이 아닌 하드코딩된 파이썬 로직만 지원."""
+    if current_role_name not in (ROLE_TESTER, ROLE_ADMIN, ROLE_MASTER_ADMIN):
+        raise HTTPException(status_code=403)
+    row = database_session.query(CustomSheetTab).filter_by(custom_sheet_tab_id=sheet_id).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Not found.")
+
+    rows = json.loads(row.rows_json or "[]")
+    column = body.column
+    operation = (body.operation or "sum").strip().lower()
+
+    def _aggregate(values: list[float], op: str):
+        if not values:
+            return None
+        if op == "sum":
+            return sum(values)
+        if op == "avg":
+            return statistics.fmean(values)
+        if op == "min":
+            return min(values)
+        if op == "max":
+            return max(values)
+        if op == "median":
+            return statistics.median(values)
+        if op == "count":
+            return float(len(values))
+        return None
+
+    if body.group_by:
+        group_key = body.group_by
+        groups: dict[str, list[float]] = {}
+        group_counts: dict[str, int] = {}
+        for record in rows:
+            group_value = str(record.get(group_key, "") or "(빈 값)")
+            group_counts[group_value] = group_counts.get(group_value, 0) + 1
+            numeric = _custom_sheet_numeric(record.get(column))
+            if numeric is not None:
+                groups.setdefault(group_value, []).append(numeric)
+        if operation == "group_count":
+            result = {key: float(count) for key, count in group_counts.items()}
+        else:
+            result = {key: _aggregate(values, operation) for key, values in groups.items()}
+        return JSONResponse({"ok": True, "operation": operation, "group_by": group_key, "result": result})
+
+    numeric_values = [v for v in (_custom_sheet_numeric(record.get(column)) for record in rows) if v is not None]
+    if operation == "count":
+        value = float(len(rows))
+    else:
+        value = _aggregate(numeric_values, operation)
+    return JSONResponse({
+        "ok": True,
+        "operation": operation,
+        "column": column,
+        "value": value,
+        "sample_size": len(numeric_values),
+        "row_count": len(rows),
+    })
+
+
+# ---------------------------------------------------------------------------
+# UI 상태(키-값) 저장 — 탭 순서/접기 상태/활성 탭/라벨/뷰모드 등을
+# 브라우저 localStorage 대신 서버 DB에 저장해서 다른 PC(clone)에서도 유지되게 한다.
+# 화면 설정값이라 role 체크는 custom-sheets 조회와 동일하게 tester 이상으로 완화.
+# ---------------------------------------------------------------------------
+
+_UI_STATE_KEY_MAX_LEN = 200
+_UI_STATE_VALUE_MAX_LEN = 200_000
+
+
+class UiStateBulkPutBody(BaseModel):
+    values: dict[str, object]
+
+
+def _ui_state_can_access(role: str) -> None:
+    if role not in (ROLE_TESTER, ROLE_ADMIN, ROLE_MASTER_ADMIN):
+        raise HTTPException(status_code=403)
+
+
+def _ui_state_validate_key(key: str) -> str:
+    key = (key or "").strip()
+    if not key or len(key) > _UI_STATE_KEY_MAX_LEN:
+        raise HTTPException(status_code=400, detail="invalid pref key")
+    return key
+
+
+def _ui_state_dump_value(value) -> str:
+    text = json.dumps(value, ensure_ascii=False)
+    if len(text) > _UI_STATE_VALUE_MAX_LEN:
+        raise HTTPException(status_code=400, detail="value too large")
+    return text
+
+
+@tracking_router.get("/admin/api/ui-state")
+def list_ui_state(
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    _ui_state_can_access(current_role_name)
+    rows = database_session.query(UiStatePref).all()
+    values: dict[str, object] = {}
+    for row in rows:
+        try:
+            values[row.pref_key] = json.loads(row.value_json or "null")
+        except (TypeError, ValueError):
+            continue
+    return JSONResponse({"values": values})
+
+
+@tracking_router.put("/admin/api/ui-state/{pref_key}")
+def put_ui_state(
+    pref_key: str,
+    body: dict,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    _ui_state_can_access(current_role_name)
+    key = _ui_state_validate_key(pref_key)
+    value_json = _ui_state_dump_value(body.get("value") if isinstance(body, dict) else None)
+    now = get_utc_now_datetime()
+    row = database_session.query(UiStatePref).filter_by(pref_key=key).first()
+    if row:
+        row.value_json = value_json
+        row.updated_at = now
+        row.updated_by = current_role_name
+    else:
+        row = UiStatePref(
+            pref_key=key,
+            value_json=value_json,
+            updated_at=now,
+            updated_by=current_role_name,
+        )
+        database_session.add(row)
+    database_session.commit()
+    return JSONResponse({"ok": True, "key": key})
+
+
+@tracking_router.put("/admin/api/ui-state")
+def put_ui_state_bulk(
+    body: UiStateBulkPutBody,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    """여러 키를 한 번에 upsert — 초기 마이그레이션(localStorage → DB) 시 사용."""
+    _ui_state_can_access(current_role_name)
+    if len(body.values) > 500:
+        raise HTTPException(status_code=400, detail="too many keys")
+    now = get_utc_now_datetime()
+    saved_keys: list[str] = []
+    for raw_key, value in body.values.items():
+        key = _ui_state_validate_key(raw_key)
+        value_json = _ui_state_dump_value(value)
+        row = database_session.query(UiStatePref).filter_by(pref_key=key).first()
+        if row:
+            row.value_json = value_json
+            row.updated_at = now
+            row.updated_by = current_role_name
+        else:
+            row = UiStatePref(
+                pref_key=key,
+                value_json=value_json,
+                updated_at=now,
+                updated_by=current_role_name,
+            )
+            database_session.add(row)
+        saved_keys.append(key)
+    database_session.commit()
+    return JSONResponse({"ok": True, "keys": saved_keys})
+
+
+@tracking_router.delete("/admin/api/ui-state/{pref_key}")
+def delete_ui_state(
+    pref_key: str,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    _ui_state_can_access(current_role_name)
+    key = _ui_state_validate_key(pref_key)
+    row = database_session.query(UiStatePref).filter_by(pref_key=key).first()
+    if row:
+        database_session.delete(row)
+        database_session.commit()
     return JSONResponse({"ok": True})

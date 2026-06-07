@@ -1,11 +1,11 @@
 // tracking-render.js — renderTracking: builds full HTML from API data
 /* ── defect table builder ─────────────────────────────────────── */
 function buildDefectTable(defects) {
-    const isHidden = localStorage.getItem("trk_active_defects_hidden") === "1";
+    const isHidden = uiStateGetItem("trk_active_defects_hidden") === "1";
     const toggleLabel = isHidden ? "보기모드: VIEW 보이기" : "보기모드: VIEW 숨기기";
     let html = `<div class="trk_sub_header">미결 결함 현황 (진행 중 배포)
         <button type="button" class="trk_view_mode_btn"
-            onclick="var n=localStorage.getItem('trk_active_defects_hidden')==='1'?'0':'1';localStorage.setItem('trk_active_defects_hidden',n);var b=document.getElementById('trk_refresh_btn');if(b){b.dataset.preserveScroll='1';b.click();}">
+            onclick="var n=uiStateGetItem('trk_active_defects_hidden')==='1'?'0':'1';uiStateSetItem('trk_active_defects_hidden',n);var b=document.getElementById('trk_refresh_btn');if(b){b.dataset.preserveScroll='1';b.click();}">
             ${toggleLabel}
         </button>
     </div>`;
@@ -254,16 +254,16 @@ function renderTracking(data) {
 
     /* ── 3. Release timeline ───────────────────────────────── */
     const viewLabels = ['보기모드: 전체','보기모드: 시험중','보기모드: 중단판정','보기모드: 최상위'];
-    const curView = parseInt(localStorage.getItem('trk_view_mode') || '0', 10);
+    const curView = parseInt(uiStateGetItem('trk_view_mode') || '0', 10);
     const sortLabels = ['정렬: 기본','정렬: 시험종료일자별'];
-    const curSort = parseInt(localStorage.getItem('trk_sort_mode') || '0', 10);
+    const curSort = parseInt(uiStateGetItem('trk_sort_mode') || '0', 10);
     html += `<div class="trk_sub_header">배포 이력 타임라인
         <button type="button" id="trk_view_toggle_btn" class="trk_view_mode_btn"
-            onclick="var l=['보기모드: 전체','보기모드: 시험중','보기모드: 중단판정','보기모드: 최상위'];var c=parseInt(localStorage.getItem('trk_view_mode')||'0',10);var n=(c+1)%4;localStorage.setItem('trk_view_mode',n);this.textContent=l[n];var b=document.getElementById('trk_refresh_btn');if(b){b.dataset.preserveScroll='1';b.click();}">
+            onclick="var l=['보기모드: 전체','보기모드: 시험중','보기모드: 중단판정','보기모드: 최상위'];var c=parseInt(uiStateGetItem('trk_view_mode')||'0',10);var n=(c+1)%4;uiStateSetItem('trk_view_mode',n);this.textContent=l[n];var b=document.getElementById('trk_refresh_btn');if(b){b.dataset.preserveScroll='1';b.click();}">
             ${viewLabels[curView] || viewLabels[0]}
         </button>
         <button type="button" id="trk_sort_toggle_btn" class="trk_view_mode_btn"
-            onclick="var l=['정렬: 기본','정렬: 시험종료일자별'];var c=parseInt(localStorage.getItem('trk_sort_mode')||'0',10);var n=(c+1)%2;localStorage.setItem('trk_sort_mode',n);this.textContent=l[n];var b=document.getElementById('trk_refresh_btn');if(b){b.dataset.preserveScroll='1';b.click();}">
+            onclick="var l=['정렬: 기본','정렬: 시험종료일자별'];var c=parseInt(uiStateGetItem('trk_sort_mode')||'0',10);var n=(c+1)%2;uiStateSetItem('trk_sort_mode',n);this.textContent=l[n];var b=document.getElementById('trk_refresh_btn');if(b){b.dataset.preserveScroll='1';b.click();}">
             ${sortLabels[curSort] || sortLabels[0]}
         </button>
     </div>`;

@@ -345,6 +345,7 @@
     <div class="section_header_row"><h3>시험 추적</h3></div>
     <div class="table_action_bar admin_table_action_bar_top">
         <button type="button" id="trk_refresh_btn">↻ 데이터 새로고침</button>
+        <button type="button" id="trk_ui_state_mode_btn" style="margin-left:8px">화면 설정 저장: DB(다른 PC와 공유)</button>
     </div>
     <div class="tracking_section" id="trk_root">
         <div class="trk_loading" id="trk_loading_msg">데이터 로딩 중…</div>
@@ -2052,6 +2053,7 @@ void (async () => {
     })();
 </script>
 <script src="/static/js/tracking-client-log.js"></script>
+<script src="/static/js/tracking-ui-state.js"></script>
 <script src="/static/js/tracking-helpers.js"></script>
 <script src="/static/js/tracking-gantt-chart.js"></script>
 <script src="/static/js/tracking-gantt-resize.js"></script>

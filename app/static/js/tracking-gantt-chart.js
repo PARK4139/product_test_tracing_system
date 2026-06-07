@@ -26,7 +26,7 @@ function buildGantt(releases, runs) {
     // TEST_REPORT_*, TBD_REPORT_* 는 간트에서 항상 숨김 (보고서 컨테이너)
     const isContainer = r => r.id.includes("TEST_REPORT_") || r.id.includes("TBD_REPORT_");
     // 뷰 모드: 0=전체, 1=시험중(TESTING+BLOCKED), 2=중단판정(BLOCKED만), 3=최상위(라운드만)
-    const viewMode = parseInt(localStorage.getItem('trk_view_mode') || '0', 10);
+    const viewMode = parseInt(uiStateGetItem('trk_view_mode') || '0', 10);
     const IN_PROGRESS = new Set(['TESTING','BLOCKED']);
     const BLOCKED_ONLY = new Set(['BLOCKED']);
     const rawReleases = releases.filter(r => !isContainer(r) && r.visible !== false);
@@ -103,7 +103,7 @@ function buildGantt(releases, runs) {
 
     // ── 정렬 모드: 시험종료일자별 ────────────────────────────────────
     // 라운드의 실효 종료일 = 자신/하위 토폴로지 end_date, 하위 런 finished_at 중 최신값
-    const sortMode = parseInt(localStorage.getItem('trk_sort_mode') || '0', 10);
+    const sortMode = parseInt(uiStateGetItem('trk_sort_mode') || '0', 10);
     if (sortMode === 1) {
         const effEnd = (rel) => {
             let latest = toDate(rel.end_date);

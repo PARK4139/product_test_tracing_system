@@ -2,7 +2,7 @@
 function initGanttResize(wrap) {
     const handle = wrap.querySelector("#gantt_resize_handle");
     if (!handle) return;
-    const saved = parseInt(localStorage.getItem(GANTT_COL_W_KEY), 10);
+    const saved = parseInt(uiStateGetItem(GANTT_COL_W_KEY), 10);
     if (saved && saved > 80) wrap.style.setProperty("--gantt-label-w", saved + "px");
 
     let startX, startW;
@@ -23,7 +23,7 @@ function initGanttResize(wrap) {
             document.body.style.cursor = "";
             document.body.style.userSelect = "";
             const w = parseInt(wrap.style.getPropertyValue("--gantt-label-w"), 10);
-            if (w) localStorage.setItem(GANTT_COL_W_KEY, w);
+            if (w) uiStateSetItem(GANTT_COL_W_KEY, w);
             document.removeEventListener("mousemove", onMove);
             document.removeEventListener("mouseup", onUp);
         }
@@ -60,7 +60,7 @@ function initDeadlineDrag(wrap) {
             line.classList.remove("gantt_deadline_hidden");
             const lbl = line.querySelector(".gantt_deadline_label");
             if (lbl) lbl.innerHTML = "deadline<br>" + dateStr;
-            localStorage.setItem(DEADLINE_KEY, JSON.stringify({pct: p, date: dateStr}));
+            uiStateSetItem(DEADLINE_KEY, JSON.stringify({pct: p, date: dateStr}));
         };
         const onUp = () => {
             document.removeEventListener("mousemove", onMove);

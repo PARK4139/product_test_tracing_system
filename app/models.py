@@ -611,3 +611,47 @@ class WorkCalendar(Base):
     note: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[str] = mapped_column(Text, nullable=False)
     created_by: Mapped[str] = mapped_column(Text, nullable=False)
+
+
+class CustomSheetTab(Base):
+    """탭뷰 '+' 버튼으로 사용자가 직접 만드는 스프레드시트형 커스텀 탭.
+
+    한 행 = 탭 1개. 컬럼/행 데이터는 JSON 문자열로 저장(범용 스키마).
+    columns_json: [{"key": "col_1", "label": "이름", "type": "text"}, ...]
+    rows_json:    [{"col_1": "값1", "col_2": 123}, ...]
+    SQLite의 json_extract / json_each 로 통계·집계 쿼리 가능.
+    """
+    __tablename__ = "custom_sheet_tab"
+    __table_args__ = (
+        Index("ix_custom_sheet_tab_region_key", "region_key"),
+        UniqueConstraint("region_key", "sort_order", name="uq_custom_sheet_tab_region_sort"),
+    )
+
+    custom_sheet_tab_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    region_key: Mapped[str] = mapped_column(Text, nullable=False)  # configs/primary/secondary/quaternary
+    tab_label: Mapped[str] = mapped_column(Text, nullable=False)
+    columns_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    rows_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    created_at: Mapped[str] = mapped_column(Text, nullable=False)
+    created_by: Mapped[str] = mapped_column(Text, nullable=False)
+    updated_at: Mapped[str] = mapped_column(Text, nullable=False)
+    updated_by: Mapped[str] = mapped_column(Text, nullable=False)
+    remark: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class UiStatePref(Base):
+    """브라우저 localStorage 대신 서버 DB에 저장할 수 있는 화면 UI 상태(키-값) 저장소.
+
+    탭 순서/접기 상태/활성 탭/라벨/뷰모드 등 사용자 화면 설정을 DB에 저장해두면,
+    다른 PC에서 동일 DB를 clone 했을 때도 화면 상태가 그대로 유지된다.
+    pref_key 예: "sheet_tab_layout_v2", "admin_master_primary_tab" 등
+    (프런트의 localStorage 키 이름을 그대로 사용).
+    value_json: 저장값을 JSON 문자열로 직렬화해서 저장(문자열/객체/배열 모두 호환).
+    """
+    __tablename__ = "ui_state_pref"
+
+    pref_key: Mapped[str] = mapped_column(Text, primary_key=True)
+    value_json: Mapped[str] = mapped_column(Text, nullable=False, default="null")
+    updated_at: Mapped[str] = mapped_column(Text, nullable=False)
+    updated_by: Mapped[str] = mapped_column(Text, nullable=False)

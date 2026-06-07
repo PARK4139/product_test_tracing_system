@@ -38,7 +38,7 @@ function initDefectColResize(root) {
     if (!table) return;
     const cols = Array.from(table.querySelectorAll("col.trk_col_resizable"));
     try {
-        const saved = JSON.parse(localStorage.getItem(DEFECT_COL_KEY) || "[]");
+        const saved = JSON.parse(uiStateGetItem(DEFECT_COL_KEY) || "[]");
         saved.forEach((w, i) => { if (cols[i] && w > 20) cols[i].style.width = w + "px"; });
     } catch(e) {}
 
@@ -58,7 +58,7 @@ function initDefectColResize(root) {
                 document.body.style.cursor = "";
                 document.body.style.userSelect = "";
                 const widths = cols.map(c => parseInt(c.style.width) || 0);
-                localStorage.setItem(DEFECT_COL_KEY, JSON.stringify(widths));
+                uiStateSetItem(DEFECT_COL_KEY, JSON.stringify(widths));
                 document.removeEventListener("mousemove", onMove);
                 document.removeEventListener("mouseup", onUp);
             };

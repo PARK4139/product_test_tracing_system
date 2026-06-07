@@ -106,7 +106,7 @@ function sheetPanelId(panel) {
 
 function readSheetTabLocations() {
     try {
-        const parsed = JSON.parse(localStorage.getItem("sheet_tab_locations") || "{}");
+        const parsed = JSON.parse(uiStateGetItem("sheet_tab_locations") || "{}");
         return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
     } catch (_) {
         return {};
@@ -115,7 +115,7 @@ function readSheetTabLocations() {
 
 function writeSheetTabLocations(locations) {
     try {
-        localStorage.setItem("sheet_tab_locations", JSON.stringify(locations || {}));
+        uiStateSetItem("sheet_tab_locations", JSON.stringify(locations || {}));
     } catch (_) {
         /* ignore */
     }
@@ -167,7 +167,7 @@ function patchSheetTabLayoutSnapshotLocations(locations) {
     snap.locations = locations || {};
     snap.savedAt = Date.now();
     try {
-        localStorage.setItem(SHEET_TAB_LAYOUT_SNAPSHOT_KEY, JSON.stringify(snap));
+        uiStateSetItem(SHEET_TAB_LAYOUT_SNAPSHOT_KEY, JSON.stringify(snap));
     } catch (_) {
         /* ignore */
     }
@@ -192,7 +192,7 @@ function recordSheetTabLocation(tabId, groupKey, index) {
 
 function readStoredSheetOrder(storageKey) {
     try {
-        const parsed = JSON.parse(localStorage.getItem(storageKey) || "[]");
+        const parsed = JSON.parse(uiStateGetItem(storageKey) || "[]");
         return Array.isArray(parsed) ? parsed : [];
     } catch (_) {
         return [];
@@ -204,7 +204,7 @@ function writeStoredSheetOrder(storageKey, ids) {
         return;
     }
     const next = Array.isArray(ids) ? ids.filter(Boolean) : [];
-    localStorage.setItem(storageKey, JSON.stringify(next));
+    uiStateSetItem(storageKey, JSON.stringify(next));
 }
 
 function sortItemsByStoredOrder(items, storageKey, getId) {
@@ -246,12 +246,19 @@ function applyStoredSheetGroupOrder(group) {
         group.tabbar.appendChild(tabsById.get(id));
         group.tabsRoot.appendChild(panelsById.get(id));
     });
+    // "+" 탭 추가 버튼은 [data-sheet-tab]이 아니므로 위 재정렬에서 제외됨.
+    // appendChild로 각 탭을 끝으로 옮기는 과정에서 버튼이 맨 앞으로 밀려나므로,
+    // 재정렬이 끝난 뒤 버튼을 다시 맨 끝으로 이동시켜 항상 탭들의 오른쪽에 위치하도록 한다.
+    const addBtn = group.tabbar.querySelector(":scope > .trk_sheet_tab_add_btn");
+    if (addBtn) {
+        group.tabbar.appendChild(addBtn);
+    }
     dedupeSheetTabGroupDom(group);
 }
 
 function readSheetTabLayoutSnapshot() {
     try {
-        const parsed = JSON.parse(localStorage.getItem(SHEET_TAB_LAYOUT_SNAPSHOT_KEY) || "null");
+        const parsed = JSON.parse(uiStateGetItem(SHEET_TAB_LAYOUT_SNAPSHOT_KEY) || "null");
         if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
             return parsed;
         }
@@ -270,7 +277,7 @@ function writeSheetTabLayoutSnapshot(locations, orders, activeTabs) {
         savedAt: Date.now(),
     };
     try {
-        localStorage.setItem(SHEET_TAB_LAYOUT_SNAPSHOT_KEY, JSON.stringify(snapshot));
+        uiStateSetItem(SHEET_TAB_LAYOUT_SNAPSHOT_KEY, JSON.stringify(snapshot));
     } catch (_) {
         /* ignore */
     }
@@ -318,7 +325,7 @@ function collectSheetTabLayoutFromDom() {
             if (active) {
                 activeTabs[group.storageTabKey] = active;
             } else if (group.storageTabKey) {
-                const stored = localStorage.getItem(group.storageTabKey);
+                const stored = uiStateGetItem(group.storageTabKey);
                 if (stored && ids.includes(stored)) {
                     activeTabs[group.storageTabKey] = stored;
                 }
@@ -360,7 +367,7 @@ function applySheetTabLayoutSnapshot(snapshot) {
         });
     }
     if (snapshot.locations && typeof snapshot.locations === "object") {
-        localStorage.setItem("sheet_tab_locations", JSON.stringify(snapshot.locations));
+        uiStateSetItem("sheet_tab_locations", JSON.stringify(snapshot.locations));
     }
 }
 
@@ -372,7 +379,7 @@ function saveAllSheetTabState() {
     Object.entries(orders).forEach(([storageKey, ids]) => {
         writeStoredSheetOrder(storageKey, ids);
     });
-    localStorage.setItem("sheet_tab_locations", JSON.stringify(locations));
+    uiStateSetItem("sheet_tab_locations", JSON.stringify(locations));
     writeSheetTabLayoutSnapshot(locations, orders, activeTabs);
 }
 
@@ -412,7 +419,7 @@ function activateSheetTabGroupExclusive(tabsRoot, tabId, storageTabKey) {
 
     let resolvedId = tabId;
     if (!resolvedId || !tabs.some((tab) => sheetTabId(tab) === resolvedId)) {
-        const stored = storageTabKey ? localStorage.getItem(storageTabKey) : "";
+        const stored = storageTabKey ? uiStateGetItem(storageTabKey) : "";
         resolvedId =
             stored && tabs.some((tab) => sheetTabId(tab) === stored)
                 ? stored
@@ -434,7 +441,7 @@ function activateSheetTabGroupExclusive(tabsRoot, tabId, storageTabKey) {
         panel.hidden = regionFolded ? true : !active;
     });
     if (storageTabKey) {
-        localStorage.setItem(storageTabKey, resolvedId);
+        uiStateSetItem(storageTabKey, resolvedId);
     }
 
     return {
@@ -454,7 +461,7 @@ function syncAllSheetTabGroupActives() {
             return;
         }
         const key = group.storageTabKey;
-        let id = key ? localStorage.getItem(key) : "";
+        let id = key ? uiStateGetItem(key) : "";
         if (!id || !tabs.some((tab) => sheetTabId(tab) === id)) {
             const current = tabs.find((tab) => tab.classList.contains("is-active"));
             id = current ? sheetTabId(current) : sheetTabId(tabs[0]);
@@ -470,7 +477,7 @@ function ensureSheetGroupActive(group, preferredId) {
     }
     let activeId = preferredId && tabs.some((tab) => sheetTabId(tab) === preferredId) ? preferredId : "";
     if (!activeId && group.storageTabKey) {
-        const stored = localStorage.getItem(group.storageTabKey) || "";
+        const stored = uiStateGetItem(group.storageTabKey) || "";
         if (stored && tabs.some((tab) => sheetTabId(tab) === stored)) {
             activeId = stored;
         }
@@ -906,7 +913,7 @@ let tabViewRegionFoldLegacyMigrated = false;
 
 function readTabViewRegionFoldStates() {
     try {
-        const parsed = JSON.parse(localStorage.getItem(TABVIEW_REGION_FOLD_KEY) || "{}");
+        const parsed = JSON.parse(uiStateGetItem(TABVIEW_REGION_FOLD_KEY) || "{}");
         return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
     } catch (_) {
         return {};
@@ -915,7 +922,7 @@ function readTabViewRegionFoldStates() {
 
 function writeTabViewRegionFoldStates(states) {
     try {
-        localStorage.setItem(TABVIEW_REGION_FOLD_KEY, JSON.stringify(states));
+        uiStateSetItem(TABVIEW_REGION_FOLD_KEY, JSON.stringify(states));
     } catch (_) {
         /* ignore */
     }
@@ -930,7 +937,7 @@ function migrateLegacyTabViewRegionFoldStates() {
     let changed = false;
     let legacy = {};
     try {
-        legacy = JSON.parse(localStorage.getItem(SHEET_TAB_TABLE_FOLD_KEY) || "{}");
+        legacy = JSON.parse(uiStateGetItem(SHEET_TAB_TABLE_FOLD_KEY) || "{}");
         if (!legacy || typeof legacy !== "object" || Array.isArray(legacy)) {
             legacy = {};
         }
@@ -1037,7 +1044,7 @@ function applyTabViewRegionFold(meta, folded) {
             const group = sheetTabGroups.get(meta.groupKey);
             if (group && typeof group.activate === "function") {
                 const tabs = Array.from(group.tabbar.querySelectorAll("[data-sheet-tab]"));
-                let id = group.storageTabKey ? localStorage.getItem(group.storageTabKey) : "";
+                let id = group.storageTabKey ? uiStateGetItem(group.storageTabKey) : "";
                 if (!id || !tabs.some((tab) => sheetTabId(tab) === id)) {
                     const activeTab = tabs.find((tab) => tab.classList.contains("is-active"));
                     id = activeTab ? sheetTabId(activeTab) : "";
@@ -1385,7 +1392,7 @@ function initTrackingDataTabs(root) {
     tabbar.setAttribute("aria-label", "Tab View 1");
     tabsRoot.appendChild(tabbar);
 
-    const storedId = localStorage.getItem("trk_data_tab") || "";
+    const storedId = uiStateGetItem("trk_data_tab") || "";
     const activeGroup = sortedGroups.find((group) => group.id === storedId) || sortedGroups[0];
 
     sortedGroups.forEach((group) => {
@@ -1635,7 +1642,7 @@ function escapeSheetTabText(value) {
 
 function readSheetTabMap(storageKey) {
     try {
-        const parsed = JSON.parse(localStorage.getItem(storageKey) || "{}");
+        const parsed = JSON.parse(uiStateGetItem(storageKey) || "{}");
         return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
     } catch (_) {
         return {};
@@ -1649,7 +1656,7 @@ function migrateSheetTabLabelToGlobal(id, label) {
         return;
     }
     global[id] = nextLabel;
-    localStorage.setItem(SHEET_TAB_LABELS_GLOBAL, JSON.stringify(global));
+    uiStateSetItem(SHEET_TAB_LABELS_GLOBAL, JSON.stringify(global));
 }
 
 function getSheetTabLabel(storageKey, id, fallback) {
@@ -1695,12 +1702,12 @@ function setSheetTabLabel(storageKey, id, label) {
     } else {
         delete labels[id];
     }
-    localStorage.setItem(SHEET_TAB_LABELS_GLOBAL, JSON.stringify(labels));
+    uiStateSetItem(SHEET_TAB_LABELS_GLOBAL, JSON.stringify(labels));
     if (storageKey && storageKey !== SHEET_TAB_LABELS_GLOBAL) {
         const legacy = readSheetTabMap(storageKey);
         if (legacy[id]) {
             delete legacy[id];
-            localStorage.setItem(storageKey, JSON.stringify(legacy));
+            uiStateSetItem(storageKey, JSON.stringify(legacy));
         }
     }
 }
@@ -1931,7 +1938,7 @@ function initAdminMasterDataTabRegion(regionBody) {
     tabsRoot.appendChild(tabbar);
     regionBody.insertBefore(tabsRoot, firstCard);
 
-    const storedId = localStorage.getItem(storageTab) || "";
+    const storedId = uiStateGetItem(storageTab) || "";
     const activeGroup = sortedGroups.find((group) => group.id === storedId) || sortedGroups[0];
 
     sortedGroups.forEach((group) => {
@@ -2028,6 +2035,7 @@ function initAdminMasterDataTabRegion(regionBody) {
         syncTabViewRegionFold(foldMeta);
     }
     consolidateCardHeaderToolbar(regionBody);
+    initCustomSheetTabsForRegion(regionBody, tabsRoot, tabbar, activate, regionKey);
     regionBody.dataset.adminTabsInit = "1";
     clientLog("tabRegion", "initAdminMasterDataTabRegion → 탭바 생성 완료 regionKey=" + regionKey + " tabCount=" + sortedGroups.length);
     // 가시성 진단: 500ms 후 computed style 보고
@@ -2053,6 +2061,734 @@ function initAdminMasterDataTabRegion(regionBody) {
     }(tabbar, tabsRoot, regionKey));
     return true;
 }
+
+
+// ── 커스텀 스프레드시트 탭 ("+" 버튼으로 생성, DB 자동저장) ──────────────────
+// 데이터 모델: { id, region_key, tab_label, columns:[{key,label,type}], rows:[{...}] }
+// 서버 API: GET/POST /admin/api/custom-sheets , PATCH/DELETE /admin/api/custom-sheets/{id}
+//           POST /admin/api/custom-sheets/{id}/compute (합계/평균/최소/최대/중앙값/개수)
+const customSheetCache = new Map();
+const customSheetSaveTimers = new Map();
+
+function customSheetPanelId(sheetId) {
+    return "custom_" + sheetId;
+}
+
+async function customSheetApiFetch(url, options) {
+    const response = await fetch(url, Object.assign(
+        { headers: { "Content-Type": "application/json" } },
+        options || {},
+    ));
+    if (!response.ok) {
+        throw new Error("HTTP " + response.status);
+    }
+    return response.json();
+}
+
+async function loadCustomSheetsForRegion(regionKey) {
+    try {
+        return await customSheetApiFetch(`/admin/api/custom-sheets?region_key=${encodeURIComponent(regionKey)}`);
+    } catch (err) {
+        clientLog("customSheet", "목록 조회 실패 region=" + regionKey + " " + err, "error");
+        return [];
+    }
+}
+
+function buildCustomSheetTab(sheet) {
+    const tab = document.createElement("button");
+    tab.type = "button";
+    tab.className = "trk_sheet_tab custom_sheet_tab";
+    tab.dataset.sheetTab = customSheetPanelId(sheet.id);
+    tab.dataset.customSheetId = sheet.id;
+    tab.setAttribute("role", "tab");
+    tab.setAttribute("aria-selected", "false");
+    tab.innerHTML =
+        `<span class="trk_sheet_label">${escapeSheetTabText(sheet.tab_label)}</span>` +
+        `<span class="trk_sheet_count">${(sheet.rows || []).length}</span>` +
+        `<span class="custom_sheet_tab_close" data-action="delete-sheet" title="시트 삭제">×</span>`;
+    return tab;
+}
+
+function buildCustomSheetPanel(sheet) {
+    const panel = document.createElement("div");
+    panel.className = "trk_sheet_panel custom_sheet_panel";
+    panel.dataset.sheetPanel = customSheetPanelId(sheet.id);
+    panel.dataset.customSheetId = sheet.id;
+    panel.hidden = true;
+    panel.setAttribute("role", "tabpanel");
+    panel.innerHTML = `
+        <div class="custom_sheet_toolbar">
+            <button type="button" class="custom_sheet_btn" data-action="rename" title="탭 이름 변경">✎ 이름</button>
+            <span class="custom_sheet_toolbar_sep"></span>
+            <select class="custom_sheet_add_row_pos" title="새 행을 추가할 위치 (선택한 셀 기준)">
+                <option value="above" selected>위에 추가</option>
+                <option value="below">아래에 추가</option>
+            </select>
+            <button type="button" class="custom_sheet_btn" data-action="add-row" title="선택한 셀의 행을 기준으로 위/아래 옵션에 따라 새 행을 추가합니다 (선택이 없으면 맨 위/맨 아래)">+ 행</button>
+            <button type="button" class="custom_sheet_btn" data-action="del-row" title="셀을 선택한 뒤 이 버튼에 마우스를 올리면 삭제될 행이 표시되고, 클릭하면 삭제됩니다">- 행</button>
+            <button type="button" class="custom_sheet_btn" data-action="add-col" title="열 추가">+ 열</button>
+            <button type="button" class="custom_sheet_btn" data-action="del-col" title="셀을 선택한 뒤 이 버튼에 마우스를 올리면 삭제될 열이 표시되고, 클릭하면 삭제됩니다">- 열</button>
+            <span class="custom_sheet_toolbar_sep"></span>
+            <input type="search" class="custom_sheet_filter" placeholder="필터(텍스트 포함)" />
+            <span class="custom_sheet_toolbar_sep"></span>
+            <select class="custom_sheet_compute_col"></select>
+            <select class="custom_sheet_compute_op">
+                <option value="sum">합계</option>
+                <option value="avg">평균</option>
+                <option value="min">최소</option>
+                <option value="max">최대</option>
+                <option value="median">중앙값</option>
+                <option value="count">개수</option>
+            </select>
+            <button type="button" class="custom_sheet_btn custom_sheet_btn_primary" data-action="compute">∑ 계산</button>
+            <span class="custom_sheet_compute_result"></span>
+            <span class="custom_sheet_save_status" data-state="idle">저장됨</span>
+        </div>
+        <div class="custom_sheet_table_wrap">
+            <table class="custom_sheet_table">
+                <thead></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <p class="custom_sheet_hint">셀을 클릭하면 선택되고(더블클릭/Enter/F2를 눌러야 입력 모드로 전환됩니다), "+ 행" 옆 옵션으로 선택한 셀의 위/아래 중 추가 위치를 고를 수 있습니다. "- 행"/"- 열" 버튼에 마우스를 올리면 삭제될 범위가 색으로 표시됩니다. 열 이름을 클릭해 선택한 뒤 F2(또는 더블클릭/Enter)를 누르면 이름을 바꿀 수 있고, 열 머리글의 빈 곳을 클릭하면 정렬됩니다. 데이터는 입력 후 자동으로 DB에 저장됩니다.</p>
+    `;
+    return panel;
+}
+
+function customSheetCellSortValue(value) {
+    const numeric = Number(String(value ?? "").replace(/,/g, "").trim());
+    return { numeric, isNumeric: value !== "" && value !== null && value !== undefined && !Number.isNaN(numeric) };
+}
+
+function renderCustomSheetTable(panel, sheet) {
+    const table = panel.querySelector(".custom_sheet_table");
+    if (!table) {
+        return;
+    }
+    const thead = table.querySelector("thead");
+    const tbody = table.querySelector("tbody");
+    const columns = sheet.columns || [];
+    const view = sheet._view || (sheet._view = { sortKey: "", sortDir: "asc", filterText: "" });
+
+    const headRow = document.createElement("tr");
+    const thIndex = document.createElement("th");
+    thIndex.className = "custom_sheet_col_index";
+    thIndex.textContent = "#";
+    thIndex.title = "행 번호";
+    headRow.appendChild(thIndex);
+    columns.forEach((col) => {
+        const th = document.createElement("th");
+        th.dataset.colKey = col.key;
+        const sortMark = view.sortKey === col.key ? (view.sortDir === "asc" ? " ▲" : " ▼") : "";
+        const labelSpan = document.createElement("span");
+        labelSpan.className = "custom_sheet_col_label";
+        labelSpan.contentEditable = "false";
+        labelSpan.tabIndex = 0;
+        labelSpan.textContent = col.label;
+        labelSpan.title = "클릭해서 선택한 뒤 F2(더블클릭/Enter)를 누르면 열 이름을 변경할 수 있습니다";
+
+        function exitCustomSheetColLabelEditMode() {
+            labelSpan.contentEditable = "false";
+            labelSpan.classList.remove("is-editing");
+        }
+        function enterCustomSheetColLabelEditMode() {
+            labelSpan.contentEditable = "true";
+            labelSpan.classList.add("is-editing");
+            labelSpan.focus();
+            const range = document.createRange();
+            range.selectNodeContents(labelSpan);
+            const selection = window.getSelection();
+            if (selection) {
+                selection.removeAllRanges();
+                selection.addRange(range);
+            }
+        }
+
+        labelSpan.addEventListener("click", (event) => {
+            event.stopPropagation();
+            if (labelSpan.isContentEditable) {
+                return;
+            }
+            Array.from(thead.querySelectorAll(".custom_sheet_col_label.is-selected")).forEach((el) => {
+                if (el !== labelSpan) {
+                    el.classList.remove("is-selected");
+                }
+            });
+            labelSpan.classList.add("is-selected");
+            labelSpan.focus();
+        });
+        labelSpan.addEventListener("dblclick", (event) => {
+            event.stopPropagation();
+            labelSpan.classList.add("is-selected");
+            enterCustomSheetColLabelEditMode();
+        });
+        labelSpan.addEventListener("keydown", (event) => {
+            if (!labelSpan.isContentEditable) {
+                if (event.key === "Enter" || event.key === "F2") {
+                    event.preventDefault();
+                    enterCustomSheetColLabelEditMode();
+                }
+                return;
+            }
+            if (event.key === "Enter") {
+                event.preventDefault();
+                labelSpan.blur();
+            } else if (event.key === "Escape") {
+                event.preventDefault();
+                labelSpan.textContent = col.label;
+                labelSpan.blur();
+            }
+        });
+        labelSpan.addEventListener("blur", () => {
+            if (!labelSpan.isContentEditable) {
+                return;
+            }
+            const next = labelSpan.textContent.trim() || col.label;
+            if (next !== col.label) {
+                col.label = next.slice(0, 60);
+                scheduleCustomSheetSave(sheet, panel);
+            }
+            exitCustomSheetColLabelEditMode();
+            renderCustomSheetTable(panel, sheet);
+        });
+        const markSpan = document.createElement("span");
+        markSpan.className = "custom_sheet_sort_mark";
+        markSpan.textContent = sortMark;
+        th.appendChild(labelSpan);
+        th.appendChild(markSpan);
+        th.addEventListener("click", (event) => {
+            if (event.target === labelSpan) {
+                return;
+            }
+            if (view.sortKey === col.key) {
+                view.sortDir = view.sortDir === "asc" ? "desc" : "asc";
+            } else {
+                view.sortKey = col.key;
+                view.sortDir = "asc";
+            }
+            renderCustomSheetTable(panel, sheet);
+        });
+        headRow.appendChild(th);
+    });
+    thead.innerHTML = "";
+    thead.appendChild(headRow);
+
+    const colSelect = panel.querySelector(".custom_sheet_compute_col");
+    if (colSelect) {
+        const previous = colSelect.value;
+        colSelect.innerHTML = columns.map((c) => `<option value="${c.key}">${escapeSheetTabText(c.label)}</option>`).join("");
+        if (columns.some((c) => c.key === previous)) {
+            colSelect.value = previous;
+        }
+    }
+
+    let rowsView = (sheet.rows || []).map((row, index) => ({ row, index }));
+    if (view.filterText) {
+        const needle = view.filterText.toLowerCase();
+        rowsView = rowsView.filter(({ row }) => columns.some((c) => String(row[c.key] ?? "").toLowerCase().includes(needle)));
+    }
+    if (view.sortKey) {
+        const key = view.sortKey;
+        const dir = view.sortDir === "desc" ? -1 : 1;
+        rowsView = rowsView.slice().sort((a, b) => {
+            const av = customSheetCellSortValue(a.row[key]);
+            const bv = customSheetCellSortValue(b.row[key]);
+            if (av.isNumeric && bv.isNumeric) {
+                return (av.numeric - bv.numeric) * dir;
+            }
+            return String(a.row[key] ?? "").localeCompare(String(b.row[key] ?? ""), "ko") * dir;
+        });
+    }
+
+    tbody.innerHTML = "";
+
+    function exitCustomSheetCellEditMode(td) {
+        td.contentEditable = "false";
+        td.classList.remove("is-cell-editing");
+    }
+
+    function enterCustomSheetCellEditMode(td) {
+        td.contentEditable = "true";
+        td.classList.add("is-cell-editing");
+        td.focus();
+        const range = document.createRange();
+        range.selectNodeContents(td);
+        const selection = window.getSelection();
+        if (selection) {
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+    }
+
+    function selectCustomSheetCell(rowIndex, colKey) {
+        sheet._selectedCell = { rowIndex, colKey };
+        Array.from(tbody.querySelectorAll("td[data-col-key]")).forEach((cell) => {
+            const isSelected = Number(cell.dataset.rowIndex) === rowIndex && cell.dataset.colKey === colKey;
+            cell.classList.toggle("is-cell-selected", isSelected);
+        });
+    }
+
+    rowsView.forEach(({ row, index }) => {
+        const tr = document.createElement("tr");
+        tr.dataset.rowIndex = String(index);
+        const tdIndex = document.createElement("td");
+        tdIndex.className = "custom_sheet_row_index";
+        tdIndex.textContent = String(index + 1);
+        tr.appendChild(tdIndex);
+        columns.forEach((col) => {
+            const td = document.createElement("td");
+            td.contentEditable = "false";
+            td.tabIndex = 0;
+            td.dataset.rowIndex = String(index);
+            td.dataset.colKey = col.key;
+            td.textContent = row[col.key] ?? "";
+            if (sheet._selectedCell && sheet._selectedCell.rowIndex === index && sheet._selectedCell.colKey === col.key) {
+                td.classList.add("is-cell-selected");
+            }
+            if (col.type === "number") {
+                td.classList.add("custom_sheet_cell_number");
+            }
+            td.addEventListener("click", () => {
+                if (td.isContentEditable) {
+                    return;
+                }
+                selectCustomSheetCell(index, col.key);
+            });
+            td.addEventListener("dblclick", () => {
+                selectCustomSheetCell(index, col.key);
+                enterCustomSheetCellEditMode(td);
+            });
+            td.addEventListener("keydown", (event) => {
+                if (!td.isContentEditable) {
+                    if (event.key === "Enter" || event.key === "F2") {
+                        event.preventDefault();
+                        enterCustomSheetCellEditMode(td);
+                    }
+                    return;
+                }
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    td.blur();
+                } else if (event.key === "Escape") {
+                    event.preventDefault();
+                    td.textContent = row[col.key] ?? "";
+                    td.blur();
+                }
+            });
+            td.addEventListener("blur", () => {
+                if (!td.isContentEditable) {
+                    return;
+                }
+                const next = td.textContent;
+                if ((row[col.key] ?? "") !== next) {
+                    row[col.key] = next;
+                    scheduleCustomSheetSave(sheet, panel);
+                }
+                exitCustomSheetCellEditMode(td);
+            });
+            tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+    });
+
+    if (!rowsView.length) {
+        const emptyRow = document.createElement("tr");
+        const emptyCell = document.createElement("td");
+        emptyCell.className = "custom_sheet_empty_cell";
+        emptyCell.colSpan = columns.length + 1;
+        emptyCell.textContent = view.filterText ? "필터와 일치하는 행이 없습니다." : "행이 없습니다. \"+ 행\" 버튼으로 추가하세요.";
+        emptyRow.appendChild(emptyCell);
+        tbody.appendChild(emptyRow);
+    }
+
+    updateCustomSheetTabCount(sheet);
+}
+
+function updateCustomSheetTabCount(sheet) {
+    const tab = document.querySelector(`[data-sheet-tab="${customSheetPanelId(sheet.id)}"] .trk_sheet_count`);
+    if (tab) {
+        tab.textContent = String((sheet.rows || []).length);
+    }
+}
+
+function scheduleCustomSheetSave(sheet, panel) {
+    const statusEl = panel.querySelector(".custom_sheet_save_status");
+    if (statusEl) {
+        statusEl.textContent = "저장 대기…";
+        statusEl.dataset.state = "pending";
+    }
+    if (customSheetSaveTimers.has(sheet.id)) {
+        clearTimeout(customSheetSaveTimers.get(sheet.id));
+    }
+    const timer = setTimeout(async () => {
+        customSheetSaveTimers.delete(sheet.id);
+        if (statusEl) {
+            statusEl.textContent = "저장 중…";
+        }
+        try {
+            const updated = await customSheetApiFetch(`/admin/api/custom-sheets/${encodeURIComponent(sheet.id)}`, {
+                method: "PATCH",
+                body: JSON.stringify({ columns: sheet.columns, rows: sheet.rows, tab_label: sheet.tab_label }),
+            });
+            sheet.columns = updated.columns;
+            sheet.rows = updated.rows;
+            sheet.tab_label = updated.tab_label;
+            if (statusEl) {
+                statusEl.textContent = "저장됨";
+                statusEl.dataset.state = "idle";
+            }
+            updateCustomSheetTabCount(sheet);
+        } catch (err) {
+            if (statusEl) {
+                statusEl.textContent = "저장 실패 (재시도 예정)";
+                statusEl.dataset.state = "error";
+            }
+            clientLog("customSheet", "저장 실패 id=" + sheet.id + " " + err, "error");
+            scheduleCustomSheetSave(sheet, panel);
+        }
+    }, 800);
+    customSheetSaveTimers.set(sheet.id, timer);
+}
+
+async function runCustomSheetCompute(panel, sheet) {
+    const colSelect = panel.querySelector(".custom_sheet_compute_col");
+    const opSelect = panel.querySelector(".custom_sheet_compute_op");
+    const resultEl = panel.querySelector(".custom_sheet_compute_result");
+    if (!colSelect || !opSelect || !resultEl || !colSelect.value) {
+        return;
+    }
+    resultEl.textContent = "계산 중…";
+    try {
+        const data = await customSheetApiFetch(`/admin/api/custom-sheets/${encodeURIComponent(sheet.id)}/compute`, {
+            method: "POST",
+            body: JSON.stringify({ column: colSelect.value, operation: opSelect.value }),
+        });
+        const opLabel = opSelect.options[opSelect.selectedIndex]?.textContent || opSelect.value;
+        const colLabel = colSelect.options[colSelect.selectedIndex]?.textContent || colSelect.value;
+        const value = data.value;
+        const formatted = typeof value === "number"
+            ? (Number.isInteger(value) ? String(value) : value.toFixed(2))
+            : "—";
+        resultEl.textContent = `${colLabel} ${opLabel} = ${formatted}  (숫자 ${data.sample_size}/${data.row_count}행)`;
+    } catch (err) {
+        resultEl.textContent = "계산 실패";
+        clientLog("customSheet", "계산 실패 id=" + sheet.id + " " + err, "error");
+    }
+}
+
+function bindCustomSheetToolbar(panel, sheet) {
+    const toolbar = panel.querySelector(".custom_sheet_toolbar");
+    if (!toolbar || toolbar.dataset.bound === "1") {
+        return;
+    }
+    toolbar.dataset.bound = "1";
+
+    const filterInput = toolbar.querySelector(".custom_sheet_filter");
+    if (filterInput) {
+        filterInput.addEventListener("input", () => {
+            sheet._view = sheet._view || { sortKey: "", sortDir: "asc", filterText: "" };
+            sheet._view.filterText = filterInput.value.trim();
+            renderCustomSheetTable(panel, sheet);
+        });
+    }
+
+    function clearCustomSheetDeletePreview() {
+        const tbody = panel.querySelector(".custom_sheet_table tbody");
+        if (!tbody) {
+            return;
+        }
+        Array.from(tbody.querySelectorAll(".is-delete-preview")).forEach((el) => {
+            el.classList.remove("is-delete-preview");
+        });
+    }
+
+    function previewCustomSheetDelete(kind) {
+        const cell = sheet._selectedCell;
+        if (!cell) {
+            return;
+        }
+        const tbody = panel.querySelector(".custom_sheet_table tbody");
+        if (!tbody) {
+            return;
+        }
+        if (kind === "row") {
+            const tr = tbody.querySelector(`tr[data-row-index="${cell.rowIndex}"]`);
+            if (tr) {
+                Array.from(tr.children).forEach((el) => el.classList.add("is-delete-preview"));
+            }
+        } else if (kind === "col") {
+            Array.from(tbody.querySelectorAll(`td[data-col-key="${cell.colKey}"]`)).forEach((el) => {
+                el.classList.add("is-delete-preview");
+            });
+        }
+    }
+
+    const delRowBtn = toolbar.querySelector('[data-action="del-row"]');
+    if (delRowBtn) {
+        delRowBtn.addEventListener("mouseenter", () => previewCustomSheetDelete("row"));
+        delRowBtn.addEventListener("mouseleave", clearCustomSheetDeletePreview);
+    }
+    const delColBtn = toolbar.querySelector('[data-action="del-col"]');
+    if (delColBtn) {
+        delColBtn.addEventListener("mouseenter", () => previewCustomSheetDelete("col"));
+        delColBtn.addEventListener("mouseleave", clearCustomSheetDeletePreview);
+    }
+
+    toolbar.addEventListener("click", (event) => {
+        const btn = event.target.closest("[data-action]");
+        if (!btn || !toolbar.contains(btn)) {
+            return;
+        }
+        const action = btn.dataset.action;
+        if (action === "add-row") {
+            const blank = {};
+            (sheet.columns || []).forEach((c) => { blank[c.key] = ""; });
+            sheet.rows = sheet.rows || [];
+            const posSelect = toolbar.querySelector(".custom_sheet_add_row_pos");
+            const pos = posSelect ? posSelect.value : "above";
+            const cell = sheet._selectedCell;
+            let insertAt;
+            if (cell && cell.rowIndex >= 0 && cell.rowIndex < sheet.rows.length) {
+                insertAt = pos === "below" ? cell.rowIndex + 1 : cell.rowIndex;
+            } else {
+                insertAt = pos === "below" ? sheet.rows.length : 0;
+            }
+            sheet.rows.splice(insertAt, 0, blank);
+            sheet._selectedCell = {
+                rowIndex: insertAt,
+                colKey: cell ? cell.colKey : ((sheet.columns || [])[0] ? sheet.columns[0].key : ""),
+            };
+            renderCustomSheetTable(panel, sheet);
+            scheduleCustomSheetSave(sheet, panel);
+        } else if (action === "del-row") {
+            const cell = sheet._selectedCell;
+            const idx = cell ? cell.rowIndex : -1;
+            if (idx < 0 || idx >= (sheet.rows || []).length) {
+                window.alert("삭제할 행의 셀을 먼저 클릭해서 선택하세요.");
+                return;
+            }
+            sheet.rows.splice(idx, 1);
+            sheet._selectedCell = null;
+            renderCustomSheetTable(panel, sheet);
+            scheduleCustomSheetSave(sheet, panel);
+        } else if (action === "add-col") {
+            const label = (window.prompt("새 열 이름을 입력하세요.", "새 열") || "").trim();
+            if (!label) {
+                return;
+            }
+            const key = "col_" + Math.random().toString(36).slice(2, 8);
+            sheet.columns = sheet.columns || [];
+            sheet.columns.push({ key, label: label.slice(0, 60), type: "text" });
+            (sheet.rows || []).forEach((r) => { r[key] = ""; });
+            renderCustomSheetTable(panel, sheet);
+            scheduleCustomSheetSave(sheet, panel);
+        } else if (action === "del-col") {
+            if ((sheet.columns || []).length <= 1) {
+                window.alert("최소 1개의 열은 있어야 합니다.");
+                return;
+            }
+            const cell = sheet._selectedCell;
+            const targetKey = cell ? cell.colKey : "";
+            const target = targetKey ? sheet.columns.find((c) => c.key === targetKey) : null;
+            if (!target) {
+                window.alert("삭제할 열의 셀을 먼저 클릭해서 선택하세요.");
+                return;
+            }
+            if (!window.confirm(`"${target.label}" 열을 삭제할까요? 해당 열의 데이터도 함께 사라집니다.`)) {
+                return;
+            }
+            sheet.columns = sheet.columns.filter((c) => c.key !== target.key);
+            (sheet.rows || []).forEach((r) => { delete r[target.key]; });
+            if (sheet._view && sheet._view.sortKey === target.key) {
+                sheet._view.sortKey = "";
+            }
+            sheet._selectedCell = null;
+            renderCustomSheetTable(panel, sheet);
+            scheduleCustomSheetSave(sheet, panel);
+        } else if (action === "rename") {
+            const tabEl = document.querySelector(`[data-sheet-tab="${customSheetPanelId(sheet.id)}"]`);
+            if (tabEl) {
+                beginCustomSheetTabRename(tabEl, sheet, panel);
+            }
+        } else if (action === "compute") {
+            runCustomSheetCompute(panel, sheet);
+        }
+    });
+}
+
+function beginCustomSheetTabRename(tab, sheet, panel) {
+    if (tab.querySelector(".trk_sheet_label_input")) {
+        return;
+    }
+    const labelSpan = tab.querySelector(".trk_sheet_label");
+    if (!labelSpan) {
+        return;
+    }
+    const previousLabel = sheet.tab_label || labelSpan.textContent || "";
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "trk_sheet_label_input";
+    input.value = previousLabel;
+    input.setAttribute("aria-label", "시트 탭 이름");
+
+    let finished = false;
+    function finish(save) {
+        if (finished) {
+            return;
+        }
+        finished = true;
+        const trimmed = save ? input.value.trim() : previousLabel;
+        const finalLabel = (trimmed || previousLabel).slice(0, 80);
+        labelSpan.textContent = finalLabel;
+        input.replaceWith(labelSpan);
+        tab.draggable = true;
+        tab.focus();
+        if (save && finalLabel !== sheet.tab_label) {
+            sheet.tab_label = finalLabel;
+            scheduleCustomSheetSave(sheet, panel);
+        }
+    }
+
+    tab.draggable = false;
+    labelSpan.replaceWith(input);
+    input.focus();
+    input.select();
+    input.addEventListener("click", (event) => event.stopPropagation());
+    input.addEventListener("keydown", (event) => {
+        if (event.ctrlKey || event.metaKey) {
+            return;
+        }
+        event.stopPropagation();
+        if (event.key === "Enter") {
+            event.preventDefault();
+            finish(true);
+        } else if (event.key === "Escape") {
+            event.preventDefault();
+            finish(false);
+        }
+    });
+    input.addEventListener("blur", () => finish(true));
+}
+
+function mountCustomSheetTab(sheet, tabbar, tabsRoot, activate, makeActive) {
+    customSheetCache.set(sheet.id, sheet);
+    sheet._view = sheet._view || { sortKey: "", sortDir: "asc", filterText: "" };
+    sheet._selectedCell = null;
+
+    const addBtn = tabbar.querySelector(":scope > .trk_sheet_tab_add_btn");
+    const tab = buildCustomSheetTab(sheet);
+    if (addBtn) {
+        tabbar.insertBefore(tab, addBtn);
+    } else {
+        tabbar.appendChild(tab);
+    }
+
+    const panel = buildCustomSheetPanel(sheet);
+    tabsRoot.appendChild(panel);
+    renderCustomSheetTable(panel, sheet);
+    bindCustomSheetToolbar(panel, sheet);
+
+    tab.addEventListener("keydown", (event) => {
+        if (event.key !== "F2") {
+            return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        beginCustomSheetTabRename(tab, sheet, panel);
+    });
+
+    const closeBtn = tab.querySelector('[data-action="delete-sheet"]');
+    if (closeBtn) {
+        closeBtn.addEventListener("click", async (event) => {
+            event.stopPropagation();
+            event.preventDefault();
+            if (!window.confirm(`"${sheet.tab_label}" 시트를 삭제할까요? 삭제하면 되돌릴 수 없습니다.`)) {
+                return;
+            }
+            try {
+                await customSheetApiFetch(`/admin/api/custom-sheets/${encodeURIComponent(sheet.id)}`, { method: "DELETE" });
+                customSheetCache.delete(sheet.id);
+                if (customSheetSaveTimers.has(sheet.id)) {
+                    clearTimeout(customSheetSaveTimers.get(sheet.id));
+                    customSheetSaveTimers.delete(sheet.id);
+                }
+                const wasActive = tab.classList.contains("is-active");
+                tab.remove();
+                panel.remove();
+                if (wasActive && typeof activate === "function") {
+                    const fallback = tabbar.querySelector("[data-sheet-tab]");
+                    if (fallback) {
+                        activate(sheetTabId(fallback));
+                    }
+                }
+            } catch (err) {
+                window.alert("시트 삭제에 실패했습니다.");
+                clientLog("customSheet", "삭제 실패 id=" + sheet.id + " " + err, "error");
+            }
+        });
+    }
+
+    if (makeActive && typeof activate === "function") {
+        activate(sheetTabId(tab));
+    }
+}
+
+function ensureCustomSheetAddButton(tabbar, regionKey, tabsRoot, activate) {
+    let btn = tabbar.querySelector(":scope > .trk_sheet_tab_add_btn");
+    if (btn) {
+        return btn;
+    }
+    btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "trk_sheet_tab_add_btn";
+    btn.title = "새 시트 탭 추가 — 스프레드시트형 표를 만들고 데이터를 입력/저장합니다";
+    btn.setAttribute("aria-label", "새 시트 탭 추가");
+    btn.textContent = "+";
+    btn.addEventListener("click", async (event) => {
+        event.stopPropagation();
+        if (btn.disabled) {
+            return;
+        }
+        btn.disabled = true;
+        try {
+            const existingCount = tabbar.querySelectorAll(".custom_sheet_tab").length;
+            const sheet = await customSheetApiFetch("/admin/api/custom-sheets", {
+                method: "POST",
+                body: JSON.stringify({ region_key: regionKey, tab_label: "새 시트 " + (existingCount + 1) }),
+            });
+            mountCustomSheetTab(sheet, tabbar, tabsRoot, activate, true);
+            clientLog("customSheet", "탭 생성 region=" + regionKey + " id=" + sheet.id);
+        } catch (err) {
+            window.alert("새 시트 탭 생성에 실패했습니다.");
+            clientLog("customSheet", "생성 실패 region=" + regionKey + " " + err, "error");
+        } finally {
+            btn.disabled = false;
+        }
+    });
+    tabbar.appendChild(btn);
+    return btn;
+}
+
+async function initCustomSheetTabsForRegion(regionBody, tabsRoot, tabbar, activate, regionKey) {
+    if (!(tabbar instanceof HTMLElement) || !(tabsRoot instanceof HTMLElement)) {
+        return;
+    }
+    if (tabbar.dataset.customSheetReady === "1") {
+        return;
+    }
+    tabbar.dataset.customSheetReady = "1";
+    ensureCustomSheetAddButton(tabbar, regionKey, tabsRoot, activate);
+    const sheets = await loadCustomSheetsForRegion(regionKey);
+    sheets
+        .slice()
+        .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+        .forEach((sheet) => mountCustomSheetTab(sheet, tabbar, tabsRoot, activate, false));
+    if (sheets.length) {
+        scheduleFinalizeSheetTabGroups();
+        clientLog("customSheet", "복원 완료 region=" + regionKey + " count=" + sheets.length);
+    }
+}
+
 
 function initAdminMasterDataTabs() {
     const regions = Array.from(document.querySelectorAll(".admin_tab_region_body[data-admin-tab-region]"));
@@ -2122,14 +2858,14 @@ function scheduleAdminMasterDataTabs(attempt) {
 function updateToggleLabel() {
     const btn = document.getElementById("trk_view_toggle_btn");
     if (!btn) return;
-    const mode = parseInt(localStorage.getItem('trk_view_mode') || '0', 10);
+    const mode = parseInt(uiStateGetItem('trk_view_mode') || '0', 10);
     const VIEW_MODE_LABELS = ['보기모드: 전체', '보기모드: 시험중', '보기모드: 중단판정', '보기모드: 최상위'];
     btn.textContent = VIEW_MODE_LABELS[mode] || VIEW_MODE_LABELS[0];
     btn.title = VIEW_MODE_LABELS[mode] || VIEW_MODE_LABELS[0];
 
     const sortBtn = document.getElementById("trk_sort_toggle_btn");
     if (sortBtn) {
-        const sm = parseInt(localStorage.getItem('trk_sort_mode') || '0', 10);
+        const sm = parseInt(uiStateGetItem('trk_sort_mode') || '0', 10);
         const SORT_LABELS = ['정렬: 기본', '정렬: 시험종료일자별'];
         sortBtn.textContent = SORT_LABELS[sm] || SORT_LABELS[0];
         sortBtn.title = SORT_LABELS[sm] || SORT_LABELS[0];
@@ -2147,7 +2883,7 @@ function bindSheetTabLayoutPersistence() {
     });
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+function runUiStateDependentInit() {
     bindSheetTabLayoutPersistence();
     initTabViewTableFoldToggleButtons();
     initAllTabViewsRegionFoldToggleButton();
@@ -2156,11 +2892,24 @@ document.addEventListener("DOMContentLoaded", () => {
     if (document.getElementById("trk_root")) {
         loadTracking();
     }
+}
+
+// 화면 상태(탭 순서/접기/활성탭 등) 복원에 앞서, DB 모드라면 서버에 저장된 최신 값으로
+// localStorage 를 먼저 채워둔다(hydrateUiStateFromServer 는 tracking-ui-state.js 로드 시
+// 이미 백그라운드로 시작되어 있으므로, 여기서는 그 결과만 기다린다).
+const _uiStateHydrated = (typeof window.hydrateUiStateFromServer === "function")
+    ? window.hydrateUiStateFromServer()
+    : Promise.resolve();
+
+document.addEventListener("DOMContentLoaded", () => {
+    _uiStateHydrated.then(runUiStateDependentInit);
 });
-initTabViewTableFoldToggleButtons();
-initAllTabViewsRegionFoldToggleButton();
-bindSheetTabLayoutPersistence();
-scheduleAdminMasterDataTabs();
+_uiStateHydrated.then(() => {
+    initTabViewTableFoldToggleButtons();
+    initAllTabViewsRegionFoldToggleButton();
+    bindSheetTabLayoutPersistence();
+    scheduleAdminMasterDataTabs();
+});
 document.getElementById("trk_refresh_btn")
     && document.getElementById("trk_refresh_btn").addEventListener("click", event => {
         const btn = event.currentTarget;

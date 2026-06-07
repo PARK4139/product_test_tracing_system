@@ -8,12 +8,12 @@ function getColKey(table) {
 function saveColOrder(table) {
     const key = getColKey(table);
     const order = Array.from(table.querySelectorAll("thead tr th")).map(th => th.textContent.trim());
-    try { const s = JSON.parse(localStorage.getItem(TRK_COL_KEY)||"{}"); s[key]=order; localStorage.setItem(TRK_COL_KEY,JSON.stringify(s)); } catch(e) {}
+    try { const s = JSON.parse(uiStateGetItem(TRK_COL_KEY)||"{}"); s[key]=order; uiStateSetItem(TRK_COL_KEY,JSON.stringify(s)); } catch(e) {}
 }
 function restoreColOrder(table) {
     const key = getColKey(table);
     try {
-        const order = (JSON.parse(localStorage.getItem(TRK_COL_KEY)||"{}") )[key];
+        const order = (JSON.parse(uiStateGetItem(TRK_COL_KEY)||"{}") )[key];
         if (!order || !Array.isArray(order)) return;
         order.forEach((label, targetIdx) => {
             const ths = Array.from(table.querySelectorAll("thead tr th"));
