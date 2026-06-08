@@ -19,6 +19,20 @@ from pathlib import Path
 
 from fastapi import APIRouter, File, HTTPException, Query, Request, UploadFile, status
 from app.services.logging_service import get_logger
+from app.services.status_vocab import (
+    RELEASE_STATUS_PRIORITY,
+    STATUS_BLOCKED,
+    STATUS_CANCELLED,
+    STATUS_FAILED,
+    STATUS_PASSED,
+    STATUS_QI_TEAM_RELEASED,
+    STATUS_QI_TEAM_REVIEWED,
+    STATUS_SKIPPED,
+    STATUS_TESTING,
+    VALID_RELEASE_STATUSES,
+    derive_rollup_status,
+    normalize_status,
+)
 
 _client_log = get_logger("client")
 from fastapi.responses import JSONResponse
@@ -38,6 +52,10 @@ tracking_router = APIRouter()
 
 def _clean_device_round_alias(display_alias: str) -> str:
     return re.sub(r"\s*\(\d+(?:\.\d+)*[A-Za-z]?\)\s*$", "", display_alias or "").strip()
+
+
+def _strip_release_prefix(release_id: str | None) -> str:
+    return re.sub(r"^(?:TEST_)?RELEASE-", "", release_id or "")
 
 
 def _parse_release_work_period(remark: str) -> dict[str, str]:
@@ -80,6 +98,33 @@ def _ensure_admin_role(role: str) -> None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin role required.")
 
 
+def _empty_result_counts() -> dict[str, int]:
+    return {
+        "passed": 0,
+        "blocked": 0,
+        "testing": 0,
+        "failed": 0,
+        "skipped": 0,
+        "cancelled": 0,
+    }
+
+
+def _apply_result_status_count(counts: dict[str, int], raw_status: str | None, increment: int = 1) -> None:
+    status_name = normalize_status(raw_status)
+    if status_name == STATUS_PASSED:
+        counts["passed"] += increment
+    elif status_name == STATUS_BLOCKED:
+        counts["blocked"] += increment
+    elif status_name == STATUS_TESTING:
+        counts["testing"] += increment
+    elif status_name == STATUS_FAILED:
+        counts["failed"] += increment
+    elif status_name == STATUS_SKIPPED:
+        counts["skipped"] += increment
+    elif status_name == STATUS_CANCELLED:
+        counts["cancelled"] += increment
+
+
 # ── 트래킹 요약 ───────────────────────────────────────────────────────────────
 
 @tracking_router.get("/admin/api/tracking/summary")
@@ -105,9 +150,6 @@ def get_tracking_summary(
             COALESCE(r.release_visible, 1)                    AS release_visible,
             COUNT(DISTINCT run.product_test_run_id)           AS run_count,
             COUNT(res.product_test_result_id)                 AS total_results,
-            SUM(CASE WHEN res.product_test_result_status = 'passed'  THEN 1 ELSE 0 END) AS passed,
-            SUM(CASE WHEN res.product_test_result_status = 'blocked' THEN 1 ELSE 0 END) AS blocked,
-            SUM(CASE WHEN res.product_test_result_status = 'testing' THEN 1 ELSE 0 END) AS testing,
             COUNT(DISTINCT def.product_test_defect_id)        AS defect_count,
             SUM(CASE WHEN def.product_test_defect_status = 'opened' THEN 1 ELSE 0 END)  AS open_defects
         FROM product_test_release r
@@ -118,6 +160,16 @@ def get_tracking_summary(
         GROUP BY r.product_test_release_id
         ORDER BY r.release_sequence, r.product_test_release_id
     """)).fetchall()
+    release_result_counts: dict[str, dict[str, int]] = {}
+    for status_row in conn.execute(text("""
+        SELECT
+            run.product_test_release_id,
+            res.product_test_result_status
+        FROM product_test_result res
+        JOIN product_test_run run ON run.product_test_run_id = res.product_test_run_id
+    """)).fetchall():
+        counts = release_result_counts.setdefault(status_row[0], _empty_result_counts())
+        _apply_result_status_count(counts, status_row[1])
 
     releases = []
     for row in releases_raw:
@@ -146,19 +198,20 @@ def get_tracking_summary(
         # device_round / run_session 은 remark 를 표시명으로 사용
         stage = row[2] or ""
         if stage in ("device_round", "run_session"):
-            display_alias = (row[5] or "").split("\n")[0].strip() or row[0].replace("TEST_RELEASE-", "")
+            display_alias = (row[5] or "").split("\n")[0].strip() or _strip_release_prefix(row[0])
             if stage == "device_round":
                 display_alias = _clean_device_round_alias(display_alias)
         else:
-            display_alias = alias or row[0].replace("TEST_RELEASE-", "")
+            display_alias = alias or _strip_release_prefix(row[0])
 
+        result_counts = release_result_counts.get(row[0], _empty_result_counts())
         releases.append({
             "id": row[0],
             "upstream_id": row[1],
             "alias": display_alias,
             "stage": row[2],
             "sequence": row[3],
-            "status": row[4],
+            "status": normalize_status(row[4]),
             "remark": row[5] or "",
             "upstream_system": row[6] or "",
             "visible": bool(row[7]),
@@ -167,20 +220,15 @@ def get_tracking_summary(
             "end_date": work_period["end_date"],
             "run_count": row[8] or 0,
             "total_results": row[9] or 0,
-            "passed": row[10] or 0,
-            "blocked": row[11] or 0,
-            "testing": row[12] or 0,
-            "defect_count": row[13] or 0,
-            "open_defects": row[14] or 0,
+            "passed": result_counts["passed"],
+            "blocked": result_counts["blocked"],
+            "testing": result_counts["testing"],
+            "failed": result_counts["failed"],
+            "skipped": result_counts["skipped"],
+            "cancelled": result_counts["cancelled"],
+            "defect_count": row[10] or 0,
+            "open_defects": row[11] or 0,
         })
-
-    # ── 부모 상태 자동 결정 (자식 상태 기반) ─────────────────────────────────
-    # 우선순위: BLOCKED > TESTING > DRAFT > PASSED/QI_TEAM_RELEASED/APPROVED > QI_TEAM_REVIEWED > DONE
-    STATUS_PRIORITY = {
-        "BLOCKED": 0, "TESTING": 1, "DRAFT": 2,
-        "PASSED": 3, "QI_TEAM_RELEASED": 3, "APPROVED": 3,
-        "QI_TEAM_REVIEWED": 4, "DONE": 5,
-    }
 
     children_by_parent: dict = {}
     for r in releases:
@@ -204,7 +252,7 @@ def get_tracking_summary(
         ]
         if not child_statuses:
             continue
-        best = min(child_statuses, key=lambda s: STATUS_PRIORITY.get(s, 99))
+        best = min(child_statuses, key=lambda s: RELEASE_STATUS_PRIORITY.get(s, 99))
         parent["status"] = best
 
     # ── 진행 중 릴리즈 활성 결함 상세 ────────────────────────────────────────
@@ -298,7 +346,7 @@ def get_tracking_summary(
         round_row = resolve_round_release(release_id)
         if round_row and round_row.get("stage") == "device_round":
             model_name, sw_version = model_sw_from_round_alias(round_row.get("alias") or "")
-            target_key = round_row["id"].replace("TEST_RELEASE-", "")
+            target_key = _strip_release_prefix(round_row["id"])
             return {
                 "id": f"TEST_TARGET_{target_key}",
                 "model_name": model_name,
@@ -330,7 +378,7 @@ def get_tracking_summary(
             "title": r[1],
             "severity": r[2],
             "priority": r[3],
-            "status": r[4],
+            "status": normalize_status(r[4]),
             "assigned_to": r[5] or "-",
             "expected_resolution_date": r[6] or "",
             "created_at": r[7],
@@ -350,22 +398,25 @@ def get_tracking_summary(
             run.product_test_run_status,
             run.started_at,
             run.finished_at,
-            COUNT(res.product_test_result_id)                                    AS total_results,
-            SUM(CASE WHEN res.product_test_result_status = 'passed'  THEN 1 ELSE 0 END) AS passed,
-            SUM(CASE WHEN res.product_test_result_status = 'blocked' THEN 1 ELSE 0 END) AS blocked,
-            SUM(CASE WHEN res.product_test_result_status = 'testing' THEN 1 ELSE 0 END) AS testing,
-            SUM(CASE WHEN res.product_test_result_status = 'failed'  THEN 1 ELSE 0 END) AS failed,
-            SUM(CASE WHEN res.product_test_result_status = 'skipped' THEN 1 ELSE 0 END) AS skipped,
-            SUM(CASE WHEN res.product_test_result_status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled,
             run.product_test_target_id,
             run.product_test_environment_id,
             run.remark
         FROM product_test_run run
         LEFT JOIN product_test_result res ON res.product_test_run_id = run.product_test_run_id
         GROUP BY run.product_test_run_id
-        HAVING total_results > 0
+        HAVING COUNT(res.product_test_result_id) > 0
         ORDER BY run.started_at
     """)).fetchall()
+    run_result_counts: dict[str, dict[str, int]] = {}
+    run_total_results: dict[str, int] = {}
+    for status_row in conn.execute(text("""
+        SELECT product_test_run_id, product_test_result_status
+        FROM product_test_result
+    """)).fetchall():
+        run_id = status_row[0]
+        counts = run_result_counts.setdefault(run_id, _empty_result_counts())
+        _apply_result_status_count(counts, status_row[1])
+        run_total_results[run_id] = run_total_results.get(run_id, 0) + 1
 
     def _run_display_remark(raw_remark: str, work_period: dict[str, str]) -> str:
         period_label = _format_release_work_period(work_period)
@@ -375,43 +426,44 @@ def get_tracking_summary(
             return raw_remark
         return f"{raw_remark}\n[Release Work Period] {period_label}".strip()
 
-    runs = [
-        {
+    runs = []
+    for r in runs_raw:
+        run_counts = run_result_counts.get(r[0], _empty_result_counts())
+        run_target = logical_target_from_release(r[1] or "", r[5] or "")
+        normalized_statuses = (
+            [STATUS_FAILED] * run_counts["failed"]
+            + [STATUS_BLOCKED] * run_counts["blocked"]
+            + [STATUS_TESTING] * run_counts["testing"]
+            + [STATUS_PASSED] * run_counts["passed"]
+            + [STATUS_SKIPPED] * run_counts["skipped"]
+            + [STATUS_CANCELLED] * run_counts["cancelled"]
+        )
+        runs.append({
             "id": r[0],
             "release_id": r[1],
             "parent_release_id": resolve_parent_release(r[1] or ""),
-            "status": (
-                "FAILED" if (r[9] or 0) > 0 else
-                "BLOCKED" if (r[7] or 0) > 0 else
-                "TESTING" if (r[8] or 0) > 0 else
-                "PASSED" if (r[5] or 0) > 0 and (r[6] or 0) == (r[5] or 0) else
-                "SKIPPED" if (r[5] or 0) > 0 and (r[10] or 0) == (r[5] or 0) else
-                "CANCELLED" if (r[5] or 0) > 0 and (r[11] or 0) == (r[5] or 0) else
-                "TESTING"
-            ),
-            "run_status": r[2],
+            "status": derive_rollup_status(normalized_statuses),
+            "run_status": normalize_status(r[2]),
             "started_at": r[3],
             "finished_at": r[4],
             "planned_workday": resolve_release_work_period(r[1] or "")["workday"],
             "planned_start_date": resolve_release_work_period(r[1] or "")["start_date"],
             "planned_end_date": resolve_release_work_period(r[1] or "")["end_date"],
-            "total_results": r[5] or 0,
-            "passed": r[6] or 0,
-            "blocked": r[7] or 0,
-            "testing": r[8] or 0,
-            "failed": r[9] or 0,
-            "skipped": r[10] or 0,
-            "cancelled": r[11] or 0,
-            "target_id": logical_target_from_release(r[1] or "", r[12] or "")["id"],
-            "target_model_name": logical_target_from_release(r[1] or "", r[12] or "")["model_name"],
-            "target_sw_version": logical_target_from_release(r[1] or "", r[12] or "")["sw_version"],
-            "physical_target_id": r[12] or "",
-            "target_round_id": logical_target_from_release(r[1] or "", r[12] or "")["round_id"],
-            "environment_id": r[13] or "",
-            "remark": _run_display_remark(r[14] or "", resolve_release_work_period(r[1] or "")),
-        }
-        for r in runs_raw
-    ]
+            "total_results": run_total_results.get(r[0], 0),
+            "passed": run_counts["passed"],
+            "blocked": run_counts["blocked"],
+            "testing": run_counts["testing"],
+            "failed": run_counts["failed"],
+            "skipped": run_counts["skipped"],
+            "cancelled": run_counts["cancelled"],
+            "target_id": run_target["id"],
+            "target_model_name": run_target["model_name"],
+            "target_sw_version": run_target["sw_version"],
+            "physical_target_id": r[5] or "",
+            "target_round_id": run_target["round_id"],
+            "environment_id": r[6] or "",
+            "remark": _run_display_remark(r[7] or "", resolve_release_work_period(r[1] or "")),
+        })
 
     timeline_test_target_by_id: dict[str, dict] = {}
     for run in runs:
@@ -464,7 +516,7 @@ def get_tracking_summary(
     for r in results_summary_raw:
         rc_release_id = r[0]
         case_id = r[1]
-        result_status = r[2]
+        result_status = normalize_status(r[2])
         run_id = r[4]
         result_id = r[5]
         defect_id = r[6]
@@ -484,11 +536,11 @@ def get_tracking_summary(
             }
         entry = case_map[key]
         entry["total"] += 1
-        if result_status == "passed":
+        if result_status == STATUS_PASSED:
             entry["passed"] += 1
-        elif result_status == "blocked":
+        elif result_status == STATUS_BLOCKED:
             entry["blocked"] += 1
-        elif result_status == "testing":
+        elif result_status == STATUS_TESTING:
             entry["testing"] += 1
         entry["run_ids"].add(run_id)
         entry["result_ids"].append(result_id)
@@ -537,7 +589,7 @@ def get_tracking_summary(
             "id": r[0],
             "result_id": r[1],
             "procedure_id": r[2],
-            "status": r[3],
+            "status": normalize_status(r[3]),
             "actual_result": r[4] or "",
             "judgement_reason": r[5] or "",
             "judged_at": r[6] or "",
@@ -769,7 +821,7 @@ def get_tracking_summary(
             "status": r[7] or "",
             "remark": r[8] or "",
             "used_releases": ", ".join(
-                rid.replace("TEST_RELEASE-", "")
+                _strip_release_prefix(rid)
                 for rid in _proc_release_map.get(r[0] or "", [])
             ),
         }
@@ -892,8 +944,6 @@ def get_tracking_summary(
 
 # ── 배포 상태 변경 ───────────────────────────────────────────────────────────
 
-VALID_RELEASE_STATUSES = {"TESTING", "QI_TEAM_RELEASED", "QI_TEAM_REVIEWED", "DRAFT", "BLOCKED"}
-
 class ReleaseStatusBody(BaseModel):
     status: str
 
@@ -905,7 +955,7 @@ def patch_release_status(
     current_role_name: current_role_name_dependency,
 ):
     _ensure_admin_role(current_role_name)
-    new_status = body.status.upper()
+    new_status = normalize_status(body.status)
     if new_status not in VALID_RELEASE_STATUSES:
         raise HTTPException(status_code=400, detail=f"Invalid status: {new_status}")
     row = database_session.query(ProductTestRelease).filter_by(

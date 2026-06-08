@@ -167,8 +167,8 @@ function buildGantt(releases, runs) {
         const color   = STATUS_COLOR[r.status] || "#94a3b8";
         const alias   = (r.alias && r.alias !== r.upstream_id) ? r.alias : (r.upstream_system || r.id);
         function roundDisplayId(id) {
-            const raw = String(id || "").replace(/^TEST_RELEASE-/, "");
-            return raw.startsWith("TEST_ROUND_") ? raw : `TEST_ROUND_${raw}`;
+            const raw = stripReleasePrefix(id);
+            return raw.startsWith("ROUND_") ? raw : `ROUND_${raw}`;
         }
         const displayName = indent === 0
             ? roundDisplayId(r.id)   // 라운드는 ID만 표기 (깔끔하게)

@@ -74,10 +74,36 @@ class UserAccount(Base):
     )
 
 
+class ProductTestRound(Base):
+    __tablename__ = "product_test_round"
+    __table_args__ = (
+        Index("ix_product_test_round_project_id", "project_id"),
+    )
+
+    test_round_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    test_round_name: Mapped[str] = mapped_column(Text, nullable=False)
+    workday: Mapped[str | None] = mapped_column(Text, nullable=True)
+    start_date: Mapped[str | None] = mapped_column(Text, nullable=True)
+    end_date: Mapped[str | None] = mapped_column(Text, nullable=True)
+    date_quality: Mapped[str | None] = mapped_column(Text, nullable=True)
+    migration_status: Mapped[str | None] = mapped_column(Text, nullable=True)
+    migration_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    project_id: Mapped[str | None] = mapped_column(
+        Text,
+        ForeignKey("project.project_id"),
+        nullable=True,
+    )
+    created_at: Mapped[str] = mapped_column(Text, nullable=False)
+    created_by: Mapped[str] = mapped_column(Text, nullable=False)
+    updated_at: Mapped[str] = mapped_column(Text, nullable=False)
+    updated_by: Mapped[str] = mapped_column(Text, nullable=False)
+
+
 class ProductTestRelease(Base):
     __tablename__ = "product_test_release"
     __table_args__ = (
         Index("ix_product_test_release_project_id", "project_id"),
+        Index("ix_product_test_release_test_round_id", "test_round_id"),
     )
 
     product_test_release_id: Mapped[str] = mapped_column(Text, primary_key=True)
@@ -90,7 +116,13 @@ class ProductTestRelease(Base):
     upstream_release_system: Mapped[str] = mapped_column(Text, nullable=False)
     release_stage: Mapped[str] = mapped_column(Text, nullable=False)
     release_sequence: Mapped[int] = mapped_column(Integer, nullable=False)
+    release_visible: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     product_test_release_status: Mapped[str] = mapped_column(Text, nullable=False)
+    test_round_id: Mapped[str | None] = mapped_column(
+        Text,
+        ForeignKey("product_test_round.test_round_id"),
+        nullable=True,
+    )
     created_at: Mapped[str] = mapped_column(Text, nullable=False)
     created_by: Mapped[str] = mapped_column(Text, nullable=False)
     updated_at: Mapped[str] = mapped_column(Text, nullable=False)
@@ -154,19 +186,20 @@ class ProductTestTarget(Base):
     remark: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
-class ProductTestEnvironmentDefinition(Base):
-    __tablename__ = "product_test_environment_definition"
+class ProductTestEnvironment(Base):
+    __tablename__ = "product_test_environment_unified"
     __table_args__ = (
-        Index("ix_product_test_environment_definition_project_id", "project_id"),
+        Index("ix_product_test_environment_unified_project_id", "project_id"),
     )
 
-    product_test_environment_definition_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    product_test_environment_id: Mapped[str] = mapped_column(Text, primary_key=True)
     project_id: Mapped[str | None] = mapped_column(
         Text,
         ForeignKey("project.project_id"),
         nullable=True,
     )
-    product_test_environment_definition_name: Mapped[str] = mapped_column(Text, nullable=False)
+    product_test_environment_name: Mapped[str] = mapped_column(Text, nullable=False)
+    product_test_environment_status: Mapped[str] = mapped_column(Text, nullable=False)
     test_country: Mapped[str | None] = mapped_column(Text, nullable=True)
     test_city: Mapped[str | None] = mapped_column(Text, nullable=True)
     test_company: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -182,50 +215,30 @@ class ProductTestEnvironmentDefinition(Base):
     power_frequency: Mapped[str | None] = mapped_column(Text, nullable=True)
     power_connector_type: Mapped[str | None] = mapped_column(Text, nullable=True)
     power_condition: Mapped[str | None] = mapped_column(Text, nullable=True)
-    product_test_environment_definition_status: Mapped[str] = mapped_column(Text, nullable=False)
-    created_at: Mapped[str] = mapped_column(Text, nullable=False)
-    created_by: Mapped[str] = mapped_column(Text, nullable=False)
-    updated_at: Mapped[str] = mapped_column(Text, nullable=False)
-    updated_by: Mapped[str] = mapped_column(Text, nullable=False)
-    remark: Mapped[str | None] = mapped_column(Text, nullable=True)
-
-
-class ProductTestEnvironment(Base):
-    __tablename__ = "product_test_environment"
-    __table_args__ = (
-        Index("ix_product_test_environment_project_id", "project_id"),
-        Index("ix_product_test_environment_definition_id", "product_test_environment_definition_id"),
-    )
-
-    product_test_environment_id: Mapped[str] = mapped_column(Text, primary_key=True)
-    project_id: Mapped[str | None] = mapped_column(
-        Text,
-        ForeignKey("project.project_id"),
-        nullable=True,
-    )
-    product_test_environment_definition_id: Mapped[str] = mapped_column(
-        Text,
-        ForeignKey(
-            "product_test_environment_definition.product_test_environment_definition_id"
-        ),
-        nullable=False,
-    )
-    product_test_environment_name: Mapped[str] = mapped_column(Text, nullable=False)
-    test_computer_name: Mapped[str | None] = mapped_column(Text, nullable=True)
-    operating_system_version: Mapped[str | None] = mapped_column(Text, nullable=True)
-    test_tool_version: Mapped[str | None] = mapped_column(Text, nullable=True)
-    network_type: Mapped[str | None] = mapped_column(Text, nullable=True)
-    power_voltage: Mapped[str | None] = mapped_column(Text, nullable=True)
-    power_frequency: Mapped[str | None] = mapped_column(Text, nullable=True)
-    power_connector_type: Mapped[str | None] = mapped_column(Text, nullable=True)
     captured_at: Mapped[str | None] = mapped_column(Text, nullable=True)
-    product_test_environment_status: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[str] = mapped_column(Text, nullable=False)
     created_by: Mapped[str] = mapped_column(Text, nullable=False)
     updated_at: Mapped[str] = mapped_column(Text, nullable=False)
     updated_by: Mapped[str] = mapped_column(Text, nullable=False)
     remark: Mapped[str | None] = mapped_column(Text, nullable=True)
 
+    @property
+    def product_test_environment_definition_id(self) -> str:
+        environment_id = str(self.product_test_environment_id or "")
+        if environment_id.startswith("CONFIG-"):
+            return "CONFIG_DEF-" + environment_id[len("CONFIG-"):]
+        return environment_id
+
+    @property
+    def product_test_environment_definition_name(self) -> str:
+        return str(self.product_test_environment_name or "")
+
+    @property
+    def product_test_environment_definition_status(self) -> str:
+        return str(self.product_test_environment_status or "")
+
+
+ProductTestEnvironmentDefinition = ProductTestEnvironment
 
 class ProductTestCase(Base):
     __tablename__ = "product_test_case"

@@ -168,6 +168,7 @@ def initialize_database() -> None:
         _ensure_defect_columns()
         _ensure_product_test_project_id_columns()
         _ensure_product_test_project_id_indexes()
+        _ensure_environment_compatibility_views()
         _logger.info("[db] DB 초기화 완료  url=%s", app_settings.sqlite_database_url)
     except Exception as exc:
         _logger.error("[db] DB 초기화 실패: %s\n%s", exc, traceback.format_exc())
@@ -196,8 +197,7 @@ def _ensure_product_test_project_id_columns() -> None:
         "product_test_release",
         "product_test_target_definition",
         "product_test_target",
-        "product_test_environment_definition",
-        "product_test_environment",
+        "product_test_environment_unified",
         "product_test_case",
         "product_test_procedure",
         "product_test_run",
@@ -232,8 +232,7 @@ def _ensure_product_test_project_id_indexes() -> None:
         ("ix_product_test_release_project_id",               "product_test_release"),
         ("ix_product_test_target_definition_project_id",     "product_test_target_definition"),
         ("ix_product_test_target_project_id",                "product_test_target"),
-        ("ix_product_test_environment_definition_project_id","product_test_environment_definition"),
-        ("ix_product_test_environment_project_id",           "product_test_environment"),
+        ("ix_product_test_environment_unified_project_id", "product_test_environment_unified"),
         ("ix_product_test_case_project_id",                  "product_test_case"),
         ("ix_product_test_procedure_project_id",             "product_test_procedure"),
         ("ix_product_test_run_project_id",                   "product_test_run"),
@@ -298,3 +297,74 @@ def _ensure_user_account_columns() -> None:
             connection.execute(
                 text(f"ALTER TABLE user_account ADD COLUMN {column_name} {column_type}")
             )
+
+
+def _ensure_environment_compatibility_views() -> None:
+    with engine.begin() as connection:
+        unified_exists = connection.execute(
+            text("SELECT 1 FROM sqlite_master WHERE type='table' AND name='product_test_environment_unified' LIMIT 1")
+        ).fetchone()
+        if unified_exists is None:
+            return
+        connection.execute(text('DROP VIEW IF EXISTS product_test_environment'))
+        connection.execute(text('DROP VIEW IF EXISTS product_test_environment_definition'))
+        connection.execute(text("""
+            CREATE VIEW product_test_environment AS
+            SELECT
+                product_test_environment_id,
+                CASE
+                    WHEN product_test_environment_id LIKE 'CONFIG-%'
+                        THEN 'CONFIG_DEF-' || SUBSTR(product_test_environment_id, LENGTH('CONFIG-') + 1)
+                    ELSE product_test_environment_id
+                END AS product_test_environment_definition_id,
+                product_test_environment_name,
+                test_computer_name,
+                operating_system_version,
+                test_tool_version,
+                network_type,
+                power_voltage,
+                power_frequency,
+                power_connector_type,
+                captured_at,
+                product_test_environment_status,
+                created_at,
+                created_by,
+                updated_at,
+                updated_by,
+                remark,
+                project_id
+            FROM product_test_environment_unified
+        """))
+        connection.execute(text("""
+            CREATE VIEW product_test_environment_definition AS
+            SELECT
+                CASE
+                    WHEN product_test_environment_id LIKE 'CONFIG-%'
+                        THEN 'CONFIG_DEF-' || SUBSTR(product_test_environment_id, LENGTH('CONFIG-') + 1)
+                    ELSE product_test_environment_id
+                END AS product_test_environment_definition_id,
+                product_test_environment_name AS product_test_environment_definition_name,
+                test_country,
+                test_city,
+                test_company,
+                test_building,
+                test_floor,
+                test_room,
+                network_type,
+                test_computer_name,
+                operating_system_version,
+                test_tool_name,
+                test_tool_version,
+                power_voltage,
+                power_frequency,
+                power_connector_type,
+                power_condition,
+                product_test_environment_status AS product_test_environment_definition_status,
+                created_at,
+                created_by,
+                updated_at,
+                updated_by,
+                remark,
+                project_id
+            FROM product_test_environment_unified
+        """))

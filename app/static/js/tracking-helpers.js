@@ -85,7 +85,15 @@ function normalizeDate(raw) {
     return "trk_date_ok";
 }
 
+function stripReleasePrefix(releaseId) {
+    return String(releaseId || "").replace(/^(?:TEST_)?RELEASE-/, "");
+}
+
+function stripConfigPrefix(configId) {
+    return String(configId || "").replace(/^(?:TEST_)?CONFIG-/, "CONFIG-");
+}
+
 function extractTopo(releaseId) {
     const m = (releaseId || "").match(/(\d+AP[_A-Za-z0-9]*|UNCLASSIFIED)$/);
-    return m ? m[1] : (releaseId || "").replace("TEST_RELEASE-","");
+    return m ? m[1] : stripReleasePrefix(releaseId);
 }

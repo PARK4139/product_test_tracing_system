@@ -146,7 +146,7 @@ function buildMasterDataSections(data, releases) {
     ], data.test_targets || []);
 
     html += buildSimpleDataTableSection("Test Configs", "trk_test_environment_table", [
-        { key: "id", label: "Config ID", width: "330px", transform: v => String(v || "").replace(/^TEST_CONFIG-/, "CONFIG-") },
+        { key: "id", label: "Config ID", width: "330px", transform: v => stripConfigPrefix(v) },
         { key: "definition_id", label: "Definition ID", width: "360px" },
         { key: "name", label: "Name", width: "200px", field: "product_test_environment_name" },
         { key: "country", label: "Country", width: "90px" },
@@ -296,7 +296,7 @@ function renderTracking(data) {
                          data-defect-ids='${JSON.stringify(r.defect_ids || [])}'
                          data-status="${rowStatus}"
                          style="${rowStyle}cursor:pointer">
-                <td style="font-size:0.75rem;color:#64748b">${(r.parent_release_id||"").replace("TEST_RELEASE-","")}</td>
+                <td style="font-size:0.75rem;color:#64748b">${stripReleasePrefix(r.parent_release_id || "")}</td>
                 <td style="font-size:0.75rem" title="${r.case_id}">${caseShort}</td>
                 <td style="text-align:center">${r.total}</td>
                 <td style="text-align:center;color:#22c55e;font-weight:${r.passed > 0 ? "700" : "400"}">${r.passed}</td>
@@ -343,7 +343,7 @@ function renderTracking(data) {
                 <th style="width:100px">판정일</th>
             </tr></thead><tbody>`;
         procResults.forEach(pr => {
-            const topoShort = (pr.parent_release_id||"").replace("TEST_RELEASE-","");
+            const topoShort = stripReleasePrefix(pr.parent_release_id || "");
             const caseShort = pr.case_id || "";
             html += `<tr data-entity-type="product_test_procedure_result" data-entity-id="${pr.id}" data-parent-release-id="${pr.parent_release_id}"
                          data-result-id="${pr.result_id}"
@@ -375,7 +375,7 @@ function renderTracking(data) {
                 <th style="width:100px">수집일</th>
             </tr></thead><tbody>`;
         evidenceList.forEach(ev => {
-            const topoShort = (ev.parent_release_id||"").replace("TEST_RELEASE-","");
+            const topoShort = stripReleasePrefix(ev.parent_release_id || "");
             const linked = ev.defect_id ? ("defect: "+ev.defect_id) : ev.procedure_result_id ? ("proc: "+ev.procedure_result_id) : ev.result_id ? ("result: "+ev.result_id) : "-";
             html += `<tr data-parent-release-id="${ev.parent_release_id}"
                          data-result-id="${ev.result_id}"

@@ -63,6 +63,34 @@
 - 예: Case `1AP_1HDC` 인데 Result `[연결구성]`은 `1AP_1HDC_1HDR`.
 - 원인(핸드오버 확인): Case ID 첫 세그먼트는 **토폴로지가 아니라 DUT(시험대상) 표기**. 코드가 이걸 토폴로지로 오인.
 
+> **⚠️ 331 재현 규칙 (이 정의로만 331이 나온다 — 다르게 세지 말 것)**
+> 1. **분모 = 375** : `[연결구성]`을 가진 **result 행** 단위(case별 합산). Case 단위(60)로 세지 않는다.
+> 2. **caseseg 추출 정규식** : `TEST_CASE-([0-9A-Za-z_]+?)-WIFI` (비탐욕). `-WIFI`가 없는 **비정상 ID 18행은 비교 제외(=일치 취급)**.
+> 3. **비교는 문자열 완전일치(`!=`)** : 부분집합/접두 비교 아님. `1AP_1HDC` vs `1AP_1HDC_1HDR` → **불일치**.
+> 4. **AP→ROUTER 정규화 전, 원본 문자열로 비교.**
+>
+> ```python
+> import sqlite3, re
+> con = sqlite3.connect("data/product_test_tracking_system.db")
+> con.execute("PRAGMA wal_checkpoint(TRUNCATE)")   # WAL 반영 필수
+> cur = con.cursor()
+> mis = tot = 0
+> for (cid,) in cur.execute("SELECT product_test_case_id FROM product_test_case"):
+>     rrs = cur.execute("SELECT remark FROM product_test_result "
+>                       "WHERE product_test_case_id=? AND remark LIKE '%[연결구성]%'", (cid,)).fetchall()
+>     if not rrs: continue
+>     m = re.match(r'TEST_CASE-([0-9A-Za-z_]+?)-WIFI', cid)
+>     caseseg = m.group(1) if m else None
+>     for (rm,) in rrs:
+>         mm = re.search(r'\[연결구성\]\s*([^\n\]]+)', rm or '')
+>         rcombo = mm.group(1).strip() if mm else None
+>         tot += 1
+>         if caseseg and rcombo and caseseg != rcombo:
+>             mis += 1
+> print(tot, mis)   # -> 375 331
+> ```
+> 참고 분해: 분모 375 = 일치 44 + 불일치 331. caseseg 추출 실패(비교 제외) 18행은 "일치 44"에 포함.
+
 ### [P1] AP / ROUTER 표기 정책 미확정
 - Result `[연결구성]` 375건 중 **AP 표기 372건, ROUTER 표기 0건**.
 - 정본 목표는 `1ROUTER`/`25ROUTER` 표기인데 데이터는 전부 레거시 `1AP`/`25AP`.

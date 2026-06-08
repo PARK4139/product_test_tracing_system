@@ -334,6 +334,18 @@
     </div>
 </section>
 
+<section class="card" data-admin-tab-label="Integrity Sheets">
+    <div class="section_header_row"><h3>Integrity Sheets</h3></div>
+    <div class="table_action_bar admin_table_action_bar_top">
+        <span style="font-size:0.82rem;color:var(--color-text-muted,#64748b)">
+            TASK 7 read-only API 기반 정합성 시트. 편집/이력적재는 TASK 9에서 추가.
+        </span>
+    </div>
+    <div data-integrity-sheet-root>
+        <div class="integrity_sheet_loading">시트 초기화 중…</div>
+    </div>
+</section>
+
     </div>
 </section>
 
@@ -2064,5 +2076,6 @@ void (async () => {
 <script src="/static/js/tracking-defect.js"></script>
 <script src="/static/js/tracking-render.js"></script>
 <script src="/static/js/tracking.js"></script>
+<script src="/static/js/sheet-view.js"></script>
 </div>{# /admin_dash_compact #}
 {% endblock %}

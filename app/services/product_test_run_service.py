@@ -885,7 +885,7 @@ def list_product_test_environment_definitions(database_session: Session) -> list
             "power_frequency",
             "power_connector_type",
             "power_condition",
-            "product_test_environment_definition_status",
+            "product_test_environment_status",
             "created_at",
             "created_by",
             "updated_at",
@@ -1227,7 +1227,8 @@ def create_product_test_environment_definition(
     definition_name = str(product_test_environment_definition_name or "").strip()
     if not definition_id or not definition_name:
         raise ValueError("product_test_environment_definition_id and name are required.")
-    if database_session.get(ProductTestEnvironmentDefinition, definition_id) is not None:
+    environment_id = definition_id.replace("CONFIG_DEF-", "CONFIG-", 1) if definition_id.startswith("CONFIG_DEF-") else definition_id
+    if database_session.get(ProductTestEnvironment, environment_id) is not None:
         raise ValueError("product_test_environment_definition_id already exists.")
     status_value = _validate_in(
         str(product_test_environment_definition_status or "").strip().upper(),
@@ -1235,9 +1236,10 @@ def create_product_test_environment_definition(
         "product_test_environment_definition_status",
     )
     now_text = _now_text()
-    row = ProductTestEnvironmentDefinition(
-        product_test_environment_definition_id=definition_id,
-        product_test_environment_definition_name=definition_name,
+    row = ProductTestEnvironment(
+        product_test_environment_id=environment_id,
+        product_test_environment_name=definition_name,
+        product_test_environment_status=status_value,
         test_country=str(test_country or "").strip() or None,
         test_city=str(test_city or "").strip() or None,
         test_company=str(test_company or "").strip() or None,
@@ -1248,12 +1250,12 @@ def create_product_test_environment_definition(
         test_computer_name=str(test_computer_name or "").strip() or None,
         operating_system_version=str(operating_system_version or "").strip() or None,
         test_tool_name=str(test_tool_name or "").strip() or None,
+        captured_at=None,
         test_tool_version=str(test_tool_version or "").strip() or None,
         power_voltage=str(power_voltage or "").strip() or None,
         power_frequency=str(power_frequency or "").strip() or None,
         power_connector_type=str(power_connector_type or "").strip() or None,
         power_condition=str(power_condition or "").strip() or None,
-        product_test_environment_definition_status=status_value,
         created_at=now_text,
         created_by=actor_name,
         updated_at=now_text,
@@ -1265,8 +1267,8 @@ def create_product_test_environment_definition(
     return _as_dict(
         row,
         [
-            "product_test_environment_definition_id",
-            "product_test_environment_definition_name",
+            "product_test_environment_id",
+            "product_test_environment_name",
             "test_country",
             "test_city",
             "test_company",
@@ -1282,7 +1284,7 @@ def create_product_test_environment_definition(
             "power_frequency",
             "power_connector_type",
             "power_condition",
-            "product_test_environment_definition_status",
+            "product_test_environment_status",
             "created_at",
             "created_by",
             "updated_at",
@@ -1317,8 +1319,6 @@ def create_product_test_environment(
         raise ValueError("product_test_environment_id, definition_id, name are required.")
     if database_session.get(ProductTestEnvironment, environment_id) is not None:
         raise ValueError("product_test_environment_id already exists.")
-    if database_session.get(ProductTestEnvironmentDefinition, definition_id) is None:
-        raise ValueError("Unknown product_test_environment_definition_id.")
     status_value = _validate_in(
         str(product_test_environment_status or "").strip().upper(),
         ENVIRONMENT_STATUS_VALUES,
@@ -1327,7 +1327,6 @@ def create_product_test_environment(
     now_text = _now_text()
     row = ProductTestEnvironment(
         product_test_environment_id=environment_id,
-        product_test_environment_definition_id=definition_id,
         product_test_environment_name=environment_name,
         test_computer_name=str(test_computer_name or "").strip() or None,
         operating_system_version=str(operating_system_version or "").strip() or None,
@@ -1723,8 +1722,7 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
 
     _upsert_model_row(
         database_session,
-        ProductTestEnvironmentDefinition,
-        "product_test_environment_definition_id",
+            "product_test_environment_definition_id",
         {
             "product_test_environment_definition_id": "SQA_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM",
             "product_test_environment_definition_name": "Huvitz Anyang Connectivity Room Standard Environment",
@@ -3433,24 +3431,23 @@ def _environment_summary(database_session: Session, product_test_environment_id:
             "power_connector_type": fallback.get("power_connector_type", definition_row.get("power_connector_type", "")),
             "power_condition": definition_row.get("power_condition", ""),
         }
-    definition_row = database_session.get(ProductTestEnvironmentDefinition, environment_row.product_test_environment_definition_id)
     return {
         "product_test_environment_id": environment_row.product_test_environment_id,
         "product_test_environment_name": environment_row.product_test_environment_name,
-        "test_country": definition_row.test_country if definition_row else "",
-        "test_city": definition_row.test_city if definition_row else "",
-        "test_company": definition_row.test_company if definition_row else "",
-        "test_building": definition_row.test_building if definition_row else "",
-        "test_floor": definition_row.test_floor if definition_row else "",
-        "test_room": definition_row.test_room if definition_row else "",
-        "network_type": environment_row.network_type or (definition_row.network_type if definition_row else ""),
-        "test_computer_name": environment_row.test_computer_name or (definition_row.test_computer_name if definition_row else ""),
-        "operating_system_version": environment_row.operating_system_version or (definition_row.operating_system_version if definition_row else ""),
-        "test_tool_version": environment_row.test_tool_version or (definition_row.test_tool_version if definition_row else ""),
-        "power_voltage": environment_row.power_voltage or (definition_row.power_voltage if definition_row else ""),
-        "power_frequency": environment_row.power_frequency or (definition_row.power_frequency if definition_row else ""),
-        "power_connector_type": environment_row.power_connector_type or (definition_row.power_connector_type if definition_row else ""),
-        "power_condition": definition_row.power_condition if definition_row else "",
+        "test_country": environment_row.test_country or "",
+        "test_city": environment_row.test_city or "",
+        "test_company": environment_row.test_company or "",
+        "test_building": environment_row.test_building or "",
+        "test_floor": environment_row.test_floor or "",
+        "test_room": environment_row.test_room or "",
+        "network_type": environment_row.network_type or "",
+        "test_computer_name": environment_row.test_computer_name or "",
+        "operating_system_version": environment_row.operating_system_version or "",
+        "test_tool_version": environment_row.test_tool_version or "",
+        "power_voltage": environment_row.power_voltage or "",
+        "power_frequency": environment_row.power_frequency or "",
+        "power_connector_type": environment_row.power_connector_type or "",
+        "power_condition": environment_row.power_condition or "",
     }
 
 
