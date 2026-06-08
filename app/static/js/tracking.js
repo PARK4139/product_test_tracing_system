@@ -917,6 +917,7 @@ const TAB_VIEW_TABLE_FOLD_META = {
 };
 const TABVIEW_REGION_FOLD_KEY = "tabview_region_fold_v1";
 const SHEET_TAB_TABLE_FOLD_KEY = "sheet_tab_table_fold_v1";
+const TABVIEW_REGION_FOLD_MIGRATED_KEY = "tabview_region_fold_migrated_v1";
 let tabViewRegionFoldLegacyMigrated = false;
 
 function readTabViewRegionFoldStates() {
@@ -941,6 +942,27 @@ function migrateLegacyTabViewRegionFoldStates() {
         return;
     }
     tabViewRegionFoldLegacyMigrated = true;
+    // 이 마이그레이션은 "딱 한 번"만 실행돼야 한다. 위의 let 플래그는 새로고침/재부팅마다
+    // 초기화되므로, 그것만 믿으면 페이지를 열 때마다 옛날 데이터(legacy)를 다시 읽어서
+    // region-fold 상태를 또 덮어써버린다 (사용자가 방금 펼쳐놔도 새로고침하면 다시 접힘).
+    // 그래서 "이미 마이그레이션 했음" 자체를 DB/localStorage 에 영구 기록해서,
+    // 한 번 끝난 뒤로는 절대 다시 실행되지 않게 막는다.
+    let alreadyMigrated = false;
+    try {
+        alreadyMigrated = uiStateGetItem(TABVIEW_REGION_FOLD_MIGRATED_KEY) === "1";
+    } catch (_) {
+        alreadyMigrated = false;
+    }
+    if (alreadyMigrated) {
+        return;
+    }
+    const markMigrated = () => {
+        try {
+            uiStateSetItem(TABVIEW_REGION_FOLD_MIGRATED_KEY, "1");
+        } catch (_) {
+            /* ignore */
+        }
+    };
     const states = readTabViewRegionFoldStates();
     let changed = false;
     let legacy = {};
@@ -974,6 +996,7 @@ function migrateLegacyTabViewRegionFoldStates() {
     if (changed) {
         writeTabViewRegionFoldStates(states);
     }
+    markMigrated();
 }
 
 function isTabViewRegionFolded(regionKey) {
