@@ -977,10 +977,8 @@ tr.trk_row_highlighted.hl-default td:first-child { border-left: 3px solid #eab30
 }
 .custom_sheet_col_menu {
     display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    z-index: 20;
+    position: fixed;
+    z-index: 200;
     min-width: 190px;
     margin-top: 2px;
     padding: 6px;

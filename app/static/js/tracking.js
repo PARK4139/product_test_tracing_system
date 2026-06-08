@@ -820,6 +820,14 @@ function refreshGroupTabLabels(group) {
         return;
     }
     Array.from(group.tabbar.querySelectorAll("[data-sheet-tab]")).forEach((tab) => {
+        // 커스텀 시트 탭은 이름을 자체적으로 관리한다(서버에서 받은 sheet.tab_label,
+        // F2 로 바로 수정). 여기서 쓰는 범용 라벨 오버라이드 시스템(sheet_tab_labels)은
+        // 커스텀 시트 id 에 대한 기본 표시 이름을 모르기 때문에(card/h3 헤더가 없음),
+        // 빈 문자열로 덮어써서 "새로고침하면 시트명이 사라지는" 버그를 일으켰다.
+        // → 커스텀 시트 탭은 건너뛴다.
+        if (tab.classList.contains("custom_sheet_tab") || tab.dataset.customSheetId) {
+            return;
+        }
         const id = sheetTabId(tab);
         const entry = findSheetTabEntry(id);
         const defaultLabel = getSheetTabDefaultDisplayLabel(tab, entry?.panel);
@@ -949,7 +957,16 @@ function migrateLegacyTabViewRegionFoldStates() {
             return;
         }
         const region = legacy[meta.regionKey];
-        if (region && typeof region === "object" && Object.values(region).some((value) => value === true)) {
+        if (!region || typeof region !== "object" || Array.isArray(region)) {
+            return;
+        }
+        const values = Object.values(region);
+        // 예전에는 "탭뷰 전체 접기"가 따로 없어서, 그 안의 표를 전부 접어둔 것이
+        // 사실상 "탭뷰 전체 접기"였다. 그래서 그 경우(전부 true)에만 새 region-fold 로
+        // 옮겨준다. 표 하나만 접어둔 것까지 region 전체 접힘으로 잘못 옮기면
+        // (이전 버그: some() 사용) 새로고침할 때마다 모든 탭뷰가 접힌 채로 보이고,
+        // 그 잘못된 값이 다시 DB 에 저장되어 계속 반복되는 문제가 있었다.
+        if (values.length > 0 && values.every((value) => value === true)) {
             states[meta.regionKey] = true;
             changed = true;
         }
@@ -2165,6 +2182,17 @@ function renderCustomSheetTable(panel, sheet) {
     }
     const thead = table.querySelector("thead");
     const tbody = table.querySelector("tbody");
+    const tableWrap = panel.querySelector(".custom_sheet_table_wrap");
+    function closeAllColMenus() {
+        Array.from(thead.querySelectorAll(".custom_sheet_col_menu.is-open")).forEach((el) => {
+            el.classList.remove("is-open");
+        });
+    }
+    // 메뉴는 position:fixed 라서 표를 스크롤하면 컬럼과 어긋나 보일 수 있다 → 스크롤 시 닫는다.
+    if (tableWrap && tableWrap.dataset.colMenuScrollBound !== "1") {
+        tableWrap.dataset.colMenuScrollBound = "1";
+        tableWrap.addEventListener("scroll", closeAllColMenus);
+    }
     const columns = sheet.columns || [];
     const view = sheet._view || (sheet._view = { sortKey: "", sortDir: "asc", filterText: "", colFilters: {} });
     if (!view.colFilters) view.colFilters = {};
@@ -2314,6 +2342,14 @@ function renderCustomSheetTable(panel, sheet) {
         });
 
         let menuHideTimer = null;
+        function positionColMenu() {
+            // 시트 헤더는 position:sticky 라서, 메뉴를 absolute 로 th 안에 두면 일부 브라우저에서
+            // 컬럼 폭/레이아웃에 영향을 줄 수 있다. 그래서 position:fixed 로 분리하고
+            // th 의 화면상 좌표를 직접 계산해 배치한다(레이아웃에 전혀 영향 없음).
+            const rect = th.getBoundingClientRect();
+            menu.style.top = rect.bottom + "px";
+            menu.style.left = rect.left + "px";
+        }
         function showColMenu() {
             if (menuHideTimer) {
                 clearTimeout(menuHideTimer);
@@ -2324,6 +2360,7 @@ function renderCustomSheetTable(panel, sheet) {
                     el.classList.remove("is-open");
                 }
             });
+            positionColMenu();
             menu.classList.add("is-open");
         }
         function hideColMenuSoon() {
@@ -2989,12 +3026,6 @@ const _uiStateHydrated = (typeof window.hydrateUiStateFromServer === "function")
 
 document.addEventListener("DOMContentLoaded", () => {
     _uiStateHydrated.then(runUiStateDependentInit);
-});
-_uiStateHydrated.then(() => {
-    initTabViewTableFoldToggleButtons();
-    initAllTabViewsRegionFoldToggleButton();
-    bindSheetTabLayoutPersistence();
-    scheduleAdminMasterDataTabs();
 });
 document.getElementById("trk_refresh_btn")
     && document.getElementById("trk_refresh_btn").addEventListener("click", event => {
