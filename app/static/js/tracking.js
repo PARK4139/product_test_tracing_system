@@ -2118,8 +2118,6 @@ function buildCustomSheetPanel(sheet) {
     panel.setAttribute("role", "tabpanel");
     panel.innerHTML = `
         <div class="custom_sheet_toolbar">
-            <button type="button" class="custom_sheet_btn" data-action="rename" title="탭 이름 변경">✎ 이름</button>
-            <span class="custom_sheet_toolbar_sep"></span>
             <select class="custom_sheet_add_row_pos" title="새 행을 추가할 위치 (선택한 셀 기준)">
                 <option value="above" selected>위에 추가</option>
                 <option value="below">아래에 추가</option>
@@ -2150,7 +2148,7 @@ function buildCustomSheetPanel(sheet) {
                 <tbody></tbody>
             </table>
         </div>
-        <p class="custom_sheet_hint">셀을 클릭하면 선택되고(더블클릭/Enter/F2를 눌러야 입력 모드로 전환됩니다), "+ 행" 옆 옵션으로 선택한 셀의 위/아래 중 추가 위치를 고를 수 있습니다. "- 행"/"- 열" 버튼에 마우스를 올리면 삭제될 범위가 색으로 표시됩니다. 열 이름을 클릭해 선택한 뒤 F2(또는 더블클릭/Enter)를 누르면 이름을 바꿀 수 있고, 열 머리글의 빈 곳을 클릭하면 정렬됩니다. 데이터는 입력 후 자동으로 DB에 저장됩니다.</p>
+        <p class="custom_sheet_hint">셀을 클릭하면 선택되고(더블클릭/Enter/F2를 눌러야 입력 모드로 전환됩니다), "+ 행" 옆 옵션으로 선택한 셀의 위/아래 중 추가 위치를 고를 수 있습니다. "- 행"/"- 열" 버튼에 마우스를 올리면 삭제될 범위가 색으로 표시됩니다. 열 이름을 클릭해 선택한 뒤 F2(또는 더블클릭/Enter)를 누르면 이름을 바꿀 수 있고(탭 이름은 탭을 더블클릭하거나 F2로 바꿉니다), 열 머리글에 마우스를 올리면 정렬·필터 옵션이 나타납니다. 데이터는 입력 후 자동으로 DB에 저장됩니다.</p>
     `;
     return panel;
 }
@@ -2168,7 +2166,8 @@ function renderCustomSheetTable(panel, sheet) {
     const thead = table.querySelector("thead");
     const tbody = table.querySelector("tbody");
     const columns = sheet.columns || [];
-    const view = sheet._view || (sheet._view = { sortKey: "", sortDir: "asc", filterText: "" });
+    const view = sheet._view || (sheet._view = { sortKey: "", sortDir: "asc", filterText: "", colFilters: {} });
+    if (!view.colFilters) view.colFilters = {};
 
     const headRow = document.createElement("tr");
     const thIndex = document.createElement("th");
@@ -2254,20 +2253,103 @@ function renderCustomSheetTable(panel, sheet) {
         const markSpan = document.createElement("span");
         markSpan.className = "custom_sheet_sort_mark";
         markSpan.textContent = sortMark;
-        th.appendChild(labelSpan);
-        th.appendChild(markSpan);
-        th.addEventListener("click", (event) => {
-            if (event.target === labelSpan) {
+
+        const isSorted = view.sortKey === col.key;
+        const hasColFilter = !!(view.colFilters && view.colFilters[col.key]);
+        th.classList.toggle("has-sort", isSorted);
+        th.classList.toggle("has-filter", hasColFilter);
+
+        const menuToggle = document.createElement("span");
+        menuToggle.className = "custom_sheet_col_menu_toggle";
+        menuToggle.textContent = "▾";
+        menuToggle.title = "정렬·필터 옵션";
+
+        const menu = document.createElement("div");
+        menu.className = "custom_sheet_col_menu";
+        menu.innerHTML = `
+            <button type="button" class="custom_sheet_col_menu_item" data-menu-action="sort-asc">정렬 ▲ (오름차순)</button>
+            <button type="button" class="custom_sheet_col_menu_item" data-menu-action="sort-desc">정렬 ▼ (내림차순)</button>
+            <button type="button" class="custom_sheet_col_menu_item" data-menu-action="sort-clear">정렬 해제</button>
+            <div class="custom_sheet_col_menu_sep"></div>
+            <input type="search" class="custom_sheet_col_menu_filter" placeholder="이 열 필터(텍스트 포함)" />
+            <button type="button" class="custom_sheet_col_menu_item" data-menu-action="filter-clear">이 열 필터 해제</button>
+        `;
+        const menuFilterInput = menu.querySelector(".custom_sheet_col_menu_filter");
+        if (menuFilterInput) {
+            menuFilterInput.value = (view.colFilters && view.colFilters[col.key]) || "";
+            menuFilterInput.addEventListener("click", (event) => event.stopPropagation());
+            menuFilterInput.addEventListener("input", () => {
+                view.colFilters = view.colFilters || {};
+                const v = menuFilterInput.value.trim();
+                if (v) {
+                    view.colFilters[col.key] = v;
+                } else {
+                    delete view.colFilters[col.key];
+                }
+                renderCustomSheetTable(panel, sheet);
+            });
+        }
+        menu.addEventListener("click", (event) => {
+            const item = event.target.closest("[data-menu-action]");
+            if (!item) {
                 return;
             }
-            if (view.sortKey === col.key) {
-                view.sortDir = view.sortDir === "asc" ? "desc" : "asc";
-            } else {
+            event.stopPropagation();
+            const act = item.dataset.menuAction;
+            if (act === "sort-asc") {
                 view.sortKey = col.key;
                 view.sortDir = "asc";
+            } else if (act === "sort-desc") {
+                view.sortKey = col.key;
+                view.sortDir = "desc";
+            } else if (act === "sort-clear") {
+                if (view.sortKey === col.key) {
+                    view.sortKey = "";
+                }
+            } else if (act === "filter-clear") {
+                view.colFilters = view.colFilters || {};
+                delete view.colFilters[col.key];
             }
             renderCustomSheetTable(panel, sheet);
         });
+
+        let menuHideTimer = null;
+        function showColMenu() {
+            if (menuHideTimer) {
+                clearTimeout(menuHideTimer);
+                menuHideTimer = null;
+            }
+            Array.from(thead.querySelectorAll(".custom_sheet_col_menu.is-open")).forEach((el) => {
+                if (el !== menu) {
+                    el.classList.remove("is-open");
+                }
+            });
+            menu.classList.add("is-open");
+        }
+        function hideColMenuSoon() {
+            if (menuHideTimer) {
+                clearTimeout(menuHideTimer);
+            }
+            menuHideTimer = setTimeout(() => {
+                menu.classList.remove("is-open");
+                menuHideTimer = null;
+            }, 200);
+        }
+        th.addEventListener("mouseenter", showColMenu);
+        th.addEventListener("mouseleave", hideColMenuSoon);
+        menuToggle.addEventListener("click", (event) => {
+            event.stopPropagation();
+            if (menu.classList.contains("is-open")) {
+                menu.classList.remove("is-open");
+            } else {
+                showColMenu();
+            }
+        });
+
+        th.appendChild(labelSpan);
+        th.appendChild(markSpan);
+        th.appendChild(menuToggle);
+        th.appendChild(menu);
         headRow.appendChild(th);
     });
     thead.innerHTML = "";
@@ -2286,6 +2368,15 @@ function renderCustomSheetTable(panel, sheet) {
     if (view.filterText) {
         const needle = view.filterText.toLowerCase();
         rowsView = rowsView.filter(({ row }) => columns.some((c) => String(row[c.key] ?? "").toLowerCase().includes(needle)));
+    }
+    if (view.colFilters) {
+        const filterKeys = Object.keys(view.colFilters).filter((k) => view.colFilters[k]);
+        if (filterKeys.length) {
+            rowsView = rowsView.filter(({ row }) => filterKeys.every((key) => {
+                const needle = String(view.colFilters[key]).toLowerCase();
+                return String(row[key] ?? "").toLowerCase().includes(needle);
+            }));
+        }
     }
     if (view.sortKey) {
         const key = view.sortKey;
@@ -2486,7 +2577,7 @@ function bindCustomSheetToolbar(panel, sheet) {
     const filterInput = toolbar.querySelector(".custom_sheet_filter");
     if (filterInput) {
         filterInput.addEventListener("input", () => {
-            sheet._view = sheet._view || { sortKey: "", sortDir: "asc", filterText: "" };
+            sheet._view = sheet._view || { sortKey: "", sortDir: "asc", filterText: "", colFilters: {} };
             sheet._view.filterText = filterInput.value.trim();
             renderCustomSheetTable(panel, sheet);
         });
@@ -2605,11 +2696,6 @@ function bindCustomSheetToolbar(panel, sheet) {
             sheet._selectedCell = null;
             renderCustomSheetTable(panel, sheet);
             scheduleCustomSheetSave(sheet, panel);
-        } else if (action === "rename") {
-            const tabEl = document.querySelector(`[data-sheet-tab="${customSheetPanelId(sheet.id)}"]`);
-            if (tabEl) {
-                beginCustomSheetTabRename(tabEl, sheet, panel);
-            }
         } else if (action === "compute") {
             runCustomSheetCompute(panel, sheet);
         }

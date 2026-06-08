@@ -51,24 +51,40 @@
         }
     }
 
+    function sendUiStateSave(key, value) {
+        var parsed;
+        try { parsed = JSON.parse(value); } catch (e) { parsed = value; }
+        var url = UI_STATE_API_BASE + "/" + encodeURIComponent(key);
+        var payload = JSON.stringify({ value: parsed });
+        // 페이지를 떠나는 시점(beforeunload/pagehide)에는 일반 fetch 가 취소될 수 있으므로,
+        // keepalive 옵션으로 요청이 살아남도록 한다 — 새로고침 직후 hydrate 가 방금 저장한
+        // 값을 "옛 서버값"으로 덮어써버리는 경합(race)을 막기 위함.
+        // (참고: navigator.sendBeacon 은 POST 전용이라 PUT 엔드포인트에는 쓸 수 없음)
+        try {
+            fetch(url, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: payload,
+                keepalive: true,
+            }).catch(function (err) {
+                if (window.clientLog) window.clientLog("uiState save failed: " + key, String(err), "warn");
+            });
+        } catch (e) {}
+    }
+
     // value(문자열)를 JSON 으로 파싱해서 보내되, JSON 이 아니면 원본 문자열 그대로 보낸다.
     // hydrateUiStateFromServer() 에서 동일한 규칙으로 역변환하므로 값이 그대로 왕복된다.
     function scheduleUiStateSave(key, value) {
         if (saveTimers[key] && saveTimers[key].timer) {
             clearTimeout(saveTimers[key].timer);
         }
-        saveTimers[key] = { timer: setTimeout(function () {
-            delete saveTimers[key];
-            var parsed;
-            try { parsed = JSON.parse(value); } catch (e) { parsed = value; }
-            fetch(UI_STATE_API_BASE + "/" + encodeURIComponent(key), {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ value: parsed }),
-            }).catch(function (err) {
-                if (window.clientLog) window.clientLog("uiState save failed: " + key, String(err), "warn");
-            });
-        }, SAVE_DEBOUNCE_MS) };
+        saveTimers[key] = {
+            value: value,
+            timer: setTimeout(function () {
+                delete saveTimers[key];
+                sendUiStateSave(key, value);
+            }, SAVE_DEBOUNCE_MS),
+        };
     }
 
     function scheduleUiStateDelete(key) {
@@ -76,11 +92,28 @@
             clearTimeout(saveTimers[key].timer);
             delete saveTimers[key];
         }
-        fetch(UI_STATE_API_BASE + "/" + encodeURIComponent(key), { method: "DELETE" })
+        fetch(UI_STATE_API_BASE + "/" + encodeURIComponent(key), { method: "DELETE", keepalive: true })
             .catch(function (err) {
                 if (window.clientLog) window.clientLog("uiState delete failed: " + key, String(err), "warn");
             });
     }
+
+    // 새로고침/탭 닫기 등으로 페이지를 떠나기 직전, 디바운스 대기 중인 저장을 즉시 보낸다.
+    // 이게 없으면 "이름 변경 직후 바로 새로고침" 시 변경값이 서버에 반영되기 전에
+    // hydrateUiStateFromServer() 가 먼저 실행되어 옛 값으로 되돌아가 버릴 수 있다.
+    function flushPendingUiStateSaves() {
+        Object.keys(saveTimers).forEach(function (key) {
+            var entry = saveTimers[key];
+            if (!entry) return;
+            clearTimeout(entry.timer);
+            delete saveTimers[key];
+            sendUiStateSave(key, entry.value);
+        });
+    }
+    document.addEventListener("visibilitychange", function () {
+        if (document.visibilityState === "hidden") flushPendingUiStateSaves();
+    });
+    window.addEventListener("pagehide", flushPendingUiStateSaves);
 
     var hydratePromise = null;
     // 서버(DB)에 저장된 값으로 localStorage 를 덮어쓴다. DOMContentLoaded 의 가장 앞에서
@@ -149,5 +182,6 @@
     window.uiStateGetItem = uiStateGetItem;
     window.uiStateSetItem = uiStateSetItem;
     window.uiStateRemoveItem = uiStateRemoveItem;
+    window.flushPendingUiStateSaves = flushPendingUiStateSaves;
     window.hydrateUiStateFromServer = hydrateUiStateFromServer;
 })();
