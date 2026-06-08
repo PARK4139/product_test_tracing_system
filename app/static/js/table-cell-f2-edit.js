@@ -49,11 +49,11 @@
                 8: "remark",
             },
         },
-        "/admin/product-test-environment-definitions/create": {
-            entityType: "product_test_environment_definition",
+        "/admin/product-test-environments/create": {
+            entityType: "product_test_environment",
             idColumnIndex: 1,
             fieldsByIndex: {
-                2: "product_test_environment_definition_name",
+                2: "product_test_environment_name",
                 3: "test_country",
                 4: "test_city",
                 5: "test_company",
@@ -67,25 +67,9 @@
                 13: "power_frequency",
                 14: "power_connector_type",
                 15: "power_condition",
-                16: "product_test_environment_definition_status",
-                17: "remark",
-            },
-        },
-        "/admin/product-test-environments/create": {
-            entityType: "product_test_environment",
-            idColumnIndex: 1,
-            fieldsByIndex: {
-                3: "product_test_environment_name",
-                4: "test_computer_name",
-                5: "operating_system_version",
-                6: "test_tool_version",
-                7: "network_type",
-                8: "power_voltage",
-                9: "power_frequency",
-                10: "power_connector_type",
-                11: "captured_at",
-                12: "product_test_environment_status",
-                13: "remark",
+                16: "captured_at",
+                17: "product_test_environment_status",
+                18: "remark",
             },
         },
         "/admin/product-test-cases/create": {

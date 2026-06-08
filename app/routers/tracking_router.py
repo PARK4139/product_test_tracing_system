@@ -714,7 +714,7 @@ def get_tracking_summary(
     ]
     test_targets = timeline_test_targets + physical_test_targets
 
-    test_environment_definitions = [
+    test_environments = [
         {
             "id": r[0] or "",
             "name": r[1] or "",
@@ -729,52 +729,21 @@ def get_tracking_summary(
             "tool_version": r[10] or "",
             "power_voltage": r[11] or "",
             "power_frequency": r[12] or "",
-            "status": r[13] or "",
-            "remark": r[14] or "",
+            "power_condition": r[13] or "",
+            "captured_at": r[14] or "",
+            "status": r[15] or "",
+            "remark": r[16] or "",
         }
         for r in conn.execute(text("""
-            SELECT product_test_environment_definition_id,
-                   product_test_environment_definition_name, test_country, test_city,
-                   test_company, test_room, network_type, test_computer_name,
+            SELECT product_test_environment_id,
+                   product_test_environment_name,
+                   test_country, test_city, test_company, test_room,
+                   network_type, test_computer_name,
                    operating_system_version, test_tool_name, test_tool_version,
-                   power_voltage, power_frequency,
-                   product_test_environment_definition_status, remark
-            FROM product_test_environment_definition
-            ORDER BY product_test_environment_definition_id
-        """)).fetchall()
-    ]
-
-    test_environments = [
-        {
-            "id": r[0] or "",
-            "definition_id": r[1] or "",
-            "name": r[2] or "",
-            "country": r[3] or "",
-            "city": r[4] or "",
-            "company": r[5] or "",
-            "room": r[6] or "",
-            "network_type": r[7] or "",
-            "computer_name": r[8] or "",
-            "os_version": r[9] or "",
-            "tool_version": r[10] or "",
-            "power_voltage": r[11] or "",
-            "power_frequency": r[12] or "",
-            "captured_at": r[13] or "",
-            "status": r[14] or "",
-            "remark": r[15] or "",
-        }
-        for r in conn.execute(text("""
-            SELECT e.product_test_environment_id, e.product_test_environment_definition_id,
-                   e.product_test_environment_name,
-                   d.test_country, d.test_city, d.test_company, d.test_room,
-                   e.network_type, e.test_computer_name,
-                   e.operating_system_version, e.test_tool_version,
-                   e.power_voltage, e.power_frequency, e.captured_at,
-                   e.product_test_environment_status, e.remark
-            FROM product_test_environment e
-            LEFT JOIN product_test_environment_definition d
-                ON d.product_test_environment_definition_id = e.product_test_environment_definition_id
-            ORDER BY e.product_test_environment_id
+                   power_voltage, power_frequency, power_condition, captured_at,
+                   product_test_environment_status, remark
+            FROM product_test_environment_unified
+            ORDER BY product_test_environment_id
         """)).fetchall()
     ]
 
@@ -931,7 +900,6 @@ def get_tracking_summary(
         "test_releases": releases,
         "test_target_definitions": test_target_definitions,
         "test_targets": test_targets,
-        "test_environment_definitions": test_environment_definitions,
         "test_environments": test_environments,
         "test_cases": test_cases,
         "test_procedures": test_procedures,

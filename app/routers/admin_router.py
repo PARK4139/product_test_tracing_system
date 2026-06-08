@@ -38,7 +38,6 @@ from app.services.product_test_run_service import (
     compare_product_test_report_snapshots,
     create_product_test_case,
     create_product_test_environment,
-    create_product_test_environment_definition,
     create_product_test_procedure,
     create_product_test_report,
     create_product_test_report_snapshot,
@@ -58,7 +57,6 @@ from app.services.product_test_run_service import (
     list_case_options,
     list_environment_options,
     list_product_test_cases,
-    list_product_test_environment_definitions,
     list_product_test_environments,
     list_product_test_procedures,
     list_product_test_report_snapshots,
@@ -142,8 +140,6 @@ def _admin_dashboard_product_tracing_template_context(*, database_session: Sessi
         "target_definition_status_values": MASTER_ACTIVE_STATUS_VALUES,
         "target_rows": list_product_test_targets(database_session),
         "target_status_values": TARGET_STATUS_VALUES,
-        "environment_definition_rows": list_product_test_environment_definitions(database_session),
-        "environment_definition_status_values": MASTER_ACTIVE_STATUS_VALUES,
         "environment_rows": list_product_test_environments(database_session),
         "environment_status_values": ENVIRONMENT_STATUS_VALUES,
         "case_rows": list_product_test_cases(database_session),
@@ -564,307 +560,14 @@ def _sample_product_test_target_rows() -> list[dict]:
     ]
 
 
-def _sample_product_test_environment_definition_rows() -> list[dict]:
-    return [
-        {
-            "product_test_environment_definition_id": "SQA_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM",
-            "product_test_environment_definition_name": "Huvitz Anyang Connectivity Room Standard Environment",
-            "test_country": "Korea",
-            "test_city": "Anyang",
-            "test_company": "Huvitz",
-            "test_building": "",
-            "test_floor": "6F",
-            "test_room": "Connectivity Room",
-            "network_type": "ISOLATED_NETWORK",
-            "test_computer_name": "SQA-PC-01",
-            "operating_system_version": "Windows 10",
-            "test_tool_name": "Product Test Tool",
-            "test_tool_version": "1.0.0",
-            "power_voltage": "220V",
-            "power_frequency": "60Hz",
-            "power_connector_type": "OO_CONNECTOR",
-            "power_condition": "Commercial AC power",
-            "product_test_environment_definition_status": "active",
-            "created_at": "2026-05-05 09:00:00",
-            "created_by": "SQA_MASTER",
-            "updated_at": "2026-05-05 09:00:00",
-            "updated_by": "SQA_MASTER",
-            "remark": "",
-        }
-    ]
 
-
-def _sample_product_test_environment_rows() -> list[dict]:
-    return [
-        {
-            "product_test_environment_id": "SQA_PRODUCT_TEST_ENVIRONMENT_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM-20260504-001",
-            "product_test_environment_definition_id": "SQA_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM",
-            "product_test_environment_name": "Anyang Connectivity Room Snapshot",
-            "test_computer_name": "SQA-PC-01",
-            "operating_system_version": "Windows 10",
-            "test_tool_version": "1.0.0",
-            "network_type": "ISOLATED_NETWORK",
-            "power_voltage": "220V",
-            "power_frequency": "60Hz",
-            "power_connector_type": "OO_CONNECTOR",
-            "captured_at": "2026-05-05 09:15:00",
-            "product_test_environment_status": "active",
-            "created_at": "2026-05-05 09:15:00",
-            "created_by": "SQA_MASTER",
-            "updated_at": "2026-05-05 09:15:00",
-            "updated_by": "SQA_MASTER",
-            "remark": "",
-        }
-    ]
-
-
-def _sample_product_test_case_rows() -> list[dict]:
-    return [
-        {
-            "product_test_case_id": "SQA_PRODUCT_TEST_CASE_ID-WIFI-AP_CONFIG-001",
-            "product_test_case_title": "WiFi AP 설정 적합성 검증",
-            "test_category": "WiFi",
-            "test_objective": "RS9116 WiFi 모듈 기준으로 AP 설정이 권장 조건을 만족하는지 확인",
-            "precondition": "시험 대상 AP 관리자 화면 접근 가능",
-            "expected_result": "AP 설정값이 RS9116 모듈 권장 조건을 만족해야 함",
-            "product_test_case_status": "active",
-            "created_at": "2026-05-05 08:30:00",
-            "created_by": "SQA_MASTER",
-            "updated_at": "2026-05-05 08:30:00",
-            "updated_by": "SQA_MASTER",
-            "remark": "",
-        }
-    ]
-
-
-def _sample_product_test_procedure_rows() -> list[dict]:
-    return [
-        {
-            "product_test_procedure_id": "SQA_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-001",
-            "product_test_case_id": "SQA_PRODUCT_TEST_CASE_ID-WIFI-AP_CONFIG-001",
-            "procedure_sequence": 1,
-            "procedure_action": "WiFi Band 분리설정 확인",
-            "expected_result": "2.4GHz와 5GHz SSID가 분리되어 있어야 함",
-            "acceptance_criteria": "2.4GHz, 5GHz의 SSID를 분리하는 것을 권장",
-            "required_evidence_type": "screenshot",
-            "product_test_procedure_status": "active",
-            "created_at": "2026-05-05 08:40:00",
-            "created_by": "SQA_MASTER",
-            "updated_at": "2026-05-05 08:40:00",
-            "updated_by": "SQA_MASTER",
-            "remark": "분리하지 않은 경우 임베디드 장비가 2.4GHz로 할당될 가능성이 높음.",
-        },
-        {
-            "product_test_procedure_id": "SQA_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-002",
-            "product_test_case_id": "SQA_PRODUCT_TEST_CASE_ID-WIFI-AP_CONFIG-001",
-            "procedure_sequence": 2,
-            "procedure_action": "WiFi Channel 설정 확인",
-            "expected_result": "2.4GHz는 1~11번, 5GHz는 36/40/44/48 고정 채널이어야 함",
-            "acceptance_criteria": "DFS 채널이 아닌 36, 40, 44, 48 채널 고정 사용 권장",
-            "required_evidence_type": "screenshot",
-            "product_test_procedure_status": "active",
-            "created_at": "2026-05-05 08:41:00",
-            "created_by": "SQA_MASTER",
-            "updated_at": "2026-05-05 08:41:00",
-            "updated_by": "SQA_MASTER",
-            "remark": "DFS 채널 사용 시 검색 실패 가능.",
-        },
-    ]
-
-
-@admin_router.get("")
-def render_admin_dashboard(
+@admin_router.post("/product-test-environments/create")
+def create_product_test_environment_admin(
     request: Request,
     database_session: database_session_dependency,
     current_role_name: current_role_name_dependency,
-):
-    return _render_admin_shell_template(
-        request=request,
-        database_session=database_session,
-        current_role_name=current_role_name,
-        template_name="admin_dashboard.html",
-        page_title="Product Test Data Tracing System",
-        extra_context={
-            "message": (request.query_params.get("message") or "").strip(),
-            "message_type": (request.query_params.get("message_type") or "info").strip(),
-            **_admin_dashboard_product_tracing_template_context(database_session=database_session),
-        },
-    )
-
-
-@admin_router.get("/test-configs")
-def render_test_config_admin(
-    request: Request,
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-):
-    return _render_admin_shell_template(
-        request=request,
-        database_session=database_session,
-        current_role_name=current_role_name,
-        template_name="test_config_admin.html",
-        page_title="Product Test Data Tracing System",
-    )
-
-
-@admin_router.get("/tests")
-def render_test_definition_admin(
-    request: Request,
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-):
-    return _render_admin_shell_template(
-        request=request,
-        database_session=database_session,
-        current_role_name=current_role_name,
-        template_name="test_definition_admin.html",
-        page_title="Product Test Data Tracing System",
-    )
-
-
-@admin_router.get("/test-reports")
-def render_test_report_admin(
-    request: Request,
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-):
-    return _render_admin_shell_template(
-        request=request,
-        database_session=database_session,
-        current_role_name=current_role_name,
-        template_name="test_report_admin.html",
-        page_title="Product Test Data Tracing System",
-    )
-
-
-@admin_router.get("/serial-report-trace")
-def render_serial_report_trace_admin(
-    request: Request,
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-):
-    return _render_admin_shell_template(
-        request=request,
-        database_session=database_session,
-        current_role_name=current_role_name,
-        template_name="serial_report_trace_admin.html",
-        page_title="Product Test Data Tracing System",
-    )
-
-
-@admin_router.post("/product-test-releases/create")
-def create_product_test_release_admin(
-    request: Request,
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-    product_test_release_id: str = Form(""),
-    upstream_release_id: str = Form(""),
-    upstream_release_system: str = Form(""),
-    release_stage: str = Form(""),
-    product_test_release_status: str = Form(""),
-    remark: str = Form(""),
-    return_to: str = Form(""),
-):
-    _ensure_admin_role(current_role_name)
-    try:
-        created_row = create_product_test_release(
-            database_session,
-            product_test_release_id=product_test_release_id,
-            upstream_release_id=upstream_release_id,
-            upstream_release_system=upstream_release_system,
-            release_stage=release_stage,
-            product_test_release_status=product_test_release_status,
-            actor_name=_admin_actor_name(database_session, request),
-            remark=remark,
-        )
-    except ValueError as exception:
-        target_url = (return_to or "").strip() or "/admin/product-test-releases"
-        return _admin_create_error_response(request, target_url, str(exception))
-    target_url = (return_to or "").strip() or "/admin/product-test-releases"
-    return _admin_create_success_response(request, target_url, "Saved", {"created_row": created_row})
-
-
-@admin_router.post("/product-test-target-definitions/create")
-def create_product_test_target_definition_admin(
-    request: Request,
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-    product_test_target_definition_id: str = Form(""),
-    product_code: str = Form(""),
-    manufacturer: str = Form(""),
-    model_name: str = Form(""),
-    hardware_revision: str = Form(""),
-    default_software_version: str = Form(""),
-    default_firmware_version: str = Form(""),
-    product_test_target_definition_status: str = Form(""),
-    remark: str = Form(""),
-    return_to: str = Form(""),
-):
-    _ensure_admin_role(current_role_name)
-    try:
-        created_row = create_product_test_target_definition(
-            database_session,
-            product_test_target_definition_id=product_test_target_definition_id,
-            product_code=product_code,
-            manufacturer=manufacturer,
-            model_name=model_name,
-            hardware_revision=hardware_revision,
-            default_software_version=default_software_version,
-            default_firmware_version=default_firmware_version,
-            product_test_target_definition_status=product_test_target_definition_status,
-            actor_name=_admin_actor_name(database_session, request),
-            remark=remark,
-        )
-    except ValueError as exception:
-        target_url = (return_to or "").strip() or "/admin/product-test-target-definitions"
-        return _admin_create_error_response(request, target_url, str(exception))
-    target_url = (return_to or "").strip() or "/admin/product-test-target-definitions"
-    return _admin_create_success_response(request, target_url, "Saved", {"created_row": created_row})
-
-
-@admin_router.post("/product-test-targets/create")
-def create_product_test_target_admin(
-    request: Request,
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-    product_test_target_id: str = Form(""),
-    product_test_target_definition_id: str = Form(""),
-    serial_number: str = Form(""),
-    software_version: str = Form(""),
-    firmware_version: str = Form(""),
-    manufacture_lot: str = Form(""),
-    product_test_target_status: str = Form(""),
-    remark: str = Form(""),
-    return_to: str = Form(""),
-):
-    _ensure_admin_role(current_role_name)
-    try:
-        created_row = create_product_test_target(
-            database_session,
-            product_test_target_id=product_test_target_id,
-            product_test_target_definition_id=product_test_target_definition_id,
-            serial_number=serial_number,
-            software_version=software_version,
-            firmware_version=firmware_version,
-            manufacture_lot=manufacture_lot,
-            product_test_target_status=product_test_target_status,
-            actor_name=_admin_actor_name(database_session, request),
-            remark=remark,
-        )
-    except ValueError as exception:
-        target_url = (return_to or "").strip() or "/admin/product-test-targets"
-        return _admin_create_error_response(request, target_url, str(exception))
-    target_url = (return_to or "").strip() or "/admin/product-test-targets"
-    return _admin_create_success_response(request, target_url, "Saved", {"created_row": created_row})
-
-
-@admin_router.post("/product-test-environment-definitions/create")
-def create_product_test_environment_definition_admin(
-    request: Request,
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-    product_test_environment_definition_id: str = Form(""),
-    product_test_environment_definition_name: str = Form(""),
+    product_test_environment_id: str = Form(""),
+    product_test_environment_name: str = Form(""),
     test_country: str = Form(""),
     test_city: str = Form(""),
     test_company: str = Form(""),
@@ -880,16 +583,17 @@ def create_product_test_environment_definition_admin(
     power_frequency: str = Form(""),
     power_connector_type: str = Form(""),
     power_condition: str = Form(""),
-    product_test_environment_definition_status: str = Form(""),
+    captured_at: str = Form(""),
+    product_test_environment_status: str = Form(""),
     remark: str = Form(""),
     return_to: str = Form(""),
 ):
     _ensure_admin_role(current_role_name)
     try:
-        created_row = create_product_test_environment_definition(
+        created_row = create_product_test_environment(
             database_session,
-            product_test_environment_definition_id=product_test_environment_definition_id,
-            product_test_environment_definition_name=product_test_environment_definition_name,
+            product_test_environment_id=product_test_environment_id,
+            product_test_environment_name=product_test_environment_name,
             test_country=test_country,
             test_city=test_city,
             test_company=test_company,
@@ -905,51 +609,6 @@ def create_product_test_environment_definition_admin(
             power_frequency=power_frequency,
             power_connector_type=power_connector_type,
             power_condition=power_condition,
-            product_test_environment_definition_status=product_test_environment_definition_status,
-            actor_name=_admin_actor_name(database_session, request),
-            remark=remark,
-        )
-    except ValueError as exception:
-        target_url = (return_to or "").strip() or "/admin/product-test-environment-definitions"
-        return _admin_create_error_response(request, target_url, str(exception))
-    target_url = (return_to or "").strip() or "/admin/product-test-environment-definitions"
-    return _admin_create_success_response(request, target_url, "Saved", {"created_row": created_row})
-
-
-@admin_router.post("/product-test-environments/create")
-def create_product_test_environment_admin(
-    request: Request,
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-    product_test_environment_id: str = Form(""),
-    product_test_environment_definition_id: str = Form(""),
-    product_test_environment_name: str = Form(""),
-    test_computer_name: str = Form(""),
-    operating_system_version: str = Form(""),
-    test_tool_version: str = Form(""),
-    network_type: str = Form(""),
-    power_voltage: str = Form(""),
-    power_frequency: str = Form(""),
-    power_connector_type: str = Form(""),
-    captured_at: str = Form(""),
-    product_test_environment_status: str = Form(""),
-    remark: str = Form(""),
-    return_to: str = Form(""),
-):
-    _ensure_admin_role(current_role_name)
-    try:
-        created_row = create_product_test_environment(
-            database_session,
-            product_test_environment_id=product_test_environment_id,
-            product_test_environment_definition_id=product_test_environment_definition_id,
-            product_test_environment_name=product_test_environment_name,
-            test_computer_name=test_computer_name,
-            operating_system_version=operating_system_version,
-            test_tool_version=test_tool_version,
-            network_type=network_type,
-            power_voltage=power_voltage,
-            power_frequency=power_frequency,
-            power_connector_type=power_connector_type,
             captured_at=captured_at,
             product_test_environment_status=product_test_environment_status,
             actor_name=_admin_actor_name(database_session, request),

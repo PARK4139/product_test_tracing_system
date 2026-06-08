@@ -9,62 +9,29 @@
     <div class="admin_tab_region_body" data-admin-tab-region="configs" data-tab-aria-label="Tab View 1">
 
 <section class="card">
-    <div class="section_header_row"><h3>Test Environment Definition</h3></div>
-    <form method="post" action="/admin/product-test-environment-definitions/create" class="admin_autosubmit_form">
-        <input type="hidden" name="return_to" value="/admin">
-        <div class="tester_table_wrap">
-            <table class="basic_table">
-                <thead><tr><th>선택</th><th>환경 정의 ID</th><th>환경 정의명</th><th>국가</th><th>도시</th><th>시험 업체</th><th>시험 장소</th><th>네트워크 유형</th><th>PC명</th><th>OS 버전</th><th>시험 도구명</th><th>시험 도구 버전</th><th>전압</th><th>주파수</th><th>전원 커넥터 유형</th><th>전원 조건</th><th>환경 정의 상태</th><th>비고</th></tr></thead>
-                <tbody><tr>
-                    <td><input type="checkbox" class="admin_input_row_checkbox"></td>
-                    <td><input type="text" name="product_test_environment_definition_id" required></td>
-                    <td><input type="text" name="product_test_environment_definition_name" required></td>
-                    <td><input type="text" name="test_country" list="admin_environment_definition_country_options"></td>
-                    <td><input type="text" name="test_city" list="admin_environment_definition_city_options"></td>
-                    <td><input type="text" name="test_company" list="admin_environment_definition_company_options"></td>
-                    <td><input type="text" name="test_room" list="admin_environment_definition_room_options"></td>
-                    <td><input type="text" name="network_type" list="admin_environment_definition_network_type_options"></td>
-                    <td><input type="text" name="test_computer_name" list="admin_environment_definition_computer_name_options"></td>
-                    <td><input type="text" name="operating_system_version" list="admin_environment_definition_os_options"></td>
-                    <td><input type="text" name="test_tool_name" list="admin_environment_definition_tool_name_options"></td>
-                    <td><input type="text" name="test_tool_version" list="admin_environment_definition_tool_version_options"></td>
-                    <td><input type="text" name="power_voltage" list="admin_environment_definition_power_voltage_options"></td>
-                    <td><input type="text" name="power_frequency" list="admin_environment_definition_power_frequency_options"></td>
-                    <td><input type="text" name="power_connector_type" list="admin_environment_definition_power_connector_type_options"></td>
-                    <td><input type="text" name="power_condition" list="admin_environment_definition_power_condition_options"></td>
-                    <td><select name="product_test_environment_definition_status"><option value=""></option>{% for value in environment_definition_status_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
-                    <td><input type="text" name="remark"></td>
-                </tr></tbody>
-            </table>
-        </div>
-    </form>
-    <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
-    <div class="tester_table_wrap">
-        <table class="basic_table">
-            <thead><tr><th>선택</th><th>환경 정의 ID</th><th>환경 정의명</th><th>국가</th><th>도시</th><th>시험 업체</th><th>시험 장소</th><th>네트워크 유형</th><th>PC명</th><th>OS 버전</th><th>시험 도구명</th><th>시험 도구 버전</th><th>전압</th><th>주파수</th><th>전원 커넥터 유형</th><th>전원 조건</th><th>환경 정의 상태</th><th>비고</th></tr></thead>
-            <tbody>{% for row in environment_definition_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_environment_definition_id }}</td><td>{{ row.product_test_environment_definition_name }}</td><td>{{ row.test_country }}</td><td>{{ row.test_city }}</td><td>{{ row.test_company }}</td><td>{{ row.test_room }}</td><td>{{ row.network_type }}</td><td>{{ row.test_computer_name }}</td><td>{{ row.operating_system_version }}</td><td>{{ row.test_tool_name }}</td><td>{{ row.test_tool_version }}</td><td>{{ row.power_voltage }}</td><td>{{ row.power_frequency }}</td><td>{{ row.power_connector_type }}</td><td>{{ row.power_condition }}</td><td>{{ row.product_test_environment_definition_status }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
-        </table>
-    </div>
-</section>
-<section class="card">
     <div class="section_header_row"><h3>Test Environment</h3></div>
     <form method="post" action="/admin/product-test-environments/create" class="admin_autosubmit_form">
         <input type="hidden" name="return_to" value="/admin">
         <div class="tester_table_wrap">
             <table class="basic_table">
-                <thead><tr><th>선택</th><th>환경 ID</th><th>환경 정의 ID</th><th>환경명</th><th>PC명</th><th>OS 버전</th><th>시험 도구 버전</th><th>네트워크 유형</th><th>전압</th><th>주파수</th><th>전원 커넥터 유형</th><th>캡처 일시</th><th>환경 상태</th><th>비고</th></tr></thead>
+                <thead><tr><th>선택</th><th>환경 ID</th><th>환경명</th><th>국가</th><th>도시</th><th>시험 업체</th><th>시험 장소</th><th>네트워크 유형</th><th>PC명</th><th>OS 버전</th><th>시험 도구명</th><th>시험 도구 버전</th><th>전압</th><th>주파수</th><th>전원 커넥터 유형</th><th>전원 조건</th><th>캡처 일시</th><th>환경 상태</th><th>비고</th></tr></thead>
                 <tbody><tr>
                     <td><input type="checkbox" class="admin_input_row_checkbox"></td>
                     <td><input type="text" name="product_test_environment_id" required></td>
-                    <td><select name="product_test_environment_definition_id" required><option value=""></option>{% for row in environment_definition_rows %}<option value="{{ row.product_test_environment_definition_id }}">{{ row.product_test_environment_definition_id }}</option>{% endfor %}</select></td>
                     <td><input type="text" name="product_test_environment_name" required list="admin_environment_name_options"></td>
-                    <td><input type="text" name="test_computer_name" list="admin_environment_definition_computer_name_options"></td>
-                    <td><input type="text" name="operating_system_version" list="admin_environment_definition_os_options"></td>
-                    <td><input type="text" name="test_tool_version" list="admin_environment_definition_tool_version_options"></td>
-                    <td><input type="text" name="network_type" list="admin_environment_definition_network_type_options"></td>
-                    <td><input type="text" name="power_voltage" list="admin_environment_definition_power_voltage_options"></td>
-                    <td><input type="text" name="power_frequency" list="admin_environment_definition_power_frequency_options"></td>
-                    <td><input type="text" name="power_connector_type" list="admin_environment_definition_power_connector_type_options"></td>
+                    <td><input type="text" name="test_country" list="admin_environment_country_options"></td>
+                    <td><input type="text" name="test_city" list="admin_environment_city_options"></td>
+                    <td><input type="text" name="test_company" list="admin_environment_company_options"></td>
+                    <td><input type="text" name="test_room" list="admin_environment_room_options"></td>
+                    <td><input type="text" name="network_type" list="admin_environment_network_type_options"></td>
+                    <td><input type="text" name="test_computer_name" list="admin_environment_computer_name_options"></td>
+                    <td><input type="text" name="operating_system_version" list="admin_environment_os_options"></td>
+                    <td><input type="text" name="test_tool_name" list="admin_environment_tool_name_options"></td>
+                    <td><input type="text" name="test_tool_version" list="admin_environment_tool_version_options"></td>
+                    <td><input type="text" name="power_voltage" list="admin_environment_power_voltage_options"></td>
+                    <td><input type="text" name="power_frequency" list="admin_environment_power_frequency_options"></td>
+                    <td><input type="text" name="power_connector_type" list="admin_environment_power_connector_type_options"></td>
+                    <td><input type="text" name="power_condition" list="admin_environment_power_condition_options"></td>
                     <td><input type="text" name="captured_at"></td>
                     <td><select name="product_test_environment_status"><option value=""></option>{% for value in environment_status_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
                     <td><input type="text" name="remark"></td>
@@ -75,8 +42,8 @@
     <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     <div class="tester_table_wrap">
         <table class="basic_table">
-            <thead><tr><th>선택</th><th>환경 ID</th><th>환경 정의 ID</th><th>환경명</th><th>PC명</th><th>OS 버전</th><th>시험 도구 버전</th><th>네트워크 유형</th><th>전압</th><th>주파수</th><th>전원 커넥터 유형</th><th>캡처 일시</th><th>환경 상태</th><th>비고</th></tr></thead>
-            <tbody>{% for row in environment_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_environment_id }}</td><td>{{ row.product_test_environment_definition_id }}</td><td>{{ row.product_test_environment_name }}</td><td>{{ row.test_computer_name }}</td><td>{{ row.operating_system_version }}</td><td>{{ row.test_tool_version }}</td><td>{{ row.network_type }}</td><td>{{ row.power_voltage }}</td><td>{{ row.power_frequency }}</td><td>{{ row.power_connector_type }}</td><td>{{ row.captured_at }}</td><td>{{ row.product_test_environment_status }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
+            <thead><tr><th>선택</th><th>환경 ID</th><th>환경명</th><th>국가</th><th>도시</th><th>시험 업체</th><th>시험 장소</th><th>네트워크 유형</th><th>PC명</th><th>OS 버전</th><th>시험 도구명</th><th>시험 도구 버전</th><th>전압</th><th>주파수</th><th>전원 커넥터 유형</th><th>전원 조건</th><th>캡처 일시</th><th>환경 상태</th><th>비고</th></tr></thead>
+            <tbody>{% for row in environment_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_environment_id }}</td><td>{{ row.product_test_environment_name }}</td><td>{{ row.test_country }}</td><td>{{ row.test_city }}</td><td>{{ row.test_company }}</td><td>{{ row.test_room }}</td><td>{{ row.network_type }}</td><td>{{ row.test_computer_name }}</td><td>{{ row.operating_system_version }}</td><td>{{ row.test_tool_name }}</td><td>{{ row.test_tool_version }}</td><td>{{ row.power_voltage }}</td><td>{{ row.power_frequency }}</td><td>{{ row.power_connector_type }}</td><td>{{ row.power_condition }}</td><td>{{ row.captured_at }}</td><td>{{ row.product_test_environment_status }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
         </table>
     </div>
 </section>

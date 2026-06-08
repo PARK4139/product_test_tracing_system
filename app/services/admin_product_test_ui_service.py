@@ -88,7 +88,7 @@ def _build_target_id_candidate(definition_value: str, serial_value: str) -> str:
     return f"SQA_PRODUCT_TEST_TARGET_ID-{definition_core}-{serial_core}"
 
 
-def _build_environment_definition_id_candidate(
+def _build_environment_template_id_candidate(
     company_value: str,
     city_value: str,
     room_value: str,
@@ -180,65 +180,42 @@ ADMIN_PRODUCT_TEST_WRITE_ORDER_PLANS: dict[str, dict[str, Any]] = {
             "remark",
         ],
     },
-    "/admin/product-test-environment-definitions/create": {
+    "/admin/product-test-environments/create": {
         "order": [
-            "product_test_environment_definition_name",
+            "product_test_environment_name",
             "test_company",
             "test_city",
             "test_room",
-            "product_test_environment_definition_id",
-            "test_country",
-            "network_type",
-            "test_computer_name",
-            "operating_system_version",
-            "test_tool_name",
-            "test_tool_version",
-            "power_voltage",
-            "power_frequency",
-            "power_connector_type",
-            "power_condition",
-            "product_test_environment_definition_status",
-            "remark",
-        ],
-        "optional": [
-            "test_country",
-            "network_type",
-            "test_computer_name",
-            "operating_system_version",
-            "test_tool_name",
-            "test_tool_version",
-            "power_voltage",
-            "power_frequency",
-            "power_connector_type",
-            "power_condition",
-            "product_test_environment_definition_status",
-            "remark",
-        ],
-    },
-    "/admin/product-test-environments/create": {
-        "order": [
-            "product_test_environment_definition_id",
-            "product_test_environment_name",
             "captured_at",
             "product_test_environment_id",
+            "test_country",
+            "test_building",
+            "test_floor",
             "test_computer_name",
             "operating_system_version",
+            "test_tool_name",
             "test_tool_version",
             "network_type",
             "power_voltage",
             "power_frequency",
             "power_connector_type",
+            "power_condition",
             "product_test_environment_status",
             "remark",
         ],
         "optional": [
+            "test_country",
+            "test_building",
+            "test_floor",
             "test_computer_name",
             "operating_system_version",
+            "test_tool_name",
             "test_tool_version",
             "network_type",
             "power_voltage",
             "power_frequency",
             "power_connector_type",
+            "power_condition",
             "product_test_environment_status",
             "remark",
         ],
@@ -352,30 +329,22 @@ def list_product_test_id_candidates(
                     out3.append(c)
         return _unique_nonempty(out3)
 
-    if fn == "product_test_environment_definition_id" and action.endswith(
-        "/product-test-environment-definitions/create"
-    ):
+    if fn == "product_test_environment_id" and action.endswith("/product-test-environments/create"):
         companies = _read_strings(gv("test_company"), hint("test_company"))
         cities = _read_strings(gv("test_city"), hint("test_city"))
         rooms = _read_strings(gv("test_room"), hint("test_room"))
-        out4: list[str] = []
-        for co in companies:
-            for ci in cities:
-                for r in rooms:
-                    c = _build_environment_definition_id_candidate(co, ci, r)
-                    if c:
-                        out4.append(c)
-        return _unique_nonempty(out4)
-
-    if fn == "product_test_environment_id" and action.endswith("/product-test-environments/create"):
-        defs = _read_strings(gv("product_test_environment_definition_id"), hint("product_test_environment_definition_id"))
         caps = _read_strings(gv("captured_at"), hint("captured_at"))
         out5: list[str] = []
-        for d in defs:
-            for cap in caps:
-                c = _build_environment_id_candidate(d, cap)
-                if c:
-                    out5.append(c)
+        for co in companies:
+            for ci in cities:
+                for room in rooms:
+                    definition_id = _build_environment_template_id_candidate(co, ci, room)
+                    if not definition_id:
+                        continue
+                    for cap in caps:
+                        c = _build_environment_id_candidate(definition_id, cap)
+                        if c:
+                            out5.append(c)
         return _unique_nonempty(out5)
 
     if fn == "product_test_case_id" and action.endswith("/product-test-cases/create"):

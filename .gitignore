@@ -22,6 +22,14 @@ data/projects/
 .pk_system/
 
 .claude/settings.local.json
-data/logs/  
-fix_output.log  
-fix.cmd  
+data/logs/
+fix_output.log
+fix.cmd
+
+# codex/agent 임시 스캔·상태 디렉토리 (repo 루트 오염 방지)
+diag_*/
+task*_scan_*/
+task*_state_*/
+task*_post_*/
+*_tmp_*/
+.scratch/

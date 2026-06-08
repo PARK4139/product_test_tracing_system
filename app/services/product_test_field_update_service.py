@@ -8,7 +8,6 @@ from app.models import (
     ProductTestCase,
     ProductTestDefect,
     ProductTestEnvironment,
-    ProductTestEnvironmentDefinition,
     ProductTestProcedure,
     ProductTestProcedureResult,
     ProductTestRelease,
@@ -49,7 +48,6 @@ ENTITY_MODEL_MAP = {
     "product_test_release": ProductTestRelease,
     "product_test_target_definition": ProductTestTargetDefinition,
     "product_test_target": ProductTestTarget,
-    "product_test_environment_definition": ProductTestEnvironmentDefinition,
     "product_test_environment": ProductTestEnvironment,
     "product_test_case": ProductTestCase,
     "product_test_procedure": ProductTestProcedure,
@@ -89,9 +87,9 @@ FIELD_WHITELIST: dict[str, frozenset[str]] = {
             "remark",
         }
     ),
-    "product_test_environment_definition": frozenset(
+    "product_test_environment": frozenset(
         {
-            "product_test_environment_definition_name",
+            "product_test_environment_name",
             "test_country",
             "test_city",
             "test_company",
@@ -107,20 +105,6 @@ FIELD_WHITELIST: dict[str, frozenset[str]] = {
             "power_frequency",
             "power_connector_type",
             "power_condition",
-            "product_test_environment_definition_status",
-            "remark",
-        }
-    ),
-    "product_test_environment": frozenset(
-        {
-            "product_test_environment_name",
-            "test_computer_name",
-            "operating_system_version",
-            "test_tool_version",
-            "network_type",
-            "power_voltage",
-            "power_frequency",
-            "power_connector_type",
             "captured_at",
             "product_test_environment_status",
             "remark",
@@ -180,7 +164,6 @@ STATUS_FIELD_VALIDATORS: dict[tuple[str, str], tuple[str, ...]] = {
     ("product_test_release", "product_test_release_status"): RELEASE_STATUS_EDIT_VALUES,
     ("product_test_target_definition", "product_test_target_definition_status"): MASTER_ACTIVE_STATUS_VALUES,
     ("product_test_target", "product_test_target_status"): TARGET_STATUS_VALUES,
-    ("product_test_environment_definition", "product_test_environment_definition_status"): MASTER_ACTIVE_STATUS_VALUES,
     ("product_test_environment", "product_test_environment_status"): ENVIRONMENT_STATUS_VALUES,
     ("product_test_case", "product_test_case_status"): MASTER_ACTIVE_STATUS_VALUES,
     ("product_test_procedure", "product_test_procedure_status"): MASTER_ACTIVE_STATUS_VALUES,
@@ -199,7 +182,6 @@ REQUIRED_TEXT_FIELDS = frozenset(
         "product_test_case_title",
         "procedure_action",
         "acceptance_criteria",
-        "product_test_environment_definition_name",
         "product_test_environment_name",
         "product_test_report_title",
         "test_category",
