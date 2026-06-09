@@ -1950,8 +1950,8 @@ function initAdminMasterDataTabRegion(regionBody) {
     const groups = cards.map((card) => adminMasterTabGroupFromCard(card, regionKey)).filter(Boolean);
     clientLog("tabRegion", "initAdminMasterDataTabRegion groups.length=" + groups.length + " ids=" + groups.map(g => g.id).join(", "));
 
-    if (groups.length <= 1) {
-        clientLog("tabRegion", "initAdminMasterDataTabRegion → groups <= 1, 탭바 생성 안 함 (false 반환)", "warn");
+    if (groups.length === 0) {
+        clientLog("tabRegion", "initAdminMasterDataTabRegion → groups === 0, 탭바 생성 안 함 (false 반환)", "warn");
         return false;
     }
 
