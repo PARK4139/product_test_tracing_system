@@ -253,6 +253,12 @@
 - ID는 기존 target `TARGET-...` 재사용 → `run.target_id` 값 변경 불필요. remark = def 상세 + `[구 target 노트]`.
 - 모델6컬럼·실측3컬럼 다 보존. 구 테이블·관리화면 2개 삭제/통합. 위험도 높음(백업+dry-run+승인).
 
+### TASK 12-B — Target 병합 마무리 + 회귀 점검 (코드+소량 DB) 🟡
+- **상세 스펙은 별도 파일 `handover_2026_06_08_task12b_finalize.md` 참조.**
+- 요지: target 데이터는 `product_test_target_unified`로 옮겨졌으나 **models.py·구 테이블·화면 연결이 옛것** → 마무리.
+- models.py에 `ProductTestTargetUnified` 추가·구 클래스 2개 제거, 서비스/대시보드 repoint, 구 빈 테이블 DROP, 화면 1개로 통합.
+- ⚠️ 회귀: `GET /admin` 404(라우트 누락+파일 잘림) → **조치 완료**. 재발 방지: 큰 파일 편집 후 `py_compile`+`tail` 끝줄 확인 필수.
+
 ### TASK 13 — run → target 재연결 진단 (read-only) 🟢위험없음
 - **상세 스펙은 `handover_2026_06_08_task12_target_merge.md` 참조.**
 - 요지: run 62건이 target 1대만 가리키는 이상 원인 규명 + 올바른 DUT 재연결 **제안표만** 작성(`docs/run_target_relink_diagnosis_*.md`). 실제 UPDATE는 승인 후 별도.

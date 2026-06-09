@@ -19,6 +19,10 @@ def get_current_role_name(
     cookie_role_name = request.cookies.get("role_name")
     if cookie_role_name:
         return cookie_role_name
+    # QC 모드는 강제 admin 진입 모드 - /admin 직접 접근(쿠키 없음) 시에도 master_admin 허용
+    from app.config import is_qc_mode_enabled
+    if is_qc_mode_enabled():
+        return ROLE_MASTER_ADMIN
     if x_user_role is None:
         return ROLE_TESTER
     return x_user_role

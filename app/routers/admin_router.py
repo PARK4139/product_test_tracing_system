@@ -746,6 +746,24 @@ def create_product_test_report_admin(
     )
 
 
+@admin_router.get("")
+def render_admin_dashboard(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    _ensure_admin_role(current_role_name)
+    context = _admin_dashboard_product_tracing_template_context(database_session=database_session)
+    return _render_admin_shell_template(
+        request=request,
+        database_session=database_session,
+        current_role_name=current_role_name,
+        template_name="admin_dashboard.html",
+        page_title="Product Test Data Tracing System",
+        extra_context=context,
+    )
+
+
 @admin_router.get("/product-test-system-check")
 def render_product_test_system_check(
     request: Request,
