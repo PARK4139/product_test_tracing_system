@@ -38,8 +38,7 @@ v2 RUN id 4토막 가용성:
 1. **TASK 13 실제 적용** — run 62건을 올바른 target(제품·버전)으로 재연결.
    - 현재 진단만 됨(`docs/run_target_relink_diagnosis_20260609.md`, EXACT25/INFER37). UPDATE 미적용.
    - 이게 돼야 RUN id의 `{제품}_{버전}` 토막이 나옴.
-2. **AP→ROUTER 정규화 (run/result 토폴로지)** — run id·result `[연결구성]`의 `1AP/25AP` → `1ROUTER/25ROUTER`.
-   - Case는 TASK 6에서 이미 ROUTER화됨. run/result는 아직 AP → 정규화 필요.
+2. ✅ **AP→ROUTER 이미 충족** — result `[연결구성]`은 TASK 6에서 ROUTER화 완료(AP 0건). **STEP D(run-PK 치환) 생략**. run id의 AP는 TASK 15가 ID를 새로 쓰므로 무관.
 3. (권장) TASK 12-B 마무리 — target_unified 모델/구테이블 정리(제품·버전 조회 안정화).
 
 ---
@@ -52,7 +51,7 @@ v2 RUN id 4토막 가용성:
    - 새 id `RUN_{제품}_{버전}_{RC}_{토폴로지}`.
    - 제품·버전 = TASK 13 재연결된 target에서.
    - RC = 현재 run id의 RC 토큰 **원본 유지**(마스터 [해결3]). `RUN_RC`/`RC` 이중용법은 RC잎 번호로 단일화.
-   - 토폴로지 = run id에서 추출 + AP→ROUTER.
+   - 토폴로지 = **result `[연결구성]`(ROUTER 정본)에서 추출** (run id 아님). 한 run의 result들이 같은 `[연결구성]` 가짐. result 없는 빈 base run은 마이그레이션 제외/정리.
    - run.test_round_id(캠페인)로 ROUND 직접 연결(중간 release 제거).
 3. **RESULT**: `RESULT_{제품}_{버전}_{RC}_{토폴로지}` (RUN 미러) + result 고유(case_id, status, [연결구성]). result.run_id는 새 RUN id로 갱신.
 4. **CASE**: 네이밍 변경 `CASE_{campaign}_{topology}_{scenario}` (DUT=토폴로지 _ROUTER 앞 토큰 추론). campaign이 들어가므로 **캠페인별 Case 복제 필요**(현 60건 campaign-무관 → campaign별 재발급). result.case_id FK 동시 갱신. ⚠️ 별도 Case 마이그레이션 sub-step.

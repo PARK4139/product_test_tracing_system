@@ -1,0 +1,272 @@
+{
+  "step": "15-1",
+  "mode": "dry-run",
+  "meta": {
+    "copy_path": "C:\\Users\\wjdgn\\Downloads\\product_test_tracing_system\\task15_1_icl1r7eu\\product_test_tracking_system.db",
+    "mode": "dry-run"
+  },
+  "canonical_campaigns": [
+    "WIFI_1ST",
+    "WIFI_1ST_IMPROVE",
+    "WIFI_2ND",
+    "WIFI_2ND_IMPROVE",
+    "DOWNGRADE",
+    "WIFI_SMOKE",
+    "WBS"
+  ],
+  "summary": {
+    "round_renames": 1,
+    "round_creates": 2,
+    "round_deletes": 8,
+    "release_round_remaps": 13,
+    "unmapped_releases": 12,
+    "current_round_count": 13,
+    "target_round_count": 7,
+    "post_campaign_tokens": [
+      "DOWNGRADE",
+      "WBS",
+      "WIFI_1ST",
+      "WIFI_1ST_IMPROVE",
+      "WIFI_2ND",
+      "WIFI_2ND_IMPROVE",
+      "WIFI_SMOKE"
+    ],
+    "device_shell_empty_deletes": 5,
+    "device_shell_with_data": [
+      {
+        "round_id": "ROUND-HRK_9000A_1_1_0A",
+        "release_count_before_remap": 1,
+        "result_count": 1
+      },
+      {
+        "round_id": "ROUND-HRK_9000A_1_1_1A",
+        "release_count_before_remap": 1,
+        "result_count": 1
+      },
+      {
+        "round_id": "ROUND-HRK_9000A_1_1_1D",
+        "release_count_before_remap": 15,
+        "result_count": 5
+      }
+    ]
+  },
+  "round_renames": [
+    {
+      "old_id": "ROUND-WIFI_DOWNGRADE_COMPARE_20260526",
+      "new_id": "ROUND-DOWNGRADE",
+      "release_fk_rows": 8
+    }
+  ],
+  "round_creates": [
+    {
+      "round_id": "ROUND-WIFI_SMOKE",
+      "test_round_name": "WiFi Smoke (mass production)",
+      "migration_status": "CONFIRMED",
+      "migration_note": "v2 mass-production campaign round",
+      "project_id": "WIFI_CONNECTIVITY_TEST_2026"
+    },
+    {
+      "round_id": "ROUND-WBS",
+      "test_round_name": "WBS (mass production)",
+      "migration_status": "CONFIRMED",
+      "migration_note": "v2 mass-production campaign round",
+      "project_id": "WIFI_CONNECTIVITY_TEST_2026"
+    }
+  ],
+  "round_deletes": [
+    {
+      "round_id": "ROUND-HDC_9100_1_0_5A",
+      "release_count_before_remap": 0,
+      "result_count": 0
+    },
+    {
+      "round_id": "ROUND-HDR_9000_1_1_7E",
+      "release_count_before_remap": 0,
+      "result_count": 0
+    },
+    {
+      "round_id": "ROUND-HDR_9000_1_1_8",
+      "release_count_before_remap": 0,
+      "result_count": 0
+    },
+    {
+      "round_id": "ROUND-HLM_9000_1_1_14B",
+      "release_count_before_remap": 0,
+      "result_count": 0
+    },
+    {
+      "round_id": "ROUND-HRK_9000A_1_1_0A",
+      "release_count_before_remap": 1,
+      "result_count": 1
+    },
+    {
+      "round_id": "ROUND-HRK_9000A_1_1_1A",
+      "release_count_before_remap": 1,
+      "result_count": 1
+    },
+    {
+      "round_id": "ROUND-HRK_9000A_1_1_1D",
+      "release_count_before_remap": 15,
+      "result_count": 5
+    },
+    {
+      "round_id": "ROUND-HTR_1A_1_1_8",
+      "release_count_before_remap": 0,
+      "result_count": 0
+    }
+  ],
+  "release_round_remaps": [
+    {
+      "release_id": "RELEASE-HRK_9000A_1_1_0A-RC1",
+      "old_round_id": "ROUND-HRK_9000A_1_1_0A",
+      "new_round_id": "ROUND-DOWNGRADE",
+      "reason": "token:downgrade"
+    },
+    {
+      "release_id": "RELEASE-HRK_9000A_1_1_0A-WIFI_DOWNGRADE",
+      "old_round_id": "ROUND-WIFI_DOWNGRADE_COMPARE_20260526",
+      "new_round_id": "ROUND-DOWNGRADE",
+      "reason": "token:downgrade"
+    },
+    {
+      "release_id": "RELEASE-HRK_9000A_1_1_0A-WIFI_DOWNGRADE-HRK_9000A_1_1_0A",
+      "old_round_id": "ROUND-WIFI_DOWNGRADE_COMPARE_20260526",
+      "new_round_id": "ROUND-DOWNGRADE",
+      "reason": "token:downgrade"
+    },
+    {
+      "release_id": "RELEASE-HRK_9000A_1_1_0A-WIFI_DOWNGRADE-HRK_9000A_1_1_0A-RC5",
+      "old_round_id": "ROUND-WIFI_DOWNGRADE_COMPARE_20260526",
+      "new_round_id": "ROUND-DOWNGRADE",
+      "reason": "token:downgrade"
+    },
+    {
+      "release_id": "RELEASE-HRK_9000A_1_1_0A-WIFI_DOWNGRADE-RUN_RC5",
+      "old_round_id": "ROUND-WIFI_DOWNGRADE_COMPARE_20260526",
+      "new_round_id": "ROUND-DOWNGRADE",
+      "reason": "token:downgrade"
+    },
+    {
+      "release_id": "RELEASE-HRK_9000A_1_1_1A-RC3",
+      "old_round_id": "ROUND-HRK_9000A_1_1_1A",
+      "new_round_id": "ROUND-WIFI_2ND",
+      "reason": "token:wifi_2nd"
+    },
+    {
+      "release_id": "RELEASE-TBD_REPORT_NOTBD",
+      "old_round_id": "ROUND-HRK_9000A_1_1_1D",
+      "new_round_id": "ROUND-WBS",
+      "reason": "token:wbs"
+    },
+    {
+      "release_id": "RELEASE-TEST_REPORT_WIFI_DOWNGRADE_TEST_260526_1454",
+      "old_round_id": "ROUND-WIFI_DOWNGRADE_COMPARE_20260526",
+      "new_round_id": "ROUND-DOWNGRADE",
+      "reason": "token:downgrade"
+    },
+    {
+      "release_id": "RELEASE-WIFI_1_1_1D_WBS",
+      "old_round_id": "ROUND-HRK_9000A_1_1_1D",
+      "new_round_id": "ROUND-WBS",
+      "reason": "token:wbs"
+    },
+    {
+      "release_id": "RELEASE-WIFI_1_1_1D_WBS-RUN_RC1",
+      "old_round_id": "ROUND-HRK_9000A_1_1_1D",
+      "new_round_id": "ROUND-WBS",
+      "reason": "token:wbs"
+    },
+    {
+      "release_id": "RELEASE-WIFI_DOWNGRADE",
+      "old_round_id": "ROUND-WIFI_DOWNGRADE_COMPARE_20260526",
+      "new_round_id": "ROUND-DOWNGRADE",
+      "reason": "token:downgrade"
+    },
+    {
+      "release_id": "RELEASE-WIFI_DOWNGRADE-HRK_9000A_1_1_0A",
+      "old_round_id": "ROUND-WIFI_DOWNGRADE_COMPARE_20260526",
+      "new_round_id": "ROUND-DOWNGRADE",
+      "reason": "token:downgrade"
+    },
+    {
+      "release_id": "RELEASE-WIFI_DOWNGRADE-RUN_RC5",
+      "old_round_id": "ROUND-WIFI_DOWNGRADE_COMPARE_20260526",
+      "new_round_id": "ROUND-DOWNGRADE",
+      "reason": "token:downgrade"
+    }
+  ],
+  "unmapped_releases": [
+    {
+      "release_id": "RELEASE-HDR_9000_1_1_8-WIFI_1_1_1D",
+      "current_round_id": "ROUND-HRK_9000A_1_1_1D",
+      "upstream_release_id": "MULTI_PRODUCT",
+      "reason": "unmapped:wifi_1_1_1d_not_in_canonical_7"
+    },
+    {
+      "release_id": "RELEASE-HDR_9000_1_1_8-WIFI_1_1_1D-1HRK_1ROUTER_3HDR",
+      "current_round_id": "ROUND-HRK_9000A_1_1_1D",
+      "upstream_release_id": "RELEASE-HDR_9000_1_1_8-WIFI_1_1_1D-RUN_RC1",
+      "reason": "unmapped:wifi_1_1_1d_not_in_canonical_7"
+    },
+    {
+      "release_id": "RELEASE-HDR_9000_1_1_8-WIFI_1_1_1D-1HRK_1ROUTER_3HDR-RC1",
+      "current_round_id": "ROUND-HRK_9000A_1_1_1D",
+      "upstream_release_id": "RELEASE-HDR_9000_1_1_8-WIFI_1_1_1D-1HRK_1ROUTER_3HDR",
+      "reason": "unmapped:wifi_1_1_1d_not_in_canonical_7"
+    },
+    {
+      "release_id": "RELEASE-HDR_9000_1_1_8-WIFI_1_1_1D-RUN_RC1",
+      "current_round_id": "ROUND-HRK_9000A_1_1_1D",
+      "upstream_release_id": "RELEASE-HDR_9000_1_1_8-WIFI_1_1_1D",
+      "reason": "unmapped:wifi_1_1_1d_not_in_canonical_7"
+    },
+    {
+      "release_id": "RELEASE-HRK_9000A_1_1_1D-RC1",
+      "current_round_id": "ROUND-HRK_9000A_1_1_1D",
+      "upstream_release_id": "RELEASE-WIFI_1_1_1D-HRK_9000A_1_1_1D",
+      "reason": "unmapped:no_rule"
+    },
+    {
+      "release_id": "RELEASE-TEST_REPORT_HRK_9000A_1_1_1D_WIFI_TEST_260526",
+      "current_round_id": "ROUND-HRK_9000A_1_1_1D",
+      "upstream_release_id": "RELEASE-WIFI_1_1_1D-RUN_RC1",
+      "reason": "unmapped:no_rule"
+    },
+    {
+      "release_id": "RELEASE-WIFI_1_1_1D",
+      "current_round_id": "ROUND-HRK_9000A_1_1_1D",
+      "upstream_release_id": "MULTI_PRODUCT",
+      "reason": "unmapped:wifi_1_1_1d_not_in_canonical_7"
+    },
+    {
+      "release_id": "RELEASE-WIFI_1_1_1D-1HRK_1ROUTER_3HDR",
+      "current_round_id": "ROUND-HRK_9000A_1_1_1D",
+      "upstream_release_id": "RELEASE-WIFI_1_1_1D-RUN_RC1",
+      "reason": "unmapped:wifi_1_1_1d_not_in_canonical_7"
+    },
+    {
+      "release_id": "RELEASE-WIFI_1_1_1D-1HRK_1ROUTER_3HDR-RC1",
+      "current_round_id": "ROUND-HRK_9000A_1_1_1D",
+      "upstream_release_id": "RELEASE-WIFI_1_1_1D-1HRK_1ROUTER_3HDR",
+      "reason": "unmapped:wifi_1_1_1d_not_in_canonical_7"
+    },
+    {
+      "release_id": "RELEASE-WIFI_1_1_1D-HRK_9000A_1_1_1D",
+      "current_round_id": "ROUND-HRK_9000A_1_1_1D",
+      "upstream_release_id": "RELEASE-WIFI_1_1_1D-RUN_RC6",
+      "reason": "unmapped:wifi_1_1_1d_not_in_canonical_7"
+    },
+    {
+      "release_id": "RELEASE-WIFI_1_1_1D-RUN_RC1",
+      "current_round_id": "ROUND-HRK_9000A_1_1_1D",
+      "upstream_release_id": "RELEASE-WIFI_1_1_1D",
+      "reason": "unmapped:wifi_1_1_1d_not_in_canonical_7"
+    },
+    {
+      "release_id": "RELEASE-WIFI_1_1_1D-RUN_RC6",
+      "current_round_id": "ROUND-HRK_9000A_1_1_1D",
+      "upstream_release_id": "RELEASE-WIFI_1_1_1D",
+      "reason": "unmapped:wifi_1_1_1d_not_in_canonical_7"
+    }
+  ]
+}

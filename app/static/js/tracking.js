@@ -1954,22 +1954,10 @@ function initAdminMasterDataTabRegion(regionBody) {
     clientLog("tabRegion", "initAdminMasterDataTabRegion groups.length=" + groups.length + " ids=" + groups.map(g => g.id).join(", "));
 
     if (groups.length === 0) {
-        clientLog("tabRegion", "initAdminMasterDataTabRegion → groups === 0, 탭바 생성 안 함 (false 반환)", "warn");
-        return false;
+        clientLog("tabRegion", "initAdminMasterDataTabRegion → groups === 0, 탭바만 생성 (커스텀 시트 탭만 지원)", "warn");
     }
 
-    const sortedGroups = sortItemsByStoredOrder(groups, storageOrder, (group) => group.id);
-
-    const firstCard = sortedGroups[0].node;
-    const groupNodes = new Set(sortedGroups.map((group) => group.node));
-    let cursor = firstCard.nextElementSibling;
-    while (cursor) {
-        const next = cursor.nextElementSibling;
-        if (!groupNodes.has(cursor)) {
-            cursor.hidden = true;
-        }
-        cursor = next;
-    }
+    const sortedGroups = groups.length > 0 ? sortItemsByStoredOrder(groups, storageOrder, (group) => group.id) : [];
 
     const tabsRoot = document.createElement("section");
     tabsRoot.className = "trk_data_tabs admin_master_data_tabs";
@@ -1979,10 +1967,27 @@ function initAdminMasterDataTabRegion(regionBody) {
     tabbar.setAttribute("role", "tablist");
     tabbar.setAttribute("aria-label", ariaLabel);
     tabsRoot.appendChild(tabbar);
-    regionBody.insertBefore(tabsRoot, firstCard);
+
+    if (sortedGroups.length > 0) {
+        const firstCard = sortedGroups[0].node;
+        const groupNodes = new Set(sortedGroups.map((group) => group.node));
+        let cursor = firstCard.nextElementSibling;
+        while (cursor) {
+            const next = cursor.nextElementSibling;
+            if (!groupNodes.has(cursor)) {
+                cursor.hidden = true;
+            }
+            cursor = next;
+        }
+        regionBody.insertBefore(tabsRoot, firstCard);
+    } else {
+        regionBody.appendChild(tabsRoot);
+    }
 
     const storedId = uiStateGetItem(storageTab) || "";
-    const activeGroup = sortedGroups.find((group) => group.id === storedId) || sortedGroups[0];
+    const activeGroup = sortedGroups.length > 0
+        ? (sortedGroups.find((group) => group.id === storedId) || sortedGroups[0])
+        : null;
 
     sortedGroups.forEach((group) => {
         const cardHeader = group.node.querySelector(":scope > .section_header_row > h3");
@@ -2072,7 +2077,9 @@ function initAdminMasterDataTabRegion(regionBody) {
         labelStorageKey: storageLabels,
         activate,
     });
-    activate(activeGroup.id);
+    if (activeGroup) {
+        activate(activeGroup.id);
+    }
     const foldMeta = TAB_VIEW_TABLE_FOLD_META[sheetGroup];
     if (foldMeta) {
         syncTabViewRegionFold(foldMeta);
@@ -2819,6 +2826,56 @@ function beginCustomSheetTabRename(tab, sheet, panel) {
     input.addEventListener("blur", () => finish(true));
 }
 
+function bindCustomSheetTabDragDrop(tab) {
+    if (tab.dataset.sheetTabDragBound === "1") return;
+    tab.dataset.sheetTabDragBound = "1";
+    tab.draggable = true;
+    function currentGroupKey() {
+        return tab.closest("[data-sheet-group]")?.dataset?.sheetGroup || "";
+    }
+    tab.addEventListener("dragstart", event => {
+        const id = sheetTabId(tab);
+        sheetTabDragState = { id, groupKey: currentGroupKey() };
+        tab.classList.add("trk_sheet_tab_dragging");
+        event.dataTransfer.effectAllowed = "move";
+        event.dataTransfer.dropEffect = "move";
+        event.dataTransfer.setData("text/plain", id);
+    });
+    tab.addEventListener("dragend", () => {
+        sheetTabDragState = null;
+        clearSheetTabInsertIndicators();
+        document.querySelectorAll(".trk_sheet_tab, .trk_sheet_tabbar").forEach(el => {
+            el.classList.remove("trk_sheet_tab_dragging", "trk_sheet_tab_drag_over", "trk_sheet_tabbar_drag_over");
+        });
+    });
+    tab.addEventListener("dragover", event => {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = "move";
+        const sourceId = sheetTabDragState?.id || event.dataTransfer.getData("text/plain");
+        if (!sourceId || sourceId === sheetTabId(tab)) return;
+        const insertIndex = getSheetTabInsertIndexFromTab(tab, event.clientX);
+        if (sheetTabDragState) {
+            sheetTabDragState.insertIndex = insertIndex;
+            sheetTabDragState.groupKey = currentGroupKey();
+        }
+        const tb = tab.parentElement;
+        if (tb) showSheetTabInsertIndicator(tb, insertIndex);
+    });
+    tab.addEventListener("dragleave", () => {
+        tab.classList.remove("trk_sheet_tab_drag_over");
+    });
+    tab.addEventListener("drop", event => {
+        event.preventDefault();
+        event.stopPropagation();
+        tab.classList.remove("trk_sheet_tab_drag_over");
+        clearSheetTabInsertIndicators();
+        const sourceId = sheetTabDragState?.id || event.dataTransfer.getData("text/plain");
+        if (!sourceId) return;
+        const insertIndex = getSheetTabInsertIndexFromTab(tab, event.clientX);
+        reorderSheetTabsInGroup(sourceId, currentGroupKey(), insertIndex);
+    });
+}
+
 function mountCustomSheetTab(sheet, tabbar, tabsRoot, activate, makeActive) {
     customSheetCache.set(sheet.id, sheet);
     sheet._view = sheet._view || { sortKey: "", sortDir: "asc", filterText: "" };
@@ -2831,6 +2888,7 @@ function mountCustomSheetTab(sheet, tabbar, tabsRoot, activate, makeActive) {
     } else {
         tabbar.appendChild(tab);
     }
+    bindCustomSheetTabDragDrop(tab);
 
     const panel = buildCustomSheetPanel(sheet);
     tabsRoot.appendChild(panel);

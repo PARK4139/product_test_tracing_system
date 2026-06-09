@@ -165,7 +165,7 @@ ROUND_{캠페인}
 ## [열린 항목] (계속 협의)
 
 1. ✅ **[해결 2026-06-09] 양산 라운드 = 캠페인 2개** `ROUND-WIFI_SMOKE`, `ROUND-WBS`. 8개 device shell 삭제, 제품·버전은 RUN으로. 차수는 보류.
-2. ✅ **[설계완료 2026-06-09 → TASK 15] release→run v2 마이그레이션.** 상세: `handover_2026_06_09_task15_v2_migration.md`. ⛔ 선행: TASK 13 **적용** + AP→ROUTER(run/result). 그 전 실행 금지.
+2. ✅ **[설계완료 → TASK 15] release→run v2 마이그레이션.** 상세: `handover_2026_06_09_task15_v2_migration.md`. 선행: TASK 13 ✅완료. **AP→ROUTER는 result `[연결구성]` 레벨에서 이미 충족(TASK 6) → STEP D(run-PK 치환) 생략 확정(2026-06-09).** TASK 15가 토폴로지를 result `[연결구성]`(ROUTER 정본)에서 뽑아 run/result ID 전체 재작성.
 3. ✅ **[해결 2026-06-09] RC = S/W 버전 풀네임의 일부** (별도 날짜 컬럼/정규화 X). 소프트웨어 풀네임 = `{버전} RC{n}` 한 문자열(예: `1.1.8D RC1`). 회사가 RC가 아니라 BUILD DATE로 관리하므로, RUN id의 version 토막에 **풀네임 문자열 그대로** 넣음. 원본 회차 유지·재번호 X.
 4. ✅ **[해결 2026-06-09] WIFI_2ST = WIFI_2ND 오타 확정.** 정본 토큰은 `WIFI_2ND`.
 
