@@ -2,6 +2,7 @@
 
 > 이 문서가 **최종 목표 구조의 정본**. 개별 TASK(11/12/14 등)는 모두 이 그림을 향한 단계다.
 > 핸드오버 §0-1 수칙·§9 편집 규칙 적용.
+> ⚠️ **2026-06-09: 아래 「v2 구조 결정」이 release/round/run 부분을 대체함.** v1 §1~7 중 Release 엔티티·Releases 탭 부분은 v2 기준으로 읽을 것.
 
 ---
 
@@ -107,3 +108,93 @@ Defect ──(result_id)──→ Results        Report ──(release_id)──
 ## 8. 메인 HANDOVER 반영
 - `HANDOVER.md` 상단(§0 뒤)에 본 마스터 요약 + 이 파일 링크 추가.
 - 개별 TASK(11/12/13/14, 7~9)는 모두 본 목표의 부분작업으로 정렬.
+
+---
+
+# v2 구조 결정 (2026-06-09 협의 확정)
+
+> 박정훈님과 협의로 확정한 **계층·네이밍 정본.** 기존 release 기반 구조를 대체한다.
+> 일부 "애매한 부분"은 아래 [열린 항목]에서 계속 협의.
+
+## 계층 (Release 엔티티 폐기)
+
+```
+ROUND_{캠페인}
+  └ RUN_{제품}_{버전}_{RC}_{토폴로지}
+      └ RESULT_{제품}_{버전}_{RC}_{토폴로지}
+          └ CASE_{캠페인}_{토폴로지}_{scenario}   (DUT는 토폴로지의 _ROUTER 앞 토큰으로 추론)
+```
+
+- **RC는 RUN id의 토큰으로만** 존재. `product_test_release` 엔티티 **폐기**(RC→RUN 흡수). → 7탭의 "Releases" 탭 사라짐.
+- **라운드명엔 RC/run 같은 실행정보 금지.** ROUND = 순수 캠페인 분류.
+- 제품·버전·RC·토폴로지 = **RUN/RESULT 레벨**. 캠페인 = **ROUND 레벨**.
+- Run은 화면 탭 없음 → Results에 흡수(기존 결정 유지).
+
+## ROUND 정본 분류 (캠페인)
+
+1. `WIFI_1ST`
+2. `WIFI_1ST_IMPROVE`
+3. `WIFI_2ND`
+4. `WIFI_2ND_IMPROVE`
+5. `DOWNGRADE`
+6. `WIFI_SMOKE` — 단독제품 WiFi smoke (양산)
+7. `WBS` — 단독제품 + WBS (양산)
+   - 차수(1차/2차…)는 **보류**: 필요해지면 RUN/날짜 또는 라운드 분리로 추후 반영.
+
+## CASE 네이밍 (2026-06-09 변경 확정)
+
+- `CASE_{campaign}_{topology}_{scenario}` **로 변경** (이전 {topology}_{dut}_{scenario} 폐기).
+- **DUT는 별도 토큰 아님** — 토폴로지의 `_ROUTER` 바로 앞 토큰으로 추론 (예: `1HDC_1ROUTER` → DUT=HDC).
+- scenario는 **Case 레벨**, Procedure는 그 Case의 실행 STEP.
+- ⚠️ **함의(구현 시 처리)**: campaign이 Case에 들어가므로, 같은 scenario를 여러 캠페인에서 쓰면 **Case가 캠페인별로 복제**됨. 현재 60 case(캠페인 무관)를 campaign별로 재발급해야 함 → Case 마이그레이션 작업 필요.
+
+## 8개 device-version 라운드 처리 (확정)
+
+- `ROUND-HDC_9100_1_0_5A / HDR_9000_1_1_7E / HDR_9000_1_1_8 / HLM_9000_1_1_14B / HRK_9000A_1_1_0A / 1_1_1A / 1_1_1D / HTR_1A_1_1_8`
+- 5개는 실데이터 0(빈 shell). 실제 device 시험은 캠페인 라운드(WIFI_1ST 5, WIFI_2ND 5, DOWNGRADE 1, HRK_1_1_1D 1) 밑 device_round에 있음.
+- **결정(2026-06-09, 해석 A): 8개 device-version 라운드는 v2 위배(제품·버전은 ROUND 아닌 RUN). → 삭제하고 양산 캠페인 라운드 2개(`ROUND-WIFI_SMOKE`, `ROUND-WBS`)로 대체.**
+- 단독제품 양산 데이터는 앞으로 `RUN_{제품}_{버전}_{RC}_{토폴로지}` 형태로 양산 라운드 밑에 채움. 제품·버전은 RUN 토큰으로만.
+- ⚠️ 현재 양산/WBS/SMOKE 실데이터 거의 없음(빈 shell + WBS 2건/SMOKE case 1건) → 이번은 **정의/네이밍**이지 데이터 마이그레이션 아님.
+
+## 진단으로 드러난 정리 대상 (배경)
+
+- `RELEASE-HDR_9000_1_1_8-WIFI_1_1_1D` = 잘못 라벨된 빈 device_round (DUT는 HRK-9000A 1.1.1D, HDR은 보조장비). 
+- `ROUND-HRK_9000A_1_1_1D` 안에 같은 캠페인이 3중 중복(device_round 빈 것 / WIFI_1_1_1D legacy / HRK_1_1_1D-RC1).
+- → v2 구조로 재구성 시 자연 해소(제품·버전은 RUN으로, 캠페인은 ROUND로).
+
+## [열린 항목] (계속 협의)
+
+1. ✅ **[해결 2026-06-09] 양산 라운드 = 캠페인 2개** `ROUND-WIFI_SMOKE`, `ROUND-WBS`. 8개 device shell 삭제, 제품·버전은 RUN으로. 차수는 보류.
+2. ✅ **[설계완료 2026-06-09 → TASK 15] release→run v2 마이그레이션.** 상세: `handover_2026_06_09_task15_v2_migration.md`. ⛔ 선행: TASK 13 **적용** + AP→ROUTER(run/result). 그 전 실행 금지.
+3. ✅ **[해결 2026-06-09] RC = S/W 버전 풀네임의 일부** (별도 날짜 컬럼/정규화 X). 소프트웨어 풀네임 = `{버전} RC{n}` 한 문자열(예: `1.1.8D RC1`). 회사가 RC가 아니라 BUILD DATE로 관리하므로, RUN id의 version 토막에 **풀네임 문자열 그대로** 넣음. 원본 회차 유지·재번호 X.
+4. ✅ **[해결 2026-06-09] WIFI_2ST = WIFI_2ND 오타 확정.** 정본 토큰은 `WIFI_2ND`.
+
+## 다음 작업 (제안)
+- 위 [열린 항목] 합의 → v2 마이그레이션 TASK 작성(dry-run) → codex.
+- 그 전엔 기존 release 기반 데이터 **건드리지 않음**.
+
+
+---
+
+# v2 구조 결정 추가 (2026-06-09 b)
+
+## RUN/RESULT id — version = S/W 풀네임
+- RUN id = `RUN_{제품}_{S/W풀네임}_{토폴로지}`. **S/W풀네임 = 버전+RC를 한 덩어리**(예: `1_1_8D_RC1`).
+- RC는 별도 토큰·날짜 컬럼 아님 — **풀네임 문자열의 일부**. (회사 S/W는 BUILD DATE로 관리 → 풀네임에 흡수)
+- RESULT id = RUN 미러.
+
+## RESULT 하위 연결 (확정)
+```
+RESULT_{제품}_{S/W풀네임}_{RC}_{토폴로지}
+  ├ CASE      = result.case_id  (CASE_{campaign}_{topology}_{scenario}, DUT=ROUTER앞 토큰 추론)
+  ├ CONFIG    = run.environment_id (Configs/환경)
+  └ DEFECT    = defect.result_id
+```
+- **VALIDATION 엔티티 배제(확정).** 결함 개선 추적은 **기존 Defect 필드로 충분**:
+  `result(결함발견) → defect(fixed_*/fix_description) → retest_product_test_result_id(재시험 결과) → closed_*`.
+  (현재 retest_result_id 0/15 채워짐 → 채우는 건 데이터 작업, 스키마 변경 불필요)
+
+## CASE 네이밍 — 최종 변경 (2026-06-09)
+- **최종: `CASE_{campaign}_{topology}_{scenario}`** (예: `CASE_WIFI_1ST_1HDC_1ROUTER_AP_AUTH`).
+- DUT는 토폴로지 `_ROUTER` 앞 토큰으로 추론 → DUT 토큰 불필요.
+- (이전 {topology}_{dut}_{scenario} 결정은 이걸로 대체됨.)

@@ -75,11 +75,23 @@
 ### 목적
 run 62건이 **target 1대만** 가리키는 원인 규명 + 올바른 DUT 재연결 설계. (이번엔 **진단만**, DB 변경 없음)
 
+### ⚠️ 재연결 DUT 추론 규칙 (2026-06-09 수정 — 기존 진단 오류 정정)
+**기존 진단(`run_target_relink_diagnosis_20260609.md`)은 폐기/재생성.** 원인: `[Test 대상]` 블록 첫 줄을 DUT로 봤는데, 그 블록은 **연결장비 6개 전부 나열**이라 항상 HRK가 첫 줄 → WIFI_2ND run 9건(result 57건)이 HRK로 오배정됨.
+
+**정정 규칙 — DUT = 토폴로지의 `_ROUTER` 바로 앞 토큰** (마스터 CASE 규칙과 동일):
+1. **1순위: 토폴로지 DUT.** run/result의 `[구성]`/`[연결구성]`(또는 run id)에서 `{N}{MODEL}_{N}ROUTER` 패턴의 ROUTER 앞 MODEL = DUT. 예: `1HLM_25ROUTER`→HLM, `1HTR_25ROUTER`→HTR, `1HDC_1ROUTER`→HDC. 신뢰도 EXACT.
+2. 2순위: run id의 `[장비] X` 태그(WIFI_1ST DUT-split run). 1순위와 일치해야 함.
+3. **`[Test 대상] 첫 줄 = HRK` 규칙은 폐기** (그건 연결장비 목록이지 DUT 아님).
+4. **폴백: 토폴로지 없으면 release/round 모델명으로 추론.** 예: release `RELEASE-HRK_9000A_1_1_1D-RC1` / round `ROUND-HRK_9000A_*` → DUT=HRK. (legacy `RUN-TEST_REPORT_*` 3건이 여기 해당 → 전부 HRK, **UNCLASSIFIED 0 목표**)
+5. 그래도 못 뽑고 result=0이면 무시. **무조건 HRK 기본값 금지**(폴백은 release 근거 있을 때만).
+6. `HDR-7100P`는 보조장비(릴리즈 대상 아님) → DUT로 선택 금지.
+
+검증: WIFI_2ND-25AP_1HDR*→HDR, -1HLM*→HLM, -1HTR*→HTR. legacy `RUN-TEST_REPORT_*` 3건(release HRK_9000A_1_1_1D/0A/1A)→**HRK**. **UNCLASSIFIED 0** (62건 전부 확정).
+
 ### 작업 내용 (codex)
-1. run별로 "원래 어떤 DUT였는지" 단서 수집: `run.remark`, 연결된 Result `remark`의 `[시험대상]`/`[연결구성]`, release/round의 모델 정보, Excel 원본.
-2. run → 모델 추정 매핑표 출력(어느 run이 어느 model_name·serial이어야 하는지).
-3. 통합 target 테이블(6대) 중 어디에 연결돼야 하는지 후보 제시 + 신뢰도(EXACT/INFER).
-4. 결과를 `docs/run_target_relink_diagnosis_YYYYMMDD.md`로 저장.
+1. **위 정정 규칙으로** run별 DUT 추론 → 통합 target 매핑.
+2. run → (model_name·serial·sw) 매핑표 + 신뢰도(EXACT/INFER) 출력. 기존 대비 **바뀌는 run 9건/result 57건** 표시.
+3. 결과를 `docs/run_target_relink_diagnosis_YYYYMMDD.md`로 **재생성**(기존 파일 대체).
 
 ### 산출물
 - 진단 문서 + run→target 재연결 제안표. (실제 UPDATE는 승인 후 별도 TASK)

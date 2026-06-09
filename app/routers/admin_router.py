@@ -43,7 +43,6 @@ from app.services.product_test_run_service import (
     create_product_test_report_snapshot,
     create_product_test_release,
     create_product_test_target,
-    create_product_test_target_definition,
     get_product_test_identifier_guides,
     build_product_test_report_export_rows,
     build_product_test_run_export_rows,
@@ -63,7 +62,6 @@ from app.services.product_test_run_service import (
     list_product_test_releases,
     list_product_test_reports,
     list_target_options,
-    list_product_test_target_definitions,
     list_product_test_targets,
     reject_product_test_report,
 )
@@ -136,8 +134,6 @@ def _admin_dashboard_product_tracing_template_context(*, database_session: Sessi
         "release_rows": list_product_test_releases(database_session),
         "release_stage_values": RELEASE_STAGE_VALUES,
         "product_test_release_status_values": PRODUCT_TEST_RELEASE_STATUS_VALUES,
-        "target_definition_rows": list_product_test_target_definitions(database_session),
-        "target_definition_status_values": MASTER_ACTIVE_STATUS_VALUES,
         "target_rows": list_product_test_targets(database_session),
         "target_status_values": TARGET_STATUS_VALUES,
         "environment_rows": list_product_test_environments(database_session),
@@ -506,59 +502,50 @@ def _sample_product_test_release_rows() -> list[dict]:
     ]
 
 
-def _sample_product_test_target_definition_rows() -> list[dict]:
-    return [
-        {
-            "product_test_target_definition_id": "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-HRK_9000A",
-            "product_code": "HRK_9000A",
-            "manufacturer": "Huvitz",
-            "model_name": "HRK-9000A",
-            "hardware_revision": "A",
-            "default_software_version": "1.0.0",
-            "default_firmware_version": "1.0.0",
-            "product_test_target_definition_status": "active",
-            "created_at": "2026-05-05 09:00:00",
-            "created_by": "SQA_MASTER",
-            "updated_at": "2026-05-05 09:00:00",
-            "updated_by": "SQA_MASTER",
-            "remark": "",
-        },
-        {
-            "product_test_target_definition_id": "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-MERCUSYS_MR30G",
-            "product_code": "MERCUSYS_MR30G",
-            "manufacturer": "MERCUSYS",
-            "model_name": "MR30G",
-            "hardware_revision": "A1",
-            "default_software_version": "1.0.0",
-            "default_firmware_version": "1.0.0",
-            "product_test_target_definition_status": "active",
-            "created_at": "2026-05-05 09:30:00",
-            "created_by": "SQA_MASTER",
-            "updated_at": "2026-05-05 09:30:00",
-            "updated_by": "SQA_MASTER",
-            "remark": "",
-        },
-    ]
-
-
-def _sample_product_test_target_rows() -> list[dict]:
-    return [
-        {
-            "product_test_target_id": "SQA_PRODUCT_TEST_TARGET_ID-HRK_9000A-SN001",
-            "product_test_target_definition_id": "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-HRK_9000A",
-            "serial_number": "SN001",
-            "software_version": "1.0.0",
-            "firmware_version": "1.0.0",
-            "manufacture_lot": "LOT-202605",
-            "product_test_target_status": "active",
-            "created_at": "2026-05-05 10:00:00",
-            "created_by": "SQA_MASTER",
-            "updated_at": "2026-05-05 10:00:00",
-            "updated_by": "SQA_MASTER",
-            "remark": "",
-        }
-    ]
-
+@admin_router.post("/product-test-targets/create")
+def create_product_test_target_admin(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+    product_test_target_id: str = Form(""),
+    product_code: str = Form(""),
+    manufacturer: str = Form(""),
+    model_name: str = Form(""),
+    hardware_revision: str = Form(""),
+    default_software_version: str = Form(""),
+    default_firmware_version: str = Form(""),
+    serial_number: str = Form(""),
+    software_version: str = Form(""),
+    firmware_version: str = Form(""),
+    manufacture_lot: str = Form(""),
+    product_test_target_status: str = Form(""),
+    remark: str = Form(""),
+    return_to: str = Form(""),
+):
+    _ensure_admin_role(current_role_name)
+    try:
+        created_row = create_product_test_target(
+            database_session,
+            product_test_target_id=product_test_target_id,
+            product_code=product_code,
+            manufacturer=manufacturer,
+            model_name=model_name,
+            hardware_revision=hardware_revision,
+            default_software_version=default_software_version,
+            default_firmware_version=default_firmware_version,
+            serial_number=serial_number,
+            software_version=software_version,
+            firmware_version=firmware_version,
+            manufacture_lot=manufacture_lot,
+            product_test_target_status=product_test_target_status,
+            actor_name=_admin_actor_name(database_session, request),
+            remark=remark,
+        )
+    except ValueError as exception:
+        target_url = (return_to or "").strip() or "/admin/product-test-targets"
+        return _admin_create_error_response(request, target_url, str(exception))
+    target_url = (return_to or "").strip() or "/admin/product-test-targets"
+    return _admin_create_success_response(request, target_url, "Saved", {"created_row": created_row})
 
 
 @admin_router.post("/product-test-environments/create")

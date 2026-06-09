@@ -48,9 +48,6 @@ def _build_release_id(upstream_value: str, stage_value: str) -> str:
     return f"SQA_PRODUCT_TEST_RELEASE_ID-{str(upstream_value).strip()}-{stage_display}"
 
 
-def _build_target_definition_id(model_value: str) -> str:
-    return f"SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-{_normalize_segment(model_value)}"
-
 
 def _build_target_id(definition_id: str, serial_number: str) -> str:
     core = str(definition_id or "").strip().removeprefix("SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-")
@@ -87,9 +84,8 @@ def _build_example_payload() -> dict[str, str]:
 
     product_code = f"HRK_9000A_{compact}"
     model_name = f"HRK-9000A Digital Refractometer (Lot {compact})"
-    target_definition_id = _build_target_definition_id(model_name)
     serial_number = f"HVZ-AAY-{compact}"
-    target_id = _build_target_id(target_definition_id, serial_number)
+    target_id = _build_target_id(model_name, serial_number)
 
     company_name = "Huvitz"
     city_name = "Anyang"
@@ -110,7 +106,6 @@ def _build_example_payload() -> dict[str, str]:
         "product_test_release_id": product_test_release_id,
         "product_code": product_code,
         "model_name": model_name,
-        "target_definition_id": target_definition_id,
         "serial_number": serial_number,
         "target_id": target_id,
         "environment_definition_id": environment_definition_id,
@@ -226,24 +221,6 @@ def _run_fill_sequence(admin_url: str) -> None:
         _wait_for_form_submission_cycle()
         _open_admin_page(driver, admin_url)
 
-        definition_form = _find_form(driver, "/admin/product-test-target-definitions/create")
-        _wait_merged_draft_row(driver, definition_form)
-        _fill_field(definition_form, "product_code", payload["product_code"])
-        _fill_field(definition_form, "hardware_revision", "B2")
-        _fill_field(definition_form, "default_software_version", "2.1.4")
-        _fill_field(definition_form, "default_firmware_version", "2.1.4-build.4821")
-        _fill_field(definition_form, "product_test_target_definition_status", "ACTIVE")
-        _fill_field(
-            definition_form,
-            "remark",
-            "안양 본사 기준 의료기기용 국내 판매 모델. 시리얼 추적 단위는 장비 1대 단위.",
-        )
-        _fill_field(definition_form, "model_name", payload["model_name"])
-        _fill_field(definition_form, "product_test_target_definition_id", payload["target_definition_id"])
-        _fill_field(definition_form, "manufacturer", "Huvitz")
-        _wait_for_form_submission_cycle()
-        _open_admin_page(driver, admin_url)
-
         target_form = _find_form(driver, "/admin/product-test-targets/create")
         _wait_merged_draft_row(driver, target_form)
         _fill_field(target_form, "software_version", "2.1.4")
@@ -255,9 +232,14 @@ def _run_fill_sequence(admin_url: str) -> None:
             "remark",
             "시험 입고 완료. 외관·라벨·박스 일치 확인. 전원 인가 전 ESD 대기 10분 준수.",
         )
+        _fill_field(target_form, "manufacturer", "Huvitz")
+        _fill_field(target_form, "model_name", payload["model_name"])
+        _fill_field(target_form, "product_code", payload["product_code"])
+        _fill_field(target_form, "hardware_revision", "B2")
+        _fill_field(target_form, "default_software_version", "2.1.4")
+        _fill_field(target_form, "default_firmware_version", "2.1.4-build.4821")
         _fill_field(target_form, "serial_number", payload["serial_number"])
         _fill_field(target_form, "product_test_target_id", payload["target_id"])
-        _fill_field(target_form, "product_test_target_definition_id", payload["target_definition_id"])
         _wait_for_form_submission_cycle()
         _open_admin_page(driver, admin_url)
 

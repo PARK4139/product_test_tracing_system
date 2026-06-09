@@ -130,37 +130,10 @@ class ProductTestRelease(Base):
     remark: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
-class ProductTestTargetDefinition(Base):
-    __tablename__ = "product_test_target_definition"
+class ProductTestTargetUnified(Base):
+    __tablename__ = "product_test_target_unified"
     __table_args__ = (
-        Index("ix_product_test_target_definition_project_id", "project_id"),
-    )
-
-    product_test_target_definition_id: Mapped[str] = mapped_column(Text, primary_key=True)
-    project_id: Mapped[str | None] = mapped_column(
-        Text,
-        ForeignKey("project.project_id"),
-        nullable=True,
-    )
-    product_code: Mapped[str] = mapped_column(Text, nullable=False)
-    manufacturer: Mapped[str] = mapped_column(Text, nullable=False)
-    model_name: Mapped[str] = mapped_column(Text, nullable=False)
-    hardware_revision: Mapped[str | None] = mapped_column(Text, nullable=True)
-    default_software_version: Mapped[str | None] = mapped_column(Text, nullable=True)
-    default_firmware_version: Mapped[str | None] = mapped_column(Text, nullable=True)
-    product_test_target_definition_status: Mapped[str] = mapped_column(Text, nullable=False)
-    created_at: Mapped[str] = mapped_column(Text, nullable=False)
-    created_by: Mapped[str] = mapped_column(Text, nullable=False)
-    updated_at: Mapped[str] = mapped_column(Text, nullable=False)
-    updated_by: Mapped[str] = mapped_column(Text, nullable=False)
-    remark: Mapped[str | None] = mapped_column(Text, nullable=True)
-
-
-class ProductTestTarget(Base):
-    __tablename__ = "product_test_target"
-    __table_args__ = (
-        Index("ix_product_test_target_project_id", "project_id"),
-        Index("ix_product_test_target_definition_id", "product_test_target_definition_id"),
+        Index("ix_product_test_target_unified_project_id", "project_id"),
     )
 
     product_test_target_id: Mapped[str] = mapped_column(Text, primary_key=True)
@@ -169,11 +142,12 @@ class ProductTestTarget(Base):
         ForeignKey("project.project_id"),
         nullable=True,
     )
-    product_test_target_definition_id: Mapped[str] = mapped_column(
-        Text,
-        ForeignKey("product_test_target_definition.product_test_target_definition_id"),
-        nullable=False,
-    )
+    product_code: Mapped[str | None] = mapped_column(Text, nullable=True)
+    manufacturer: Mapped[str | None] = mapped_column(Text, nullable=True)
+    model_name: Mapped[str] = mapped_column(Text, nullable=False)
+    hardware_revision: Mapped[str | None] = mapped_column(Text, nullable=True)
+    default_software_version: Mapped[str | None] = mapped_column(Text, nullable=True)
+    default_firmware_version: Mapped[str | None] = mapped_column(Text, nullable=True)
     serial_number: Mapped[str] = mapped_column(Text, nullable=False)
     software_version: Mapped[str | None] = mapped_column(Text, nullable=True)
     firmware_version: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -318,7 +292,7 @@ class ProductTestRun(Base):
     )
     product_test_target_id: Mapped[str] = mapped_column(
         Text,
-        ForeignKey("product_test_target.product_test_target_id"),
+        ForeignKey("product_test_target_unified.product_test_target_id"),
         nullable=False,
     )
     product_test_environment_id: Mapped[str] = mapped_column(

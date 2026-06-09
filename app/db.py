@@ -195,8 +195,7 @@ def _ensure_product_test_project_id_columns() -> None:
     """Add project_id TEXT column to existing ProductTest* tables that predate the multi-project schema."""
     tables = [
         "product_test_release",
-        "product_test_target_definition",
-        "product_test_target",
+        "product_test_target_unified",
         "product_test_environment_unified",
         "product_test_case",
         "product_test_procedure",
@@ -230,8 +229,7 @@ def _ensure_product_test_project_id_indexes() -> None:
     """CREATE INDEX IF NOT EXISTS for project_id on all ProductTest* tables."""
     index_defs = [
         ("ix_product_test_release_project_id",               "product_test_release"),
-        ("ix_product_test_target_definition_project_id",     "product_test_target_definition"),
-        ("ix_product_test_target_project_id",                "product_test_target"),
+        ("ix_product_test_target_unified_project_id",       "product_test_target_unified"),
         ("ix_product_test_environment_unified_project_id", "product_test_environment_unified"),
         ("ix_product_test_case_project_id",                  "product_test_case"),
         ("ix_product_test_procedure_project_id",             "product_test_procedure"),

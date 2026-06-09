@@ -23,8 +23,8 @@
                 6: "remark",
             },
         },
-        "/admin/product-test-target-definitions/create": {
-            entityType: "product_test_target_definition",
+        "/admin/product-test-targets/create": {
+            entityType: "product_test_target",
             idColumnIndex: 1,
             fieldsByIndex: {
                 2: "product_code",
@@ -33,20 +33,12 @@
                 5: "hardware_revision",
                 6: "default_software_version",
                 7: "default_firmware_version",
-                8: "product_test_target_definition_status",
-                9: "remark",
-            },
-        },
-        "/admin/product-test-targets/create": {
-            entityType: "product_test_target",
-            idColumnIndex: 1,
-            fieldsByIndex: {
-                3: "serial_number",
-                4: "software_version",
-                5: "firmware_version",
-                6: "manufacture_lot",
-                7: "product_test_target_status",
-                8: "remark",
+                8: "serial_number",
+                9: "software_version",
+                10: "firmware_version",
+                11: "manufacture_lot",
+                12: "product_test_target_status",
+                13: "remark",
             },
         },
         "/admin/product-test-environments/create": {

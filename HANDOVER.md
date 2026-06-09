@@ -268,6 +268,11 @@
 - 요지: **FALLBACK 고아 1건 삭제** + **TBD report용 release 3건에 round 채우기(삭제 아님)** → NULL-round release 0.
 - ⛔ **round_legacy 4건은 절대 삭제 금지** — 후손 82 release(33건 run 보유)의 살아있는 백본. 스크립트에 화이트리스트(FALLBACK 1 + TBD 3)만 명시.
 
+### TASK 15 — release→run v2 구조 마이그레이션 (초대규모) 🔴파괴적
+- **상세: `handover_2026_06_09_task15_v2_migration.md`. 설계 정본: `handover_2026_06_08_master_architecture.md` 「v2 구조 결정」.**
+- 요지: `product_test_release` 엔티티 폐기 → **ROUND→RUN→RESULT**. RUN id=`RUN_{제품}_{버전}_{RC}_{토폴로지}`.
+- ⛔ **선행 필수**: TASK 13 **실제 적용**(제품·버전 0/62 막힘) + AP→ROUTER(run/result 토폴로지). 그 전 실행 금지.
+
 ---
 
 ## 5. 정본 토폴로지 목록 (ROUTER 표기 — 기획 확정분)
@@ -363,16 +368,4 @@ Round (13)
 
 1. 200줄 이상 파일은 Edit 도구 대신 python으로 처리.
 2. 편집 후 항상 null 바이트 제거 + 문법 검증.
-3. 프런트 디버그는 `clientLog()` 만 (`console.log` 금지).
-4. DB 변경 스크립트는 **dry-run 기본**, `--apply` 별도 플래그 + 자동 백업.
-5. PK 변경 시 참조 FK 전부 동시 UPDATE, 구 값은 `remark`에 보존.
-6. 대량 변경 전 서버 중지 + DB 백업.
-
----
-
-## 10. 다음 세션 시작점
-
-- TASK 1 → 2 → 3 은 **위험 없음/낮음**이라 바로 착수 가능.
-- §6 정책 5건 **모두 확정 완료** → TASK 4·5·6 착수 가능.
-- TASK 5·6 핵심 규칙: **AP→ROUTER 전부 치환**, **Case topology = 그 Case Result들의 최장 연결구성**.
-- 추적성 최종 목표(P0 증거 공백)는 **TASK 9**에서 해소.
+3. 프런트 디버그는 `clie

@@ -1317,8 +1317,11 @@ function relocateTrackingSummaryToTabView4(root) {
         return;
     }
 
+    // 재로딩 시 중복 방지: 기존 relocate 카드 먼저 제거 후 새로 생성 (idempotent)
+    regionBody.querySelectorAll('[data-admin-tab-label="Statistics"],[data-admin-tab-label="Open Defects"]').forEach((n) => n.remove());
+
     const statWrap = root.querySelector(".trk_stat_table_wrap");
-    if (statWrap && !regionBody.querySelector('[data-admin-tab-label="Statistics"]')) {
+    if (statWrap) {
         const statCard = createAdminSummaryCard("Statistics", [statWrap]);
         if (statCard) {
             regionBody.appendChild(statCard);
@@ -1328,7 +1331,7 @@ function relocateTrackingSummaryToTabView4(root) {
     const defectHeader = Array.from(root.querySelectorAll(".trk_sub_header")).find((header) =>
         (header.textContent || "").includes("미결 결함"),
     );
-    if (defectHeader && !regionBody.querySelector('[data-admin-tab-label="Open Defects"]')) {
+    if (defectHeader) {
         const nodes = [defectHeader];
         let cursor = defectHeader.nextElementSibling;
         while (cursor && !cursor.classList.contains("trk_sub_header")) {
@@ -3063,4 +3066,4 @@ window.consolidateCardHeaderToolbar = consolidateCardHeaderToolbar;
 window.ensureCardHeaderActions = ensureCardHeaderActions;
 window.toggleAllTabViewsRegionFold = toggleAllTabViewsRegionFold;
 window.updateAllTabViewsRegionFoldToggleButton = updateAllTabViewsRegionFoldToggleButton;
-})();
+})()

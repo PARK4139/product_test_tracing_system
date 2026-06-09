@@ -12,8 +12,7 @@ from app.models import (
     ProductTestProcedureResult,
     ProductTestRelease,
     ProductTestReport,
-    ProductTestTarget,
-    ProductTestTargetDefinition,
+    ProductTestTargetUnified,
 )
 from app.services.product_test_run_service import (
     DEFECT_PRIORITY_VALUES,
@@ -46,8 +45,7 @@ RELEASE_STATUS_EDIT_VALUES = tuple(
 
 ENTITY_MODEL_MAP = {
     "product_test_release": ProductTestRelease,
-    "product_test_target_definition": ProductTestTargetDefinition,
-    "product_test_target": ProductTestTarget,
+    "product_test_target": ProductTestTargetUnified,
     "product_test_environment": ProductTestEnvironment,
     "product_test_case": ProductTestCase,
     "product_test_procedure": ProductTestProcedure,
@@ -65,7 +63,7 @@ FIELD_WHITELIST: dict[str, frozenset[str]] = {
             "remark",
         }
     ),
-    "product_test_target_definition": frozenset(
+    "product_test_target": frozenset(
         {
             "product_code",
             "manufacturer",
@@ -73,12 +71,6 @@ FIELD_WHITELIST: dict[str, frozenset[str]] = {
             "hardware_revision",
             "default_software_version",
             "default_firmware_version",
-            "product_test_target_definition_status",
-            "remark",
-        }
-    ),
-    "product_test_target": frozenset(
-        {
             "serial_number",
             "software_version",
             "firmware_version",
@@ -162,7 +154,6 @@ FIELD_WHITELIST: dict[str, frozenset[str]] = {
 
 STATUS_FIELD_VALIDATORS: dict[tuple[str, str], tuple[str, ...]] = {
     ("product_test_release", "product_test_release_status"): RELEASE_STATUS_EDIT_VALUES,
-    ("product_test_target_definition", "product_test_target_definition_status"): MASTER_ACTIVE_STATUS_VALUES,
     ("product_test_target", "product_test_target_status"): TARGET_STATUS_VALUES,
     ("product_test_environment", "product_test_environment_status"): ENVIRONMENT_STATUS_VALUES,
     ("product_test_case", "product_test_case_status"): MASTER_ACTIVE_STATUS_VALUES,

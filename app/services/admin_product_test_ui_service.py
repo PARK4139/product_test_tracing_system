@@ -75,17 +75,13 @@ def _build_release_id_candidate(upstream_value: str, stage_value: str) -> str:
     return f"SQA_PRODUCT_TEST_RELEASE_ID-{upstream}-{stage_display}"
 
 
-def _build_target_definition_id_candidate(model_value: str) -> str:
-    segment = _js_like_normalize_segment(model_value)
-    return f"SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-{segment}" if segment else ""
 
-
-def _build_target_id_candidate(definition_value: str, serial_value: str) -> str:
-    definition_core = _strip_prefix(definition_value, "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-")
+def _build_target_id_candidate(model_value: str, serial_value: str) -> str:
+    model_core = _js_like_normalize_segment(model_value)
     serial_core = str(serial_value or "").strip()
-    if not definition_core or not serial_core:
+    if not model_core or not serial_core:
         return ""
-    return f"SQA_PRODUCT_TEST_TARGET_ID-{definition_core}-{serial_core}"
+    return f"SQA_PRODUCT_TEST_TARGET_ID-{model_core}-{serial_core}"
 
 
 def _build_environment_template_id_candidate(
@@ -140,32 +136,16 @@ ADMIN_PRODUCT_TEST_WRITE_ORDER_PLANS: dict[str, dict[str, Any]] = {
         ],
         "optional": ["remark"],
     },
-    "/admin/product-test-target-definitions/create": {
+    "/admin/product-test-targets/create": {
         "order": [
             "manufacturer",
             "model_name",
             "product_code",
-            "product_test_target_definition_id",
-            "hardware_revision",
-            "default_software_version",
-            "default_firmware_version",
-            "product_test_target_definition_status",
-            "remark",
-        ],
-        "optional": [
-            "product_code",
-            "hardware_revision",
-            "default_software_version",
-            "default_firmware_version",
-            "product_test_target_definition_status",
-            "remark",
-        ],
-    },
-    "/admin/product-test-targets/create": {
-        "order": [
-            "product_test_target_definition_id",
             "serial_number",
             "product_test_target_id",
+            "hardware_revision",
+            "default_software_version",
+            "default_firmware_version",
             "software_version",
             "firmware_version",
             "manufacture_lot",
@@ -173,6 +153,10 @@ ADMIN_PRODUCT_TEST_WRITE_ORDER_PLANS: dict[str, dict[str, Any]] = {
             "remark",
         ],
         "optional": [
+            "product_code",
+            "hardware_revision",
+            "default_software_version",
+            "default_firmware_version",
             "software_version",
             "firmware_version",
             "manufacture_lot",
@@ -306,25 +290,13 @@ def list_product_test_id_candidates(
                     out.append(c)
         return _unique_nonempty(out)
 
-    if fn == "product_test_target_definition_id" and action.endswith("/product-test-target-definitions/create"):
-        model_vals = _read_strings(gv("model_name"), hint("model_name"))
-        code_vals = _read_strings(gv("product_code"), hint("product_code"))
-        out2: list[str] = []
-        for m in model_vals:
-            out2.append(_build_target_definition_id_candidate(m))
-        for c in code_vals:
-            seg = _js_like_normalize_segment(c)
-            if seg:
-                out2.append(f"SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-{seg}")
-        return _unique_nonempty(out2)
-
     if fn == "product_test_target_id" and action.endswith("/product-test-targets/create"):
-        defs = _read_strings(gv("product_test_target_definition_id"), hint("product_test_target_definition_id"))
+        models = _read_strings(gv("model_name"), hint("model_name"))
         serials = _read_strings(gv("serial_number"), hint("serial_number"))
         out3: list[str] = []
-        for d in defs:
-            for s in serials:
-                c = _build_target_id_candidate(d, s)
+        for model in models:
+            for serial in serials:
+                c = _build_target_id_candidate(model, serial)
                 if c:
                     out3.append(c)
         return _unique_nonempty(out3)

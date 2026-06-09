@@ -661,55 +661,36 @@ def get_tracking_summary(
         }
         for r in reports_raw
     ]
-
-    test_target_definitions = [
-        {
-            "id": r[0] or "",
-            "product_code": r[1] or "",
-            "manufacturer": r[2] or "",
-            "model_name": r[3] or "",
-            "hardware_revision": r[4] or "",
-            "default_software_version": r[5] or "",
-            "default_firmware_version": r[6] or "",
-            "status": r[7] or "",
-            "remark": r[8] or "",
-        }
-        for r in conn.execute(text("""
-            SELECT product_test_target_definition_id, product_code, manufacturer,
-                   model_name, hardware_revision, default_software_version,
-                   default_firmware_version, product_test_target_definition_status, remark
-            FROM product_test_target_definition
-            ORDER BY product_test_target_definition_id
-        """)).fetchall()
-    ]
-
     physical_test_targets = [
         {
             "id": r[0] or "",
             "entity_type": "product_test_target",
             "entity_id": r[0] or "",
-            "definition_id": r[1] or "",
-            "product_code": r[2] or "",
-            "model_name": r[3] or "",
-            "hardware_revision": r[4] or "",
-            "serial_number": r[5] or "",
-            "software_version": r[6] or "",
-            "firmware_version": r[7] or "",
-            "manufacture_lot": r[8] or "",
-            "status": r[9] or "",
+            "product_code": r[1] or "",
+            "model_name": r[2] or "",
+            "hardware_revision": r[3] or "",
+            "serial_number": r[4] or "",
+            "software_version": r[5] or "",
+            "firmware_version": r[6] or "",
+            "manufacture_lot": r[7] or "",
+            "status": r[8] or "",
             "round_id": "",
             "physical_target_id": r[0] or "",
-            "remark": r[10] or "",
+            "remark": r[9] or "",
         }
         for r in conn.execute(text("""
-            SELECT t.product_test_target_id, t.product_test_target_definition_id,
-                   d.product_code, d.model_name, d.hardware_revision,
-                   t.serial_number, t.software_version, t.firmware_version,
-                   t.manufacture_lot, t.product_test_target_status, t.remark
-            FROM product_test_target t
-            LEFT JOIN product_test_target_definition d
-                ON d.product_test_target_definition_id = t.product_test_target_definition_id
-            ORDER BY t.product_test_target_id
+            SELECT product_test_target_id,
+                   product_code,
+                   model_name,
+                   hardware_revision,
+                   serial_number,
+                   software_version,
+                   firmware_version,
+                   manufacture_lot,
+                   product_test_target_status,
+                   remark
+            FROM product_test_target_unified
+            ORDER BY product_test_target_id
         """)).fetchall()
     ]
     test_targets = timeline_test_targets + physical_test_targets
@@ -898,7 +879,6 @@ def get_tracking_summary(
         "evidence": evidence,
         "reports": reports,
         "test_releases": releases,
-        "test_target_definitions": test_target_definitions,
         "test_targets": test_targets,
         "test_environments": test_environments,
         "test_cases": test_cases,

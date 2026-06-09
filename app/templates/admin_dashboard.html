@@ -11,31 +11,31 @@
 <datalist id="admin_release_upstream_release_system_options">
     {% for row in release_rows %}{% if row.upstream_release_system %}<option value="{{ row.upstream_release_system }}"></option>{% endif %}{% endfor %}
 </datalist>
-<datalist id="admin_target_definition_product_code_options">
-    {% for row in target_definition_rows %}{% if row.product_code %}<option value="{{ row.product_code }}"></option>{% endif %}{% endfor %}
+<datalist id="admin_target_product_code_options">
+    {% for row in target_rows %}{% if row.product_code %}<option value="{{ row.product_code }}"></option>{% endif %}{% endfor %}
 </datalist>
-<datalist id="admin_target_definition_manufacturer_options">
-    {% for row in target_definition_rows %}{% if row.manufacturer %}<option value="{{ row.manufacturer }}"></option>{% endif %}{% endfor %}
+<datalist id="admin_target_manufacturer_options">
+    {% for row in target_rows %}{% if row.manufacturer %}<option value="{{ row.manufacturer }}"></option>{% endif %}{% endfor %}
 </datalist>
-<datalist id="admin_target_definition_model_name_options">
-    {% for row in target_definition_rows %}{% if row.model_name %}<option value="{{ row.model_name }}"></option>{% endif %}{% endfor %}
+<datalist id="admin_target_model_name_options">
+    {% for row in target_rows %}{% if row.model_name %}<option value="{{ row.model_name }}"></option>{% endif %}{% endfor %}
 </datalist>
-<datalist id="admin_target_definition_hardware_revision_options">
-    {% for row in target_definition_rows %}{% if row.hardware_revision %}<option value="{{ row.hardware_revision }}"></option>{% endif %}{% endfor %}
+<datalist id="admin_target_hardware_revision_options">
+    {% for row in target_rows %}{% if row.hardware_revision %}<option value="{{ row.hardware_revision }}"></option>{% endif %}{% endfor %}
 </datalist>
-<datalist id="admin_target_definition_default_software_version_options">
-    {% for row in target_definition_rows %}{% if row.default_software_version %}<option value="{{ row.default_software_version }}"></option>{% endif %}{% endfor %}
+<datalist id="admin_target_default_software_version_options">
+    {% for row in target_rows %}{% if row.default_software_version %}<option value="{{ row.default_software_version }}"></option>{% endif %}{% endfor %}
 </datalist>
-<datalist id="admin_target_definition_default_firmware_version_options">
-    {% for row in target_definition_rows %}{% if row.default_firmware_version %}<option value="{{ row.default_firmware_version }}"></option>{% endif %}{% endfor %}
+<datalist id="admin_target_default_firmware_version_options">
+    {% for row in target_rows %}{% if row.default_firmware_version %}<option value="{{ row.default_firmware_version }}"></option>{% endif %}{% endfor %}
 </datalist>
 <datalist id="admin_target_software_version_options">
     {% for row in target_rows %}{% if row.software_version %}<option value="{{ row.software_version }}"></option>{% endif %}{% endfor %}
-    {% for row in target_definition_rows %}{% if row.default_software_version %}<option value="{{ row.default_software_version }}"></option>{% endif %}{% endfor %}
+    {% for row in target_rows %}{% if row.default_software_version %}<option value="{{ row.default_software_version }}"></option>{% endif %}{% endfor %}
 </datalist>
 <datalist id="admin_target_firmware_version_options">
     {% for row in target_rows %}{% if row.firmware_version %}<option value="{{ row.firmware_version }}"></option>{% endif %}{% endfor %}
-    {% for row in target_definition_rows %}{% if row.default_firmware_version %}<option value="{{ row.default_firmware_version }}"></option>{% endif %}{% endfor %}
+    {% for row in target_rows %}{% if row.default_firmware_version %}<option value="{{ row.default_firmware_version }}"></option>{% endif %}{% endfor %}
 </datalist>
 <datalist id="admin_target_manufacture_lot_options">
     {% for row in target_rows %}{% if row.manufacture_lot %}<option value="{{ row.manufacture_lot }}"></option>{% endif %}{% endfor %}
@@ -167,42 +167,20 @@
 </section>
 <section class="card">
     <div class="section_header_row"><h3>Test Target</h3></div>
-    <form method="post" action="/admin/product-test-target-definitions/create" class="admin_autosubmit_form">
-        <input type="hidden" name="return_to" value="/admin">
-        <div class="tester_table_wrap">
-            <table class="basic_table">
-                <thead><tr><th>선택</th><th>타겟 정의 ID</th><th>제품 코드</th><th>제조사</th><th>모델명</th><th>HW 리비전</th><th>기본 SW 버전</th><th>기본 FW 버전</th><th>타겟 정의 상태</th><th>비고</th></tr></thead>
-                <tbody><tr>
-                    <td><input type="checkbox" class="admin_input_row_checkbox"></td>
-                    <td><input type="text" name="product_test_target_definition_id" required></td>
-                    <td><input type="text" name="product_code" list="admin_target_definition_product_code_options"></td>
-                    <td><input type="text" name="manufacturer" required list="admin_target_definition_manufacturer_options"></td>
-                    <td><input type="text" name="model_name" required list="admin_target_definition_model_name_options"></td>
-                    <td><input type="text" name="hardware_revision" list="admin_target_definition_hardware_revision_options"></td>
-                    <td><input type="text" name="default_software_version" list="admin_target_definition_default_software_version_options"></td>
-                    <td><input type="text" name="default_firmware_version" list="admin_target_definition_default_firmware_version_options"></td>
-                    <td><select name="product_test_target_definition_status"><option value=""></option>{% for value in target_definition_status_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
-                    <td><input type="text" name="remark"></td>
-                </tr></tbody>
-            </table>
-        </div>
-    </form>
-    <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
-    <div class="tester_table_wrap">
-        <table class="basic_table">
-            <thead><tr><th>선택</th><th>타겟 정의 ID</th><th>제품 코드</th><th>제조사</th><th>모델명</th><th>HW 리비전</th><th>기본 SW 버전</th><th>기본 FW 버전</th><th>타겟 정의 상태</th><th>비고</th></tr></thead>
-            <tbody>{% for row in target_definition_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_target_definition_id }}</td><td>{{ row.product_code }}</td><td>{{ row.manufacturer }}</td><td>{{ row.model_name }}</td><td>{{ row.hardware_revision }}</td><td>{{ row.default_software_version }}</td><td>{{ row.default_firmware_version }}</td><td>{{ row.product_test_target_definition_status }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
-        </table>
-    </div>
     <form method="post" action="/admin/product-test-targets/create" class="admin_autosubmit_form">
         <input type="hidden" name="return_to" value="/admin">
         <div class="tester_table_wrap">
             <table class="basic_table">
-                <thead><tr><th>선택</th><th>타겟 ID</th><th>타겟 정의 ID</th><th>시리얼 번호</th><th>SW 버전</th><th>FW 버전</th><th>제조 LOT</th><th>타겟 상태</th><th>비고</th></tr></thead>
+                <thead><tr><th>선택</th><th>타겟 ID</th><th>제품 코드</th><th>제조사</th><th>모델명</th><th>HW 리비전</th><th>기본 SW 버전</th><th>기본 FW 버전</th><th>시리얼 번호</th><th>SW 버전</th><th>FW 버전</th><th>제조 LOT</th><th>타겟 상태</th><th>비고</th></tr></thead>
                 <tbody><tr>
                     <td><input type="checkbox" class="admin_input_row_checkbox"></td>
                     <td><input type="text" name="product_test_target_id" required></td>
-                    <td><select name="product_test_target_definition_id" required><option value=""></option>{% for row in target_definition_rows %}<option value="{{ row.product_test_target_definition_id }}">{{ row.product_test_target_definition_id }}</option>{% endfor %}</select></td>
+                    <td><input type="text" name="product_code" list="admin_target_product_code_options"></td>
+                    <td><input type="text" name="manufacturer" required list="admin_target_manufacturer_options"></td>
+                    <td><input type="text" name="model_name" required list="admin_target_model_name_options"></td>
+                    <td><input type="text" name="hardware_revision" list="admin_target_hardware_revision_options"></td>
+                    <td><input type="text" name="default_software_version" list="admin_target_default_software_version_options"></td>
+                    <td><input type="text" name="default_firmware_version" list="admin_target_default_firmware_version_options"></td>
                     <td><input type="text" name="serial_number" required></td>
                     <td><input type="text" name="software_version" list="admin_target_software_version_options"></td>
                     <td><input type="text" name="firmware_version" list="admin_target_firmware_version_options"></td>
@@ -216,8 +194,8 @@
     <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     <div class="tester_table_wrap">
         <table class="basic_table">
-            <thead><tr><th>선택</th><th>타겟 ID</th><th>타겟 정의 ID</th><th>시리얼 번호</th><th>SW 버전</th><th>FW 버전</th><th>제조 LOT</th><th>타겟 상태</th><th>비고</th></tr></thead>
-            <tbody>{% for row in target_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_target_id }}</td><td>{{ row.product_test_target_definition_id }}</td><td>{{ row.serial_number }}</td><td>{{ row.software_version }}</td><td>{{ row.firmware_version }}</td><td>{{ row.manufacture_lot }}</td><td>{{ row.product_test_target_status }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
+            <thead><tr><th>선택</th><th>타겟 ID</th><th>제품 코드</th><th>제조사</th><th>모델명</th><th>HW 리비전</th><th>기본 SW 버전</th><th>기본 FW 버전</th><th>시리얼 번호</th><th>SW 버전</th><th>FW 버전</th><th>제조 LOT</th><th>타겟 상태</th><th>비고</th></tr></thead>
+            <tbody>{% for row in target_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_target_id }}</td><td>{{ row.product_code or '' }}</td><td>{{ row.manufacturer or '' }}</td><td>{{ row.model_name }}</td><td>{{ row.hardware_revision or '' }}</td><td>{{ row.default_software_version or '' }}</td><td>{{ row.default_firmware_version or '' }}</td><td>{{ row.serial_number }}</td><td>{{ row.software_version or '' }}</td><td>{{ row.firmware_version or '' }}</td><td>{{ row.manufacture_lot or '' }}</td><td>{{ row.product_test_target_status }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
         </table>
     </div>
 </section>
@@ -593,7 +571,6 @@ void (async () => {
     };
     const getEntityTypeForAction = (action) => {
         if (action.endsWith("/product-test-releases/create")) return "product_test_release";
-        if (action.endsWith("/product-test-target-definitions/create")) return "product_test_target_definition";
         if (action.endsWith("/product-test-targets/create")) return "product_test_target";
         if (action.endsWith("/product-test-environments/create")) return "product_test_environment";
         if (action.endsWith("/product-test-cases/create")) return "product_test_case";
@@ -642,11 +619,8 @@ void (async () => {
         if (action.endsWith("/product-test-releases/create")) {
             return `<tr>${checkbox}<td>${escapeHtml(row.product_test_release_id)}</td><td>${escapeHtml(row.upstream_release_id)}</td><td>${escapeHtml(row.upstream_release_system)}</td><td>${escapeHtml(row.release_sequence)}</td><td>${toStatusBadgeHtml(row.product_test_release_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
         }
-        if (action.endsWith("/product-test-target-definitions/create")) {
-            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_target_definition_id)}</td><td>${escapeHtml(row.product_code)}</td><td>${escapeHtml(row.manufacturer)}</td><td>${escapeHtml(row.model_name)}</td><td>${escapeHtml(row.hardware_revision)}</td><td>${escapeHtml(row.default_software_version)}</td><td>${escapeHtml(row.default_firmware_version)}</td><td>${escapeHtml(row.product_test_target_definition_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
-        }
         if (action.endsWith("/product-test-targets/create")) {
-            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_target_id)}</td><td>${escapeHtml(row.product_test_target_definition_id)}</td><td>${escapeHtml(row.serial_number)}</td><td>${escapeHtml(row.software_version)}</td><td>${escapeHtml(row.firmware_version)}</td><td>${escapeHtml(row.manufacture_lot)}</td><td>${escapeHtml(row.product_test_target_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
+            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_target_id)}</td><td>${escapeHtml(row.product_code)}</td><td>${escapeHtml(row.manufacturer)}</td><td>${escapeHtml(row.model_name)}</td><td>${escapeHtml(row.hardware_revision)}</td><td>${escapeHtml(row.default_software_version)}</td><td>${escapeHtml(row.default_firmware_version)}</td><td>${escapeHtml(row.serial_number)}</td><td>${escapeHtml(row.software_version)}</td><td>${escapeHtml(row.firmware_version)}</td><td>${escapeHtml(row.manufacture_lot)}</td><td>${escapeHtml(row.product_test_target_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
         }
         if (action.endsWith("/product-test-environments/create")) {
             return `<tr>${checkbox}<td>${escapeHtml(row.product_test_environment_id)}</td><td>${escapeHtml(row.product_test_environment_name)}</td><td>${escapeHtml(row.test_country)}</td><td>${escapeHtml(row.test_city)}</td><td>${escapeHtml(row.test_company)}</td><td>${escapeHtml(row.test_room)}</td><td>${escapeHtml(row.network_type)}</td><td>${escapeHtml(row.test_computer_name)}</td><td>${escapeHtml(row.operating_system_version)}</td><td>${escapeHtml(row.test_tool_name)}</td><td>${escapeHtml(row.test_tool_version)}</td><td>${escapeHtml(row.power_voltage)}</td><td>${escapeHtml(row.power_frequency)}</td><td>${escapeHtml(row.power_connector_type)}</td><td>${escapeHtml(row.power_condition)}</td><td>${escapeHtml(row.captured_at)}</td><td>${escapeHtml(row.product_test_environment_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
@@ -767,24 +741,16 @@ void (async () => {
                 fieldCell("product_test_release_status"),
                 fieldCell("remark"),
             ];
-        } else if (action.endsWith("/product-test-target-definitions/create")) {
+        } else if (action.endsWith("/product-test-targets/create")) {
             cells = [
                 checkboxCell,
-                fieldCell("product_test_target_definition_id"),
+                fieldCell("product_test_target_id"),
                 fieldCell("product_code"),
                 fieldCell("manufacturer"),
                 fieldCell("model_name"),
                 fieldCell("hardware_revision"),
                 fieldCell("default_software_version"),
                 fieldCell("default_firmware_version"),
-                fieldCell("product_test_target_definition_status"),
-                fieldCell("remark"),
-            ];
-        } else if (action.endsWith("/product-test-targets/create")) {
-            cells = [
-                checkboxCell,
-                fieldCell("product_test_target_id"),
-                fieldCell("product_test_target_definition_id"),
                 fieldCell("serial_number"),
                 fieldCell("software_version"),
                 fieldCell("firmware_version"),
@@ -953,16 +919,6 @@ void (async () => {
             void refresh();
             return;
         }
-
-        if (action.endsWith("/product-test-target-definitions/create")) {
-            const definitionIdField = form.querySelector('[name="product_test_target_definition_id"]');
-            const productCodeField = form.querySelector('[name="product_code"]');
-            const modelField = form.querySelector('[name="model_name"]');
-            const refresh = async () => {
-                const candidateValues = await fetchIdCandidates(form, "product_test_target_definition_id");
-                if (!candidateValues.length) {
-                    return;
-                }
                 setAutofillValue(definitionIdField, candidateValues[0]);
                 if (!String(productCodeField?.value || "").trim()) {
                     setAutofillValue(productCodeField, stripTypedIdPrefix(candidateValues[0], "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-"));
@@ -976,13 +932,14 @@ void (async () => {
 
         if (action.endsWith("/product-test-targets/create")) {
             const targetIdField = form.querySelector('[name="product_test_target_id"]');
-            const definitionField = form.querySelector('[name="product_test_target_definition_id"]');
+            const modelField = form.querySelector('[name="model_name"]');
             const serialField = form.querySelector('[name="serial_number"]');
             const refresh = async () => {
                 const candidates = await fetchIdCandidates(form, "product_test_target_id");
                 setAutofillValue(targetIdField, candidates[0] || "");
             };
-            definitionField?.addEventListener("change", () => void refresh());
+            modelField?.addEventListener("input", () => void refresh());
+            modelField?.addEventListener("change", () => void refresh());
             serialField?.addEventListener("input", () => void refresh());
             serialField?.addEventListener("change", () => void refresh());
             void refresh();

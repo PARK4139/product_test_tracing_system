@@ -22,8 +22,7 @@ from app.models import (
     ProductTestResult,
     ProductTestRun,
     ProductTestStatusTransition,
-    ProductTestTarget,
-    ProductTestTargetDefinition,
+    ProductTestTargetUnified,
     get_utc_now_datetime,
 )
 
@@ -151,43 +150,15 @@ _sample_product_test_release_rows = [
     },
 ]
 
-_sample_product_test_target_definition_rows = [
+_sample_product_test_target_rows = [
     {
-        "product_test_target_definition_id": "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-HRK_9000A",
+        "product_test_target_id": "SQA_PRODUCT_TEST_TARGET_ID-HRK_9000A-SN001",
         "product_code": "HRK_9000A",
         "manufacturer": "Huvitz",
         "model_name": "HRK-9000A",
         "hardware_revision": "A",
         "default_software_version": "1.0.0",
         "default_firmware_version": "1.0.0",
-        "product_test_target_definition_status": "ACTIVE",
-        "created_at": "2026-05-05 09:00:00",
-        "created_by": "SQA_MASTER",
-        "updated_at": "2026-05-05 09:00:00",
-        "updated_by": "SQA_MASTER",
-        "remark": "",
-    },
-    {
-        "product_test_target_definition_id": "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-MERCUSYS_MR30G",
-        "product_code": "MERCUSYS_MR30G",
-        "manufacturer": "MERCUSYS",
-        "model_name": "MR30G",
-        "hardware_revision": "A1",
-        "default_software_version": "1.0.0",
-        "default_firmware_version": "1.0.0",
-        "product_test_target_definition_status": "ACTIVE",
-        "created_at": "2026-05-05 09:30:00",
-        "created_by": "SQA_MASTER",
-        "updated_at": "2026-05-05 09:30:00",
-        "updated_by": "SQA_MASTER",
-        "remark": "",
-    },
-]
-
-_sample_product_test_target_rows = [
-    {
-        "product_test_target_id": "SQA_PRODUCT_TEST_TARGET_ID-HRK_9000A-SN001",
-        "product_test_target_definition_id": "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-HRK_9000A",
         "serial_number": "SN001",
         "software_version": "1.0.0",
         "firmware_version": "1.0.0",
@@ -425,7 +396,6 @@ def _validate_in(value: str, allowed_values: tuple[str, ...], field_name: str) -
 
 _PRODUCT_TEST_ID_RULES: dict[str, re.Pattern[str]] = {
     "product_test_release_id": re.compile(r"^SQA_PRODUCT_TEST_RELEASE_ID-[A-Z0-9_]+-[0-9]+(?:\.[0-9]+)*-(?:RC[0-9]+|GA|HF[0-9]+)$"),
-    "product_test_target_definition_id": re.compile(r"^SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-[A-Z0-9_]+$"),
     "product_test_target_id": re.compile(r"^SQA_PRODUCT_TEST_TARGET_ID-[A-Z0-9_]+-[A-Z0-9_]+$"),
     "product_test_environment_definition_id": re.compile(r"^SQA_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-[A-Z0-9_]+(?:-[A-Z0-9_]+){2,}$"),
     "product_test_environment_id": re.compile(r"^SQA_PRODUCT_TEST_ENVIRONMENT_ID-[A-Z0-9_]+(?:-[A-Z0-9_]+){2,}-\d{8}-\d{3}$"),
@@ -435,7 +405,6 @@ _PRODUCT_TEST_ID_RULES: dict[str, re.Pattern[str]] = {
 
 PRODUCT_TEST_IDENTIFIER_GUIDES: dict[str, str] = {
     "product_test_release_id": "PRODUCT_TEST_RELEASE_ID 작성규칙위반. SQA_PRODUCT_TEST_RELEASE_ID-ITEM-1.0.0-RC1 쓰거나 SQA_PRODUCT_TEST_RELEASE_ID-ITEM-1.0.0-GA 써라.",
-    "product_test_target_definition_id": "PRODUCT_TEST_TARGET_DEFINITION_ID 작성규칙위반. SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-HRK_9000A 써라.",
     "product_test_target_id": "PRODUCT_TEST_TARGET_ID 작성규칙위반. SQA_PRODUCT_TEST_TARGET_ID-HRK_9000A-SN001 써라.",
     "product_test_environment_definition_id": "PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID 작성규칙위반. SQA_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-COMPANY-CITY-ROOM 써라.",
     "product_test_environment_id": "PRODUCT_TEST_ENVIRONMENT_ID 작성규칙위반. SQA_PRODUCT_TEST_ENVIRONMENT_ID-COMPANY-CITY-ROOM-YYYYMMDD-001 써라.",
@@ -818,36 +787,18 @@ def list_product_test_releases(database_session: Session) -> list[dict[str, Any]
     )
 
 
-def list_product_test_target_definitions(database_session: Session) -> list[dict[str, Any]]:
+def list_product_test_targets(database_session: Session) -> list[dict[str, Any]]:
     return _list_rows_as_dicts(
         database_session,
-        model=ProductTestTargetDefinition,
+        model=ProductTestTargetUnified,
         columns=[
-            "product_test_target_definition_id",
+            "product_test_target_id",
             "product_code",
             "manufacturer",
             "model_name",
             "hardware_revision",
             "default_software_version",
             "default_firmware_version",
-            "product_test_target_definition_status",
-            "created_at",
-            "created_by",
-            "updated_at",
-            "updated_by",
-            "remark",
-        ],
-        order_by_column="created_at",
-    )
-
-
-def list_product_test_targets(database_session: Session) -> list[dict[str, Any]]:
-    return _list_rows_as_dicts(
-        database_session,
-        model=ProductTestTarget,
-        columns=[
-            "product_test_target_id",
-            "product_test_target_definition_id",
             "serial_number",
             "software_version",
             "firmware_version",
@@ -1078,76 +1029,16 @@ def create_product_test_release(
     )
 
 
-def create_product_test_target_definition(
+def create_product_test_target(
     database_session: Session,
     *,
-    product_test_target_definition_id: str,
+    product_test_target_id: str,
     product_code: str,
     manufacturer: str,
     model_name: str,
     hardware_revision: str,
     default_software_version: str,
     default_firmware_version: str,
-    product_test_target_definition_status: str,
-    actor_name: str,
-    remark: str,
-) -> dict[str, Any]:
-    definition_id = _validate_product_test_identifier_format("product_test_target_definition_id", product_test_target_definition_id)
-    manufacturer_value = str(manufacturer or "").strip()
-    model_name_value = str(model_name or "").strip()
-    if not definition_id or not manufacturer_value or not model_name_value:
-        raise ValueError("product_test_target_definition_id, manufacturer, model_name are required.")
-    if database_session.get(ProductTestTargetDefinition, definition_id) is not None:
-        raise ValueError("product_test_target_definition_id already exists.")
-    normalized_product_code = str(product_code or "").strip() or build_product_code(manufacturer_value, model_name_value)
-    status_value = _validate_in(
-        str(product_test_target_definition_status or "").strip().upper(),
-        MASTER_ACTIVE_STATUS_VALUES,
-        "product_test_target_definition_status",
-    )
-    now_text = _now_text()
-    row = ProductTestTargetDefinition(
-        product_test_target_definition_id=definition_id,
-        product_code=normalized_product_code,
-        manufacturer=manufacturer_value,
-        model_name=model_name_value,
-        hardware_revision=str(hardware_revision or "").strip() or None,
-        default_software_version=str(default_software_version or "").strip() or None,
-        default_firmware_version=str(default_firmware_version or "").strip() or None,
-        product_test_target_definition_status=status_value,
-        created_at=now_text,
-        created_by=actor_name,
-        updated_at=now_text,
-        updated_by=actor_name,
-        remark=str(remark or "").strip() or None,
-    )
-    database_session.add(row)
-    _commit_or_rollback(database_session)
-    return _as_dict(
-        row,
-        [
-            "product_test_target_definition_id",
-            "product_code",
-            "manufacturer",
-            "model_name",
-            "hardware_revision",
-            "default_software_version",
-            "default_firmware_version",
-            "product_test_target_definition_status",
-            "created_at",
-            "created_by",
-            "updated_at",
-            "updated_by",
-            "remark",
-        ],
-    )
-
-
-def create_product_test_target(
-    database_session: Session,
-    *,
-    product_test_target_id: str,
-    product_test_target_definition_id: str,
     serial_number: str,
     software_version: str,
     firmware_version: str,
@@ -1157,23 +1048,27 @@ def create_product_test_target(
     remark: str,
 ) -> dict[str, Any]:
     target_id = _validate_product_test_identifier_format("product_test_target_id", product_test_target_id)
-    definition_id = str(product_test_target_definition_id or "").strip()
+    manufacturer_value = str(manufacturer or "").strip()
+    model_name_value = str(model_name or "").strip()
     serial_number_value = str(serial_number or "").strip()
-    if not target_id or not definition_id or not serial_number_value:
-        raise ValueError("product_test_target_id, product_test_target_definition_id, serial_number are required.")
-    if database_session.get(ProductTestTarget, target_id) is not None:
+    if not target_id or not manufacturer_value or not model_name_value or not serial_number_value:
+        raise ValueError("product_test_target_id, manufacturer, model_name, serial_number are required.")
+    if database_session.get(ProductTestTargetUnified, target_id) is not None:
         raise ValueError("product_test_target_id already exists.")
-    if database_session.get(ProductTestTargetDefinition, definition_id) is None:
-        raise ValueError("Unknown product_test_target_definition_id.")
     status_value = _validate_in(
         str(product_test_target_status or "").strip().upper(),
         TARGET_STATUS_VALUES,
         "product_test_target_status",
     )
     now_text = _now_text()
-    row = ProductTestTarget(
+    row = ProductTestTargetUnified(
         product_test_target_id=target_id,
-        product_test_target_definition_id=definition_id,
+        product_code=str(product_code or "").strip() or build_product_code(manufacturer_value, model_name_value),
+        manufacturer=manufacturer_value,
+        model_name=model_name_value,
+        hardware_revision=str(hardware_revision or "").strip() or None,
+        default_software_version=str(default_software_version or "").strip() or None,
+        default_firmware_version=str(default_firmware_version or "").strip() or None,
         serial_number=serial_number_value,
         software_version=str(software_version or "").strip() or None,
         firmware_version=str(firmware_version or "").strip() or None,
@@ -1191,7 +1086,12 @@ def create_product_test_target(
         row,
         [
             "product_test_target_id",
-            "product_test_target_definition_id",
+            "product_code",
+            "manufacturer",
+            "model_name",
+            "hardware_revision",
+            "default_software_version",
+            "default_firmware_version",
             "serial_number",
             "software_version",
             "firmware_version",
@@ -1611,130 +1511,18 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
     seed_created_at = "2026-05-04 09:00"
     seed_updated_at = "2026-05-04 10:30"
 
-    target_definition_rows = [
-        {
-            "product_test_target_definition_id": "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-HRK_9000A",
-            "product_code": "HRK_9000A",
-            "manufacturer": "Huvitz",
-            "model_name": "HRK-9000A",
-        },
-        {
-            "product_test_target_definition_id": "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-HUVITZ_HLM_9000",
-            "product_code": "HUVITZ_HLM_9000",
-            "manufacturer": "Huvitz",
-            "model_name": "HLM-9000",
-        },
-        {
-            "product_test_target_definition_id": "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-HUVITZ_HTR_TBD",
-            "product_code": "HUVITZ_HTR_TBD",
-            "manufacturer": "Huvitz",
-            "model_name": "HTR(TBD)",
-        },
-        {
-            "product_test_target_definition_id": "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-HUVITZ_HDR_9000_OP",
-            "product_code": "HUVITZ_HDR_9000_OP",
-            "manufacturer": "Huvitz",
-            "model_name": "HDR-9000_OP",
-        },
-        {
-            "product_test_target_definition_id": "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-HUVITZ_HDR_9000_JUNCTION_BOX",
-            "product_code": "HUVITZ_HDR_9000_JUNCTION_BOX",
-            "manufacturer": "Huvitz",
-            "model_name": "HDR-9000_JUNCTION_BOX",
-        },
-        {
-            "product_test_target_definition_id": "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-HUVITZ_HDR_9000_UNKNOWN",
-            "product_code": "HUVITZ_HDR_9000_UNKNOWN",
-            "manufacturer": "Huvitz",
-            "model_name": "HDR-9000_?",
-        },
-        {
-            "product_test_target_definition_id": "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-HUVITZ_HDC_9100",
-            "product_code": "HUVITZ_HDC_9100",
-            "manufacturer": "Huvitz",
-            "model_name": "HDC-9100",
-        },
-        {
-            "product_test_target_definition_id": "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-MERCUSYS_MR30G",
-            "product_code": "MERCUSYS_MR30G",
-            "manufacturer": "MERCUSYS",
-            "model_name": "MR30G",
-        },
-        {
-            "product_test_target_definition_id": "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-TBD_LENS",
-            "product_code": "TBD_LENS",
-            "manufacturer": "TBD",
-            "model_name": "Lens",
-        },
-        {
-            "product_test_target_definition_id": "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-TBD_MODELAI",
-            "product_code": "TBD_MODELAI",
-            "manufacturer": "TBD",
-            "model_name": "모델아이",
-        },
-        {
-            "product_test_target_definition_id": "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-TBD_JUNCTION_BOX_POWER_CABLE",
-            "product_code": "TBD_JUNCTION_BOX_POWER_CABLE",
-            "manufacturer": "TBD",
-            "model_name": "Junction Box Power Cable",
-        },
-        {
-            "product_test_target_definition_id": "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-TBD_HDC_POWER_CABLE",
-            "product_code": "TBD_HDC_POWER_CABLE",
-            "manufacturer": "TBD",
-            "model_name": "HDC Power Cable",
-        },
-        {
-            "product_test_target_definition_id": "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-TBD_HLM_POWER_CABLE_L_FORM_POWER_CABLE",
-            "product_code": "TBD_HLM_POWER_CABLE_L_FORM_POWER_CABLE",
-            "manufacturer": "TBD",
-            "model_name": "HLM Power Cable : L-form Power Cable",
-        },
-        {
-            "product_test_target_definition_id": "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-TBD_OP_SIGNAL_AND_POWER_CABLE",
-            "product_code": "TBD_OP_SIGNAL_AND_POWER_CABLE",
-            "manufacturer": "TBD",
-            "model_name": "OP Signal and Power Cable",
-        },
-        {
-            "product_test_target_definition_id": "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-TBD_HDR_SIGNAL_AND_POWER_CABLE",
-            "product_code": "TBD_HDR_SIGNAL_AND_POWER_CABLE",
-            "manufacturer": "TBD",
-            "model_name": "HDR Signal and Power Cable",
-        },
-    ]
-
-    for item in target_definition_rows:
-        _upsert_model_row(
-            database_session,
-            ProductTestTargetDefinition,
-            "product_test_target_definition_id",
-            {
-                "product_test_target_definition_id": item["product_test_target_definition_id"],
-                "product_code": item["product_code"],
-                "manufacturer": item["manufacturer"],
-                "model_name": item["model_name"],
-                "hardware_revision": None,
-                "default_software_version": None,
-                "default_firmware_version": None,
-                "product_test_target_definition_status": "active",
-                "created_at": seed_created_at,
-                "created_by": actor_name,
-                "updated_at": seed_updated_at,
-                "updated_by": actor_name,
-                "remark": None,
-            },
-        )
-
-    database_session.flush()
-
     _upsert_model_row(
         database_session,
-        ProductTestTarget,
+        ProductTestTargetUnified,
         "product_test_target_id",
         {
             "product_test_target_id": "SQA_PRODUCT_TEST_TARGET_ID-MERCUSYS_MR30G-SN001",
-            "product_test_target_definition_id": "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-MERCUSYS_MR30G",
+            "product_code": "MERCUSYS_MR30G",
+            "manufacturer": "MERCUSYS",
+            "model_name": "MR30G",
+            "hardware_revision": None,
+            "default_software_version": "1.0.0",
+            "default_firmware_version": "1.0.3",
             "serial_number": "SN001",
             "software_version": "1.0.0",
             "firmware_version": "1.0.3",
@@ -2227,7 +2015,7 @@ def start_run(
     started_by: str,
 ) -> dict[str, Any]:
     release = database_session.get(ProductTestRelease, str(product_test_release_id or "").strip())
-    target = database_session.get(ProductTestTarget, str(product_test_target_id or "").strip())
+    target = database_session.get(ProductTestTargetUnified, str(product_test_target_id or "").strip())
     environment = database_session.get(ProductTestEnvironment, str(product_test_environment_id or "").strip())
     if release is None:
         raise ValueError("Unknown product_test_release_id.")
@@ -3409,26 +3197,24 @@ def reject_product_test_report(database_session: Session, *, product_test_report
 
 
 def _target_summary(database_session: Session, product_test_target_id: str) -> dict[str, Any]:
-    target_row = database_session.get(ProductTestTarget, product_test_target_id)
+    target_row = database_session.get(ProductTestTargetUnified, product_test_target_id)
     if target_row is None:
         fallback = _find_fallback_row(_sample_product_test_target_rows, "product_test_target_id", product_test_target_id) or {}
-        definition_row = _find_fallback_row(_sample_product_test_target_definition_rows, "product_test_target_definition_id", fallback.get("product_test_target_definition_id", "")) or {}
         return {
             "product_test_target_id": product_test_target_id,
-            "product_code": definition_row.get("product_code", ""),
-            "manufacturer": definition_row.get("manufacturer", ""),
-            "model_name": definition_row.get("model_name", ""),
+            "product_code": fallback.get("product_code", ""),
+            "manufacturer": fallback.get("manufacturer", ""),
+            "model_name": fallback.get("model_name", ""),
             "serial_number": fallback.get("serial_number", ""),
             "software_version": fallback.get("software_version", ""),
             "firmware_version": fallback.get("firmware_version", ""),
             "manufacture_lot": fallback.get("manufacture_lot", ""),
         }
-    definition_row = database_session.get(ProductTestTargetDefinition, target_row.product_test_target_definition_id)
     return {
         "product_test_target_id": target_row.product_test_target_id,
-        "product_code": definition_row.product_code if definition_row else "",
-        "manufacturer": definition_row.manufacturer if definition_row else "",
-        "model_name": definition_row.model_name if definition_row else "",
+        "product_code": target_row.product_code or "",
+        "manufacturer": target_row.manufacturer or "",
+        "model_name": target_row.model_name or "",
         "serial_number": target_row.serial_number,
         "software_version": target_row.software_version or "",
         "firmware_version": target_row.firmware_version or "",
@@ -4667,8 +4453,7 @@ def build_product_test_run_export_rows(database_session: Session, product_test_r
 def get_product_test_system_check(database_session: Session) -> dict[str, Any]:
     table_names = [
         "product_test_release",
-        "product_test_target_definition",
-        "product_test_target",
+        "product_test_target_unified",
         "product_test_environment_definition",
         "product_test_environment",
         "product_test_case",

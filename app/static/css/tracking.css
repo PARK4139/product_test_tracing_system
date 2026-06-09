@@ -115,7 +115,6 @@
 .trk_evidence_table,
 .trk_report_table,
 .trk_test_release_table,
-.trk_test_target_definition_table,
 .trk_test_target_table,
 .trk_test_environment_definition_table,
 .trk_test_environment_table,
@@ -136,7 +135,6 @@
 .trk_evidence_table th,
 .trk_report_table th,
 .trk_test_release_table th,
-.trk_test_target_definition_table th,
 .trk_test_target_table th,
 .trk_test_environment_definition_table th,
 .trk_test_environment_table th,
@@ -161,7 +159,6 @@
 .trk_evidence_table td,
 .trk_report_table td,
 .trk_test_release_table td,
-.trk_test_target_definition_table td,
 .trk_test_target_table td,
 .trk_test_environment_definition_table td,
 .trk_test_environment_table td,
@@ -184,7 +181,6 @@
 .trk_evidence_table tr:hover td { background: #f0f9ff; }
 .trk_report_table tr:hover td { background: #f0f9ff; }
 .trk_test_release_table tr:hover td { background: #f0f9ff; }
-.trk_test_target_definition_table tr:hover td { background: #f0f9ff; }
 .trk_test_target_table tr:hover td { background: #f0f9ff; }
 .trk_test_environment_definition_table tr:hover td { background: #f0f9ff; }
 .trk_test_environment_table tr:hover td { background: #f0f9ff; }
