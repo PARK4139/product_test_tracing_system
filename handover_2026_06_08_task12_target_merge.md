@@ -78,10 +78,11 @@ run 62건이 **target 1대만** 가리키는 원인 규명 + 올바른 DUT 재�
 ### ⚠️ 재연결 DUT 추론 규칙 (2026-06-09 수정 — 기존 진단 오류 정정)
 **기존 진단(`run_target_relink_diagnosis_20260609.md`)은 폐기/재생성.** 원인: `[Test 대상]` 블록 첫 줄을 DUT로 봤는데, 그 블록은 **연결장비 6개 전부 나열**이라 항상 HRK가 첫 줄 → WIFI_2ND run 9건(result 57건)이 HRK로 오배정됨.
 
-**정정 규칙 — DUT = 토폴로지의 `_ROUTER` 바로 앞 토큰** (마스터 CASE 규칙과 동일):
-1. **1순위: 토폴로지 DUT.** run/result의 `[구성]`/`[연결구성]`(또는 run id)에서 `{N}{MODEL}_{N}ROUTER` 패턴의 ROUTER 앞 MODEL = DUT. 예: `1HLM_25ROUTER`→HLM, `1HTR_25ROUTER`→HTR, `1HDC_1ROUTER`→HDC. 신뢰도 EXACT.
-2. 2순위: run id의 `[장비] X` 태그(WIFI_1ST DUT-split run). 1순위와 일치해야 함.
-3. **`[Test 대상] 첫 줄 = HRK` 규칙은 폐기** (그건 연결장비 목록이지 DUT 아님).
+**정정 규칙 (우선순위 중요 — 2026-06-09 재정정):**
+1. **1순위: `[장비] X` 태그 / run id 끝 `-X` suffix = 실제 DUT.** WIFI_1ST 분할 run은 한 토폴로지를 장비별로 쪼갠 것이라, **토폴로지 첫 장비(호스트)가 아니라 [장비] 태그가 진짜 DUT**다. 예: `RUN-...-1HDR_1ROUTER_1HDC-RC1` `[장비] HDC` → **HDC**(HDR 아님). 신뢰도 EXACT.
+2. 2순위(비분할 run): 토폴로지의 `_ROUTER` 앞 토큰. 예: `1HLM_25ROUTER`→HLM, `1HTR_25ROUTER`→HTR. (WIFI_2ND처럼 [장비] 없는 run)
+3. **`[Test 대상] 첫 줄 = HRK` 규칙은 폐기** (연결장비 목록이지 DUT 아님).
+⚠️ **흔한 오류**: 토폴로지 첫 장비를 DUT로 쓰면 `1HRK_4HDR-...-HDR`(DUT=HDR)을 HRK로, `*_1HDC-...-HDC`(DUT=HDC)를 HDR로 오배정한다. [장비] 태그가 항상 우선.
 4. **폴백: 토폴로지 없으면 release/round 모델명으로 추론.** 예: release `RELEASE-HRK_9000A_1_1_1D-RC1` / round `ROUND-HRK_9000A_*` → DUT=HRK. (legacy `RUN-TEST_REPORT_*` 3건이 여기 해당 → 전부 HRK, **UNCLASSIFIED 0 목표**)
 5. 그래도 못 뽑고 result=0이면 무시. **무조건 HRK 기본값 금지**(폴백은 release 근거 있을 때만).
 6. `HDR-7100P`는 보조장비(릴리즈 대상 아님) → DUT로 선택 금지.
