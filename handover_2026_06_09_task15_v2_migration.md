@@ -3,6 +3,8 @@
 > 마스터 `handover_2026_06_08_master_architecture.md` 「v2 구조 결정」의 [열린 항목 2] 구현 설계.
 > §0-1 수칙·§9 편집 규칙. **대규모·파괴적 — dry-run→승인→백업 필수.**
 
+
+> 🔧 **[발견 2026-06-11] FK drift**: `product_test_run`이 삭제된 `product_test_environment`를 FK로 선언(선언만 dangling, 데이터 고아는 아님 — run.env_id는 unified에 다 존재). TASK 11 env 병합 때 누락. **15-5 스키마 동기화에서 run 테이블 재구성 시 `product_test_environment_unified` 참조로 수정.** `foreign_key_check`로 검증.
 > 🔁 2026-06-09 b 보강(마스터 참조): RUN id의 version 토막 = **S/W 풀네임(버전+RC 한 덩어리)**. RESULT 하위 = CASE/CONFIG/DEFECT(**VALIDATION 배제** — 결함개선 추적은 기존 Defect.retest_product_test_result_id 체인으로).
 
 ---
@@ -85,3 +87,23 @@ v2 RUN id 4토막 가용성:
 ## 3. 마스터 [열린 항목] 상태
 - 1 ✅ 양산 라운드 / 2 (본 문서=설계 완료, 선행 의존) / 3 ✅ RC 원본유지 / 4 ✅ 2ND 오타.
 - **TASK 15는 TASK 13 적용·AP→ROUTER 후 실행.** 그 전엔 release 데이터 건드리지 않음.
+
+---
+
+## 15-2 충돌/legacy 해결 규칙 (2026-06-11 확정)
+
+### PK 충돌 (4건) → 재시행 표시 보존
+- 원인: WIFI_2ND의 `-RC1`와 `-RC1-2`(같은 구성 재시행, 둘 다 result 보유: 8/14, 6/7 등)가 같은 신 RUN id로 수렴.
+- 해결: **RC 토큰에 재시행 표시 보존**. 구 run id의 RC 토막 그대로 → `RC1` / `RC1-2`를 ID용으로 `RC1` / `RC1_2`(대시→언더스코어)로. 신 RUN id가 유일해짐.
+- 즉 RC 토큰 = 구 run id에서 토폴로지 뒤 전체(`RC1`, `RC1_2`, `RC2`, `RC5`…). 원본 회차+재시행 모두 보존.
+
+### legacy TEST_REPORT 3건 (4 result) → 유지
+- 토폴로지 UNCLASSIFIED(`TBD`/`VARIOUS_CONNECTIONS`/`25AP_` → 정본 파싱 불가), RC 토큰 없음.
+- **유지 확정**: 신 ID 생성하되
+  - **버전 = round에서** (target sw 아님): `ROUND-WIFI_SMOKE`였던 HRK_1_1_1D→`1_1_1D`, DOWNGRADE(HRK_1_1_0A)→`1_1_0A`, WIFI_2ND(HRK_1_1_1A)→`1_1_1A`. (target_unified엔 HRK가 1.1.1A 하나뿐이라 target sw 쓰면 틀림)
+  - **RC = `RC1` 합성**, **토폴로지 = `UNCLASSIFIED`**.
+  - 예: `RUN_HRK_9000A_1_1_1D_RC1_UNCLASSIFIED`. 4 result 보존, 나중에 수동 분류.
+
+### 버전 소스 일반 규칙 (명확화)
+- 일반 run: 버전 = `target_unified.software_version` (DUT 실측 sw. campaign run은 이게 round 버전과 일치).
+- **예외(legacy 3건)**: round가 버전을 인코딩하고 target sw와 다르면 → **round 버전 우선**.
