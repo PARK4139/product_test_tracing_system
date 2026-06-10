@@ -107,3 +107,23 @@ v2 RUN id 4토막 가용성:
 ### 버전 소스 일반 규칙 (명확화)
 - 일반 run: 버전 = `target_unified.software_version` (DUT 실측 sw. campaign run은 이게 round 버전과 일치).
 - **예외(legacy 3건)**: round가 버전을 인코딩하고 target sw와 다르면 → **round 버전 우선**.
+
+---
+
+## 15-3 충돌/TC-PR01 해소 규칙 (2026-06-11 확정)
+
+### CASE 충돌 (2건) → 신 case id에 원본 seq 보존
+- 원인: 신 ID `CASE_{campaign}_{topology}_{scenario}`에서 **seq(001/002)와 DUT가 빠져**, 같은 campaign·topology·scenario인데 seq만 다른 두 case가 수렴.
+  - 예: `CASE-1HTR_1ROUTER_2HDR-HTR-WIFI_SERVER_RECONNECT_RECOVERY-001` / `-002` (절차 내용 다름, 별개 case).
+- **해결: 신 case id 끝에 원본 seq 유지** → `CASE_{campaign}_{topology}_{scenario}_{seq}` (예: `..._RECOVERY_001`, `..._RECOVERY_002`).
+  - 충돌 시에만이 아니라 **항상 seq 부착**(결정적·단순). procedure도 신 case별 복제 유지.
+  - **병합 금지** — 절차가 다른 별개 case다.
+
+### PLACEHOLDER TC-PR01 (1건) → 알려진 예외, 절차 날조 금지
+- `PLACEHOLDER_EMPTY_CASE-WIFI_CONNECTIVITY_TEST_2026`: procedure 0, legacy result 2.
+- **해결: 가짜 procedure 만들지 않는다.** 신 case(`CASE_WIFI_SMOKE_UNCLASSIFIED_WIFI_CONNECTIVITY_TEST_2026`) 유지, result 2건 보존.
+- TC-PR01 위반 1건은 **이 placeholder에 한해 알려진 예외로 수용**(remark에 `[TC-PR01 예외: legacy placeholder, 절차 미정의]` 기록). 검증에서 이 1건은 화이트리스트 처리.
+
+### 결과(예상) — 충돌 0
+- 신 case 수: seq 부착으로 132 유지(충돌 0). procedure 339.
+- result.case_id / procedure.case_id 고아 0. TC-PR01 위반 = 1(placeholder, 예외 허용).
