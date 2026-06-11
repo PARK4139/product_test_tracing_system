@@ -117,7 +117,6 @@ FIELD_WHITELIST: dict[str, frozenset[str]] = {
     "product_test_procedure": frozenset(
         {
             "procedure_action",
-            "expected_result",
             "acceptance_criteria",
             "required_evidence_type",
             "product_test_procedure_status",

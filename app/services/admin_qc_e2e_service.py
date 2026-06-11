@@ -323,11 +323,6 @@ def _run_fill_sequence(admin_url: str) -> None:
 
         procedure_form = _find_form(driver, "/admin/product-test-procedures/create")
         _wait_merged_draft_row(driver, procedure_form)
-        _fill_field(
-            procedure_form,
-            "expected_result",
-            "국가별 규제 DB에 등록된 허용 채널만 표시·선택 가능.",
-        )
         _fill_field(procedure_form, "required_evidence_type", "screenshot")
         _fill_field(procedure_form, "product_test_procedure_status", "ACTIVE")
         _fill_field(
@@ -340,7 +335,7 @@ def _run_fill_sequence(admin_url: str) -> None:
         _fill_field(
             procedure_form,
             "acceptance_criteria",
-            "채널 리스트에 DFS(52–144) 계열이 노출되지 않거나 선택 불가(비활성) 상태여야 함.",
+            "채널 리스트에 DFS(52–144) 계열이 노출되지 않거나 선택 불가(비활성) 상태여야 함.\n[기대결과] 국가별 규제 DB에 등록된 허용 채널만 표시·선택 가능.",
         )
         _fill_field(procedure_form, "product_test_procedure_id", payload["procedure_id"])
         _fill_field(

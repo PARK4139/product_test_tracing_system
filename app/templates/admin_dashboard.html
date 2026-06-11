@@ -94,9 +94,6 @@
 <datalist id="admin_procedure_action_options">
     {% for row in procedure_rows %}{% if row.procedure_action %}<option value="{{ row.procedure_action }}"></option>{% endif %}{% endfor %}
 </datalist>
-<datalist id="admin_procedure_expected_result_options">
-    {% for row in procedure_rows %}{% if row.expected_result %}<option value="{{ row.expected_result }}"></option>{% endif %}{% endfor %}
-</datalist>
 <datalist id="admin_procedure_acceptance_criteria_options">
     {% for row in procedure_rows %}{% if row.acceptance_criteria %}<option value="{{ row.acceptance_criteria }}"></option>{% endif %}{% endfor %}
 </datalist>
@@ -108,7 +105,7 @@
     <div class="section_header_row admin_tab_region_title"><h3>Tab View 2</h3></div>
     <div class="admin_tab_region_body" data-admin-tab-region="primary" data-tab-aria-label="Tab View 2">
 
-<section class="card">
+<section class="card" data-admin-tab-label="Test Round">
     <div class="section_header_row">
         <h3>Test Round</h3>
         <div class="table_action_bar">
@@ -229,14 +226,13 @@
         <input type="hidden" name="return_to" value="/admin">
         <div class="tester_table_wrap">
             <table class="basic_table">
-                <thead><tr><th>선택</th><th>절차 ID</th><th>케이스 ID</th><th>순번</th><th>수행 내용</th><th>기대 결과</th><th>합격 기준</th><th>증거 유형</th><th>절차 상태</th><th>비고</th></tr></thead>
+                <thead><tr><th>선택</th><th>절차 ID</th><th>케이스 ID</th><th>순번</th><th>수행 내용</th><th>합격 기준</th><th>증거 유형</th><th>절차 상태</th><th>비고</th></tr></thead>
                 <tbody><tr>
                     <td><input type="checkbox" class="admin_input_row_checkbox"></td>
                     <td><input type="text" name="product_test_procedure_id" required></td>
                     <td><select name="product_test_case_id" required><option value=""></option>{% for row in case_rows %}<option value="{{ row.product_test_case_id }}">{{ row.product_test_case_id }}</option>{% endfor %}</select></td>
                     <td><input type="number" name="procedure_sequence" required></td>
                     <td><input type="text" name="procedure_action" required list="admin_procedure_action_options"></td>
-                    <td><input type="text" name="expected_result" list="admin_procedure_expected_result_options"></td>
                     <td><input type="text" name="acceptance_criteria" required list="admin_procedure_acceptance_criteria_options"></td>
                     <td><select name="required_evidence_type"><option value=""></option>{% for value in evidence_type_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
                     <td><select name="product_test_procedure_status"><option value=""></option>{% for value in procedure_status_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
@@ -248,8 +244,8 @@
     <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
     <div class="tester_table_wrap">
         <table class="basic_table">
-            <thead><tr><th>선택</th><th>절차 ID</th><th>케이스 ID</th><th>순번</th><th>수행 내용</th><th>기대 결과</th><th>합격 기준</th><th>증거 유형</th><th>절차 상태</th><th>비고</th></tr></thead>
-            <tbody>{% for row in procedure_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_procedure_id }}</td><td>{{ row.product_test_case_id }}</td><td>{{ row.procedure_sequence }}</td><td>{{ row.procedure_action }}</td><td>{{ row.expected_result }}</td><td>{{ row.acceptance_criteria }}</td><td>{{ row.required_evidence_type }}</td><td>{{ row.product_test_procedure_status }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
+            <thead><tr><th>선택</th><th>절차 ID</th><th>케이스 ID</th><th>순번</th><th>수행 내용</th><th>합격 기준</th><th>증거 유형</th><th>절차 상태</th><th>비고</th></tr></thead>
+            <tbody>{% for row in procedure_rows %}<tr data-entity-id="{{ row.product_test_procedure_id }}"><td><input type="checkbox" disabled></td><td>{{ row.product_test_procedure_id }}</td><td>{{ row.product_test_case_id }}</td><td>{{ row.procedure_sequence }}</td><td class="procedure_action_summary" data-entity-id="{{ row.product_test_procedure_id }}" data-procedure-action-b64="{{ row.procedure_action | procedure_action_b64 }}">{{ row.procedure_action | procedure_action_summary }}</td><td>{{ row.acceptance_criteria }}</td><td>{{ row.required_evidence_type }}</td><td>{{ row.product_test_procedure_status }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
         </table>
     </div>
 </section>
@@ -616,7 +612,11 @@ void (async () => {
             return `<tr>${checkbox}<td>${escapeHtml(row.product_test_case_id)}</td><td>${escapeHtml(row.product_test_case_title)}</td><td>${escapeHtml(row.test_category)}</td><td>${escapeHtml(row.test_objective)}</td><td>${escapeHtml(row.precondition)}</td><td>${escapeHtml(row.expected_result)}</td><td>${escapeHtml(row.product_test_case_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
         }
         if (action.endsWith("/product-test-procedures/create")) {
-            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_procedure_id)}</td><td>${escapeHtml(row.product_test_case_id)}</td><td>${escapeHtml(row.procedure_sequence)}</td><td>${escapeHtml(row.procedure_action)}</td><td>${escapeHtml(row.expected_result)}</td><td>${escapeHtml(row.acceptance_criteria)}</td><td>${escapeHtml(row.required_evidence_type)}</td><td>${escapeHtml(row.product_test_procedure_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
+            const actionSummary = (typeof window.formatProcedureActionSummary === "function")
+                ? window.formatProcedureActionSummary(row.procedure_action)
+                : escapeHtml(row.procedure_action);
+            const actionB64 = btoa(unescape(encodeURIComponent(String(row.procedure_action || ""))));
+            return `<tr data-entity-id="${escapeHtml(row.product_test_procedure_id)}">${checkbox}<td>${escapeHtml(row.product_test_procedure_id)}</td><td>${escapeHtml(row.product_test_case_id)}</td><td>${escapeHtml(row.procedure_sequence)}</td><td class="procedure_action_summary" data-entity-id="${escapeHtml(row.product_test_procedure_id)}" data-procedure-action-b64="${escapeHtml(actionB64)}">${escapeHtml(actionSummary)}</td><td>${escapeHtml(row.acceptance_criteria)}</td><td>${escapeHtml(row.required_evidence_type)}</td><td>${escapeHtml(row.product_test_procedure_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
         }
         if (action.endsWith("/product-test-reports/create")) {
             return `<tr>${checkbox}<td>${escapeHtml(row.product_test_report_id)}</td><td>${escapeHtml(row.test_round_id)}</td><td>${escapeHtml(row.product_test_report_type)}</td><td>${toStatusBadgeHtml(row.product_test_report_status)}</td><td>${escapeHtml(row.product_test_report_title)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
@@ -636,6 +636,9 @@ void (async () => {
             return;
         }
         tbody.insertAdjacentHTML("afterbegin", rowHtml);
+        if (typeof window.initProcedureActionCells === "function") {
+            window.initProcedureActionCells(tbody);
+        }
         setupSubmittedTableSelection(form);
         /* draft 행 제거 */
         const draftRow = tbody.querySelector("tr.admin_merged_draft_row");
@@ -786,7 +789,6 @@ void (async () => {
                 fieldCell("product_test_case_id"),
                 fieldCell("procedure_sequence"),
                 fieldCell("procedure_action"),
-                fieldCell("expected_result"),
                 fieldCell("acceptance_criteria"),
                 fieldCell("required_evidence_type"),
                 fieldCell("product_test_procedure_status"),

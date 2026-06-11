@@ -81,12 +81,10 @@
             entityType: "product_test_procedure",
             idColumnIndex: 1,
             fieldsByIndex: {
-                4: "procedure_action",
-                5: "expected_result",
-                6: "acceptance_criteria",
-                7: "required_evidence_type",
-                8: "product_test_procedure_status",
-                9: "remark",
+                5: "acceptance_criteria",
+                6: "required_evidence_type",
+                7: "product_test_procedure_status",
+                8: "remark",
             },
         },
         "/admin/product-test-reports/create": {

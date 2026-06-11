@@ -253,7 +253,6 @@ class ProductTestProcedure(Base):
     )
     procedure_sequence: Mapped[int] = mapped_column(Integer, nullable=False)
     procedure_action: Mapped[str] = mapped_column(Text, nullable=False)
-    expected_result: Mapped[str | None] = mapped_column(Text, nullable=True)
     acceptance_criteria: Mapped[str] = mapped_column(Text, nullable=False)
     required_evidence_type: Mapped[str | None] = mapped_column(Text, nullable=True)
     product_test_procedure_status: Mapped[str] = mapped_column(Text, nullable=False)

@@ -1,0 +1,80 @@
+{
+  "generated_at": "2026-06-11T08:51:04.111594+00:00",
+  "db_path": "C:\\Users\\wjdgn\\Downloads\\product_test_tracing_system\\data\\product_test_tracking_system.db",
+  "merge_format": {
+    "separator": "\n[기대결과] ",
+    "description": "expected_result empty -> keep acceptance_criteria; already included -> keep; else acceptance_criteria + separator + expected_result"
+  },
+  "statistics": {
+    "total": 339,
+    "unchanged_empty_expected": 339,
+    "unchanged_already_included": 0,
+    "merged_append": 0,
+    "merged_replace_empty_acceptance": 0
+  },
+  "rows_requiring_acceptance_update": 0,
+  "rows_unchanged": 339,
+  "samples": [],
+  "pre_migration": {
+    "procedure_count": 339,
+    "integrity_check": "ok",
+    "foreign_key_violations": 0
+  },
+  "schema_plan": {
+    "current_columns": [
+      "product_test_procedure_id",
+      "product_test_case_id",
+      "procedure_sequence",
+      "procedure_action",
+      "expected_result",
+      "acceptance_criteria",
+      "required_evidence_type",
+      "product_test_procedure_status",
+      "created_at",
+      "created_by",
+      "updated_at",
+      "updated_by",
+      "remark",
+      "project_id"
+    ],
+    "planned_columns": [
+      "product_test_procedure_id",
+      "product_test_case_id",
+      "procedure_sequence",
+      "procedure_action",
+      "acceptance_criteria",
+      "required_evidence_type",
+      "product_test_procedure_status",
+      "created_at",
+      "created_by",
+      "updated_at",
+      "updated_by",
+      "remark",
+      "project_id"
+    ],
+    "drop_column": "expected_result",
+    "rebuild_method": "1) UPDATE acceptance_criteria where merge needed 2) CREATE product_test_procedure_new without expected_result 3) INSERT SELECT 4) DROP old 5) RENAME 6) recreate indexes",
+    "current_create_sql_excerpt": "CREATE TABLE product_test_procedure (\n\tproduct_test_procedure_id TEXT NOT NULL, \n\tproduct_test_case_id TEXT NOT NULL, \n\tprocedure_sequence INTEGER NOT NULL, \n\tprocedure_action TEXT NOT NULL, \n\texpected_result TEXT, \n\tacceptance_criteria TEXT NOT NULL, \n\trequired_evidence_type TEXT, \n\tproduct_test_procedure_status TEXT NOT NULL, \n\tcreated_at TEXT NOT NULL, \n\tcreated_by TEXT NOT NULL, \n\tupdated_at TEXT NOT NULL, \n\tupdated_by TEXT NOT NULL, \n\tremark TEXT, project_id TEXT, \n\tPRIMARY KEY (product_tes",
+    "indexes_preserved": [
+      {
+        "name": "sqlite_autoindex_product_test_procedure_1",
+        "sql": null
+      },
+      {
+        "name": "ix_product_test_procedure_case_id",
+        "sql": "CREATE INDEX ix_product_test_procedure_case_id ON product_test_procedure (product_test_case_id)"
+      },
+      {
+        "name": "ix_product_test_procedure_project_id",
+        "sql": "CREATE INDEX ix_product_test_procedure_project_id ON product_test_procedure (project_id)"
+      }
+    ],
+    "fk_notes": "PK product_test_procedure_id unchanged; child FKs preserved"
+  },
+  "case_table_untouched": {
+    "note": "product_test_case.expected_result is NOT modified",
+    "case_count": 134,
+    "case_has_expected_result_column": true
+  },
+  "dry_run_copy": "C:\\Users\\wjdgn\\Downloads\\product_test_tracing_system\\proc_er_merge_cq9fwv80\\product_test_tracking_system.db"
+}

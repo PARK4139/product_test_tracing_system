@@ -180,7 +180,6 @@ function buildMasterDataSections(data, releases) {
         { key: "case_id", label: "Case ID", width: "330px" },
         { key: "sequence", label: "Seq", width: "60px" },
         { key: "action", label: "Action", width: "300px", field: "procedure_action" },
-        { key: "expected_result", label: "Expected Result", width: "260px", field: "expected_result" },
         { key: "acceptance_criteria", label: "Acceptance", width: "260px", field: "acceptance_criteria" },
         { key: "required_evidence_type", label: "Evidence", width: "120px", field: "required_evidence_type" },
         { key: "status", label: "Status", width: "100px", field: "product_test_procedure_status" },

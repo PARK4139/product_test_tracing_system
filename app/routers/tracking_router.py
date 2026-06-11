@@ -765,11 +765,10 @@ def get_tracking_summary(
             "case_id": r[1] or "",
             "sequence": r[2] or 0,
             "action": r[3] or "",
-            "expected_result": r[4] or "",
-            "acceptance_criteria": r[5] or "",
-            "required_evidence_type": r[6] or "",
-            "status": r[7] or "",
-            "remark": r[8] or "",
+            "acceptance_criteria": r[4] or "",
+            "required_evidence_type": r[5] or "",
+            "status": r[6] or "",
+            "remark": r[7] or "",
             "used_releases": ", ".join(
                 _strip_release_prefix(rid)
                 for rid in _proc_release_map.get(r[0] or "", [])
@@ -777,7 +776,7 @@ def get_tracking_summary(
         }
         for r in conn.execute(text("""
             SELECT product_test_procedure_id, product_test_case_id,
-                   procedure_sequence, procedure_action, expected_result,
+                   procedure_sequence, procedure_action,
                    acceptance_criteria, required_evidence_type,
                    product_test_procedure_status, remark
             FROM product_test_procedure

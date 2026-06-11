@@ -1,0 +1,28 @@
+{
+  "applied_at": "2026-06-11T08:51:42.767791+00:00",
+  "backup_path": "C:\\Users\\wjdgn\\Downloads\\product_test_tracing_system\\data\\backups\\2026-06-11\\product_test_tracking_system.procedure_er_merge_175142.db",
+  "merge_updates": 0,
+  "validation": {
+    "procedure_count": 339,
+    "case_count": 134,
+    "integrity_check": "ok",
+    "foreign_key_violations": 0,
+    "procedure_has_expected_result": false,
+    "case_has_expected_result": true,
+    "procedure_columns": [
+      "product_test_procedure_id",
+      "product_test_case_id",
+      "procedure_sequence",
+      "procedure_action",
+      "acceptance_criteria",
+      "required_evidence_type",
+      "product_test_procedure_status",
+      "created_at",
+      "created_by",
+      "updated_at",
+      "updated_by",
+      "remark",
+      "project_id"
+    ]
+  }
+}

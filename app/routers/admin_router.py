@@ -620,7 +620,6 @@ def create_product_test_procedure_admin(
     product_test_case_id: str = Form(""),
     procedure_sequence: int = Form(0),
     procedure_action: str = Form(""),
-    expected_result: str = Form(""),
     acceptance_criteria: str = Form(""),
     required_evidence_type: str = Form(""),
     product_test_procedure_status: str = Form(""),
@@ -635,7 +634,6 @@ def create_product_test_procedure_admin(
             product_test_case_id=product_test_case_id,
             procedure_sequence=procedure_sequence,
             procedure_action=procedure_action,
-            expected_result=expected_result,
             acceptance_criteria=acceptance_criteria,
             required_evidence_type=required_evidence_type,
             product_test_procedure_status=product_test_procedure_status,
@@ -741,6 +739,30 @@ def render_product_test_cases_admin(
         extra_context={
             "rows": list_product_test_cases(database_session),
             "status_values": MASTER_ACTIVE_STATUS_VALUES,
+            "message": (request.query_params.get("message") or "").strip(),
+            "message_type": (request.query_params.get("message_type") or "info").strip(),
+        },
+    )
+
+
+@admin_router.get("/product-test-procedures")
+def render_product_test_procedures_admin(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    _ensure_admin_role(current_role_name)
+    return _render_admin_shell_template(
+        request=request,
+        database_session=database_session,
+        current_role_name=current_role_name,
+        template_name="product_test_procedures_admin.html",
+        page_title="Product Test Data Tracing System",
+        extra_context={
+            "rows": list_product_test_procedures(database_session),
+            "case_rows": list_product_test_cases(database_session),
+            "status_values": MASTER_ACTIVE_STATUS_VALUES,
+            "evidence_type_values": EVIDENCE_TYPE_VALUES,
             "message": (request.query_params.get("message") or "").strip(),
             "message_type": (request.query_params.get("message_type") or "info").strip(),
         },

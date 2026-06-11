@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import logging
 import traceback
 from pathlib import Path
@@ -15,6 +16,7 @@ from jinja2 import FileSystemBytecodeCache
 
 from app.config import app_settings, is_qc_mode_enabled
 from app.db import initialize_database
+from app.services.procedure_action_display import format_procedure_action_summary
 from app.routers.admin_router import admin_router
 from app.routers.auth_router import auth_router
 from app.routers.export_router import export_router
@@ -57,6 +59,10 @@ def create_app() -> FastAPI:
         bytecode_cache=bytecode_cache,
     )
     template_env.globals["qc_mode_enabled"] = is_qc_mode_enabled()
+    template_env.filters["procedure_action_summary"] = format_procedure_action_summary
+    template_env.filters["procedure_action_b64"] = lambda value: base64.b64encode(
+        str(value or "").encode("utf-8"),
+    ).decode("ascii")
     app.state.templates = Jinja2Templates(env=template_env)
 
     static_directory_path = Path(__file__).resolve().parent / "static"

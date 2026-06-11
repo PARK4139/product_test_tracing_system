@@ -102,14 +102,13 @@
     <div class="detail_guide">failed, blocked, skipped 선택 시 judgement_reason 이 필수다.</div>
     <div class="tester_table_wrap">
         <table class="basic_table">
-            <thead><tr><th>Seq</th><th>Procedure Action</th><th>Expected Result</th><th>Acceptance Criteria</th><th>Required Evidence Type</th><th>Status</th><th>Actual Result</th><th>Judgement Reason</th><th>Evidence Count</th><th>Remark</th><th>Action</th></tr></thead>
+            <thead><tr><th>Seq</th><th>Procedure Action</th><th>Acceptance Criteria</th><th>Required Evidence Type</th><th>Status</th><th>Actual Result</th><th>Judgement Reason</th><th>Evidence Count</th><th>Remark</th><th>Action</th></tr></thead>
             <tbody>
                 {% for row in procedure_rows %}
                 <tr>
                     <form method="post" action="/tester/product-test-procedure-results/save" class="product_test_procedure_result_form">
                         <td>{{ row.procedure_sequence }}</td>
                         <td><strong>{{ row.procedure_action }}</strong></td>
-                        <td>{{ row.expected_result }}</td>
                         <td><strong>{{ row.acceptance_criteria }}</strong></td>
                         <td>{{ row.required_evidence_type }}</td>
                         <td>
