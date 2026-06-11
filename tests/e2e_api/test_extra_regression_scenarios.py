@@ -52,7 +52,7 @@ def test_regression_seeded_start_run_then_cancel(seeded_wifi_ap_db: TestClient) 
         "/tester/product-test-runs/start",
         cookies=_cookies("tester"),
         data={
-            "product_test_release_id": RELEASE_ID,
+            "test_round_id": RELEASE_ID,
             "product_test_target_id": TARGET_ID,
             "product_test_environment_id": ENV_ID,
         },
@@ -84,9 +84,9 @@ def test_regression_seeded_defect_reject_from_opened(seeded_wifi_ap_db: TestClie
     assert res.status_code == 303
 
 
-def test_regression_admin_product_test_releases_page(seeded_wifi_ap_db: TestClient) -> None:
+def test_regression_admin_product_test_rounds_on_dashboard(seeded_wifi_ap_db: TestClient) -> None:
     client = seeded_wifi_ap_db
-    page = client.get("/admin/product-test-releases", cookies=_cookies("master_admin"))
+    page = client.get("/admin", cookies=_cookies("master_admin"))
     assert page.status_code == 200
     assert RELEASE_ID in page.text
 

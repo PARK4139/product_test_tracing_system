@@ -31,19 +31,16 @@ def _get_db_counts() -> dict[str, int]:
                 """
             )
         ).mappings().all()
-        release_counts = database_session.execute(
+        round_counts = database_session.execute(
             text(
                 """
                 SELECT
-                    SUM(CASE WHEN test_round_id IS NULL THEN 1 ELSE 0 END) AS releases_without_round_count,
                     (
                         SELECT COUNT(*)
-                        FROM product_test_round round
-                        LEFT JOIN product_test_release rel
-                          ON rel.test_round_id = round.test_round_id
-                        WHERE rel.product_test_release_id IS NULL
-                    ) AS rounds_without_release_count
-                FROM product_test_release
+                        FROM product_test_round r
+                        LEFT JOIN product_test_run run ON run.test_round_id = r.test_round_id
+                        WHERE run.product_test_run_id IS NULL
+                    ) AS rounds_without_runs_count
                 """
             )
         ).mappings().one()
@@ -63,8 +60,7 @@ def _get_db_counts() -> dict[str, int]:
             "topology_mismatch_count": topology_mismatch_count,
             "evidence_missing_count": evidence_missing_count,
             "parsed_combo_count": parsed_combo_count,
-            "releases_without_round_count": int(release_counts["releases_without_round_count"] or 0),
-            "rounds_without_release_count": int(release_counts["rounds_without_release_count"] or 0),
+            "rounds_without_runs_count": int(round_counts["rounds_without_runs_count"] or 0),
         }
 
 
@@ -120,8 +116,7 @@ def test_sheet_result_and_release_summaries_match_db(seeded_wifi_ap_db):
     assert release_response.status_code == 200
     release_payload = release_response.json()
     assert release_payload["table"] == "release"
-    assert release_payload["summary"]["flag_counts"].get("round_missing", 0) == counts["releases_without_round_count"]
-    assert release_payload["summary"]["rounds_without_release_count"] == counts["rounds_without_release_count"]
+    assert release_payload["summary"]["rounds_without_runs_count"] == counts["rounds_without_runs_count"]
 
 
 def test_sheet_case_and_evidence_endpoints_return_expected_shape(seeded_wifi_ap_db):

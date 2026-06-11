@@ -17,7 +17,11 @@ from app.config import app_settings, is_qc_mode_enabled
 from app.db import initialize_database
 from app.routers.admin_router import admin_router
 from app.routers.auth_router import auth_router
+from app.routers.export_router import export_router
+from app.routers.product_test_tester_router import product_test_tester_router
+from app.routers.submission_router import submission_router
 from app.routers.sheet_router import sheet_router
+from app.routers.tester_router import tester_router
 from app.routers.tracking_router import tracking_router
 from app.services.backup_service import start_backup_daemon
 from app.services.logging_service import initialize_logging, get_logger
@@ -60,6 +64,10 @@ def create_app() -> FastAPI:
 
     app.include_router(auth_router)
     app.include_router(admin_router)
+    app.include_router(export_router)
+    app.include_router(product_test_tester_router)
+    app.include_router(tester_router)
+    app.include_router(submission_router)
     app.include_router(sheet_router)
     app.include_router(tracking_router)
 

@@ -37,7 +37,7 @@ if "%DB_OK%"=="0" (
 
 echo.
 echo [4/5] commit...
-git commit -m "TASK 15-5 release deprecation + code sync; update handover docs, DB snapshot"
+git commit -m "TASK 15-6 finish release->round code/test sync (73 tests green); update handover docs"
 if errorlevel 1 echo [INFO] nothing to commit ^(or commit skipped^).
 
 echo.

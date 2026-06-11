@@ -14,7 +14,7 @@ from app.models import (
     ProductTestReportSnapshot,
     ProductTestResult,
     ProductTestRun,
-    ProductTestTargetDefinition,
+    ProductTestTargetUnified,
 )
 from app.services.product_test_run_service import (
     approve_product_test_report,
@@ -25,23 +25,7 @@ from app.services.product_test_run_service import (
     transition_product_test_defect_to_rejected,
 )
 
-SEEDED_TARGET_DEFINITION_IDS = [
-    "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-HRK_9000A",
-    "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-HUVITZ_HLM_9000",
-    "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-HUVITZ_HTR_TBD",
-    "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-HUVITZ_HDR_9000_OP",
-    "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-HUVITZ_HDR_9000_JUNCTION_BOX",
-    "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-HUVITZ_HDR_9000_UNKNOWN",
-    "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-HUVITZ_HDC_9100",
-    "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-MERCUSYS_MR30G",
-    "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-TBD_LENS",
-    "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-TBD_MODELAI",
-    "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-TBD_JUNCTION_BOX_POWER_CABLE",
-    "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-TBD_HDC_POWER_CABLE",
-    "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-TBD_HLM_POWER_CABLE_L_FORM_POWER_CABLE",
-    "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-TBD_OP_SIGNAL_AND_POWER_CABLE",
-    "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-TBD_HDR_SIGNAL_AND_POWER_CABLE",
-]
+SEEDED_TARGET_ID = "SQA_PRODUCT_TEST_TARGET_ID-MERCUSYS_MR30G-SN001"
 REPORT_ID = "SQA_PRODUCT_TEST_REPORT_ID-SQA_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1-FULL-001"
 
 
@@ -49,11 +33,9 @@ def _assert_seed_is_idempotent() -> None:
     with session_local() as database_session:
         seed_product_test_wifi_ap_configuration_sample_data(database_session)
         first_counts = {
-            "target_definition_count": database_session.scalar(
-                select(func.count()).select_from(ProductTestTargetDefinition).where(
-                    ProductTestTargetDefinition.product_test_target_definition_id.in_(
-                        SEEDED_TARGET_DEFINITION_IDS
-                    )
+            "target_count": database_session.scalar(
+                select(func.count()).select_from(ProductTestTargetUnified).where(
+                    ProductTestTargetUnified.product_test_target_id == SEEDED_TARGET_ID
                 )
             ),
             "run_count": database_session.scalar(
@@ -89,11 +71,9 @@ def _assert_seed_is_idempotent() -> None:
         }
         seed_product_test_wifi_ap_configuration_sample_data(database_session)
         second_counts = {
-            "target_definition_count": database_session.scalar(
-                select(func.count()).select_from(ProductTestTargetDefinition).where(
-                    ProductTestTargetDefinition.product_test_target_definition_id.in_(
-                        SEEDED_TARGET_DEFINITION_IDS
-                    )
+            "target_count": database_session.scalar(
+                select(func.count()).select_from(ProductTestTargetUnified).where(
+                    ProductTestTargetUnified.product_test_target_id == SEEDED_TARGET_ID
                 )
             ),
             "run_count": database_session.scalar(

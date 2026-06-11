@@ -57,9 +57,10 @@ ai_handover/
 | TASK 15-2 (RUN/RESULT 신 ID 매핑) | ✅ 적용 완료 (15-4에 포함) |
 | TASK 15-3 (CASE 재발급) | ✅ 적용 완료 (15-4에 포함, case 60→134) |
 | TASK 15-4 (일괄 apply) | ✅ **적용 완료** (2026-06-11). run 41 / result 375(손실0) / case 134 / procedure 339 / defect 15, integrity ok, 고아 0 |
-| TASK 15-5 (release 폐기 + 코드 동기화 + FK drift 수정) | ✅ **적용 완료** (2026-06-11). release 테이블 제거, run FK→`product_test_environment_unified`, fk_check 0, integrity ok. 코드 동기화 반영(앱 부팅·`product_test_release` 잔존 grep 검증 권장) |
+| TASK 15-5 (release 폐기 + 코드 동기화 + FK drift 수정) | ✅ **적용 완료** (2026-06-11). release 테이블 제거, run FK→`product_test_environment_unified`, fk_check 0, integrity ok |
+| TASK 15-6 (15-5 코드/테스트 동기화 마무리) | ✅ **완료** (2026-06-11, 코드/테스트만). release UI→round 전환, 고아 템플릿·옛 경로 제거, traceability 스크립트 v2화. `pytest 73 passed`, `GET /admin` 200, `product_test_release` 잔존 0 |
 
-> ✅ **v2 마이그레이션(15-1~15-5) 전부 적용 완료.** 백업: 15-4 `...task15_4_102809.db`, 15-5 `...task15_5_133636.db`.
+> ✅ **v2 마이그레이션 + 코드/테스트 동기화(15-1~15-6) 전부 완료.** 활성 프롬프트 없음. 백업: 15-4 `...task15_4_102809.db`, 15-5 `...task15_5_133636.db`.
 > ⛔ 15-2/15-3/15-4/15-5 모두 apply 완료됨. **재 dry-run·재 apply 금지** (PK 충돌·손상 위험).
 
 ---

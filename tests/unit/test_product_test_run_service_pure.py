@@ -16,5 +16,5 @@ def test_build_product_code_rejects_empty() -> None:
 
 def test_get_product_test_identifier_client_rules_keys() -> None:
     rules = get_product_test_identifier_client_rules()
-    assert "product_test_release_id" in rules
-    assert rules["product_test_release_id"].startswith("^")
+    assert "test_round_id" in rules
+    assert rules["test_round_id"].startswith("^")

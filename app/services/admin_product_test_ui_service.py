@@ -279,7 +279,9 @@ def list_product_test_id_candidates(
         raw = hints.get(name)
         return list(raw) if isinstance(raw, list) else None
 
-    if fn == "test_round_id" and action.endswith("/product-test-releases/create"):
+    if fn == "test_round_id" and (
+        action.endswith("/product-test-rounds/create") or action.rstrip("/") == "/admin"
+    ):
         upstreams = _read_strings(gv("upstream_release_id"), hint("upstream_release_id"))
         stages = _read_strings(gv("release_stage"), hint("release_stage"))
         out: list[str] = []

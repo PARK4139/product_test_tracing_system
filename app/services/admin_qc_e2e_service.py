@@ -206,21 +206,6 @@ def _run_fill_sequence(admin_url: str) -> None:
     try:
         _open_admin_page(driver, admin_url)
 
-        release_form = _find_form(driver, "/admin/product-test-releases/create")
-        _wait_merged_draft_row(driver, release_form)
-        _fill_field(release_form, "upstream_release_id", payload["upstream_release_id"])
-        _fill_field(release_form, "upstream_release_system", "Huvitz Software Release System")
-        _fill_field(release_form, "product_test_round_status", "TESTING")
-        _fill_field(
-            release_form,
-            "remark",
-            "RC 단계 WiFi·연결성 시험 베이스라인. 상용 펌웨어 1.0.x 대상.",
-        )
-        _fill_field(release_form, "test_round_id", payload["test_round_id"])
-        _fill_field(release_form, "release_stage", payload["release_stage"])
-        _wait_for_form_submission_cycle()
-        _open_admin_page(driver, admin_url)
-
         target_form = _find_form(driver, "/admin/product-test-targets/create")
         _wait_merged_draft_row(driver, target_form)
         _fill_field(target_form, "software_version", "2.1.4")

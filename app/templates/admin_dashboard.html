@@ -109,30 +109,17 @@
     <div class="admin_tab_region_body" data-admin-tab-region="primary" data-tab-aria-label="Tab View 2">
 
 <section class="card">
-    <div class="section_header_row"><h3>Test Release</h3></div>
-
-    <form method="post" action="/admin/product-test-rounds/create" class="admin_autosubmit_form">
-        <input type="hidden" name="return_to" value="/admin">
-        <div class="tester_table_wrap">
-            <table class="basic_table">
-                <thead><tr><th>선택</th><th>시험 배포 ID</th><th>상위 시험 배포 ID</th><th>상위 시스템</th><th>배포 상태</th><th>비고</th></tr></thead>
-                <tbody><tr>
-                    <td><input type="checkbox" class="admin_input_row_checkbox"></td>
-                    <td><input type="text" name="test_round_id" required></td>
-                    <td><input type="text" name="upstream_release_id" required list="admin_release_upstream_release_id_options" placeholder="예: HRK_9000A_1_1_1D"></td>
-                    <td><input type="text" name="upstream_release_system" required list="admin_release_upstream_release_system_options"></td>
-                    <input type="hidden" name="release_stage" value="RC">
-                    <td><select name="migration_status"><option value=""></option>{% for value in migration_status_values %}<option value="{{ value }}"{% if value == "DRAFT" %} selected{% endif %}>{{ value }}</option>{% endfor %}</select></td>
-                    <td><input type="text" name="remark"></td>
-                </tr></tbody>
-            </table>
+    <div class="section_header_row">
+        <h3>Test Round</h3>
+        <div class="table_action_bar">
+            <a href="/admin/product-test-trace" class="project_standard_button">Trace 보기</a>
         </div>
-    </form>
-    <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
+    </div>
+    <div class="detail_guide">v2 canonical round 목록(읽기 전용). run은 test_round_id로 연결된다.</div>
     <div class="tester_table_wrap">
         <table class="basic_table">
-            <thead><tr><th>선택</th><th>시험 배포 ID</th><th>상위 시험 배포 ID</th><th>상위 시스템</th><th>순번</th><th>배포 상태</th><th>비고</th></tr></thead>
-            <tbody>{% for row in round_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.test_round_id }}</td><td>{{ row.upstream_release_id }}</td><td>{{ row.upstream_release_system }}</td><td>{{ row.release_sequence }}</td><td><span class="status_badge status-{{ row.migration_status|lower }}">{{ row.migration_status }}</span></td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
+            <thead><tr><th>test_round_id</th><th>test_round_name</th><th>workday</th><th>start_date</th><th>end_date</th><th>migration_status</th><th>Trace</th></tr></thead>
+            <tbody>{% for row in round_rows %}<tr><td>{{ row.test_round_id }}</td><td>{{ row.test_round_name }}</td><td>{{ row.workday or '' }}</td><td>{{ row.start_date or '' }}</td><td>{{ row.end_date or '' }}</td><td><span class="status_badge status-{{ row.migration_status|lower }}">{{ row.migration_status }}</span></td><td><a href="/admin/product-test-rounds/{{ row.test_round_id }}/trace" class="project_standard_button">Trace</a></td></tr>{% endfor %}</tbody>
         </table>
     </div>
 </section>

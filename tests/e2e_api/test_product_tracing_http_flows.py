@@ -47,7 +47,7 @@ def test_pt_e2e_003_start_and_finish_run(seeded_wifi_ap_db: TestClient) -> None:
         "/tester/product-test-runs/start",
         cookies=_cookies("tester"),
         data={
-            "product_test_release_id": RELEASE_ID,
+            "test_round_id": RELEASE_ID,
             "product_test_target_id": TARGET_ID,
             "product_test_environment_id": ENV_ID,
         },
@@ -140,8 +140,8 @@ def test_admin_product_test_ui_json_api(seeded_wifi_ap_db: TestClient) -> None:
         "/admin/api/product-test/ui/id-candidates",
         cookies=cookies,
         json={
-            "form_action": "/admin/product-test-releases/create",
-            "field_name": "product_test_release_id",
+            "form_action": "/admin",
+            "field_name": "test_round_id",
             "values": {"upstream_release_id": "HRK_9000A-1.0.0", "release_stage": "RC"},
             "datalist_hints": {},
         },
