@@ -1,0 +1,42 @@
+{
+  "step": "15-4",
+  "mode": "apply",
+  "status": "APPLIED",
+  "backup_path": "C:\\Users\\wjdgn\\Downloads\\product_test_tracing_system\\data\\backups\\2026-06-11\\product_test_tracking_system.task15_4_102809.db",
+  "expected": {
+    "runs_before": 62,
+    "runs_after": 41,
+    "runs_updated": 41,
+    "runs_migrate_drop": 21,
+    "results_before": 375,
+    "results_after": 375,
+    "results_updated": 375,
+    "cases_before": 60,
+    "cases_after": 134,
+    "procedures_before": 171,
+    "procedures_after": 339,
+    "defects_total": 15,
+    "reports_total": 8,
+    "reports_release_remapped": 2,
+    "evidence_rows": 0,
+    "procedure_result_rows": 0
+  },
+  "validation": {
+    "counts": {
+      "runs": 41,
+      "results": 375,
+      "cases": 134,
+      "procedures": 339,
+      "defects": 15,
+      "reports": 8
+    },
+    "orphans": {
+      "result_to_run": 0,
+      "result_to_case": 0,
+      "procedure_to_case": 0,
+      "defect_to_result": 0,
+      "report_to_release": 0
+    },
+    "integrity_check": "ok"
+  }
+}
