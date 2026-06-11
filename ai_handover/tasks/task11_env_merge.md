@@ -1,6 +1,6 @@
 # HANDOVER 추가 — TASK 11: Environment + Environment Definition 병합 (2026-06-08)
 
-> 본 `HANDOVER.md`의 **TASK 11**. §0-1 실수 방지 수칙·§9 편집 규칙 그대로 적용.
+> 본 `ai_handover/handover_main.md`의 **TASK 11**. §0-1 실수 방지 수칙·§9 편집 규칙 그대로 적용.
 > 근거 스캔: 2026-06-08 DB (TASK 1~10 적용 후, 접두 `CONFIG-`/`CONFIG_DEF-` 상태).
 
 ---
@@ -76,5 +76,5 @@
 ---
 
 ## 메인 HANDOVER 반영 메모
-- `HANDOVER.md` §4 끝(또는 TASK 10 뒤)에 **TASK 11** 스텁 추가.
+- `ai_handover/handover_main.md` §4 끝(또는 TASK 10 뒤)에 **TASK 11** 스텁 추가.
 - 후속 정리정돈 대상(다음 병합 후보)이 더 있으면 TASK 12+로 같은 양식 사용.

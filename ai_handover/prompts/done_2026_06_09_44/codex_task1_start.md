@@ -7,9 +7,9 @@
 너는 이 저장소(`product_test_tracing_system`)의 정합성 개선 작업을 맡는다.
 
 ## 먼저 읽어라
-1. `HANDOVER.md` — 작업 지시서. **이게 단일 진실(source of truth)**.
+1. `ai_handover/handover_main.md` — 작업 지시서. **이게 단일 진실(source of truth)**.
 2. `docs/data_integrity_diagnosis_20260608.md` — 진단 근거.
-특히 `HANDOVER.md`의 **§0-1 실수 방지 수칙**, **§4 TASK 순번**, **§5 정본 토폴로지**, **§6 정책 결정**을 정독하고 시작한다.
+특히 `ai_handover/handover_main.md`의 **§0-1 실수 방지 수칙**, **§4 TASK 순번**, **§5 정본 토폴로지**, **§6 정책 결정**을 정독하고 시작한다.
 
 ## 절대 규칙 (위반 금지)
 - **한 번에 한 TASK만.** §4의 TASK 번호 순서대로(1→2→3→…) 진행. 현재 TASK의 "검증" 항목을 통과하기 전에는 다음 TASK로 넘어가지 않는다.
@@ -35,4 +35,4 @@
 ```
 
 ## 시작
-`HANDOVER.md`를 읽었음을 1줄로 확인한 뒤, **TASK 1 (정합성 진단 스크립트화)** 부터 시작하라.
+`ai_handover/handover_main.md`를 읽었음을 1줄로 확인한 뒤, **TASK 1 (정합성 진단 스크립트화)** 부터 시작하라.

@@ -7,9 +7,9 @@
 너는 이 저장소(`product_test_tracing_system`, FastAPI+SQLite, Windows)의 v2 마이그레이션 **TASK 15-4(일괄 apply)부터** 한다. 이건 전체 여정 중 **가장 위험한 단계**다.
 
 ## 먼저 읽어라 (정본)
-1. `handover_2026_06_09_task15_v2_migration.md` — TASK 15 상세 + 15-2/15-3 해소 규칙(seq 항상 부착, PLACEHOLDER TC-PR01 화이트리스트, RC1/RC1_2, legacy UNCLASSIFIED 유지). **작업 정본.**
-2. `handover_2026_06_08_master_architecture.md` 「v2 구조 결정」 + 「추가 b」.
-3. `HANDOVER.md` §0-1 실수 방지 수칙 / §5 정본 토폴로지.
+1. `ai_handover/tasks/task15_v2_migration.md` — TASK 15 상세 + 15-2/15-3 해소 규칙(seq 항상 부착, PLACEHOLDER TC-PR01 화이트리스트, RC1/RC1_2, legacy UNCLASSIFIED 유지). **작업 정본.**
+2. `ai_handover/master_architecture.md` 「v2 구조 결정」 + 「추가 b」.
+3. `ai_handover/handover_main.md` §0-1 실수 방지 수칙 / §5 정본 토폴로지.
 4. dry-run 산출물: `docs/task15_2_dryrun.json`, `docs/task15_3_dryrun.json`.
 
 ## 현재 상태 (적용 완료/확정)

@@ -1,6 +1,6 @@
 # HANDOVER 추가 — TASK 15: release→run v2 구조 마이그레이션 설계 (2026-06-09)
 
-> 마스터 `handover_2026_06_08_master_architecture.md` 「v2 구조 결정」의 [열린 항목 2] 구현 설계.
+> 마스터 `ai_handover/master_architecture.md` 「v2 구조 결정」의 [열린 항목 2] 구현 설계.
 > §0-1 수칙·§9 편집 규칙. **대규모·파괴적 — dry-run→승인→백업 필수.**
 
 

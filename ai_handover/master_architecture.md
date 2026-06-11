@@ -106,7 +106,7 @@ Defect ──(result_id)──→ Results        Report ──(release_id)──
 ---
 
 ## 8. 메인 HANDOVER 반영
-- `HANDOVER.md` 상단(§0 뒤)에 본 마스터 요약 + 이 파일 링크 추가.
+- `ai_handover/handover_main.md` 상단(§0 뒤)에 본 마스터 요약 + 이 파일 링크 추가.
 - 개별 TASK(11/12/13/14, 7~9)는 모두 본 목표의 부분작업으로 정렬.
 
 ---
@@ -166,7 +166,7 @@ ROUND_{캠페인}
 
 1. ✅ **[해결 2026-06-09] 양산 라운드 = 캠페인 2개** `ROUND-WIFI_SMOKE`, `ROUND-WBS`. 8개 device shell 삭제, 제품·버전은 RUN으로. 차수는 보류.
    - **[해결 2026-06-09] `WIFI_1_1_1D` 계열(HRK 1.1.1D) 캠페인 매핑**: WIFI 시험 → **`WIFI_SMOKE`**, WBS 변형(`WIFI_1_1_1D_WBS`) → **`WBS`**. 빈 잘못라벨 `HDR_9000_1_1_8-WIFI_1_1_1D` 트리 4건은 WIFI_SMOKE로 임시 remap 후 15-4에서 삭제. → 15-1 UNMAPPED 0.
-2. ✅ **[설계완료 → TASK 15] release→run v2 마이그레이션.** 상세: `handover_2026_06_09_task15_v2_migration.md`. 선행: TASK 13 ✅완료. **AP→ROUTER는 result `[연결구성]` 레벨에서 이미 충족(TASK 6) → STEP D(run-PK 치환) 생략 확정(2026-06-09).** TASK 15가 토폴로지를 result `[연결구성]`(ROUTER 정본)에서 뽑아 run/result ID 전체 재작성.
+2. ✅ **[설계완료 → TASK 15] release→run v2 마이그레이션.** 상세: `ai_handover/tasks/task15_v2_migration.md`. 선행: TASK 13 ✅완료. **AP→ROUTER는 result `[연결구성]` 레벨에서 이미 충족(TASK 6) → STEP D(run-PK 치환) 생략 확정(2026-06-09).** TASK 15가 토폴로지를 result `[연결구성]`(ROUTER 정본)에서 뽑아 run/result ID 전체 재작성.
 3. ✅ **[해결 2026-06-09] RC = S/W 버전 풀네임의 일부** (별도 날짜 컬럼/정규화 X). 소프트웨어 풀네임 = `{버전} RC{n}` 한 문자열(예: `1.1.8D RC1`). 회사가 RC가 아니라 BUILD DATE로 관리하므로, RUN id의 version 토막에 **풀네임 문자열 그대로** 넣음. 원본 회차 유지·재번호 X.
 4. ✅ **[해결 2026-06-09] WIFI_2ST = WIFI_2ND 오타 확정.** 정본 토큰은 `WIFI_2ND`.
 

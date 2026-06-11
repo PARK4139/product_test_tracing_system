@@ -7,10 +7,10 @@
 너는 이 저장소(`product_test_tracing_system`, FastAPI+SQLite, Windows)의 v2 마이그레이션 **TASK 15-3부터** 이어서 한다.
 
 ## 먼저 읽어라 (정본 순서)
-1. `handover_2026_06_08_master_architecture.md` — 최종 구조 정본(「v2 구조 결정」+「추가 b」). 특히 **§맨 끝 「15-2 충돌/legacy 해결 규칙」, 「15-3 충돌/TC-PR01 해소 규칙」**.
-   (주의: 이 파일이 너무 길면, v2 관련 핵심은 `handover_2026_06_09_task15_v2_migration.md`에 다 정리돼 있다.)
-2. `handover_2026_06_09_task15_v2_migration.md` — **TASK 15 상세 + 15-2/15-3 해소 규칙**. 이게 작업 정본.
-3. `HANDOVER.md` §0-1 실수 방지 수칙 / §5 정본 토폴로지.
+1. `ai_handover/master_architecture.md` — 최종 구조 정본(「v2 구조 결정」+「추가 b」). 특히 **§맨 끝 「15-2 충돌/legacy 해결 규칙」, 「15-3 충돌/TC-PR01 해소 규칙」**.
+   (주의: 이 파일이 너무 길면, v2 관련 핵심은 `ai_handover/tasks/task15_v2_migration.md`에 다 정리돼 있다.)
+2. `ai_handover/tasks/task15_v2_migration.md` — **TASK 15 상세 + 15-2/15-3 해소 규칙**. 이게 작업 정본.
+3. `ai_handover/handover_main.md` §0-1 실수 방지 수칙 / §5 정본 토폴로지.
 
 ## 현재 상태 (적용 완료)
 - TASK 1~14, TASK 11/12/12-B/13 완료.

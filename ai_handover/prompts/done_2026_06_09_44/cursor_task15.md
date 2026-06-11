@@ -7,9 +7,9 @@
 너는 이 저장소(`product_test_tracing_system`)의 v2 전환 **TASK 15(최종 대규모 마이그레이션)**를 한다. STEP D는 **생략 확정**(아래 이유).
 
 ## 먼저 읽어라
-1. `handover_2026_06_08_master_architecture.md` — 최종 구조 정본(「v2 구조 결정」+「추가(b)」).
-2. `handover_2026_06_09_task15_v2_migration.md` — **TASK 15 상세 설계(이걸 따른다)**.
-3. `HANDOVER.md` §0-1 수칙 / §5 정본 토폴로지 / §6 정책.
+1. `ai_handover/master_architecture.md` — 최종 구조 정본(「v2 구조 결정」+「추가(b)」).
+2. `ai_handover/tasks/task15_v2_migration.md` — **TASK 15 상세 설계(이걸 따른다)**.
+3. `ai_handover/handover_main.md` §0-1 수칙 / §5 정본 토폴로지 / §6 정책.
 
 ## 현재 상태 (완료분)
 - TASK 1~14, TASK 11/12/12-B/13 완료.

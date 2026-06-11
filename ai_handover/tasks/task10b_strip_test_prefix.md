@@ -1,6 +1,6 @@
 # HANDOVER 추가 — ID `TEST_` 접두 제거 (2026-06-08 20:15)
 
-> 본 HANDOVER(`HANDOVER.md`)의 **TASK 10**으로 추가. §0-1 실수 방지 수칙·§9 편집 규칙 그대로 적용.
+> 본 HANDOVER(`ai_handover/handover_main.md`)의 **TASK 10**으로 추가. §0-1 실수 방지 수칙·§9 편집 규칙 그대로 적용.
 > 근거 스캔: 2026-06-08 DB(`data/product_test_tracking_system.db`, WAL checkpoint 후).
 
 ---
@@ -86,5 +86,5 @@ ID 값 시작에 붙은 엔티티 타입 접두 `TEST_`를 제거. 예) `TEST_CA
 ---
 
 ## 메인 HANDOVER 반영 메모
-- `HANDOVER.md` §4 TASK 목록 끝에 **TASK 10** 으로 편입(권장 위치: TASK 6 이후).
+- `ai_handover/handover_main.md` §4 TASK 목록 끝에 **TASK 10** 으로 편입(권장 위치: TASK 6 이후).
 - §0-1 수칙 5(dry-run→승인→백업)·6(FK 동시 UPDATE)·10(파괴적 작업 금지)이 그대로 적용됨.

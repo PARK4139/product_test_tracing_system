@@ -1,6 +1,6 @@
 # HANDOVER 추가 — TASK 12: Target 병합 / TASK 13: run→target 재연결 진단 (2026-06-08)
 
-> 본 `HANDOVER.md`의 **TASK 12·13**. §0-1 실수 방지 수칙·§9 편집 규칙 그대로 적용.
+> 본 `ai_handover/handover_main.md`의 **TASK 12·13**. §0-1 실수 방지 수칙·§9 편집 규칙 그대로 적용.
 > 근거 스캔: 2026-06-08 DB (TASK 1~10 적용 후, 접두 `TARGET-`/`TARGET_DEF-`).
 
 ---
@@ -106,5 +106,5 @@ run 62건이 **target 1대만** 가리키는 원인 규명 + 올바른 DUT 재�
 ---
 
 ## 메인 HANDOVER 반영 메모
-- `HANDOVER.md` §4에 **TASK 12·13** 스텁 추가.
+- `ai_handover/handover_main.md` §4에 **TASK 12·13** 스텁 추가.
 - 정리정돈 양식 동일. 다음 후보(예: case/procedure, report 계열) 있으면 TASK 14+로.

@@ -1,0 +1,308 @@
+{
+  "step": "15-4",
+  "mode": "dry-run",
+  "status": "READY",
+  "meta": {
+    "copy_path": "C:\\Users\\wjdgn\\Downloads\\product_test_tracing_system\\task15_4_bijclh4c\\product_test_tracking_system.db",
+    "mode": "dry-run"
+  },
+  "summary": {
+    "runs_before": 62,
+    "runs_after": 41,
+    "runs_updated": 41,
+    "runs_migrate_drop": 21,
+    "results_before": 375,
+    "results_after": 375,
+    "results_updated": 375,
+    "cases_before": 60,
+    "cases_after": 134,
+    "procedures_before": 171,
+    "procedures_after": 339,
+    "defects_total": 15,
+    "reports_total": 8,
+    "reports_release_remapped": 2,
+    "evidence_rows": 0,
+    "procedure_result_rows": 0
+  },
+  "orphans": {
+    "result_to_run": 0,
+    "result_to_case": 0,
+    "procedure_to_case": 0,
+    "defect_to_result": 0,
+    "defect_retest_to_result": 0,
+    "report_to_release": 0,
+    "report_to_round": 0,
+    "report_to_run": 0
+  },
+  "validation": {
+    "result_loss_zero": true,
+    "defects_all_15": true,
+    "cases_after_134": true,
+    "procedures_after_339": true,
+    "migrate_drop_21": true,
+    "all_orphans_zero": true,
+    "pk_collisions_zero": true,
+    "ap_tokens_zero": true
+  },
+  "report_release_remap": {
+    "RELEASE-HRK_9000A_1_1_1A-RC1": "RELEASE-HRK_9000A_1_1_1A-WIFI_1ST-RUN_RC1",
+    "RELEASE-HRK_9000A_1_1_1A-RC2": "RELEASE-HRK_9000A_1_1_1A-WIFI_1ST-RUN_RC2"
+  },
+  "report_mappings": [
+    {
+      "product_test_report_id": "RPT-TEST_REPORT_WIFI_TEST_1ST_260430",
+      "old_release_id": "RELEASE-HRK_9000A_1_1_1A-RC1",
+      "new_release_id": "RELEASE-HRK_9000A_1_1_1A-WIFI_1ST-RUN_RC1",
+      "release_changed": true,
+      "resolved_test_round_id": "ROUND-WIFI_1ST"
+    },
+    {
+      "product_test_report_id": "RPT-TEST_REPORT_WIFI_TEST_1ST_260513",
+      "old_release_id": "RELEASE-HRK_9000A_1_1_1A-RC2",
+      "new_release_id": "RELEASE-HRK_9000A_1_1_1A-WIFI_1ST-RUN_RC2",
+      "release_changed": true,
+      "resolved_test_round_id": "ROUND-WIFI_1ST"
+    },
+    {
+      "product_test_report_id": "RPT-TBD_REPORT_NO2",
+      "old_release_id": "RELEASE-TBD_REPORT_NO2",
+      "new_release_id": "RELEASE-TBD_REPORT_NO2",
+      "release_changed": false,
+      "resolved_test_round_id": "ROUND-WIFI_1ST_IMPROVE"
+    },
+    {
+      "product_test_report_id": "RPT-TEST_REPORT_WIFI_TEST_2ND_260522_1505",
+      "old_release_id": "RELEASE-HRK_9000A_1_1_1A-RC3",
+      "new_release_id": "RELEASE-HRK_9000A_1_1_1A-RC3",
+      "release_changed": false,
+      "resolved_test_round_id": "ROUND-WIFI_2ND"
+    },
+    {
+      "product_test_report_id": "RPT-TBD_REPORT_NO4",
+      "old_release_id": "RELEASE-TBD_REPORT_NO4",
+      "new_release_id": "RELEASE-TBD_REPORT_NO4",
+      "release_changed": false,
+      "resolved_test_round_id": "ROUND-WIFI_2ND_IMPROVE"
+    },
+    {
+      "product_test_report_id": "RPT-TEST_REPORT_WIFI_DOWNGRADE_TEST_260526_1454",
+      "old_release_id": "RELEASE-HRK_9000A_1_1_0A-RC1",
+      "new_release_id": "RELEASE-HRK_9000A_1_1_0A-RC1",
+      "release_changed": false,
+      "resolved_test_round_id": "ROUND-DOWNGRADE"
+    },
+    {
+      "product_test_report_id": "RPT-TEST_REPORT_HRK_9000A_1_1_1D_WIFI_TEST_260526",
+      "old_release_id": "RELEASE-HRK_9000A_1_1_1D-RC1",
+      "new_release_id": "RELEASE-HRK_9000A_1_1_1D-RC1",
+      "release_changed": false,
+      "resolved_test_round_id": "ROUND-WIFI_SMOKE"
+    },
+    {
+      "product_test_report_id": "RPT-TBD_REPORT_NOTBD",
+      "old_release_id": "RELEASE-TBD_REPORT_NOTBD",
+      "new_release_id": "RELEASE-TBD_REPORT_NOTBD",
+      "release_changed": false,
+      "resolved_test_round_id": "ROUND-WBS"
+    }
+  ],
+  "defect_mappings": [
+    {
+      "product_test_defect_id": "DEFECT-SQA_ISSUE_20260507_003-RNO00134-01",
+      "old_result_id": "RESULT-TEST_REPORT_WIFI_TEST_1ST_260430-NO00134",
+      "new_result_id": "RESULT_HDC_9100_1_0_5A_RC1_1HDR_1ROUTER_1HDC-NO00134",
+      "old_retest_result_id": null,
+      "new_retest_result_id": null
+    },
+    {
+      "product_test_defect_id": "DEFECT-SQA_ISSUE_20260507_003-RNO00140-01",
+      "old_result_id": "RESULT-TEST_REPORT_WIFI_TEST_1ST_260430-NO00140",
+      "new_result_id": "RESULT_HDC_9100_1_0_5A_RC1_1HDR_1ROUTER_1HDC-NO00140",
+      "old_retest_result_id": null,
+      "new_retest_result_id": null
+    },
+    {
+      "product_test_defect_id": "DEFECT-SQA_ISSUE_20260507_003-RNO00145-01",
+      "old_result_id": "RESULT-TEST_REPORT_WIFI_TEST_1ST_260430-NO00145",
+      "new_result_id": "RESULT_HDC_9100_1_0_5A_RC1_1HDR_1ROUTER_1HDC-NO00145",
+      "old_retest_result_id": null,
+      "new_retest_result_id": null
+    },
+    {
+      "product_test_defect_id": "DEFECT-SQA_ISSUE_20260507_003-RNO00150-01",
+      "old_result_id": "RESULT-TEST_REPORT_WIFI_TEST_1ST_260430-NO00150",
+      "new_result_id": "RESULT_HDC_9100_1_0_5A_RC1_1HDR_1ROUTER_1HDC-NO00150",
+      "old_retest_result_id": null,
+      "new_retest_result_id": null
+    },
+    {
+      "product_test_defect_id": "DEFECT-SQA_ISSUE_20260507_004-RNO00157-01",
+      "old_result_id": "RESULT-TEST_REPORT_WIFI_TEST_1ST_260513-NO00157",
+      "new_result_id": "RESULT_HRK_9000A_1_1_1A_RC2_1HRK_1ROUTER_4HDR-NO00157",
+      "old_retest_result_id": null,
+      "new_retest_result_id": null
+    },
+    {
+      "product_test_defect_id": "DEFECT-SQA_ISSUE_20260518_001-RNO00217-01",
+      "old_result_id": "RESULT-TEST_REPORT_WIFI_TEST_1ST_260513-NO00217",
+      "new_result_id": "RESULT_HLM_9000_1_1_14B_RC2_1HLM_1ROUTER_4HDR-NO00217",
+      "old_retest_result_id": null,
+      "new_retest_result_id": null
+    },
+    {
+      "product_test_defect_id": "DEFECT-SQA_ISSUE_20260518_006-RNO00217-02",
+      "old_result_id": "RESULT-TEST_REPORT_WIFI_TEST_1ST_260513-NO00217",
+      "new_result_id": "RESULT_HLM_9000_1_1_14B_RC2_1HLM_1ROUTER_4HDR-NO00217",
+      "old_retest_result_id": null,
+      "new_retest_result_id": null
+    },
+    {
+      "product_test_defect_id": "DEFECT-SQA_ISSUE_20260518_002-RNO00230-01",
+      "old_result_id": "RESULT-TEST_REPORT_WIFI_TEST_1ST_260513-NO00230",
+      "new_result_id": "RESULT_HTR_1A_1_1_8_RC2_1HTR_1ROUTER_2HDR-NO00230",
+      "old_retest_result_id": null,
+      "new_retest_result_id": null
+    },
+    {
+      "product_test_defect_id": "DEFECT-SQA_ISSUE_20260518_003-RNO00249-01",
+      "old_result_id": "RESULT-TEST_REPORT_WIFI_TEST_1ST_260513-NO00249",
+      "new_result_id": "RESULT_HDR_9000_1_1_7E_RC2_4HDR_1ROUTER-NO00249",
+      "old_retest_result_id": null,
+      "new_retest_result_id": null
+    },
+    {
+      "product_test_defect_id": "DEFECT-SQA_ISSUE_20260518_004-RNO00253-01",
+      "old_result_id": "RESULT-TEST_REPORT_WIFI_TEST_1ST_260513-NO00253",
+      "new_result_id": "RESULT_HDR_9000_1_1_7E_RC2_1HRK_1ROUTER_1HTR_1HLM_4HDR-NO00253",
+      "old_retest_result_id": null,
+      "new_retest_result_id": null
+    },
+    {
+      "product_test_defect_id": "DEFECT-SQA_ISSUE_20260518_005-RNO00258-01",
+      "old_result_id": "RESULT-TEST_REPORT_WIFI_TEST_1ST_260513-NO00258",
+      "new_result_id": "RESULT_HDR_9000_1_1_7E_RC2_4HDR_1ROUTER_1HDC-NO00258",
+      "old_retest_result_id": null,
+      "new_retest_result_id": null
+    },
+    {
+      "product_test_defect_id": "DEFECT-SQA_ISSUE_20260519_004-RNO00318-01",
+      "old_result_id": "RESULT-TEST_REPORT_WIFI_TEST_2ND_260522_1505-NO00318",
+      "new_result_id": "RESULT_HDR_9000_1_1_7E_RC1_1HDR_25ROUTER-NO00318",
+      "old_retest_result_id": null,
+      "new_retest_result_id": null
+    },
+    {
+      "product_test_defect_id": "DEFECT-SQA_ISSUE_20260519_003-RNO00334-01",
+      "old_result_id": "RESULT-TEST_REPORT_WIFI_TEST_2ND_260522_1505-NO00334",
+      "new_result_id": "RESULT_HTR_1A_1_1_8_RC1_2_1HTR_25ROUTER_1HDR-NO00334",
+      "old_retest_result_id": null,
+      "new_retest_result_id": null
+    },
+    {
+      "product_test_defect_id": "DEFECT-SQA_ISSUE_20260519_001-RNO00338-01",
+      "old_result_id": "RESULT-TEST_REPORT_WIFI_TEST_2ND_260522_1505-NO00338",
+      "new_result_id": "RESULT_HDR_9000_1_1_7E_RC1_2_1HDR_25ROUTER_1HDC-NO00338",
+      "old_retest_result_id": null,
+      "new_retest_result_id": null
+    },
+    {
+      "product_test_defect_id": "DEFECT-SQA_ISSUE_20260519_002-RNO00363-01",
+      "old_result_id": "RESULT-TEST_REPORT_WIFI_TEST_2ND_260522_1505-NO00363",
+      "new_result_id": "RESULT_HDR_9000_1_1_7E_RC1_2_1HDR_25ROUTER_1HDC-NO00363",
+      "old_retest_result_id": null,
+      "new_retest_result_id": null
+    }
+  ],
+  "apply_notes": {
+    "transaction": "single transaction",
+    "release_table": "retained in 15-4; removed in 15-5"
+  },
+  "samples": {
+    "run": [
+      {
+        "old_run_id": "RUN-TEST_REPORT_HRK_9000A_1_1_1D_WIFI_TEST_260526-CFG_TEST_CONFIG_2_4GHz_____1AP_nHDR_20260512_001",
+        "new_run_id": "RUN_HRK_9000A_1_1_1D_RC1_UNCLASSIFIED",
+        "old_result_id": "RESULT-TEST_REPORT_HRK_9000A_1_1_1D_WIFI_TEST_260526-NO00382",
+        "new_result_id": "RESULT_HRK_9000A_1_1_1D_RC1_UNCLASSIFIED-NO00382"
+      },
+      {
+        "old_run_id": "RUN-TEST_REPORT_WIFI_DOWNGRADE_TEST_260526_1454-CFG_TEST_CONFIG_5GHz_____20AP_4HDR_TARGET_Wi_Fi_________________20260526_001",
+        "new_run_id": "RUN_HRK_9000A_1_1_0A_RC1_UNCLASSIFIED",
+        "old_result_id": "RESULT-TEST_REPORT_WIFI_DOWNGRADE_TEST_260526_1454-NO00370",
+        "new_result_id": "RESULT_HRK_9000A_1_1_0A_RC1_UNCLASSIFIED-NO00370"
+      },
+      {
+        "old_run_id": "RUN-TEST_REPORT_WIFI_TEST_2ND_260522_1505-CFG_TEST_CONFIG_5GHz_____25AP_1HDR_TARGET_AP_GENERAL_POWER_________20260512_001",
+        "new_run_id": "RUN_HRK_9000A_1_1_1A_RC1_UNCLASSIFIED",
+        "old_result_id": "RESULT-TEST_REPORT_WIFI_TEST_2ND_260522_1505-NO00336",
+        "new_result_id": "RESULT_HRK_9000A_1_1_1A_RC1_UNCLASSIFIED-NO00336"
+      },
+      {
+        "old_run_id": "RUN-WIFI_1ST-1AP_1HDC-RC1-HDC",
+        "new_run_id": "RUN_HDC_9100_1_0_5A_RC1_1HDC_1ROUTER",
+        "old_result_id": "RESULT-TEST_REPORT_WIFI_TEST_1ST_260430-NO00119",
+        "new_result_id": "RESULT_HDC_9100_1_0_5A_RC1_1HDC_1ROUTER-NO00119"
+      },
+      {
+        "old_run_id": "RUN-WIFI_1ST-1AP_1HDC-RC2-HDC",
+        "new_run_id": "RUN_HDC_9100_1_0_5A_RC2_1HDC_1ROUTER",
+        "old_result_id": "RESULT-TEST_REPORT_WIFI_TEST_1ST_260513-NO00266",
+        "new_result_id": "RESULT_HDC_9100_1_0_5A_RC2_1HDC_1ROUTER-NO00266"
+      }
+    ],
+    "defect": [
+      {
+        "product_test_defect_id": "DEFECT-SQA_ISSUE_20260507_003-RNO00134-01",
+        "old_result_id": "RESULT-TEST_REPORT_WIFI_TEST_1ST_260430-NO00134",
+        "new_result_id": "RESULT_HDC_9100_1_0_5A_RC1_1HDR_1ROUTER_1HDC-NO00134",
+        "old_retest_result_id": null,
+        "new_retest_result_id": null
+      },
+      {
+        "product_test_defect_id": "DEFECT-SQA_ISSUE_20260507_003-RNO00140-01",
+        "old_result_id": "RESULT-TEST_REPORT_WIFI_TEST_1ST_260430-NO00140",
+        "new_result_id": "RESULT_HDC_9100_1_0_5A_RC1_1HDR_1ROUTER_1HDC-NO00140",
+        "old_retest_result_id": null,
+        "new_retest_result_id": null
+      },
+      {
+        "product_test_defect_id": "DEFECT-SQA_ISSUE_20260507_003-RNO00145-01",
+        "old_result_id": "RESULT-TEST_REPORT_WIFI_TEST_1ST_260430-NO00145",
+        "new_result_id": "RESULT_HDC_9100_1_0_5A_RC1_1HDR_1ROUTER_1HDC-NO00145",
+        "old_retest_result_id": null,
+        "new_retest_result_id": null
+      },
+      {
+        "product_test_defect_id": "DEFECT-SQA_ISSUE_20260507_003-RNO00150-01",
+        "old_result_id": "RESULT-TEST_REPORT_WIFI_TEST_1ST_260430-NO00150",
+        "new_result_id": "RESULT_HDC_9100_1_0_5A_RC1_1HDR_1ROUTER_1HDC-NO00150",
+        "old_retest_result_id": null,
+        "new_retest_result_id": null
+      },
+      {
+        "product_test_defect_id": "DEFECT-SQA_ISSUE_20260507_004-RNO00157-01",
+        "old_result_id": "RESULT-TEST_REPORT_WIFI_TEST_1ST_260513-NO00157",
+        "new_result_id": "RESULT_HRK_9000A_1_1_1A_RC2_1HRK_1ROUTER_4HDR-NO00157",
+        "old_retest_result_id": null,
+        "new_retest_result_id": null
+      }
+    ],
+    "report": [
+      {
+        "product_test_report_id": "RPT-TEST_REPORT_WIFI_TEST_1ST_260430",
+        "old_release_id": "RELEASE-HRK_9000A_1_1_1A-RC1",
+        "new_release_id": "RELEASE-HRK_9000A_1_1_1A-WIFI_1ST-RUN_RC1",
+        "release_changed": true,
+        "resolved_test_round_id": "ROUND-WIFI_1ST"
+      },
+      {
+        "product_test_report_id": "RPT-TEST_REPORT_WIFI_TEST_1ST_260513",
+        "old_release_id": "RELEASE-HRK_9000A_1_1_1A-RC2",
+        "new_release_id": "RELEASE-HRK_9000A_1_1_1A-WIFI_1ST-RUN_RC2",
+        "release_changed": true,
+        "resolved_test_round_id": "ROUND-WIFI_1ST"
+      }
+    ]
+  },
+  "blocked_reason": null
+}

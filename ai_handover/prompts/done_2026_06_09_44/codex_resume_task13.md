@@ -7,10 +7,10 @@
 너는 이 저장소(`product_test_tracing_system`)의 v2 구조 전환 작업을 이어서 한다. **TASK 13 진단 재생성부터.**
 
 ## 먼저 읽어라 (정본 순서)
-1. `handover_2026_06_08_master_architecture.md` — **최종 목표 구조 정본.** 특히 「v2 구조 결정」 + 「v2 구조 결정 추가(b)」. (Release 엔티티 폐기 → ROUND→RUN→RESULT, CASE/RC/양산 규칙)
-2. `HANDOVER.md` — §0-0 목표, §0-1 실수 방지 수칙, §4 TASK, §5 정본 토폴로지, §6 정책.
-3. `handover_2026_06_08_task12_target_merge.md` — **TASK 13 정정 규칙(필독)**.
-4. `handover_2026_06_09_task15_v2_migration.md` — TASK 15(최종 목표) 설계.
+1. `ai_handover/master_architecture.md` — **최종 목표 구조 정본.** 특히 「v2 구조 결정」 + 「v2 구조 결정 추가(b)」. (Release 엔티티 폐기 → ROUND→RUN→RESULT, CASE/RC/양산 규칙)
+2. `ai_handover/handover_main.md` — §0-0 목표, §0-1 실수 방지 수칙, §4 TASK, §5 정본 토폴로지, §6 정책.
+3. `ai_handover/tasks/task12_13_target_merge.md` — **TASK 13 정정 규칙(필독)**.
+4. `ai_handover/tasks/task15_v2_migration.md` — TASK 15(최종 목표) 설계.
 
 ## 절대 규칙
 - **한 번에 한 단계.** 각 단계 검증 통과 전 다음 금지.
@@ -32,7 +32,7 @@
 - 결과를 새 `docs/run_target_relink_diagnosis_<오늘날짜>.md`로 저장하고 **사용자 검토 대기(멈춤).**
 
 ### STEP B — TASK 12-B 마무리 (선행 정리)
-- `handover_2026_06_08_task12b_finalize.md` 따라: models.py에 `ProductTestTargetUnified` 추가·구 클래스 2개 제거, 서비스/대시보드 repoint, 구 빈 테이블 DROP, 화면 통합. dry-run→승인→apply.
+- `ai_handover/tasks/task12b_finalize.md` 따라: models.py에 `ProductTestTargetUnified` 추가·구 클래스 2개 제거, 서비스/대시보드 repoint, 구 빈 테이블 DROP, 화면 통합. dry-run→승인→apply.
 
 ### STEP C — TASK 13 **적용** (승인 후)
 - STEP A 매핑표 사용자 승인 후, `run.product_test_target_id`를 정정 target으로 UPDATE. dry-run→승인→백업→apply.
@@ -42,7 +42,7 @@
 - run id·result `[연결구성]`의 `1AP/25AP` → `1ROUTER/25ROUTER` 정규화(§5·§6 규칙). dry-run→승인→apply.
 
 ### STEP E — TASK 15 v2 마이그레이션
-- `handover_2026_06_09_task15_v2_migration.md` 전체 따라 실행. (release 폐기 → ROUND→RUN→RESULT, RUN id=`RUN_{제품}_{S/W풀네임}_{토폴로지}`, CASE=`CASE_{campaign}_{topology}_{scenario}` 재발급 포함)
+- `ai_handover/tasks/task15_v2_migration.md` 전체 따라 실행. (release 폐기 → ROUND→RUN→RESULT, RUN id=`RUN_{제품}_{S/W풀네임}_{토폴로지}`, CASE=`CASE_{campaign}_{topology}_{scenario}` 재발급 포함)
 - 최고 위험. 백업+dry-run 충분 리뷰+승인 필수.
 
 ## 보고 형식 (단계마다)

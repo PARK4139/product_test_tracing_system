@@ -1,6 +1,6 @@
 # HANDOVER 추가 — TASK 14: release 고아/NULL-round 안전 정리 (2026-06-08)
 
-> 본 `HANDOVER.md`의 **TASK 14**. §0-1 실수 방지 수칙·§9 편집 규칙 적용.
+> 본 `ai_handover/handover_main.md`의 **TASK 14**. §0-1 실수 방지 수칙·§9 편집 규칙 적용.
 > 근거 스캔: 2026-06-08 DB (TASK 1~10 적용 후).
 
 ---
@@ -68,4 +68,4 @@
 ---
 
 ## 메인 HANDOVER 반영 메모
-- `HANDOVER.md` §4에 **TASK 14** 스텁 추가.
+- `ai_handover/handover_main.md` §4에 **TASK 14** 스텁 추가.

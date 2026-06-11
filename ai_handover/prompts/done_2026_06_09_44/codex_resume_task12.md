@@ -7,9 +7,9 @@
 너는 이 저장소(`product_test_tracing_system`)의 정합성/구조 정돈 작업을 **TASK 12부터** 이어서 한다.
 
 ## 먼저 읽어라 (정본 순서)
-1. `handover_2026_06_08_master_architecture.md` — **최종 목표 구조(7 통합 탭 + Round까지 정합성 체인). 모든 작업이 이걸 향함.**
-2. `HANDOVER.md` — §0-0 목표요약, §0-1 실수 방지 수칙, §4 TASK 순번, §5 정본 토폴로지, §6 정책.
-3. 개별 스펙: `handover_2026_06_08_task12_target_merge.md`(TASK 12·13), `handover_2026_06_08_task14_release_cleanup.md`(TASK 14).
+1. `ai_handover/master_architecture.md` — **최종 목표 구조(7 통합 탭 + Round까지 정합성 체인). 모든 작업이 이걸 향함.**
+2. `ai_handover/handover_main.md` — §0-0 목표요약, §0-1 실수 방지 수칙, §4 TASK 순번, §5 정본 토폴로지, §6 정책.
+3. 개별 스펙: `ai_handover/tasks/task12_13_target_merge.md`(TASK 12·13), `ai_handover/tasks/task14_release_cleanup.md`(TASK 14).
 
 ## 진행 상태
 - TASK 1~10: 완료.

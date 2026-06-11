@@ -7,10 +7,10 @@
 너는 이 저장소(`product_test_tracing_system`, FastAPI+SQLite, Windows)의 v2 구조 전환을 **STEP D부터** 이어서 한다. 지금까지 TASK 1~13 + STEP B/C는 완료됐다.
 
 ## 먼저 읽어라 (정본 순서)
-1. `handover_2026_06_08_master_architecture.md` — **최종 목표 구조 정본**. 「v2 구조 결정」 + 「v2 구조 결정 추가(b)」 포함. (release 엔티티 폐기 → ROUND→RUN→RESULT→CASE)
-2. `HANDOVER.md` — §0-0 목표, §0-1 실수 방지 수칙, §4 TASK, §5 정본 토폴로지, §6 정책.
-3. `handover_2026_06_08_task12_target_merge.md` — TASK 13 규칙(완료, 참고).
-4. `handover_2026_06_09_task15_v2_migration.md` — TASK 15(다음 큰 단계) 설계.
+1. `ai_handover/master_architecture.md` — **최종 목표 구조 정본**. 「v2 구조 결정」 + 「v2 구조 결정 추가(b)」 포함. (release 엔티티 폐기 → ROUND→RUN→RESULT→CASE)
+2. `ai_handover/handover_main.md` — §0-0 목표, §0-1 실수 방지 수칙, §4 TASK, §5 정본 토폴로지, §6 정책.
+3. `ai_handover/tasks/task12_13_target_merge.md` — TASK 13 규칙(완료, 참고).
+4. `ai_handover/tasks/task15_v2_migration.md` — TASK 15(다음 큰 단계) 설계.
 
 ## 현재 상태 (완료분)
 - TASK 1~10 적용 완료(접두 정리: CASE-/RELEASE-/ROUND-/CONFIG-/TARGET-, TEST_REPORT는 손대지 않음).
@@ -35,7 +35,7 @@
 - 검증: 치환 후 `[연결구성]`·run/result id에 `AP` 토큰 0(보조장비명 등 정당한 예외 제외), FK 고아 0(run→target_unified, result→run), 앱 부팅 `GET /admin` 200.
 
 ## STEP E — TASK 15 v2 마이그레이션 (STEP D 승인 후, 별도)
-- `handover_2026_06_09_task15_v2_migration.md` 전체 따라. release 엔티티 폐기 → ROUND→RUN→RESULT.
+- `ai_handover/tasks/task15_v2_migration.md` 전체 따라. release 엔티티 폐기 → ROUND→RUN→RESULT.
 - RUN id=`RUN_{제품}_{S/W풀네임}_{토폴로지}`(S/W풀네임=버전+RC 한 덩어리), RESULT 미러, CASE=`CASE_{campaign}_{topology}_{scenario}`(DUT=ROUTER앞 토큰 추론, campaign별 Case 복제), Defect FK 동시 갱신, report 재연결.
 - 최고 위험. 반드시 dry-run 충분 리뷰 + 승인 + 백업.
 
