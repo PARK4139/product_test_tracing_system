@@ -13,13 +13,13 @@
     let multiEditPersistInFlight = false;
 
     const ADMIN_OUTPUT_TABLE_CONFIG = {
-        "/admin/product-test-releases/create": {
-            entityType: "product_test_release",
+        "/admin/product-test-rounds/create": {
+            entityType: "product_test_round",
             idColumnIndex: 1,
             fieldsByIndex: {
                 2: "upstream_release_id",
                 3: "upstream_release_system",
-                5: "product_test_release_status",
+                5: "product_test_round_status",
                 6: "remark",
             },
         },

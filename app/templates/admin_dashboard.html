@@ -6,10 +6,10 @@
 {% endif %}
 
 <datalist id="admin_release_upstream_release_id_options">
-    {% for row in release_rows %}{% if row.upstream_release_id %}<option value="{{ row.upstream_release_id }}"></option>{% endif %}{% endfor %}
+    {% for row in round_rows %}{% if row.upstream_release_id %}<option value="{{ row.upstream_release_id }}"></option>{% endif %}{% endfor %}
 </datalist>
 <datalist id="admin_release_upstream_release_system_options">
-    {% for row in release_rows %}{% if row.upstream_release_system %}<option value="{{ row.upstream_release_system }}"></option>{% endif %}{% endfor %}
+    {% for row in round_rows %}{% if row.upstream_release_system %}<option value="{{ row.upstream_release_system }}"></option>{% endif %}{% endfor %}
 </datalist>
 <datalist id="admin_target_product_code_options">
     {% for row in target_rows %}{% if row.product_code %}<option value="{{ row.product_code }}"></option>{% endif %}{% endfor %}
@@ -111,18 +111,18 @@
 <section class="card">
     <div class="section_header_row"><h3>Test Release</h3></div>
 
-    <form method="post" action="/admin/product-test-releases/create" class="admin_autosubmit_form">
+    <form method="post" action="/admin/product-test-rounds/create" class="admin_autosubmit_form">
         <input type="hidden" name="return_to" value="/admin">
         <div class="tester_table_wrap">
             <table class="basic_table">
                 <thead><tr><th>선택</th><th>시험 배포 ID</th><th>상위 시험 배포 ID</th><th>상위 시스템</th><th>배포 상태</th><th>비고</th></tr></thead>
                 <tbody><tr>
                     <td><input type="checkbox" class="admin_input_row_checkbox"></td>
-                    <td><input type="text" name="product_test_release_id" required></td>
+                    <td><input type="text" name="test_round_id" required></td>
                     <td><input type="text" name="upstream_release_id" required list="admin_release_upstream_release_id_options" placeholder="예: HRK_9000A_1_1_1D"></td>
                     <td><input type="text" name="upstream_release_system" required list="admin_release_upstream_release_system_options"></td>
                     <input type="hidden" name="release_stage" value="RC">
-                    <td><select name="product_test_release_status"><option value=""></option>{% for value in product_test_release_status_values %}<option value="{{ value }}"{% if value == "DRAFT" %} selected{% endif %}>{{ value }}</option>{% endfor %}</select></td>
+                    <td><select name="migration_status"><option value=""></option>{% for value in migration_status_values %}<option value="{{ value }}"{% if value == "DRAFT" %} selected{% endif %}>{{ value }}</option>{% endfor %}</select></td>
                     <td><input type="text" name="remark"></td>
                 </tr></tbody>
             </table>
@@ -132,7 +132,7 @@
     <div class="tester_table_wrap">
         <table class="basic_table">
             <thead><tr><th>선택</th><th>시험 배포 ID</th><th>상위 시험 배포 ID</th><th>상위 시스템</th><th>순번</th><th>배포 상태</th><th>비고</th></tr></thead>
-            <tbody>{% for row in release_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_release_id }}</td><td>{{ row.upstream_release_id }}</td><td>{{ row.upstream_release_system }}</td><td>{{ row.release_sequence }}</td><td><span class="status_badge status-{{ row.product_test_release_status|lower }}">{{ row.product_test_release_status }}</span></td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
+            <tbody>{% for row in round_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.test_round_id }}</td><td>{{ row.upstream_release_id }}</td><td>{{ row.upstream_release_system }}</td><td>{{ row.release_sequence }}</td><td><span class="status_badge status-{{ row.migration_status|lower }}">{{ row.migration_status }}</span></td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
         </table>
     </div>
 </section>
@@ -146,7 +146,7 @@
                 <tbody><tr>
                     <td><input type="checkbox" class="admin_input_row_checkbox"></td>
                     <td><input type="text" name="product_test_report_id" required></td>
-                    <td><input type="text" name="product_test_release_id" required list="admin_report_release_id_options"></td>
+                    <td><input type="text" name="test_round_id" required list="admin_report_release_id_options"></td>
                     <td><select name="product_test_report_type"><option value=""></option>{% for value in report_type_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
                     <td><input type="text" name="product_test_report_title"></td>
                     <td><input type="text" name="remark"></td>
@@ -158,11 +158,11 @@
     <div class="tester_table_wrap">
         <table class="basic_table">
             <thead><tr><th>선택</th><th>보고서 ID</th><th>시험 배포 ID</th><th>보고서 유형</th><th>상태</th><th>제목</th><th>비고</th></tr></thead>
-            <tbody>{% for row in report_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_report_id }}</td><td>{{ row.product_test_release_id }}</td><td>{{ row.product_test_report_type }}</td><td>{{ row.product_test_report_status }}</td><td>{{ row.product_test_report_title or '' }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
+            <tbody>{% for row in report_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_report_id }}</td><td>{{ row.test_round_id }}</td><td>{{ row.product_test_report_type }}</td><td>{{ row.product_test_report_status }}</td><td>{{ row.product_test_report_title or '' }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
         </table>
     </div>
     <datalist id="admin_report_release_id_options">
-        {% for row in release_rows %}<option value="{{ row.product_test_release_id }}"></option>{% endfor %}
+        {% for row in round_rows %}<option value="{{ row.test_round_id }}"></option>{% endfor %}
     </datalist>
 </section>
 <section class="card">
@@ -570,7 +570,7 @@ void (async () => {
         return allTableBodies.length >= 2 ? allTableBodies[1] : null;
     };
     const getEntityTypeForAction = (action) => {
-        if (action.endsWith("/product-test-releases/create")) return "product_test_release";
+        if (action.endsWith("/product-test-rounds/create")) return "product_test_round";
         if (action.endsWith("/product-test-targets/create")) return "product_test_target";
         if (action.endsWith("/product-test-environments/create")) return "product_test_environment";
         if (action.endsWith("/product-test-cases/create")) return "product_test_case";
@@ -616,8 +616,8 @@ void (async () => {
     };
     const buildSubmittedRowHtml = (action, row) => {
         const checkbox = '<td><input type="checkbox" class="admin_submitted_row_checkbox"></td>';
-        if (action.endsWith("/product-test-releases/create")) {
-            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_release_id)}</td><td>${escapeHtml(row.upstream_release_id)}</td><td>${escapeHtml(row.upstream_release_system)}</td><td>${escapeHtml(row.release_sequence)}</td><td>${toStatusBadgeHtml(row.product_test_release_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
+        if (action.endsWith("/product-test-rounds/create")) {
+            return `<tr>${checkbox}<td>${escapeHtml(row.test_round_id)}</td><td>${escapeHtml(row.upstream_release_id)}</td><td>${escapeHtml(row.upstream_release_system)}</td><td>${escapeHtml(row.release_sequence)}</td><td>${toStatusBadgeHtml(row.migration_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
         }
         if (action.endsWith("/product-test-targets/create")) {
             return `<tr>${checkbox}<td>${escapeHtml(row.product_test_target_id)}</td><td>${escapeHtml(row.product_code)}</td><td>${escapeHtml(row.manufacturer)}</td><td>${escapeHtml(row.model_name)}</td><td>${escapeHtml(row.hardware_revision)}</td><td>${escapeHtml(row.default_software_version)}</td><td>${escapeHtml(row.default_firmware_version)}</td><td>${escapeHtml(row.serial_number)}</td><td>${escapeHtml(row.software_version)}</td><td>${escapeHtml(row.firmware_version)}</td><td>${escapeHtml(row.manufacture_lot)}</td><td>${escapeHtml(row.product_test_target_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
@@ -632,7 +632,7 @@ void (async () => {
             return `<tr>${checkbox}<td>${escapeHtml(row.product_test_procedure_id)}</td><td>${escapeHtml(row.product_test_case_id)}</td><td>${escapeHtml(row.procedure_sequence)}</td><td>${escapeHtml(row.procedure_action)}</td><td>${escapeHtml(row.expected_result)}</td><td>${escapeHtml(row.acceptance_criteria)}</td><td>${escapeHtml(row.required_evidence_type)}</td><td>${escapeHtml(row.product_test_procedure_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
         }
         if (action.endsWith("/product-test-reports/create")) {
-            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_report_id)}</td><td>${escapeHtml(row.product_test_release_id)}</td><td>${escapeHtml(row.product_test_report_type)}</td><td>${toStatusBadgeHtml(row.product_test_report_status)}</td><td>${escapeHtml(row.product_test_report_title)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
+            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_report_id)}</td><td>${escapeHtml(row.test_round_id)}</td><td>${escapeHtml(row.product_test_report_type)}</td><td>${toStatusBadgeHtml(row.product_test_report_status)}</td><td>${escapeHtml(row.product_test_report_title)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
         }
         return "";
     };
@@ -731,14 +731,14 @@ void (async () => {
         const checkboxCell = form.querySelector(".admin_input_row_checkbox")?.closest("td");
         const fieldCell = (name) => detachCellBySelector(form, `[name="${name}"]`);
         let cells = [];
-        if (action.endsWith("/product-test-releases/create")) {
+        if (action.endsWith("/product-test-rounds/create")) {
             cells = [
                 checkboxCell,
-                fieldCell("product_test_release_id"),
+                fieldCell("test_round_id"),
                 fieldCell("upstream_release_id"),
                 fieldCell("upstream_release_system"),
                 buildAutoPlaceholderCell(),
-                fieldCell("product_test_release_status"),
+                fieldCell("migration_status"),
                 fieldCell("remark"),
             ];
         } else if (action.endsWith("/product-test-targets/create")) {
@@ -809,7 +809,7 @@ void (async () => {
             cells = [
                 checkboxCell,
                 buildAutoPlaceholderCell(),
-                fieldCell("product_test_release_id"),
+                fieldCell("test_round_id"),
                 fieldCell("product_test_report_type"),
                 buildAutoPlaceholderCell("DRAFT"),
                 fieldCell("product_test_report_title"),
@@ -862,14 +862,14 @@ void (async () => {
     };
     const syncProductTestReleaseIdReadonly = async (form) => {
         const action = String(form.getAttribute("action") || "");
-        if (!action.endsWith("/product-test-releases/create")) {
+        if (!action.endsWith("/product-test-rounds/create")) {
             return;
         }
-        const releaseIdField = form.querySelector('[name="product_test_release_id"]');
+        const releaseIdField = form.querySelector('[name="test_round_id"]');
         if (!(releaseIdField instanceof HTMLInputElement)) {
             return;
         }
-        const candidates = await fetchIdCandidates(form, "product_test_release_id");
+        const candidates = await fetchIdCandidates(form, "test_round_id");
         const candidate = String(candidates[0] || "").trim();
         const current = String(releaseIdField.value || "").trim();
         const userLocked = releaseIdField.dataset.userLocked === "true";
@@ -885,11 +885,11 @@ void (async () => {
         const idFields = Array.from(form.querySelectorAll('input[name$="_id"]'));
         idFields.forEach(bindManualOverride);
 
-        if (action.endsWith("/product-test-releases/create")) {
-            const releaseIdField = form.querySelector('[name="product_test_release_id"]');
+        if (action.endsWith("/product-test-rounds/create")) {
+            const releaseIdField = form.querySelector('[name="test_round_id"]');
             const upstreamField = form.querySelector('[name="upstream_release_id"]');
             const refresh = async () => {
-                const candidates = await fetchIdCandidates(form, "product_test_release_id");
+                const candidates = await fetchIdCandidates(form, "test_round_id");
                 setAutofillValue(releaseIdField, candidates[0] || "");
                 await syncProductTestReleaseIdReadonly(form);
             };

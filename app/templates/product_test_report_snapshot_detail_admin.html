@@ -6,7 +6,7 @@
         <div class="table_action_bar">
             <a href="/admin/product-test-report-snapshots" class="project_standard_button">스냅샷 목록</a>
             <a href="/admin/product-test-reports/{{ snapshot.product_test_report_id }}" class="project_standard_button">관련 보고서</a>
-            <a href="/admin/product-test-releases/{{ snapshot.product_test_release_id }}/trace" class="project_standard_button">관련 릴리즈</a>
+            <a href="/admin/product-test-rounds/{{ snapshot.test_round_id }}/trace" class="project_standard_button">관련 릴리즈</a>
         </div>
     </div>
 </section>
@@ -19,7 +19,7 @@
         <tbody>
             <tr><th>product_test_report_snapshot_id</th><td>{{ snapshot.product_test_report_snapshot_id }}</td></tr>
             <tr><th>product_test_report_id</th><td>{{ snapshot.product_test_report_id }}</td></tr>
-            <tr><th>product_test_release_id</th><td>{{ snapshot.product_test_release_id }}</td></tr>
+            <tr><th>test_round_id</th><td>{{ snapshot.test_round_id }}</td></tr>
             <tr><th>snapshot_type</th><td><span class="status_badge">{{ snapshot.snapshot_type }}</span></td></tr>
             <tr><th>snapshot_format</th><td>{{ snapshot.snapshot_format }}</td></tr>
             <tr><th>snapshot_hash</th><td>{{ snapshot.snapshot_hash }}</td></tr>

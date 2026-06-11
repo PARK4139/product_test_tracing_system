@@ -1,13 +1,14 @@
 @echo off
 REM ============================================================
 REM  fix_git_push_as_temp_file.cmd  (ASCII only - no Korean)
-REM  remove stale .git\index.lock, make 3 commits, then push
-REM  run from repo root
+REM  remove stale locks, checkpoint DB (integrity gate),
+REM  stage everything, single commit, then push.
+REM  run from repo root.
 REM ============================================================
 setlocal
 cd /d "%~dp0"
 
-echo [0/4] removing stale locks...
+echo [0/5] removing stale locks...
 if exist ".git\index.lock" del /f /q ".git\index.lock"
 if exist ".git\HEAD.lock" del /f /q ".git\HEAD.lock"
 if exist ".git\config.lock" del /f /q ".git\config.lock"
@@ -15,22 +16,32 @@ if exist ".git\packed-refs.lock" del /f /q ".git\packed-refs.lock"
 for /r ".git" %%f in (*.lock) do del /f /q "%%f"
 
 echo.
-echo [1/4] commit: reorganize handover docs
-git add -A -- ai_handover/ HANDOVER.md HANDOVER_20260604_archived.md docs/codex_prompt*.md docs/cursor_prompt*.md handover_2026_*.md
-git commit -m "Reorganize handover docs into ai_handover/ (archive done prompts)"
+echo [1/5] checkpoint DB (merge WAL into .db, verify integrity)...
+set DB_OK=1
+uv run python -c "import sqlite3; c=sqlite3.connect(r'data\product_test_tracking_system.db'); c.execute('PRAGMA wal_checkpoint(TRUNCATE)'); ic=c.execute('PRAGMA integrity_check').fetchone()[0]; c.close(); print('integrity_check:', ic); exit(0 if ic=='ok' else 1)"
+if errorlevel 1 (
+  echo [WARN] checkpoint/integrity failed - DB will NOT be committed ^(other changes still commit^).
+  set DB_OK=0
+)
 
 echo.
-echo [2/4] commit: gitignore agent temp dirs
-git add .gitignore
-git commit -m "Ignore permission-locked agent temp dirs (stepc_*, task12b/13)"
+echo [2/5] stage all changes...
+git add -A
 
 echo.
-echo [3/4] commit: task15 dry-run output
-git add docs/task15_3_dryrun.json docs/task15_4_dryrun.json
-git commit -m "Update task15-3/15-4 dry-run output (15-4 READY)"
+echo [3/5] integrity gate: unstage DB if check failed...
+if "%DB_OK%"=="0" (
+  echo [SKIP] unstaging data\product_test_tracking_system.db
+  git restore --staged data/product_test_tracking_system.db
+)
 
 echo.
-echo [4/4] push origin main
+echo [4/5] commit...
+git commit -m "TASK 15-5 release deprecation + code sync; update handover docs, DB snapshot"
+if errorlevel 1 echo [INFO] nothing to commit ^(or commit skipped^).
+
+echo.
+echo [5/5] push origin main
 git push origin main
 if errorlevel 1 (
   echo.
@@ -40,7 +51,7 @@ if errorlevel 1 (
 
 echo.
 echo === done. current state ===
-git log --oneline -4
+git log --oneline -6
 git status -sb
 
 :end

@@ -99,37 +99,6 @@ class ProductTestRound(Base):
     updated_by: Mapped[str] = mapped_column(Text, nullable=False)
 
 
-class ProductTestRelease(Base):
-    __tablename__ = "product_test_release"
-    __table_args__ = (
-        Index("ix_product_test_release_project_id", "project_id"),
-        Index("ix_product_test_release_test_round_id", "test_round_id"),
-    )
-
-    product_test_release_id: Mapped[str] = mapped_column(Text, primary_key=True)
-    project_id: Mapped[str | None] = mapped_column(
-        Text,
-        ForeignKey("project.project_id"),
-        nullable=True,
-    )
-    upstream_release_id: Mapped[str] = mapped_column(Text, nullable=False)
-    upstream_release_system: Mapped[str] = mapped_column(Text, nullable=False)
-    release_stage: Mapped[str] = mapped_column(Text, nullable=False)
-    release_sequence: Mapped[int] = mapped_column(Integer, nullable=False)
-    release_visible: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
-    product_test_release_status: Mapped[str] = mapped_column(Text, nullable=False)
-    test_round_id: Mapped[str | None] = mapped_column(
-        Text,
-        ForeignKey("product_test_round.test_round_id"),
-        nullable=True,
-    )
-    created_at: Mapped[str] = mapped_column(Text, nullable=False)
-    created_by: Mapped[str] = mapped_column(Text, nullable=False)
-    updated_at: Mapped[str] = mapped_column(Text, nullable=False)
-    updated_by: Mapped[str] = mapped_column(Text, nullable=False)
-    remark: Mapped[str | None] = mapped_column(Text, nullable=True)
-
-
 class ProductTestTargetUnified(Base):
     __tablename__ = "product_test_target_unified"
     __table_args__ = (
@@ -274,7 +243,7 @@ class ProductTestRun(Base):
     __tablename__ = "product_test_run"
     __table_args__ = (
         Index("ix_product_test_run_project_id", "project_id"),
-        Index("ix_product_test_run_product_test_release_id", "product_test_release_id"),
+        Index("ix_product_test_run_test_round_id", "test_round_id"),
         Index("ix_product_test_run_product_test_target_id", "product_test_target_id"),
         Index("ix_product_test_run_product_test_environment_id", "product_test_environment_id"),
     )
@@ -285,9 +254,9 @@ class ProductTestRun(Base):
         ForeignKey("project.project_id"),
         nullable=True,
     )
-    product_test_release_id: Mapped[str] = mapped_column(
+    test_round_id: Mapped[str] = mapped_column(
         Text,
-        ForeignKey("product_test_release.product_test_release_id"),
+        ForeignKey("product_test_round.test_round_id"),
         nullable=False,
     )
     product_test_target_id: Mapped[str] = mapped_column(
@@ -297,7 +266,7 @@ class ProductTestRun(Base):
     )
     product_test_environment_id: Mapped[str] = mapped_column(
         Text,
-        ForeignKey("product_test_environment.product_test_environment_id"),
+        ForeignKey("product_test_environment_unified.product_test_environment_id"),
         nullable=False,
     )
     product_test_run_status: Mapped[str] = mapped_column(Text, nullable=False)
@@ -491,7 +460,7 @@ class ProductTestReport(Base):
     __tablename__ = "product_test_report"
     __table_args__ = (
         Index("ix_product_test_report_project_id", "project_id"),
-        Index("ix_product_test_report_product_test_release_id", "product_test_release_id"),
+        Index("ix_product_test_report_test_round_id", "test_round_id"),
     )
 
     product_test_report_id: Mapped[str] = mapped_column(Text, primary_key=True)
@@ -500,9 +469,9 @@ class ProductTestReport(Base):
         ForeignKey("project.project_id"),
         nullable=True,
     )
-    product_test_release_id: Mapped[str] = mapped_column(
+    test_round_id: Mapped[str] = mapped_column(
         Text,
-        ForeignKey("product_test_release.product_test_release_id"),
+        ForeignKey("product_test_round.test_round_id"),
         nullable=False,
     )
     product_test_report_type: Mapped[str] = mapped_column(Text, nullable=False)
@@ -525,7 +494,7 @@ class ProductTestReportSnapshot(Base):
     __table_args__ = (
         Index("ix_product_test_report_snapshot_project_id", "project_id"),
         Index("ix_product_test_report_snapshot_product_test_report_id", "product_test_report_id"),
-        Index("ix_product_test_report_snapshot_product_test_release_id", "product_test_release_id"),
+        Index("ix_product_test_report_snapshot_test_round_id", "test_round_id"),
         Index("ix_product_test_report_snapshot_snapshot_type", "snapshot_type"),
     )
 
@@ -540,9 +509,9 @@ class ProductTestReportSnapshot(Base):
         ForeignKey("product_test_report.product_test_report_id"),
         nullable=False,
     )
-    product_test_release_id: Mapped[str] = mapped_column(
+    test_round_id: Mapped[str] = mapped_column(
         Text,
-        ForeignKey("product_test_release.product_test_release_id"),
+        ForeignKey("product_test_round.test_round_id"),
         nullable=False,
     )
     snapshot_type: Mapped[str] = mapped_column(Text, nullable=False)

@@ -10,7 +10,7 @@
             <a href="/admin/product-test-report-snapshots/diff" class="project_standard_button">스냅샷 비교</a>
         </div>
     </div>
-    <div class="detail_guide">Test Report 는 output header 와 approval object 이며, 본문은 product_test_release_id 기반 조회로 생성된다.</div>
+    <div class="detail_guide">Test Report 는 output header 와 approval object 이며, 본문은 test_round_id 기반 조회로 생성된다.</div>
 </section>
 {% if message %}
 <section class="card"><div class="non_modal_notice {{ message_type }}"><div>{{ message }}</div></div></section>
@@ -18,11 +18,11 @@
 <section class="card">
     <div class="section_header_row"><h3>보고서 생성</h3></div>
     <form method="post" action="/admin/product-test-reports/create" class="form_stack" style="max-width:none;">
-        <label>Test Release<span class="required_marker">*</span></label>
-        <select name="product_test_release_id" required>
+        <label>Test Round<span class="required_marker">*</span></label>
+        <select name="test_round_id" required>
             <option value=""></option>
             {% for row in release_options %}
-            <option value="{{ row.product_test_release_id }}">{{ row.product_test_release_id }}</option>
+            <option value="{{ row.test_round_id }}">{{ row.test_round_id }}</option>
             {% endfor %}
         </select>
         <label>Report Type<span class="required_marker">*</span></label>
@@ -69,7 +69,7 @@
             <thead>
                 <tr>
                     <th>Report ID</th>
-                    <th>Release ID</th>
+                    <th>Round ID</th>
                     <th>Type</th>
                     <th>Status</th>
                     <th>Title</th>
@@ -86,7 +86,7 @@
                 {% for row in rows %}
                 <tr>
                     <td>{{ row.product_test_report_id }}</td>
-                    <td><a href="/admin/product-test-releases/{{ row.product_test_release_id }}/trace">{{ row.product_test_release_id }}</a></td>
+                    <td><a href="/admin/product-test-rounds/{{ row.test_round_id }}/trace">{{ row.test_round_id }}</a></td>
                     <td><span class="status_badge">{{ row.product_test_report_type }}</span></td>
                     <td><span class="status_badge status-{{ row.product_test_report_status|lower }}">{{ row.product_test_report_status }}</span></td>
                     <td>{{ row.product_test_report_title }}</td>

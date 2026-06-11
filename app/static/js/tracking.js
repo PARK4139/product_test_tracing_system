@@ -1869,7 +1869,7 @@ function beginSheetTabRename(tab, id, labelStorageKey) {
 }
 
 const ADMIN_MASTER_LABEL_BY_ACTION = [
-    ["/admin/product-test-releases/create", "Test Release"],
+    ["/admin/product-test-rounds/create", "Test Release"],
     ["/admin/product-test-target-definitions/create", "Test Target Definition"],
     ["/admin/product-test-targets/create", "Test Target"],
     ["/admin/product-test-environment-definitions/create", "Test Environment Definition"],

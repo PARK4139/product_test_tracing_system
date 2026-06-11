@@ -80,7 +80,7 @@ def _build_example_payload() -> dict[str, str]:
 
     upstream_release_id = f"HRK_9000A-1.0.{patch_token}"
     release_stage = "RC"
-    product_test_release_id = _build_release_id(upstream_release_id, release_stage)
+    test_round_id = _build_release_id(upstream_release_id, release_stage)
 
     product_code = f"HRK_9000A_{compact}"
     model_name = f"HRK-9000A Digital Refractometer (Lot {compact})"
@@ -103,7 +103,7 @@ def _build_example_payload() -> dict[str, str]:
     return {
         "upstream_release_id": upstream_release_id,
         "release_stage": release_stage,
-        "product_test_release_id": product_test_release_id,
+        "test_round_id": test_round_id,
         "product_code": product_code,
         "model_name": model_name,
         "serial_number": serial_number,
@@ -210,13 +210,13 @@ def _run_fill_sequence(admin_url: str) -> None:
         _wait_merged_draft_row(driver, release_form)
         _fill_field(release_form, "upstream_release_id", payload["upstream_release_id"])
         _fill_field(release_form, "upstream_release_system", "Huvitz Software Release System")
-        _fill_field(release_form, "product_test_release_status", "TESTING")
+        _fill_field(release_form, "product_test_round_status", "TESTING")
         _fill_field(
             release_form,
             "remark",
             "RC 단계 WiFi·연결성 시험 베이스라인. 상용 펌웨어 1.0.x 대상.",
         )
-        _fill_field(release_form, "product_test_release_id", payload["product_test_release_id"])
+        _fill_field(release_form, "test_round_id", payload["test_round_id"])
         _fill_field(release_form, "release_stage", payload["release_stage"])
         _wait_for_form_submission_cycle()
         _open_admin_page(driver, admin_url)
@@ -375,7 +375,7 @@ def _run_fill_sequence(admin_url: str) -> None:
         )
         _fill_field(report_form, "product_test_report_type", "FULL")
         _fill_field(report_form, "product_test_report_title", payload["report_title"])
-        _fill_field(report_form, "product_test_release_id", payload["product_test_release_id"])
+        _fill_field(report_form, "test_round_id", payload["test_round_id"])
         _wait_for_form_submission_cycle()
     finally:
         try:

@@ -7,11 +7,11 @@
             <a href="/admin" class="project_standard_button">관리자 홈</a>
             <a href="/admin/product-test-reports" class="project_standard_button">보고서 보기</a>
             {% if trace_detail %}
-            <a href="/admin/product-test-releases/{{ trace_detail.release.product_test_release_id }}/trace/export.csv" class="project_standard_button">CSV Export</a>
+            <a href="/admin/product-test-rounds/{{ trace_detail.round.test_round_id }}/trace/export.csv" class="project_standard_button">CSV Export</a>
             {% endif %}
         </div>
     </div>
-    <div class="detail_guide">Test Release -> Run -> Result -> Procedure Result -> Evidence / Defect -> Report / Status Transition 추적 트리</div>
+    <div class="detail_guide">Test Round -> Run -> Result -> Procedure Result -> Evidence / Defect -> Report / Status Transition 추적 트리</div>
 </section>
 {% if message %}
 <section class="card"><div class="non_modal_notice {{ message_type }}"><div>{{ message }}</div></div></section>
@@ -19,11 +19,11 @@
 <section class="card">
     <div class="section_header_row"><h3>Trace Filter</h3></div>
     <form method="get" action="/admin/product-test-trace" class="form_stack" style="max-width:none;">
-        <label>product_test_release_id<span class="required_marker">*</span></label>
-        <select name="product_test_release_id" required>
+        <label>test_round_id<span class="required_marker">*</span></label>
+        <select name="test_round_id" required>
             <option value=""></option>
             {% for row in release_options %}
-            <option value="{{ row.product_test_release_id }}" {% if trace_detail and trace_detail.filters.product_test_release_id == row.product_test_release_id %}selected{% endif %}>{{ row.product_test_release_id }}</option>
+            <option value="{{ row.test_round_id }}" {% if trace_detail and trace_detail.filters.test_round_id == row.test_round_id %}selected{% endif %}>{{ row.test_round_id }}</option>
             {% endfor %}
         </select>
         <label>product_test_target_id</label>
@@ -71,13 +71,13 @@
 </section>
 {% if trace_detail %}
 <section class="card">
-    <div class="section_header_row"><h3>Release</h3></div>
+    <div class="section_header_row"><h3>Round</h3></div>
     <table class="basic_table">
         <tbody>
-            <tr><th>product_test_release_id</th><td>{{ trace_detail.release.product_test_release_id }}</td></tr>
-            <tr><th>upstream_release_id</th><td>{{ trace_detail.release.upstream_release_id }}</td></tr>
-            <tr><th>릴리즈 단계</th><td>{{ trace_detail.release.release_stage }}</td></tr>
-            <tr><th>product_test_release_status</th><td><span class="status_badge status-{{ trace_detail.release.product_test_release_status|lower }}">{{ trace_detail.release.product_test_release_status }}</span></td></tr>
+            <tr><th>test_round_id</th><td>{{ trace_detail.round.test_round_id }}</td></tr>
+            <tr><th>upstream_release_id</th><td>{{ trace_detail.round.upstream_release_id }}</td></tr>
+            <tr><th>릴리즈 단계</th><td>{{ trace_detail.round.release_stage }}</td></tr>
+            <tr><th>migration_status</th><td><span class="status_badge status-{{ trace_detail.round.migration_status|lower }}">{{ trace_detail.round.migration_status }}</span></td></tr>
         </tbody>
     </table>
 </section>

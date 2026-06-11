@@ -41,7 +41,6 @@ from app.services.product_test_run_service import (
     create_product_test_procedure,
     create_product_test_report,
     create_product_test_report_snapshot,
-    create_product_test_release,
     create_product_test_target,
     get_product_test_identifier_guides,
     build_product_test_report_export_rows,
@@ -51,15 +50,15 @@ from app.services.product_test_run_service import (
     get_product_test_report_snapshot_detail,
     get_product_test_system_check,
     get_product_test_trace_view,
-    get_release_id_by_result_id,
-    get_release_id_by_run_id,
+    get_test_round_id_by_result_id,
+    get_test_round_id_by_run_id,
     list_case_options,
     list_environment_options,
     list_product_test_cases,
     list_product_test_environments,
     list_product_test_procedures,
     list_product_test_report_snapshots,
-    list_product_test_releases,
+    list_product_test_rounds,
     list_product_test_reports,
     list_target_options,
     list_product_test_targets,
@@ -131,9 +130,7 @@ ADMIN_FORM_NOTICE_CONFIG = {
 def _admin_dashboard_product_tracing_template_context(*, database_session: Session) -> dict:
     """admin_dashboard.html 표용 키. 식별자 규칙·안내·입력 순서는 ``GET /admin/api/product-test/ui/client-config`` 로 제공한다."""
     return {
-        "release_rows": list_product_test_releases(database_session),
-        "release_stage_values": RELEASE_STAGE_VALUES,
-        "product_test_release_status_values": PRODUCT_TEST_RELEASE_STATUS_VALUES,
+        "round_rows": list_product_test_rounds(database_session),
         "target_rows": list_product_test_targets(database_session),
         "target_status_values": TARGET_STATUS_VALUES,
         "environment_rows": list_product_test_environments(database_session),
@@ -471,37 +468,6 @@ def _render_admin_shell_template(
     )
 
 
-def _sample_product_test_release_rows() -> list[dict]:
-    return [
-        {
-            "product_test_release_id": "SQA_PRODUCT_TEST_RELEASE_ID-HRK_9000A-1.0.0-RC1",
-            "upstream_release_id": "HRK_9000A-1.0.0",
-            "upstream_release_system": "Huvitz Software Release System",
-            "release_stage": "RC",
-            "release_sequence": 1,
-            "product_test_release_status": "testing",
-            "created_at": "2026-05-05 09:00:00",
-            "created_by": "SQA_MASTER",
-            "updated_at": "2026-05-05 10:30:00",
-            "updated_by": "SQA_MASTER",
-            "remark": "HRK-9000A RC baseline",
-        },
-        {
-            "product_test_release_id": "SQA_PRODUCT_TEST_RELEASE_ID-HRK_9000A-1.0.0-GA",
-            "upstream_release_id": "HRK_9000A-1.0.0",
-            "upstream_release_system": "Huvitz Software Release System",
-            "release_stage": "GA",
-            "release_sequence": 0,
-            "product_test_release_status": "drafted",
-            "created_at": "2026-05-05 11:00:00",
-            "created_by": "SQA_MASTER",
-            "updated_at": "2026-05-05 11:00:00",
-            "updated_by": "SQA_MASTER",
-            "remark": "",
-        },
-    ]
-
-
 @admin_router.post("/product-test-targets/create")
 def create_product_test_target_admin(
     request: Request,
@@ -687,7 +653,7 @@ def create_product_test_report_admin(
     request: Request,
     database_session: database_session_dependency,
     current_role_name: current_role_name_dependency,
-    product_test_release_id: str = Form(""),
+    test_round_id: str = Form(""),
     product_test_report_type: str = Form(""),
     product_test_report_title: str = Form(""),
     remark: str = Form(""),
@@ -698,7 +664,7 @@ def create_product_test_report_admin(
     try:
         report = create_product_test_report(
             database_session,
-            product_test_release_id=product_test_release_id,
+            test_round_id=test_round_id,
             product_test_report_type=product_test_report_type,
             product_test_report_title=product_test_report_title,
             created_by=actor_name,

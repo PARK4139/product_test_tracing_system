@@ -10,7 +10,7 @@ from app.models import (
     ProductTestEnvironment,
     ProductTestProcedure,
     ProductTestProcedureResult,
-    ProductTestRelease,
+    ProductTestRound,
     ProductTestReport,
     ProductTestTargetUnified,
 )
@@ -24,7 +24,7 @@ from app.services.product_test_run_service import (
     REPORT_STATUS_VALUES,
     TARGET_STATUS_VALUES,
     _ensure_defect_not_locked_for_source_mutation,
-    _ensure_release_not_locked_for_source_mutation,
+    _ensure_round_not_locked_for_source_mutation,
     _ensure_result_not_locked_for_source_mutation,
     _now_text,
     _validate_in,
@@ -44,7 +44,7 @@ RELEASE_STATUS_EDIT_VALUES = tuple(
 )
 
 ENTITY_MODEL_MAP = {
-    "product_test_release": ProductTestRelease,
+    "product_test_round": ProductTestRound,
     "product_test_target": ProductTestTargetUnified,
     "product_test_environment": ProductTestEnvironment,
     "product_test_case": ProductTestCase,
@@ -55,12 +55,13 @@ ENTITY_MODEL_MAP = {
 }
 
 FIELD_WHITELIST: dict[str, frozenset[str]] = {
-    "product_test_release": frozenset(
+    "product_test_round": frozenset(
         {
-            "upstream_release_id",
-            "upstream_release_system",
-            "product_test_release_status",
-            "remark",
+            "test_round_name",
+            "workday",
+            "start_date",
+            "end_date",
+            "migration_status",
         }
     ),
     "product_test_target": frozenset(
@@ -153,7 +154,6 @@ FIELD_WHITELIST: dict[str, frozenset[str]] = {
 }
 
 STATUS_FIELD_VALIDATORS: dict[tuple[str, str], tuple[str, ...]] = {
-    ("product_test_release", "product_test_release_status"): RELEASE_STATUS_EDIT_VALUES,
     ("product_test_target", "product_test_target_status"): TARGET_STATUS_VALUES,
     ("product_test_environment", "product_test_environment_status"): ENVIRONMENT_STATUS_VALUES,
     ("product_test_case", "product_test_case_status"): MASTER_ACTIVE_STATUS_VALUES,
@@ -231,7 +231,7 @@ def _coerce_field_value(entity_type: str, field_name: str, value: str) -> Any:
     status_key = (entity_type, field_name)
     if status_key in STATUS_FIELD_VALIDATORS:
         normalized = str(value or "").strip()
-        if field_name in {"product_test_release_status", "product_test_report_status"}:
+        if field_name in {"product_test_report_status", "migration_status"}:
             normalized = normalized.upper()
         else:
             normalized = normalized.lower()
@@ -378,12 +378,7 @@ def _apply_single_update(
 
     coerced_value = _coerce_field_value(entity_type_value, field_name_value, value)
 
-    if entity_type_value == "product_test_release":
-        _ensure_release_not_locked_for_source_mutation(
-            database_session,
-            product_test_release_id=entity_id_value,
-        )
-    elif entity_type_value == "product_test_defect":
+    if entity_type_value == "product_test_defect":
         _ensure_defect_not_locked_for_source_mutation(
             database_session,
             product_test_defect_id=entity_id_value,
@@ -480,12 +475,7 @@ def bulk_delete_product_test_entities(
     model = ENTITY_MODEL_MAP[entity_type_value]
     deleted_count = 0
     for entity_id in deduped_ids:
-        if entity_type_value == "product_test_release":
-            _ensure_release_not_locked_for_source_mutation(
-                database_session,
-                product_test_release_id=entity_id,
-            )
-        elif entity_type_value == "product_test_defect":
+        if entity_type_value == "product_test_defect":
             _ensure_defect_not_locked_for_source_mutation(
                 database_session,
                 product_test_defect_id=entity_id,

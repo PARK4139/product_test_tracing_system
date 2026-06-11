@@ -164,7 +164,6 @@ def initialize_database() -> None:
         _drop_legacy_tables()
         models.Base.metadata.create_all(bind=engine)
         _ensure_user_account_columns()
-        _ensure_release_visible_column()
         _ensure_defect_columns()
         _ensure_product_test_project_id_columns()
         _ensure_product_test_project_id_indexes()
@@ -194,7 +193,7 @@ def _drop_legacy_tables() -> None:
 def _ensure_product_test_project_id_columns() -> None:
     """Add project_id TEXT column to existing ProductTest* tables that predate the multi-project schema."""
     tables = [
-        "product_test_release",
+        "product_test_round",
         "product_test_target_unified",
         "product_test_environment_unified",
         "product_test_case",
@@ -228,7 +227,7 @@ def _ensure_product_test_project_id_columns() -> None:
 def _ensure_product_test_project_id_indexes() -> None:
     """CREATE INDEX IF NOT EXISTS for project_id on all ProductTest* tables."""
     index_defs = [
-        ("ix_product_test_release_project_id",               "product_test_release"),
+        ("ix_product_test_round_project_id",                 "product_test_round"),
         ("ix_product_test_target_unified_project_id",       "product_test_target_unified"),
         ("ix_product_test_environment_unified_project_id", "product_test_environment_unified"),
         ("ix_product_test_case_project_id",                  "product_test_case"),
@@ -249,18 +248,6 @@ def _ensure_product_test_project_id_indexes() -> None:
                     f"CREATE INDEX IF NOT EXISTS {index_name}"
                     f" ON {table_name} (project_id)"
                 )
-            )
-
-
-def _ensure_release_visible_column() -> None:
-    """product_test_release 에 release_visible 컬럼 추가."""
-    with engine.begin() as connection:
-        existing = {
-            row[1] for row in connection.execute(text("PRAGMA table_info(product_test_release)"))
-        }
-        if "release_visible" not in existing:
-            connection.execute(
-                text("ALTER TABLE product_test_release ADD COLUMN release_visible INTEGER NOT NULL DEFAULT 1")
             )
 
 

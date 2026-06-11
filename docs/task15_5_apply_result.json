@@ -1,0 +1,42 @@
+{
+  "step": "15-5",
+  "mode": "apply",
+  "status": "APPLIED",
+  "backup_path": "C:\\Users\\wjdgn\\Downloads\\product_test_tracing_system\\data\\backups\\2026-06-11\\product_test_tracking_system.task15_5_133636.db",
+  "summary": {
+    "runs": 41,
+    "reports": 8,
+    "report_snapshots": 0,
+    "releases_to_drop": 215,
+    "legacy_environment_table_exists": false,
+    "unified_environment_rows": 6
+  },
+  "validation": {
+    "counts": {
+      "runs": 41,
+      "results": 375,
+      "cases": 134,
+      "procedures": 339,
+      "defects": 15,
+      "reports": 8,
+      "report_snapshots": 0,
+      "release_table_exists": false
+    },
+    "orphans": {
+      "result_to_run": 0,
+      "run_to_round": 0,
+      "report_to_round": 0,
+      "run_to_env_unified": 0
+    },
+    "fk_check": {
+      "ok": true,
+      "violations": 0,
+      "samples": []
+    },
+    "integrity_check": "ok",
+    "run_schema": {
+      "test_round_id": true,
+      "product_test_release_id": false
+    }
+  }
+}

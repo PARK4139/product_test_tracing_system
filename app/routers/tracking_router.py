@@ -45,7 +45,7 @@ ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
 
 from app.auth import ROLE_ADMIN, ROLE_MASTER_ADMIN, ROLE_TESTER
 from app.deps import current_role_name_dependency, database_session_dependency
-from app.models import CustomSheetTab, UiStatePref, WorkCalendar, ProductTestRelease, get_utc_now_datetime
+from app.models import CustomSheetTab, UiStatePref, WorkCalendar, get_utc_now_datetime
 
 tracking_router = APIRouter()
 
@@ -140,30 +140,30 @@ def get_tracking_summary(
     # ── 전체 릴리즈 타임라인 ──────────────────────────────────────────────────
     releases_raw = conn.execute(text("""
         SELECT
-            r.product_test_release_id,
-            r.upstream_release_id,
-            r.release_stage,
-            r.release_sequence,
-            r.product_test_release_status,
-            r.remark,
-            r.upstream_release_system,
-            COALESCE(r.release_visible, 1)                    AS release_visible,
+            r.test_round_id,
+            r.test_round_name,
+            r.workday,
+            r.start_date,
+            r.end_date,
+            r.migration_status,
+            '' AS remark,
+            '' AS upstream_release_system,
+            1                    AS release_visible,
             COUNT(DISTINCT run.product_test_run_id)           AS run_count,
             COUNT(res.product_test_result_id)                 AS total_results,
             COUNT(DISTINCT def.product_test_defect_id)        AS defect_count,
             SUM(CASE WHEN def.product_test_defect_status = 'opened' THEN 1 ELSE 0 END)  AS open_defects
-        FROM product_test_release r
-        LEFT JOIN product_test_run  run ON run.product_test_release_id = r.product_test_release_id
+        FROM product_test_round r
+        LEFT JOIN product_test_run  run ON run.test_round_id = r.test_round_id
         LEFT JOIN product_test_result res ON res.product_test_run_id   = run.product_test_run_id
         LEFT JOIN product_test_defect def ON def.product_test_result_id = res.product_test_result_id
-        WHERE (r.release_stage IS NULL OR r.release_stage != 'round_legacy')
-        GROUP BY r.product_test_release_id
-        ORDER BY r.release_sequence, r.product_test_release_id
+        GROUP BY r.test_round_id
+        ORDER BY r.test_round_id
     """)).fetchall()
     release_result_counts: dict[str, dict[str, int]] = {}
     for status_row in conn.execute(text("""
         SELECT
-            run.product_test_release_id,
+            run.test_round_id,
             res.product_test_result_status
         FROM product_test_result res
         JOIN product_test_run run ON run.product_test_run_id = res.product_test_run_id
@@ -266,7 +266,7 @@ def get_tracking_summary(
             def.assigned_to,
             def.expected_resolution_date,
             def.created_at,
-            run.product_test_release_id,
+            run.test_round_id,
             run.product_test_run_id,
             def.remark
         FROM product_test_defect def
@@ -394,7 +394,7 @@ def get_tracking_summary(
     runs_raw = conn.execute(text("""
         SELECT
             run.product_test_run_id,
-            run.product_test_release_id,
+            run.test_round_id,
             run.product_test_run_status,
             run.started_at,
             run.finished_at,
@@ -494,7 +494,7 @@ def get_tracking_summary(
     # ── 구성별 Result 요약 (case 단위 집계) ──────────────────────────────────
     results_summary_raw = conn.execute(text("""
         SELECT
-            run.product_test_release_id,
+            run.test_round_id,
             res.product_test_case_id,
             res.product_test_result_status,
             COUNT(*)                          AS cnt,
@@ -505,10 +505,10 @@ def get_tracking_summary(
         JOIN product_test_run run ON run.product_test_run_id = res.product_test_run_id
         LEFT JOIN product_test_defect def ON def.product_test_result_id = res.product_test_result_id
             AND def.product_test_defect_status = 'opened'
-        GROUP BY run.product_test_release_id, res.product_test_case_id,
+        GROUP BY run.test_round_id, res.product_test_case_id,
                  res.product_test_result_status, res.product_test_run_id,
                  res.product_test_result_id, def.product_test_defect_id
-        ORDER BY run.product_test_release_id, res.product_test_case_id
+        ORDER BY run.test_round_id, res.product_test_case_id
     """)).fetchall()
 
     # case 단위로 집계
@@ -576,7 +576,7 @@ def get_tracking_summary(
             p.product_test_case_id,
             p.procedure_sequence,
             p.procedure_action,
-            run.product_test_release_id
+            run.test_round_id
         FROM product_test_procedure_result pr
         JOIN product_test_procedure p ON p.product_test_procedure_id = pr.product_test_procedure_id
         JOIN product_test_result res ON res.product_test_result_id = pr.product_test_result_id
@@ -614,7 +614,7 @@ def get_tracking_summary(
             ev.file_path,
             ev.captured_at,
             ev.captured_by,
-            COALESCE(run.product_test_release_id, run2.product_test_release_id) AS release_id
+            COALESCE(run.test_round_id, run2.test_round_id) AS release_id
         FROM product_test_evidence ev
         LEFT JOIN product_test_result res ON res.product_test_result_id = ev.product_test_result_id
         LEFT JOIN product_test_run run ON run.product_test_run_id = res.product_test_run_id
@@ -642,7 +642,7 @@ def get_tracking_summary(
 
     # ── Reports ────────────────────────────────────────────────────────────────
     reports_raw = conn.execute(text("""
-        SELECT product_test_report_id, product_test_release_id,
+        SELECT product_test_report_id, test_round_id,
                product_test_report_type, product_test_report_status,
                product_test_report_title, created_at
         FROM product_test_report
@@ -751,7 +751,7 @@ def get_tracking_summary(
     # procedure → 실행에 사용된 release_id 목록 매핑 (중복 제거)
     _proc_release_map: dict[str, list[str]] = {}
     for r in conn.execute(text("""
-        SELECT DISTINCT p.product_test_procedure_id, run.product_test_release_id
+        SELECT DISTINCT p.product_test_procedure_id, run.test_round_id
         FROM product_test_procedure p
         JOIN product_test_result res ON res.product_test_case_id = p.product_test_case_id
         JOIN product_test_run run ON run.product_test_run_id = res.product_test_run_id
@@ -830,7 +830,7 @@ def get_tracking_summary(
         SELECT DISTINCT
             res.product_test_case_id,
             c.product_test_case_title,
-            run.product_test_release_id
+            run.test_round_id
         FROM product_test_result res
         JOIN product_test_run run ON run.product_test_run_id = res.product_test_run_id
         LEFT JOIN product_test_case c ON c.product_test_case_id = res.product_test_case_id
@@ -852,7 +852,7 @@ def get_tracking_summary(
             p.product_test_case_id,
             p.procedure_sequence,
             p.procedure_action,
-            run.product_test_release_id
+            run.test_round_id
         FROM product_test_procedure p
         JOIN product_test_result res ON res.product_test_case_id = p.product_test_case_id
         JOIN product_test_run run ON run.product_test_run_id = res.product_test_run_id
@@ -902,19 +902,7 @@ def patch_release_status(
     database_session: database_session_dependency,
     current_role_name: current_role_name_dependency,
 ):
-    _ensure_admin_role(current_role_name)
-    new_status = normalize_status(body.status)
-    if new_status not in VALID_RELEASE_STATUSES:
-        raise HTTPException(status_code=400, detail=f"Invalid status: {new_status}")
-    row = database_session.query(ProductTestRelease).filter_by(
-        product_test_release_id=release_id
-    ).first()
-    if not row:
-        raise HTTPException(status_code=404, detail="Release not found.")
-    row.product_test_release_status = new_status
-    row.updated_at = get_utc_now_datetime()
-    database_session.commit()
-    return JSONResponse({"ok": True, "status": new_status})
+    raise HTTPException(status_code=410, detail="Release status API removed in v2 (round/run model).")
 
 
 # ── 결함 이미지 업로드 ───────────────────────────────────────────────────────

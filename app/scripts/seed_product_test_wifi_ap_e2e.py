@@ -21,7 +21,7 @@ def main() -> None:
         raise SystemExit("Seed completed but report detail was not found.")
     payload = {
         "seed_report_id": detail["report"]["product_test_report_id"],
-        "seed_release_id": detail["report"]["product_test_release_id"],
+        "seed_release_id": detail["report"]["test_round_id"],
         "result_summary": detail["result_summary"],
     }
     print(json.dumps(payload, ensure_ascii=False, indent=2))

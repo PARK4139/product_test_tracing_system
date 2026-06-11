@@ -1,9 +1,3 @@
-# Cursor 작업 프롬프트 — TASK 15-4부터 (v2 마이그레이션 일괄 apply)
-
-아래 "---" 블록을 Cursor 채팅에 붙여넣어라. (15-1 적용 / 15-2·15-3 dry-run 확정·승인 상태)
-
----
-
 너는 이 저장소(`product_test_tracing_system`, FastAPI+SQLite, Windows)의 v2 마이그레이션 **TASK 15-4(일괄 apply)부터** 한다. 이건 전체 여정 중 **가장 위험한 단계**다.
 
 ## 먼저 읽어라 (정본)
@@ -54,4 +48,3 @@
 
 ## 시작
 task15 문서 읽음 1줄 확인 → **15-4 dry-run**부터. dry-run 결과(특히 고아 0·defect 15 재연결·result 손실 0) 보고 후 멈춰 사용자 승인 대기. 15-4가 최고 위험이니 승인 없이 apply 절대 금지.
----

@@ -117,18 +117,18 @@ function buildSimpleDataTableSection(title, className, columns, rows, options) {
 
 function buildMasterDataSections(data, releases) {
     let html = "";
-    html += buildSimpleDataTableSection("Test Release", "trk_test_release_table", [
-        { key: "id", label: "Release ID", width: "280px" },
-        { key: "upstream_id", label: "Upstream", width: "220px", field: "upstream_release_id" },
+    html += buildSimpleDataTableSection("Test Round", "trk_test_release_table", [
+        { key: "id", label: "Round ID", width: "280px" },
+        { key: "upstream_id", label: "Upstream", width: "220px", field: "test_round_name" },
         { key: "stage", label: "Stage", width: "110px" },
-        { key: "status", label: "Status", width: "130px", field: "product_test_release_status" },
+        { key: "status", label: "Status", width: "130px", field: "product_test_round_status" },
         { key: "workday", label: "Workday", width: "90px" },
         { key: "start_date", label: "Start", width: "100px" },
         { key: "end_date", label: "End", width: "100px" },
         { key: "run_count", label: "Runs", width: "70px" },
         { key: "open_defects", label: "Open Defects", width: "100px" },
         { key: "remark", label: "Remark", width: "300px", field: "remark" }
-    ], data.test_releases || releases || [], { entityType: "product_test_release" });
+    ], data.test_rounds || releases || [], { entityType: "product_test_round" });
 
     html += buildSimpleDataTableSection("Test Targets", "trk_test_target_table", [
         { key: "id", label: "Target ID", width: "300px" },

@@ -125,13 +125,13 @@ def _build_procedure_id_candidate(case_value: str, sequence_value: str) -> str:
 
 
 ADMIN_PRODUCT_TEST_WRITE_ORDER_PLANS: dict[str, dict[str, Any]] = {
-    "/admin/product-test-releases/create": {
+    "/admin": {
         "order": [
             "upstream_release_id",
             "upstream_release_system",
             "release_stage",
-            "product_test_release_id",
-            "product_test_release_status",
+            "test_round_id",
+            "product_test_round_status",
             "remark",
         ],
         "optional": ["remark"],
@@ -243,7 +243,7 @@ ADMIN_PRODUCT_TEST_WRITE_ORDER_PLANS: dict[str, dict[str, Any]] = {
         ],
     },
     "/admin/product-test-reports/create": {
-        "order": ["product_test_release_id", "product_test_report_type", "product_test_report_title", "remark"],
+        "order": ["test_round_id", "product_test_report_type", "product_test_report_title", "remark"],
         "optional": ["remark"],
     },
 }
@@ -279,7 +279,7 @@ def list_product_test_id_candidates(
         raw = hints.get(name)
         return list(raw) if isinstance(raw, list) else None
 
-    if fn == "product_test_release_id" and action.endswith("/product-test-releases/create"):
+    if fn == "test_round_id" and action.endswith("/product-test-releases/create"):
         upstreams = _read_strings(gv("upstream_release_id"), hint("upstream_release_id"))
         stages = _read_strings(gv("release_stage"), hint("release_stage"))
         out: list[str] = []

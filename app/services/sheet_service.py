@@ -14,14 +14,14 @@ from app.models import (
     ProductTestDefect,
     ProductTestEvidence,
     ProductTestProcedureResult,
-    ProductTestRelease,
+    ProductTestRound,
     ProductTestResult,
     get_utc_now_datetime,
 )
 from app.services.backup_service import run_backup
 from app.services.product_test_run_service import (
     _ensure_defect_not_locked_for_source_mutation,
-    _ensure_release_not_locked_for_source_mutation,
+    _ensure_round_not_locked_for_source_mutation,
     _ensure_result_not_locked_for_source_mutation,
     _insert_status_transition,
     _next_prefixed_id,
@@ -48,11 +48,11 @@ SHEET_EDIT_CONFIG: dict[str, dict[str, Any]] = {
         "create_supported": False,
     },
     "release": {
-        "entity_type": "product_test_release",
+        "entity_type": "product_test_round",
         "editable_fields": ["status", "remark"],
         "field_map": {
-            "status": "product_test_release_status",
-            "remark": "remark",
+            "status": "migration_status",
+            "remark": "migration_note",
         },
         "create_supported": False,
     },
@@ -85,7 +85,7 @@ SHEET_EDIT_CONFIG: dict[str, dict[str, Any]] = {
 }
 TABLE_MODEL_MAP = {
     "result": ProductTestResult,
-    "release": ProductTestRelease,
+    "release": ProductTestRound,
     "defect": ProductTestDefect,
 }
 
@@ -280,45 +280,41 @@ def _build_release_sheet(database_session: Session) -> dict[str, Any]:
     query = text(
         """
         SELECT
-            r.product_test_release_id,
-            r.upstream_release_id,
-            r.release_stage,
-            r.product_test_release_status,
             r.test_round_id,
-            r.release_visible,
-            r.remark,
+            r.test_round_name,
+            r.migration_status,
+            r.workday,
+            r.start_date,
+            r.end_date,
             COUNT(DISTINCT run.product_test_run_id) AS run_count
-        FROM product_test_release r
-        LEFT JOIN product_test_run run ON run.product_test_release_id = r.product_test_release_id
+        FROM product_test_round r
+        LEFT JOIN product_test_run run ON run.test_round_id = r.test_round_id
         GROUP BY
-            r.product_test_release_id,
-            r.upstream_release_id,
-            r.release_stage,
-            r.product_test_release_status,
             r.test_round_id,
-            r.release_visible,
-            r.remark
-        ORDER BY r.product_test_release_id
+            r.test_round_name,
+            r.migration_status,
+            r.workday,
+            r.start_date,
+            r.end_date
+        ORDER BY r.test_round_id
         """
     )
     for row in database_session.execute(query).mappings():
         flags = {
-            "round_missing": row["test_round_id"] is None,
-            "legacy_ap_text": "AP" in (row["product_test_release_id"] or "") or "AP" in (row["remark"] or ""),
-            "orphan_visible_round": bool(
-                row["release_stage"] == "device_round" and int(row["run_count"] or 0) == 0
-            ),
+            "round_missing": False,
+            "legacy_ap_text": "AP" in (row["test_round_id"] or "") or "AP" in (row["test_round_name"] or ""),
+            "orphan_visible_round": int(row["run_count"] or 0) == 0,
         }
         rows.append(
             {
-                "id": row["product_test_release_id"],
-                "upstream_release_id": row["upstream_release_id"],
-                "release_stage": row["release_stage"],
-                "status": normalize_status(row["product_test_release_status"]),
+                "id": row["test_round_id"],
+                "upstream_release_id": row["test_round_name"] or "",
+                "release_stage": row["migration_status"] or "",
+                "status": normalize_status(row["migration_status"]),
                 "test_round_id": row["test_round_id"] or "",
-                "release_visible": int(row["release_visible"] or 0),
+                "release_visible": 1,
                 "run_count": int(row["run_count"] or 0),
-                "remark": row["remark"] or "",
+                "remark": row["workday"] or "",
                 "flags": flags,
             }
         )
@@ -329,20 +325,7 @@ def _build_release_sheet(database_session: Session) -> dict[str, Any]:
         "summary": {
             "row_count": len(rows),
             "flag_counts": _flag_counts(rows),
-            "rounds_without_release_count": int(
-                database_session.execute(
-                    text(
-                        """
-                        SELECT COUNT(*)
-                        FROM product_test_round round
-                        LEFT JOIN product_test_release rel
-                          ON rel.test_round_id = round.test_round_id
-                        WHERE rel.product_test_release_id IS NULL
-                        """
-                    )
-                ).scalar_one()
-                or 0
-            ),
+            "rounds_without_runs_count": sum(1 for row in rows if int(row.get("run_count") or 0) == 0),
         },
     }
 
@@ -487,9 +470,9 @@ def _guard_sheet_write(database_session: Session, table_name: str, row: Any) -> 
             product_test_result_id=row.product_test_result_id,
         )
     elif table_name == "release":
-        _ensure_release_not_locked_for_source_mutation(
+        _ensure_round_not_locked_for_source_mutation(
             database_session,
-            product_test_release_id=row.product_test_release_id,
+            test_round_id=row.test_round_id,
         )
     elif table_name == "defect":
         _ensure_defect_not_locked_for_source_mutation(
@@ -506,7 +489,7 @@ def _entity_identifier(table_name: str, row: Any) -> str:
     if table_name == "result":
         return row.product_test_result_id
     if table_name == "release":
-        return row.product_test_release_id
+        return row.test_round_id
     if table_name == "defect":
         return row.product_test_defect_id
     raise ValueError(f"Unsupported table for entity identifier: {table_name}")

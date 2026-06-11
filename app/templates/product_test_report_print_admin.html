@@ -11,7 +11,7 @@
     <table class="basic_table">
         <tbody>
             <tr><th>Report ID</th><td>{{ report.product_test_report_id }}</td></tr>
-            <tr><th>Release ID</th><td>{{ report.product_test_release_id }}</td></tr>
+            <tr><th>Round ID</th><td>{{ report.test_round_id }}</td></tr>
             <tr><th>Type</th><td><span class="status_badge">{{ report.product_test_report_type }}</span></td></tr>
             <tr><th>Status</th><td><span class="status_badge status-{{ report.product_test_report_status|lower }}">{{ report.product_test_report_status }}</span></td></tr>
             <tr><th>Title</th><td>{{ report.product_test_report_title }}</td></tr>
@@ -24,15 +24,15 @@
     </table>
 </section>
 <section class="card">
-    <div class="section_header_row"><h3>Release Summary</h3></div>
+    <div class="section_header_row"><h3>Round Summary</h3></div>
     <table class="basic_table">
         <tbody>
-            <tr><th>Release ID</th><td>{{ release_summary.product_test_release_id }}</td></tr>
-            <tr><th>Upstream Release ID</th><td>{{ release_summary.upstream_release_id }}</td></tr>
-            <tr><th>System</th><td>{{ release_summary.upstream_release_system }}</td></tr>
-            <tr><th>릴리즈 단계</th><td>{{ release_summary.release_stage }}</td></tr>
-            <tr><th>Sequence</th><td>{{ release_summary.release_sequence }}</td></tr>
-            <tr><th>Status</th><td><span class="status_badge status-{{ release_summary.product_test_release_status|lower }}">{{ release_summary.product_test_release_status }}</span></td></tr>
+            <tr><th>Round ID</th><td>{{ round_summary.test_round_id }}</td></tr>
+            <tr><th>Upstream Round ID</th><td>{{ round_summary.upstream_release_id }}</td></tr>
+            <tr><th>System</th><td>{{ round_summary.upstream_release_system }}</td></tr>
+            <tr><th>릴리즈 단계</th><td>{{ round_summary.release_stage }}</td></tr>
+            <tr><th>Sequence</th><td>{{ round_summary.release_sequence }}</td></tr>
+            <tr><th>Status</th><td><span class="status_badge status-{{ round_summary.migration_status|lower }}">{{ round_summary.migration_status }}</span></td></tr>
         </tbody>
     </table>
 </section>

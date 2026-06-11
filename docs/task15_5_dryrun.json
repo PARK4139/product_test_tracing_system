@@ -1,0 +1,551 @@
+{
+  "step": "15-5",
+  "mode": "dry-run",
+  "status": "READY",
+  "meta": {
+    "copy_path": "C:\\Users\\wjdgn\\Downloads\\product_test_tracing_system\\task15_5_rc69bqad\\product_test_tracking_system.db",
+    "mode": "dry-run"
+  },
+  "summary": {
+    "runs": 41,
+    "reports": 8,
+    "report_snapshots": 0,
+    "releases_to_drop": 215,
+    "legacy_environment_table_exists": false,
+    "unified_environment_rows": 6
+  },
+  "fk_before": {
+    "ok": false,
+    "violations": -1,
+    "error": "foreign key mismatch - \"product_test_run\" referencing \"product_test_environment\"",
+    "samples": []
+  },
+  "fk_after_simulation": {
+    "ok": true,
+    "violations": 0,
+    "samples": []
+  },
+  "validation": {
+    "run_round_missing_zero": true,
+    "report_round_missing_zero": true,
+    "snapshot_round_missing_zero": true,
+    "env_orphan_runs_zero": true,
+    "fk_after_zero": true,
+    "release_table_dropped": true,
+    "data_loss_zero": true,
+    "run_has_test_round_id": true,
+    "run_release_column_removed": true,
+    "report_release_column_removed": true,
+    "snapshot_release_column_removed": true,
+    "sim_orphans_zero": true
+  },
+  "schema_plan": {
+    "product_test_run": {
+      "add": [
+        "test_round_id TEXT NOT NULL REFERENCES product_test_round(test_round_id)"
+      ],
+      "drop_columns": [
+        "product_test_release_id"
+      ],
+      "fk_fix": "product_test_environment_id -> product_test_environment_unified"
+    },
+    "product_test_report": {
+      "add": [
+        "test_round_id TEXT NOT NULL REFERENCES product_test_round(test_round_id)"
+      ],
+      "drop_columns": [
+        "product_test_release_id"
+      ]
+    },
+    "product_test_report_snapshot": {
+      "add": [
+        "test_round_id TEXT NOT NULL REFERENCES product_test_round(test_round_id)"
+      ],
+      "drop_columns": [
+        "product_test_release_id"
+      ]
+    },
+    "drop_tables": [
+      "product_test_release"
+    ]
+  },
+  "run_round_mappings": [
+    {
+      "product_test_run_id": "RUN_HDC_9100_1_0_5A_RC1_1HDC_1ROUTER",
+      "old_release_id": "RELEASE-HDC_9100_1_0_5A-WIFI_1ST-1HDC_1ROUTER-RC1",
+      "test_round_id": "ROUND-WIFI_1ST",
+      "env_id": "CONFIG-2_4GHz_연결성-1AP_nHDR-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HDC_9100_1_0_5A_RC1_1HDR_1ROUTER_1HDC",
+      "old_release_id": "RELEASE-HDC_9100_1_0_5A-WIFI_1ST-1HDR_1ROUTER_1HDC-RC1",
+      "test_round_id": "ROUND-WIFI_1ST",
+      "env_id": "CONFIG-2_4GHz_연결성-1AP_nHDR-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HDC_9100_1_0_5A_RC2_1HDC_1ROUTER",
+      "old_release_id": "RELEASE-HDC_9100_1_0_5A-WIFI_1ST-1HDC_1ROUTER-RC2",
+      "test_round_id": "ROUND-WIFI_1ST",
+      "env_id": "CONFIG-2_4GHz_연결성-1AP_nHDR-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HDC_9100_1_0_5A_RC2_4HDR_1ROUTER_1HDC",
+      "old_release_id": "RELEASE-HDC_9100_1_0_5A-WIFI_1ST-4HDR_1ROUTER_1HDC-RC2",
+      "test_round_id": "ROUND-WIFI_1ST",
+      "env_id": "CONFIG-2_4GHz_연결성-1AP_nHDR-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HDR_9000_1_1_7E_RC1_1HDR_1ROUTER",
+      "old_release_id": "RELEASE-HDR_9000_1_1_7E-WIFI_1ST-1HDR_1ROUTER-RC1",
+      "test_round_id": "ROUND-WIFI_1ST",
+      "env_id": "CONFIG-2_4GHz_연결성-1AP_nHDR-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HDR_9000_1_1_7E_RC1_1HDR_25ROUTER",
+      "old_release_id": "RELEASE-WIFI_2ND-1HDR_25ROUTER-RC1",
+      "test_round_id": "ROUND-WIFI_2ND",
+      "env_id": "CONFIG-5GHz_연결성-25AP_1HDR-연결할AP신호약함-해외전시회모의-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HDR_9000_1_1_7E_RC1_1HDR_25ROUTER_1HDC",
+      "old_release_id": "RELEASE-WIFI_2ND-1HDR_25ROUTER_1HDC-RC1",
+      "test_round_id": "ROUND-WIFI_2ND",
+      "env_id": "CONFIG-5GHz_연결성-25AP_1HDR-연결할AP신호약함-해외전시회모의-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HDR_9000_1_1_7E_RC1_2HDR_1ROUTER",
+      "old_release_id": "RELEASE-HDR_9000_1_1_7E-WIFI_1ST-2HDR_1ROUTER-RC1",
+      "test_round_id": "ROUND-WIFI_1ST",
+      "env_id": "CONFIG-2_4GHz_연결성-1AP_nHDR-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HDR_9000_1_1_7E_RC1_2_1HDR_25ROUTER_1HDC",
+      "old_release_id": "RELEASE-WIFI_2ND-1HDR_25ROUTER_1HDC-RC1",
+      "test_round_id": "ROUND-WIFI_2ND",
+      "env_id": "CONFIG-5GHz_연결성-25AP_1HDR-TARGET_AP_GENERAL_POWER-해외전시회모의-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HDR_9000_1_1_7E_RC2_1HLM_1ROUTER_4HDR",
+      "old_release_id": "RELEASE-HDR_9000_1_1_7E-WIFI_1ST-1HLM_1ROUTER_4HDR-RC2",
+      "test_round_id": "ROUND-WIFI_1ST",
+      "env_id": "CONFIG-2_4GHz_연결성-1AP_nHDR-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HDR_9000_1_1_7E_RC2_1HRK_1ROUTER_1HTR_1HLM_4HDR",
+      "old_release_id": "RELEASE-HDR_9000_1_1_7E-WIFI_1ST-1HRK_1ROUTER_1HTR_1HLM_4HDR-RC2",
+      "test_round_id": "ROUND-WIFI_1ST",
+      "env_id": "CONFIG-2_4GHz_연결성-1AP_nHDR-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HDR_9000_1_1_7E_RC2_1HRK_1ROUTER_4HDR",
+      "old_release_id": "RELEASE-HDR_9000_1_1_7E-WIFI_1ST-1HRK_1ROUTER_4HDR-RC2",
+      "test_round_id": "ROUND-WIFI_1ST",
+      "env_id": "CONFIG-2_4GHz_연결성-1AP_nHDR-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HDR_9000_1_1_7E_RC2_1HTR_1ROUTER_2HDR",
+      "old_release_id": "RELEASE-HDR_9000_1_1_7E-WIFI_1ST-1HTR_1ROUTER_2HDR-RC2",
+      "test_round_id": "ROUND-WIFI_1ST",
+      "env_id": "CONFIG-2_4GHz_연결성-1AP_nHDR-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HDR_9000_1_1_7E_RC2_4HDR_1ROUTER",
+      "old_release_id": "RELEASE-HDR_9000_1_1_7E-WIFI_1ST-4HDR_1ROUTER-RC2",
+      "test_round_id": "ROUND-WIFI_1ST",
+      "env_id": "CONFIG-2_4GHz_연결성-1AP_nHDR-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HDR_9000_1_1_7E_RC2_4HDR_1ROUTER_1HDC",
+      "old_release_id": "RELEASE-HDR_9000_1_1_7E-WIFI_1ST-4HDR_1ROUTER_1HDC-RC2",
+      "test_round_id": "ROUND-WIFI_1ST",
+      "env_id": "CONFIG-2_4GHz_연결성-1AP_nHDR-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HDR_9000_1_1_7E_RC2_4HDR_1ROUTER_1HIIS",
+      "old_release_id": "RELEASE-HDR_9000_1_1_7E-WIFI_1ST-4HDR_1ROUTER_1HIIS-RC2",
+      "test_round_id": "ROUND-WIFI_1ST",
+      "env_id": "CONFIG-2_4GHz_연결성-1AP_nHDR-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HLM_9000_1_1_14B_RC1_1HLM_1ROUTER",
+      "old_release_id": "RELEASE-HLM_9000_1_1_14B-WIFI_1ST-1HLM_1ROUTER-RC1",
+      "test_round_id": "ROUND-WIFI_1ST",
+      "env_id": "CONFIG-2_4GHz_연결성-1AP_nHDR-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HLM_9000_1_1_14B_RC1_1HLM_1ROUTER_1HDR",
+      "old_release_id": "RELEASE-HLM_9000_1_1_14B-WIFI_1ST-1HLM_1ROUTER_1HDR-RC1",
+      "test_round_id": "ROUND-WIFI_1ST",
+      "env_id": "CONFIG-2_4GHz_연결성-1AP_nHDR-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HLM_9000_1_1_14B_RC1_1HLM_25ROUTER",
+      "old_release_id": "RELEASE-WIFI_2ND-1HLM_25ROUTER-RC1",
+      "test_round_id": "ROUND-WIFI_2ND",
+      "env_id": "CONFIG-5GHz_연결성-25AP_1HDR-연결할AP신호약함-해외전시회모의-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HLM_9000_1_1_14B_RC1_1HLM_25ROUTER_1HDR",
+      "old_release_id": "RELEASE-WIFI_2ND-1HLM_25ROUTER_1HDR-RC1",
+      "test_round_id": "ROUND-WIFI_2ND",
+      "env_id": "CONFIG-5GHz_연결성-25AP_1HDR-연결할AP신호약함-해외전시회모의-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HLM_9000_1_1_14B_RC1_2_1HLM_25ROUTER_1HDR",
+      "old_release_id": "RELEASE-WIFI_2ND-1HLM_25ROUTER_1HDR-RC1",
+      "test_round_id": "ROUND-WIFI_2ND",
+      "env_id": "CONFIG-5GHz_연결성-25AP_1HDR-TARGET_AP_GENERAL_POWER-해외전시회모의-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HLM_9000_1_1_14B_RC2_1HLM_1ROUTER",
+      "old_release_id": "RELEASE-HLM_9000_1_1_14B-WIFI_1ST-1HLM_1ROUTER-RC2",
+      "test_round_id": "ROUND-WIFI_1ST",
+      "env_id": "CONFIG-2_4GHz_연결성-1AP_nHDR-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HLM_9000_1_1_14B_RC2_1HLM_1ROUTER_4HDR",
+      "old_release_id": "RELEASE-HLM_9000_1_1_14B-WIFI_1ST-1HLM_1ROUTER_4HDR-RC2",
+      "test_round_id": "ROUND-WIFI_1ST",
+      "env_id": "CONFIG-2_4GHz_연결성-1AP_nHDR-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HRK_9000A_1_1_0A_RC1_UNCLASSIFIED",
+      "old_release_id": "RELEASE-HRK_9000A_1_1_0A-RC1",
+      "test_round_id": "ROUND-DOWNGRADE",
+      "env_id": "CONFIG-5GHz_연결성-20AP_4HDR-TARGET_Wi-Fi_기능_다운그래이드_비교_시험-20260526-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HRK_9000A_1_1_1A_RC1_1HRK_1ROUTER",
+      "old_release_id": "RELEASE-HRK_9000A_1_1_1A-WIFI_1ST-1HRK_1ROUTER-RC1",
+      "test_round_id": "ROUND-WIFI_1ST",
+      "env_id": "CONFIG-2_4GHz_연결성-1AP_nHDR-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HRK_9000A_1_1_1A_RC1_1HRK_1ROUTER_1HDR",
+      "old_release_id": "RELEASE-HRK_9000A_1_1_1A-WIFI_1ST-1HRK_1ROUTER_1HDR-RC1",
+      "test_round_id": "ROUND-WIFI_1ST",
+      "env_id": "CONFIG-2_4GHz_연결성-1AP_nHDR-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HRK_9000A_1_1_1A_RC1_1HRK_1ROUTER_3HDR",
+      "old_release_id": "RELEASE-WIFI_1_1_1D-1HRK_1ROUTER_3HDR-RC1",
+      "test_round_id": "ROUND-WIFI_SMOKE",
+      "env_id": "CONFIG-2_4GHz_연결성-1AP_nHDR-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HRK_9000A_1_1_1A_RC1_1HRK_25ROUTER",
+      "old_release_id": "RELEASE-WIFI_2ND-1HRK_25ROUTER-RC1",
+      "test_round_id": "ROUND-WIFI_2ND",
+      "env_id": "CONFIG-5GHz_연결성-25AP_1HDR-연결할AP신호약함-해외전시회모의-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HRK_9000A_1_1_1A_RC1_1HRK_25ROUTER_1HDR",
+      "old_release_id": "RELEASE-WIFI_2ND-1HRK_25ROUTER_1HDR-RC1",
+      "test_round_id": "ROUND-WIFI_2ND",
+      "env_id": "CONFIG-5GHz_연결성-25AP_1HDR-연결할AP신호약함-해외전시회모의-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HRK_9000A_1_1_1A_RC1_2_1HRK_25ROUTER_1HDR",
+      "old_release_id": "RELEASE-WIFI_2ND-1HRK_25ROUTER_1HDR-RC1",
+      "test_round_id": "ROUND-WIFI_2ND",
+      "env_id": "CONFIG-5GHz_연결성-25AP_1HDR-TARGET_AP_GENERAL_POWER-해외전시회모의-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HRK_9000A_1_1_1A_RC1_UNCLASSIFIED",
+      "old_release_id": "RELEASE-HRK_9000A_1_1_1A-RC3",
+      "test_round_id": "ROUND-WIFI_2ND",
+      "env_id": "CONFIG-5GHz_연결성-25AP_1HDR-TARGET_AP_GENERAL_POWER-해외전시회모의-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HRK_9000A_1_1_1A_RC2_1HRK_1ROUTER",
+      "old_release_id": "RELEASE-HRK_9000A_1_1_1A-WIFI_1ST-1HRK_1ROUTER-RC2",
+      "test_round_id": "ROUND-WIFI_1ST",
+      "env_id": "CONFIG-2_4GHz_연결성-1AP_nHDR-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HRK_9000A_1_1_1A_RC2_1HRK_1ROUTER_4HDR",
+      "old_release_id": "RELEASE-HRK_9000A_1_1_1A-WIFI_1ST-1HRK_1ROUTER_4HDR-RC2",
+      "test_round_id": "ROUND-WIFI_1ST",
+      "env_id": "CONFIG-2_4GHz_연결성-1AP_nHDR-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HRK_9000A_1_1_1D_RC1_UNCLASSIFIED",
+      "old_release_id": "RELEASE-HRK_9000A_1_1_1D-RC1",
+      "test_round_id": "ROUND-WIFI_SMOKE",
+      "env_id": "CONFIG-2_4GHz_연결성-1AP_nHDR-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HTR_1A_1_1_8_RC1_1HTR_1ROUTER",
+      "old_release_id": "RELEASE-HTR_1A_1_1_8-WIFI_1ST-1HTR_1ROUTER-RC1",
+      "test_round_id": "ROUND-WIFI_1ST",
+      "env_id": "CONFIG-2_4GHz_연결성-1AP_nHDR-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HTR_1A_1_1_8_RC1_1HTR_1ROUTER_1HDR",
+      "old_release_id": "RELEASE-HTR_1A_1_1_8-WIFI_1ST-1HTR_1ROUTER_1HDR-RC1",
+      "test_round_id": "ROUND-WIFI_1ST",
+      "env_id": "CONFIG-2_4GHz_연결성-1AP_nHDR-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HTR_1A_1_1_8_RC1_1HTR_25ROUTER",
+      "old_release_id": "RELEASE-WIFI_2ND-1HTR_25ROUTER-RC1",
+      "test_round_id": "ROUND-WIFI_2ND",
+      "env_id": "CONFIG-5GHz_연결성-25AP_1HDR-연결할AP신호약함-해외전시회모의-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HTR_1A_1_1_8_RC1_1HTR_25ROUTER_1HDR",
+      "old_release_id": "RELEASE-WIFI_2ND-1HTR_25ROUTER_1HDR-RC1",
+      "test_round_id": "ROUND-WIFI_2ND",
+      "env_id": "CONFIG-5GHz_연결성-25AP_1HDR-연결할AP신호약함-해외전시회모의-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HTR_1A_1_1_8_RC1_2_1HTR_25ROUTER_1HDR",
+      "old_release_id": "RELEASE-WIFI_2ND-1HTR_25ROUTER_1HDR-RC1",
+      "test_round_id": "ROUND-WIFI_2ND",
+      "env_id": "CONFIG-5GHz_연결성-25AP_1HDR-TARGET_AP_GENERAL_POWER-해외전시회모의-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HTR_1A_1_1_8_RC2_1HTR_1ROUTER",
+      "old_release_id": "RELEASE-HTR_1A_1_1_8-WIFI_1ST-1HTR_1ROUTER-RC2",
+      "test_round_id": "ROUND-WIFI_1ST",
+      "env_id": "CONFIG-2_4GHz_연결성-1AP_nHDR-20260512-001",
+      "remark_has_legacy_release": true
+    },
+    {
+      "product_test_run_id": "RUN_HTR_1A_1_1_8_RC2_1HTR_1ROUTER_2HDR",
+      "old_release_id": "RELEASE-HTR_1A_1_1_8-WIFI_1ST-1HTR_1ROUTER_2HDR-RC2",
+      "test_round_id": "ROUND-WIFI_1ST",
+      "env_id": "CONFIG-2_4GHz_연결성-1AP_nHDR-20260512-001",
+      "remark_has_legacy_release": true
+    }
+  ],
+  "report_round_mappings": [
+    {
+      "product_test_report_id": "RPT-TBD_REPORT_NO2",
+      "old_release_id": "RELEASE-TBD_REPORT_NO2",
+      "test_round_id": "ROUND-WIFI_1ST_IMPROVE",
+      "remark_has_legacy_report_release": false
+    },
+    {
+      "product_test_report_id": "RPT-TBD_REPORT_NO4",
+      "old_release_id": "RELEASE-TBD_REPORT_NO4",
+      "test_round_id": "ROUND-WIFI_2ND_IMPROVE",
+      "remark_has_legacy_report_release": false
+    },
+    {
+      "product_test_report_id": "RPT-TBD_REPORT_NOTBD",
+      "old_release_id": "RELEASE-TBD_REPORT_NOTBD",
+      "test_round_id": "ROUND-WBS",
+      "remark_has_legacy_report_release": false
+    },
+    {
+      "product_test_report_id": "RPT-TEST_REPORT_HRK_9000A_1_1_1D_WIFI_TEST_260526",
+      "old_release_id": "RELEASE-HRK_9000A_1_1_1D-RC1",
+      "test_round_id": "ROUND-WIFI_SMOKE",
+      "remark_has_legacy_report_release": false
+    },
+    {
+      "product_test_report_id": "RPT-TEST_REPORT_WIFI_DOWNGRADE_TEST_260526_1454",
+      "old_release_id": "RELEASE-HRK_9000A_1_1_0A-RC1",
+      "test_round_id": "ROUND-DOWNGRADE",
+      "remark_has_legacy_report_release": false
+    },
+    {
+      "product_test_report_id": "RPT-TEST_REPORT_WIFI_TEST_1ST_260430",
+      "old_release_id": "RELEASE-HRK_9000A_1_1_1A-WIFI_1ST-RUN_RC1",
+      "test_round_id": "ROUND-WIFI_1ST",
+      "remark_has_legacy_report_release": true
+    },
+    {
+      "product_test_report_id": "RPT-TEST_REPORT_WIFI_TEST_1ST_260513",
+      "old_release_id": "RELEASE-HRK_9000A_1_1_1A-WIFI_1ST-RUN_RC2",
+      "test_round_id": "ROUND-WIFI_1ST",
+      "remark_has_legacy_report_release": true
+    },
+    {
+      "product_test_report_id": "RPT-TEST_REPORT_WIFI_TEST_2ND_260522_1505",
+      "old_release_id": "RELEASE-HRK_9000A_1_1_1A-RC3",
+      "test_round_id": "ROUND-WIFI_2ND",
+      "remark_has_legacy_report_release": false
+    }
+  ],
+  "snapshot_round_mappings": [],
+  "missing_run_round": [],
+  "missing_report_round": [],
+  "missing_snapshot_round": [],
+  "release_ref_tables_before": [
+    "product_test_release",
+    "product_test_report",
+    "product_test_report_snapshot",
+    "product_test_run"
+  ],
+  "simulation": {
+    "post_counts": {
+      "runs": 41,
+      "results": 375,
+      "cases": 134,
+      "procedures": 339,
+      "defects": 15,
+      "reports": 8,
+      "report_snapshots": 0,
+      "release_table_exists": false
+    },
+    "orphans": {
+      "result_to_run": 0,
+      "run_to_round": 0,
+      "report_to_round": 0,
+      "snapshot_to_round": 0,
+      "run_to_env_unified": 0,
+      "run_to_target_unified": 0
+    },
+    "fk_after": {
+      "ok": true,
+      "violations": 0,
+      "samples": []
+    },
+    "integrity_check": "ok",
+    "run_schema": {
+      "test_round_id": true,
+      "product_test_release_id": false
+    },
+    "report_schema": {
+      "test_round_id": true,
+      "product_test_release_id": false
+    },
+    "snapshot_schema": {
+      "test_round_id": true,
+      "product_test_release_id": false
+    }
+  },
+  "code_grep_product_test_release": {
+    "app_files_with_release_refs": 20,
+    "hits": [
+      {
+        "path": "app/db.py",
+        "count": 6
+      },
+      {
+        "path": "app/models.py",
+        "count": 20
+      },
+      {
+        "path": "app/routers/admin_router.py",
+        "count": 12
+      },
+      {
+        "path": "app/routers/tracking_router.py",
+        "count": 22
+      },
+      {
+        "path": "app/scripts/seed_product_test_wifi_ap_e2e.py",
+        "count": 1
+      },
+      {
+        "path": "app/services/admin_product_test_ui_service.py",
+        "count": 4
+      },
+      {
+        "path": "app/services/admin_qc_e2e_service.py",
+        "count": 8
+      },
+      {
+        "path": "app/services/product_test_field_update_service.py",
+        "count": 10
+      },
+      {
+        "path": "app/services/product_test_run_service.py",
+        "count": 124
+      },
+      {
+        "path": "app/services/sheet_service.py",
+        "count": 18
+      },
+      {
+        "path": "app/static/js/table-cell-f2-edit.js",
+        "count": 2
+      },
+      {
+        "path": "app/static/js/tracking-render.js",
+        "count": 2
+      },
+      {
+        "path": "app/templates/admin_dashboard.html",
+        "count": 20
+      },
+      {
+        "path": "app/templates/product_test_releases_admin.html",
+        "count": 9
+      },
+      {
+        "path": "app/templates/product_test_report_detail_admin.html",
+        "count": 8
+      },
+      {
+        "path": "app/templates/product_test_report_print_admin.html",
+        "count": 4
+      },
+      {
+        "path": "app/templates/product_test_report_snapshot_detail_admin.html",
+        "count": 3
+      },
+      {
+        "path": "app/templates/product_test_report_snapshots_admin.html",
+        "count": 2
+      },
+      {
+        "path": "app/templates/product_test_reports_admin.html",
+        "count": 6
+      },
+      {
+        "path": "app/templates/product_test_trace_admin.html",
+        "count": 12
+      }
+    ],
+    "total_refs": 293
+  },
+  "apply_notes": {
+    "db_transaction": "single transaction on live DB after backup",
+    "run_remark": "[구 release] already preserved by 15-4",
+    "report_remark": "[구 report release] appended if missing",
+    "code_sync": "separate step after DB apply — app/ grep hits must become 0"
+  }
+}

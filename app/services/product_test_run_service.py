@@ -16,7 +16,7 @@ from app.models import (
     ProductTestEvidence,
     ProductTestProcedure,
     ProductTestProcedureResult,
-    ProductTestRelease,
+    ProductTestRound,
     ProductTestReport,
     ProductTestReportSnapshot,
     ProductTestResult,
@@ -71,7 +71,6 @@ MASTER_ACTIVE_STATUS_VALUES = ("DRAFT", "ACTIVE", "DEPRECATED")
 TARGET_STATUS_VALUES = ("ACTIVE", "INACTIVE", "DAMAGED", "RETURNED", "ARCHIVED")
 ENVIRONMENT_STATUS_VALUES = ("ACTIVE", "INACTIVE", "ARCHIVED")
 ENTITY_TYPE_VALUES = (
-    "product_test_release",
     "product_test_run",
     "product_test_result",
     "product_test_procedure_result",
@@ -80,13 +79,6 @@ ENTITY_TYPE_VALUES = (
 )
 
 ENTITY_TRANSITIONS = {
-    "product_test_release": {
-        "DRAFT": {"TESTING"},
-        "TESTING": {"APPROVED", "REJECTED"},
-        "REJECTED": {"TESTING"},
-        "APPROVED": set(),
-        "ARCHIVED": set(),
-    },
     "product_test_run": {
         "running": {"finished", "cancelled"},
         "finished": set(),
@@ -120,35 +112,6 @@ ENTITY_TRANSITIONS = {
         "REJECTED": set(),
     },
 }
-
-_sample_product_test_release_rows = [
-    {
-        "product_test_release_id": "SQA_PRODUCT_TEST_RELEASE_ID-HRK_9000A-1.0.0-RC1",
-        "upstream_release_id": "HRK_9000A-1.0.0",
-        "upstream_release_system": "Huvitz Software Release System",
-        "release_stage": "RC",
-        "release_sequence": 1,
-        "product_test_release_status": "TESTING",
-        "created_at": "2026-05-05 09:00:00",
-        "created_by": "SQA_MASTER",
-        "updated_at": "2026-05-05 10:30:00",
-        "updated_by": "SQA_MASTER",
-        "remark": "HRK-9000A RC baseline",
-    },
-    {
-        "product_test_release_id": "SQA_PRODUCT_TEST_RELEASE_ID-HRK_9000A-1.0.0-GA",
-        "upstream_release_id": "HRK_9000A-1.0.0",
-        "upstream_release_system": "Huvitz Software Release System",
-        "release_stage": "GA",
-        "release_sequence": 0,
-        "product_test_release_status": "DRAFT",
-        "created_at": "2026-05-05 11:00:00",
-        "created_by": "SQA_MASTER",
-        "updated_at": "2026-05-05 11:00:00",
-        "updated_by": "SQA_MASTER",
-        "remark": "",
-    },
-]
 
 _sample_product_test_target_rows = [
     {
@@ -395,7 +358,7 @@ def _validate_in(value: str, allowed_values: tuple[str, ...], field_name: str) -
 
 
 _PRODUCT_TEST_ID_RULES: dict[str, re.Pattern[str]] = {
-    "product_test_release_id": re.compile(r"^SQA_PRODUCT_TEST_RELEASE_ID-[A-Z0-9_]+-[0-9]+(?:\.[0-9]+)*-(?:RC[0-9]+|GA|HF[0-9]+)$"),
+    "test_round_id": re.compile(r"^SQA_PRODUCT_TEST_RELEASE_ID-[A-Z0-9_]+-[0-9]+(?:\.[0-9]+)*-(?:RC[0-9]+|GA|HF[0-9]+)$"),
     "product_test_target_id": re.compile(r"^SQA_PRODUCT_TEST_TARGET_ID-[A-Z0-9_]+-[A-Z0-9_]+$"),
     "product_test_environment_definition_id": re.compile(r"^SQA_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-[A-Z0-9_]+(?:-[A-Z0-9_]+){2,}$"),
     "product_test_environment_id": re.compile(r"^SQA_PRODUCT_TEST_ENVIRONMENT_ID-[A-Z0-9_]+(?:-[A-Z0-9_]+){2,}-\d{8}-\d{3}$"),
@@ -404,7 +367,7 @@ _PRODUCT_TEST_ID_RULES: dict[str, re.Pattern[str]] = {
 }
 
 PRODUCT_TEST_IDENTIFIER_GUIDES: dict[str, str] = {
-    "product_test_release_id": "PRODUCT_TEST_RELEASE_ID 작성규칙위반. SQA_PRODUCT_TEST_RELEASE_ID-ITEM-1.0.0-RC1 쓰거나 SQA_PRODUCT_TEST_RELEASE_ID-ITEM-1.0.0-GA 써라.",
+    "test_round_id": "PRODUCT_TEST_RELEASE_ID 작성규칙위반. SQA_PRODUCT_TEST_RELEASE_ID-ITEM-1.0.0-RC1 쓰거나 SQA_PRODUCT_TEST_RELEASE_ID-ITEM-1.0.0-GA 써라.",
     "product_test_target_id": "PRODUCT_TEST_TARGET_ID 작성규칙위반. SQA_PRODUCT_TEST_TARGET_ID-HRK_9000A-SN001 써라.",
     "product_test_environment_definition_id": "PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID 작성규칙위반. SQA_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-COMPANY-CITY-ROOM 써라.",
     "product_test_environment_id": "PRODUCT_TEST_ENVIRONMENT_ID 작성규칙위반. SQA_PRODUCT_TEST_ENVIRONMENT_ID-COMPANY-CITY-ROOM-YYYYMMDD-001 써라.",
@@ -486,7 +449,6 @@ def _insert_status_transition(
 
 def _status_column_name(entity_type: str) -> str:
     return {
-        "product_test_release": "product_test_release_status",
         "product_test_run": "product_test_run_status",
         "product_test_result": "product_test_result_status",
         "product_test_procedure_result": "product_test_procedure_result_status",
@@ -497,7 +459,6 @@ def _status_column_name(entity_type: str) -> str:
 
 def _entity_model(entity_type: str):
     return {
-        "product_test_release": ProductTestRelease,
         "product_test_run": ProductTestRun,
         "product_test_result": ProductTestResult,
         "product_test_procedure_result": ProductTestProcedureResult,
@@ -520,11 +481,11 @@ def _raise_locked_release_error() -> None:
     )
 
 
-def _release_is_locked(database_session: Session, product_test_release_id: str) -> bool:
+def _round_is_locked(database_session: Session, test_round_id: str) -> bool:
     approved_report_count = (
         database_session.scalar(
             select(func.count()).select_from(ProductTestReport).where(
-                ProductTestReport.product_test_release_id == product_test_release_id,
+                ProductTestReport.test_round_id == test_round_id,
                 ProductTestReport.product_test_report_status == "APPROVED",
             )
         )
@@ -533,12 +494,12 @@ def _release_is_locked(database_session: Session, product_test_release_id: str) 
     return int(approved_report_count) > 0
 
 
-def _ensure_release_not_locked_for_source_mutation(
+def _ensure_round_not_locked_for_source_mutation(
     database_session: Session,
     *,
-    product_test_release_id: str,
+    test_round_id: str,
 ) -> None:
-    if _release_is_locked(database_session, product_test_release_id):
+    if _round_is_locked(database_session, test_round_id):
         _raise_locked_release_error()
 
 
@@ -550,9 +511,9 @@ def _ensure_run_not_locked_for_source_mutation(
     run_row = database_session.get(ProductTestRun, product_test_run_id)
     if run_row is None:
         raise LookupError("Run not found.")
-    _ensure_release_not_locked_for_source_mutation(
+    _ensure_round_not_locked_for_source_mutation(
         database_session,
-        product_test_release_id=run_row.product_test_release_id,
+        test_round_id=run_row.test_round_id,
     )
     return run_row
 
@@ -568,9 +529,9 @@ def _ensure_result_not_locked_for_source_mutation(
     run_row = database_session.get(ProductTestRun, result_row.product_test_run_id)
     if run_row is None:
         raise LookupError("Run not found.")
-    _ensure_release_not_locked_for_source_mutation(
+    _ensure_round_not_locked_for_source_mutation(
         database_session,
-        product_test_release_id=run_row.product_test_release_id,
+        test_round_id=run_row.test_round_id,
     )
     return result_row
 
@@ -602,10 +563,6 @@ def _validate_transition_guard(
     field_updates: dict[str, Any],
 ) -> None:
     reason_text = str(transition_reason or "").strip()
-    if entity_type == "product_test_release":
-        if to_status == "ARCHIVED":
-            raise ValueError("ARCHIVED is deprecated and not a normal transition target.")
-        return
     if entity_type == "product_test_run":
         if to_status == "finished" and not str(field_updates.get("finished_at") or "").strip():
             raise ValueError("finished_at is required.")
@@ -680,7 +637,7 @@ def _validate_transition_guard(
                 .join(ProductTestResult, ProductTestResult.product_test_result_id == ProductTestDefect.product_test_result_id)
                 .join(ProductTestRun, ProductTestRun.product_test_run_id == ProductTestResult.product_test_run_id)
                 .where(
-                    ProductTestRun.product_test_release_id == row.product_test_release_id,
+                    ProductTestRun.test_round_id == row.test_round_id,
                     ProductTestDefect.product_test_defect_status.in_(("opened", "assigned", "fixed", "retested")),
                 )
             ) or 0
@@ -766,24 +723,24 @@ def _list_rows_as_dicts(
     return [_as_dict(row, columns) for row in rows]
 
 
-def list_product_test_releases(database_session: Session) -> list[dict[str, Any]]:
+def list_product_test_rounds(database_session: Session) -> list[dict[str, Any]]:
     return _list_rows_as_dicts(
         database_session,
-        model=ProductTestRelease,
+        model=ProductTestRound,
         columns=[
-            "product_test_release_id",
-            "upstream_release_id",
-            "upstream_release_system",
-            "release_stage",
-            "release_sequence",
-            "product_test_release_status",
+            "test_round_id",
+            "test_round_name",
+            "workday",
+            "start_date",
+            "end_date",
+            "date_quality",
+            "migration_status",
             "created_at",
             "created_by",
             "updated_at",
             "updated_by",
-            "remark",
         ],
-        order_by_column="created_at",
+        order_by_column="test_round_id",
     )
 
 
@@ -926,8 +883,8 @@ def list_product_test_procedures(database_session: Session) -> list[dict[str, An
     )
 
 
-def list_release_options(database_session: Session) -> list[dict[str, Any]]:
-    return list_product_test_releases(database_session)
+def list_round_options(database_session: Session) -> list[dict[str, Any]]:
+    return list_product_test_rounds(database_session)
 
 
 def list_target_options(database_session: Session) -> list[dict[str, Any]]:
@@ -949,84 +906,6 @@ def _find_fallback_row(rows: list[dict[str, Any]], key_name: str, key_value: str
     return None
 
 
-def create_product_test_release(
-    database_session: Session,
-    *,
-    product_test_release_id: str,
-    upstream_release_id: str,
-    upstream_release_system: str,
-    release_stage: str,
-    product_test_release_status: str,
-    actor_name: str,
-    remark: str,
-) -> dict[str, Any]:
-    release_id = _validate_product_test_identifier_format("product_test_release_id", product_test_release_id)
-    upstream_id = str(upstream_release_id or "").strip()
-    upstream_system = str(upstream_release_system or "").strip()
-    stage = _validate_in(str(release_stage or "").strip().upper(), RELEASE_STAGE_VALUES, "release_stage")
-    status_value = _validate_in(
-        str(product_test_release_status or "").strip().upper(),
-        PRODUCT_TEST_RELEASE_STATUS_VALUES,
-        "product_test_release_status",
-    )
-    if not release_id or not upstream_id or not upstream_system:
-        raise ValueError("product_test_release_id, upstream_release_id, upstream_release_system are required.")
-    if database_session.get(ProductTestRelease, release_id) is not None:
-        raise ValueError("product_test_release_id already exists.")
-    if stage == "GA":
-        release_sequence = 0
-    else:
-        current_max_sequence = (
-            database_session.scalar(
-                select(func.max(ProductTestRelease.release_sequence)).where(
-                    ProductTestRelease.upstream_release_id == upstream_id,
-                    ProductTestRelease.release_stage == stage,
-                )
-            )
-            or 0
-        )
-        release_sequence = int(current_max_sequence) + 1
-    now_text = _now_text()
-    row = ProductTestRelease(
-        product_test_release_id=release_id,
-        upstream_release_id=upstream_id,
-        upstream_release_system=upstream_system,
-        release_stage=stage,
-        release_sequence=release_sequence,
-        product_test_release_status=status_value,
-        created_at=now_text,
-        created_by=actor_name,
-        updated_at=now_text,
-        updated_by=actor_name,
-        remark=str(remark or "").strip() or None,
-    )
-    database_session.add(row)
-    _insert_status_transition(
-        database_session,
-        entity_type="product_test_release",
-        entity_id=release_id,
-        from_status=None,
-        to_status=status_value,
-        transition_reason="create_release",
-        transitioned_by=actor_name,
-    )
-    _commit_or_rollback(database_session)
-    return _as_dict(
-        row,
-        [
-            "product_test_release_id",
-            "upstream_release_id",
-            "upstream_release_system",
-            "release_stage",
-            "release_sequence",
-            "product_test_release_status",
-            "created_at",
-            "created_by",
-            "updated_at",
-            "updated_by",
-            "remark",
-        ],
-    )
 
 
 def create_product_test_target(
@@ -1686,15 +1565,15 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
 
     _upsert_model_row(
         database_session,
-        ProductTestRelease,
-        "product_test_release_id",
+        ProductTestRound,
+        "test_round_id",
         {
-            "product_test_release_id": "SQA_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1",
+            "test_round_id": "SQA_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1",
             "upstream_release_id": "MERCUSYS_MR30G-1.0.0",
             "upstream_release_system": "DEV",
             "release_stage": "RC",
             "release_sequence": 1,
-            "product_test_release_status": "testing",
+            "migration_status": "testing",
             "created_at": seed_created_at,
             "created_by": actor_name,
             "updated_at": seed_updated_at,
@@ -1709,7 +1588,7 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
         "product_test_run_id",
         {
             "product_test_run_id": "SQA_PRODUCT_TEST_RUN_ID-20260504-0001",
-            "product_test_release_id": "SQA_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1",
+            "test_round_id": "SQA_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1",
             "product_test_target_id": "SQA_PRODUCT_TEST_TARGET_ID-MERCUSYS_MR30G-SN001",
             "product_test_environment_id": "SQA_PRODUCT_TEST_ENVIRONMENT_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM-20260504-001",
             "product_test_run_status": "finished",
@@ -1900,7 +1779,7 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
         "product_test_report_id",
         {
             "product_test_report_id": "SQA_PRODUCT_TEST_REPORT_ID-SQA_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1-FULL-001",
-            "product_test_release_id": "SQA_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1",
+            "test_round_id": "SQA_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1",
             "product_test_report_type": "FULL",
             "product_test_report_status": "DRAFT",
             "product_test_report_title": "WiFi AP 설정 적합성 시험 보고서",
@@ -1918,8 +1797,8 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
     )
 
     transition_seed_rows = [
-        ("product_test_release", "SQA_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1", None, "DRAFT", "seed_release_drafted", actor_name, "2026-05-04 09:05"),
-        ("product_test_release", "SQA_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1", "DRAFT", "TESTING", "seed_release_testing", actor_name, "2026-05-04 09:10"),
+        ("product_test_round", "SQA_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1", None, "DRAFT", "seed_release_drafted", actor_name, "2026-05-04 09:05"),
+        ("product_test_round", "SQA_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1", "DRAFT", "TESTING", "seed_release_testing", actor_name, "2026-05-04 09:10"),
         ("product_test_run", "SQA_PRODUCT_TEST_RUN_ID-20260504-0001", None, "running", "seed_run_started", "Tester-A", "2026-05-04 10:00"),
         ("product_test_run", "SQA_PRODUCT_TEST_RUN_ID-20260504-0001", "running", "finished", "seed_run_finished", "Tester-A", "2026-05-04 10:30"),
         ("product_test_result", "SQA_PRODUCT_TEST_RESULT_ID-20260504-0001", None, "testing", "seed_result_started", "Tester-A", "2026-05-04 10:00"),
@@ -1985,7 +1864,7 @@ def list_runs(database_session: Session) -> list[dict[str, Any]]:
             row,
             [
                 "product_test_run_id",
-                "product_test_release_id",
+                "test_round_id",
                 "product_test_target_id",
                 "product_test_environment_id",
                 "product_test_run_status",
@@ -2009,30 +1888,35 @@ def list_runs(database_session: Session) -> list[dict[str, Any]]:
 def start_run(
     database_session: Session,
     *,
-    product_test_release_id: str,
+    test_round_id: str,
     product_test_target_id: str,
     product_test_environment_id: str,
     started_by: str,
 ) -> dict[str, Any]:
-    release = database_session.get(ProductTestRelease, str(product_test_release_id or "").strip())
+    round_row = database_session.get(ProductTestRound, str(test_round_id or "").strip())
     target = database_session.get(ProductTestTargetUnified, str(product_test_target_id or "").strip())
     environment = database_session.get(ProductTestEnvironment, str(product_test_environment_id or "").strip())
-    if release is None:
-        raise ValueError("Unknown product_test_release_id.")
+    if round_row is None:
+        raise ValueError("Unknown test_round_id.")
     if target is None:
         raise ValueError("Unknown product_test_target_id.")
     if environment is None:
         raise ValueError("Unknown product_test_environment_id.")
-    _ensure_release_not_locked_for_source_mutation(
+    _ensure_round_not_locked_for_source_mutation(
         database_session,
-        product_test_release_id=release.product_test_release_id,
+        test_round_id=round_row.test_round_id,
     )
     run_id = _next_prefixed_id(database_session, ProductTestRun, "product_test_run_id", "SQA_PRODUCT_TEST_RUN_ID")
     now_text = _now_text()
-    release_work_period_remark = _release_work_period_remark(release.remark or "")
+    round_remark_parts = [
+        f"[Workday] {round_row.workday}" if round_row.workday else "",
+        f"[Start] {round_row.start_date}" if round_row.start_date else "",
+        f"[End] {round_row.end_date}" if round_row.end_date else "",
+    ]
+    round_remark = "\n".join(part for part in round_remark_parts if part).strip() or None
     row = ProductTestRun(
         product_test_run_id=run_id,
-        product_test_release_id=release.product_test_release_id,
+        test_round_id=round_row.test_round_id,
         product_test_target_id=target.product_test_target_id,
         product_test_environment_id=environment.product_test_environment_id,
         product_test_run_status="running",
@@ -2046,7 +1930,7 @@ def start_run(
         created_by=started_by,
         updated_at=now_text,
         updated_by=started_by,
-        remark=release_work_period_remark or None,
+        remark=round_remark,
     )
     database_session.add(row)
     _insert_status_transition(
@@ -2063,7 +1947,7 @@ def start_run(
         row,
         [
             "product_test_run_id",
-            "product_test_release_id",
+            "test_round_id",
             "product_test_target_id",
             "product_test_environment_id",
             "product_test_run_status",
@@ -2571,7 +2455,7 @@ def get_run_detail(database_session: Session, product_test_run_id: str) -> dict[
     approved_report_count = (
         database_session.scalar(
             select(func.count()).select_from(ProductTestReport).where(
-                ProductTestReport.product_test_release_id == run_row.product_test_release_id,
+                ProductTestReport.test_round_id == run_row.test_round_id,
                 ProductTestReport.product_test_report_status == "APPROVED",
             )
         )
@@ -2729,7 +2613,7 @@ def get_run_detail(database_session: Session, product_test_run_id: str) -> dict[
                 run_row,
                 [
                     "product_test_run_id",
-                    "product_test_release_id",
+                    "test_round_id",
                     "product_test_target_id",
                     "product_test_environment_id",
                     "started_at",
@@ -2777,28 +2661,28 @@ def get_run_detail(database_session: Session, product_test_run_id: str) -> dict[
         "evidence_rows": evidence_rows,
         "defect_rows": defect_rows,
         "transition_rows": transition_rows,
-        "release_summary": _as_dict(
-            database_session.get(ProductTestRelease, run_row.product_test_release_id),
+        "round_summary": _as_dict(
+            database_session.get(ProductTestRound, run_row.test_round_id),
             [
-                "product_test_release_id",
-                "upstream_release_id",
-                "upstream_release_system",
-                "release_stage",
-                "release_sequence",
-                "product_test_release_status",
+                "test_round_id",
+                "test_round_name",
+                "workday",
+                "start_date",
+                "end_date",
+                "migration_status",
             ],
         ),
         "target_summary": _target_summary(database_session, run_row.product_test_target_id),
         "environment_summary": _environment_summary(database_session, run_row.product_test_environment_id),
-        "release_options": list_release_options(database_session),
+        "round_options": list_round_options(database_session),
         "target_options": list_target_options(database_session),
         "environment_options": list_environment_options(database_session),
         "case_options": list_case_options(database_session),
     }
 
 
-def list_report_release_options(database_session: Session) -> list[dict[str, Any]]:
-    return list_release_options(database_session)
+def list_report_round_options(database_session: Session) -> list[dict[str, Any]]:
+    return list_round_options(database_session)
 
 
 def list_product_test_reports(database_session: Session) -> list[dict[str, Any]]:
@@ -2808,7 +2692,7 @@ def list_product_test_reports(database_session: Session) -> list[dict[str, Any]]
             row,
             [
                 "product_test_report_id",
-                "product_test_release_id",
+                "test_round_id",
                 "product_test_report_type",
                 "product_test_report_status",
                 "product_test_report_title",
@@ -2836,7 +2720,7 @@ def list_product_test_report_snapshots(database_session: Session) -> list[dict[s
             [
                 "product_test_report_snapshot_id",
                 "product_test_report_id",
-                "product_test_release_id",
+                "test_round_id",
                 "snapshot_type",
                 "snapshot_format",
                 "snapshot_hash",
@@ -2864,7 +2748,7 @@ def get_product_test_report_snapshot_detail(
             [
                 "product_test_report_snapshot_id",
                 "product_test_report_id",
-                "product_test_release_id",
+                "test_round_id",
                 "snapshot_type",
                 "snapshot_format",
                 "snapshot_payload",
@@ -2883,24 +2767,24 @@ def get_product_test_report_snapshot_detail(
 def create_product_test_report(
     database_session: Session,
     *,
-    product_test_release_id: str,
+    test_round_id: str,
     product_test_report_type: str,
     product_test_report_title: str,
     created_by: str,
     remark: str,
 ) -> dict[str, Any]:
-    release_id = str(product_test_release_id or "").strip()
+    release_id = str(test_round_id or "").strip()
     report_type_value = _validate_in(str(product_test_report_type or "").strip().upper(), REPORT_TYPE_VALUES, "product_test_report_type")
     title = str(product_test_report_title or "").strip()
     if not release_id or not title:
-        raise ValueError("product_test_release_id and product_test_report_title are required.")
-    if database_session.get(ProductTestRelease, release_id) is None:
-        raise ValueError("Unknown product_test_release_id.")
+        raise ValueError("test_round_id and product_test_report_title are required.")
+    if database_session.get(ProductTestRound, release_id) is None:
+        raise ValueError("Unknown test_round_id.")
     report_id = _next_prefixed_id(database_session, ProductTestReport, "product_test_report_id", "SQA_PRODUCT_TEST_REPORT_ID")
     now_text = _now_text()
     row = ProductTestReport(
         product_test_report_id=report_id,
-        product_test_release_id=release_id,
+        test_round_id=release_id,
         product_test_report_type=report_type_value,
         product_test_report_status="DRAFT",
         product_test_report_title=title,
@@ -2930,7 +2814,7 @@ def create_product_test_report(
         row,
         [
             "product_test_report_id",
-            "product_test_release_id",
+            "test_round_id",
             "product_test_report_type",
             "product_test_report_status",
             "product_test_report_title",
@@ -2992,7 +2876,7 @@ def _build_product_test_report_snapshot_payload(detail: dict[str, Any]) -> dict[
     dedup_evidences = {row["product_test_evidence_id"]: row for row in flat_evidence_rows if row.get("product_test_evidence_id")}
     return {
         "report_header": detail["report"],
-        "release_summary": detail["release_summary"],
+        "round_summary": detail["round_summary"],
         "run_summaries": detail["run_summaries"],
         "result_summary": detail["result_summary"],
         "result_details": detail["result_details"],
@@ -3031,11 +2915,11 @@ def create_product_test_report_snapshot(
         f"SQA_PRODUCT_TEST_REPORT_SNAPSHOT_ID-{today_text}",
     )
     now_text = _now_text()
-    source_data_locked = 1 if snapshot_type_value == "approval" or _release_is_locked(database_session, report_row.product_test_release_id) else 0
+    source_data_locked = 1 if snapshot_type_value == "approval" or _round_is_locked(database_session, report_row.test_round_id) else 0
     row = ProductTestReportSnapshot(
         product_test_report_snapshot_id=snapshot_id,
         product_test_report_id=report_row.product_test_report_id,
-        product_test_release_id=report_row.product_test_release_id,
+        test_round_id=report_row.test_round_id,
         snapshot_type=snapshot_type_value,
         snapshot_format="json",
         snapshot_payload=snapshot_payload,
@@ -3053,7 +2937,7 @@ def create_product_test_report_snapshot(
         [
             "product_test_report_snapshot_id",
             "product_test_report_id",
-            "product_test_release_id",
+            "test_round_id",
             "snapshot_type",
             "snapshot_format",
             "snapshot_hash",
@@ -3065,12 +2949,12 @@ def create_product_test_report_snapshot(
     )
 
 
-def _collect_release_graph(database_session: Session, product_test_release_id: str) -> dict[str, Any]:
-    release_row = database_session.get(ProductTestRelease, product_test_release_id)
+def _collect_round_graph(database_session: Session, test_round_id: str) -> dict[str, Any]:
+    round_row = database_session.get(ProductTestRound, test_round_id)
     run_rows = list(
         database_session.scalars(
             select(ProductTestRun)
-            .where(ProductTestRun.product_test_release_id == product_test_release_id)
+            .where(ProductTestRun.test_round_id == test_round_id)
             .order_by(ProductTestRun.started_at.desc())
         )
     )
@@ -3109,7 +2993,7 @@ def _collect_release_graph(database_session: Session, product_test_release_id: s
     report_rows = list(
         database_session.scalars(
             select(ProductTestReport)
-            .where(ProductTestReport.product_test_release_id == product_test_release_id)
+            .where(ProductTestReport.test_round_id == test_round_id)
             .order_by(ProductTestReport.created_at.desc())
         )
     )
@@ -3124,7 +3008,7 @@ def _collect_release_graph(database_session: Session, product_test_release_id: s
             )
         )
     return {
-        "release": release_row,
+        "round": round_row,
         "runs": run_rows,
         "results": result_rows,
         "procedure_results": procedure_result_rows,
@@ -3139,7 +3023,7 @@ def approve_product_test_report(database_session: Session, *, product_test_repor
     report_row = database_session.get(ProductTestReport, product_test_report_id)
     if report_row is None:
         raise LookupError("Report not found.")
-    graph = _collect_release_graph(database_session, report_row.product_test_release_id)
+    graph = _collect_round_graph(database_session, report_row.test_round_id)
     if any(row.product_test_defect_status in {"opened", "assigned", "fixed", "retested"} for row in graph["defects"]):
         raise ValueError("Open defects exist for this release. Approval is blocked.")
     create_product_test_report_snapshot(
@@ -3269,7 +3153,7 @@ def get_product_test_report_detail(database_session: Session, product_test_repor
     report_row = database_session.get(ProductTestReport, product_test_report_id)
     if report_row is None:
         return None
-    graph = _collect_release_graph(database_session, report_row.product_test_release_id)
+    graph = _collect_round_graph(database_session, report_row.test_round_id)
     result_rows = graph["results"]
     procedure_rows = graph["procedure_results"]
     evidence_rows = graph["evidences"]
@@ -3422,7 +3306,7 @@ def get_product_test_report_detail(database_session: Session, product_test_repor
             report_row,
             [
                 "product_test_report_id",
-                "product_test_release_id",
+                "test_round_id",
                 "product_test_report_type",
                 "product_test_report_status",
                 "product_test_report_title",
@@ -3438,17 +3322,17 @@ def get_product_test_report_detail(database_session: Session, product_test_repor
                 "remark",
             ],
         ),
-        "release_summary": _as_dict(
-            graph["release"],
+        "round_summary": _as_dict(
+            graph["round"],
             [
-                "product_test_release_id",
-                "upstream_release_id",
-                "upstream_release_system",
-                "release_stage",
-                "release_sequence",
-                "product_test_release_status",
+                "test_round_id",
+                "test_round_name",
+                "workday",
+                "start_date",
+                "end_date",
+                "migration_status",
             ],
-        ) if graph["release"] else {"product_test_release_id": report_row.product_test_release_id},
+        ) if graph["round"] else {"test_round_id": report_row.test_round_id},
         "run_summaries": [
             {
                 "product_test_run_id": row.product_test_run_id,
@@ -3512,8 +3396,8 @@ def compare_product_test_report_snapshots(
     if left_row.snapshot_format != "json" or right_row.snapshot_format != "json":
         raise ValueError("Both snapshots must use json format.")
     warnings: list[str] = []
-    if left_row.product_test_release_id != right_row.product_test_release_id:
-        warnings.append("Snapshots belong to different product_test_release_id values.")
+    if left_row.test_round_id != right_row.test_round_id:
+        warnings.append("Snapshots belong to different test_round_id values.")
     for row in (left_row, right_row):
         if not re.fullmatch(r"[0-9a-f]{64}", str(row.snapshot_hash or "")):
             warnings.append(f"Snapshot hash invalid: {row.product_test_report_snapshot_id}")
@@ -3582,8 +3466,8 @@ def compare_product_test_report_snapshots(
                 }
             )
     return {
-        "left_snapshot": _as_dict(left_row, ["product_test_report_snapshot_id", "product_test_report_id", "product_test_release_id", "snapshot_type", "snapshot_hash"]),
-        "right_snapshot": _as_dict(right_row, ["product_test_report_snapshot_id", "product_test_report_id", "product_test_release_id", "snapshot_type", "snapshot_hash"]),
+        "left_snapshot": _as_dict(left_row, ["product_test_report_snapshot_id", "product_test_report_id", "test_round_id", "snapshot_type", "snapshot_hash"]),
+        "right_snapshot": _as_dict(right_row, ["product_test_report_snapshot_id", "product_test_report_id", "test_round_id", "snapshot_type", "snapshot_hash"]),
         "warnings": warnings,
         "added_product_test_case_ids": sorted(right_cases - left_cases),
         "removed_product_test_case_ids": sorted(left_cases - right_cases),
@@ -3601,14 +3485,14 @@ def compare_product_test_report_snapshots(
 def get_product_test_trace_view(
     database_session: Session,
     *,
-    product_test_release_id: str,
+    test_round_id: str,
     product_test_target_id: str = "",
     product_test_environment_id: str = "",
     product_test_case_id: str = "",
     result_status: str = "",
     defect_status: str = "",
 ) -> dict[str, Any]:
-    graph = _collect_release_graph(database_session, product_test_release_id)
+    graph = _collect_round_graph(database_session, test_round_id)
     target_id = str(product_test_target_id or "").strip()
     environment_id = str(product_test_environment_id or "").strip()
     case_id = str(product_test_case_id or "").strip()
@@ -3720,19 +3604,19 @@ def get_product_test_trace_view(
             }
         )
     return {
-        "release": _as_dict(
-            graph["release"],
+        "round": _as_dict(
+            graph["round"],
             [
-                "product_test_release_id",
-                "upstream_release_id",
-                "upstream_release_system",
-                "release_stage",
-                "release_sequence",
-                "product_test_release_status",
+                "test_round_id",
+                "test_round_name",
+                "workday",
+                "start_date",
+                "end_date",
+                "migration_status",
             ],
-        ) if graph["release"] else {"product_test_release_id": product_test_release_id},
+        ) if graph["round"] else {"test_round_id": test_round_id},
         "filters": {
-            "product_test_release_id": product_test_release_id,
+            "test_round_id": test_round_id,
             "product_test_target_id": target_id,
             "product_test_environment_id": environment_id,
             "product_test_case_id": case_id,
@@ -3768,18 +3652,18 @@ def get_product_test_trace_view(
             )
             for row in graph["status_transitions"]
         ],
-        "release_options": list_release_options(database_session),
+        "round_options": list_round_options(database_session),
         "target_options": list_target_options(database_session),
         "environment_options": list_environment_options(database_session),
         "case_options": list_case_options(database_session),
     }
 
 
-def get_release_id_by_run_id(database_session: Session, product_test_run_id: str) -> str:
+def get_test_round_id_by_run_id(database_session: Session, product_test_run_id: str) -> str:
     run_row = database_session.get(ProductTestRun, product_test_run_id)
     if run_row is None:
         raise LookupError("Run not found.")
-    return run_row.product_test_release_id
+    return run_row.test_round_id
 
 
 def _append_export_section(rows: list[list[str]], title: str, header: list[str], body_rows: list[list[Any]]) -> None:
@@ -3800,7 +3684,7 @@ def build_product_test_report_export_rows(database_session: Session, product_tes
         "Report Header",
         [
             "product_test_report_id",
-            "product_test_release_id",
+            "test_round_id",
             "product_test_report_type",
             "product_test_report_status",
             "product_test_report_title",
@@ -3813,7 +3697,7 @@ def build_product_test_report_export_rows(database_session: Session, product_tes
         ],
         [[
             detail["report"]["product_test_report_id"],
-            detail["report"]["product_test_release_id"],
+            detail["report"]["test_round_id"],
             detail["report"]["product_test_report_type"],
             detail["report"]["product_test_report_status"],
             detail["report"]["product_test_report_title"],
@@ -3827,22 +3711,22 @@ def build_product_test_report_export_rows(database_session: Session, product_tes
     )
     _append_export_section(
         rows,
-        "Release Summary",
+        "Round Summary",
         [
-            "product_test_release_id",
-            "upstream_release_id",
-            "upstream_release_system",
-            "release_stage",
-            "release_sequence",
-            "product_test_release_status",
+            "test_round_id",
+            "test_round_name",
+            "workday",
+            "start_date",
+            "end_date",
+            "migration_status",
         ],
         [[
-            detail["release_summary"].get("product_test_release_id"),
-            detail["release_summary"].get("upstream_release_id"),
-            detail["release_summary"].get("upstream_release_system"),
-            detail["release_summary"].get("release_stage"),
-            detail["release_summary"].get("release_sequence"),
-            detail["release_summary"].get("product_test_release_status"),
+            detail["round_summary"].get("test_round_id"),
+            detail["round_summary"].get("test_round_name"),
+            detail["round_summary"].get("workday"),
+            detail["round_summary"].get("start_date"),
+            detail["round_summary"].get("end_date"),
+            detail["round_summary"].get("migration_status"),
         ]],
     )
     _append_export_section(
@@ -4096,7 +3980,7 @@ def build_product_test_report_export_rows(database_session: Session, product_tes
 def build_product_test_trace_export_rows(
     database_session: Session,
     *,
-    product_test_release_id: str,
+    test_round_id: str,
     product_test_target_id: str = "",
     product_test_environment_id: str = "",
     product_test_case_id: str = "",
@@ -4105,7 +3989,7 @@ def build_product_test_trace_export_rows(
 ) -> list[list[str]]:
     detail = get_product_test_trace_view(
         database_session,
-        product_test_release_id=product_test_release_id,
+        test_round_id=test_round_id,
         product_test_target_id=product_test_target_id,
         product_test_environment_id=product_test_environment_id,
         product_test_case_id=product_test_case_id,
@@ -4115,22 +3999,22 @@ def build_product_test_trace_export_rows(
     rows: list[list[str]] = []
     _append_export_section(
         rows,
-        "Release",
+        "Round",
         [
-            "product_test_release_id",
-            "upstream_release_id",
-            "upstream_release_system",
-            "release_stage",
-            "release_sequence",
-            "product_test_release_status",
+            "test_round_id",
+            "test_round_name",
+            "workday",
+            "start_date",
+            "end_date",
+            "migration_status",
         ],
         [[
-            detail["release"].get("product_test_release_id"),
-            detail["release"].get("upstream_release_id"),
-            detail["release"].get("upstream_release_system"),
-            detail["release"].get("release_stage"),
-            detail["release"].get("release_sequence"),
-            detail["release"].get("product_test_release_status"),
+            detail["round"].get("test_round_id"),
+            detail["round"].get("test_round_name"),
+            detail["round"].get("workday"),
+            detail["round"].get("start_date"),
+            detail["round"].get("end_date"),
+            detail["round"].get("migration_status"),
         ]],
     )
     run_rows: list[list[Any]] = []
@@ -4293,7 +4177,7 @@ def build_product_test_run_export_rows(database_session: Session, product_test_r
         "Run Summary",
         [
             "product_test_run_id",
-            "product_test_release_id",
+            "test_round_id",
             "product_test_target_id",
             "product_test_environment_id",
             "product_test_run_status",
@@ -4307,7 +4191,7 @@ def build_product_test_run_export_rows(database_session: Session, product_test_r
         ],
         [[
             detail["run"]["product_test_run_id"],
-            detail["run"]["product_test_release_id"],
+            detail["run"]["test_round_id"],
             detail["run"]["product_test_target_id"],
             detail["run"]["product_test_environment_id"],
             detail["run"]["status"],
@@ -4452,7 +4336,7 @@ def build_product_test_run_export_rows(database_session: Session, product_test_r
 
 def get_product_test_system_check(database_session: Session) -> dict[str, Any]:
     table_names = [
-        "product_test_release",
+        "product_test_round",
         "product_test_target_unified",
         "product_test_environment_definition",
         "product_test_environment",
@@ -4500,9 +4384,9 @@ def get_product_test_system_check(database_session: Session) -> dict[str, Any]:
         )
         or 0
     )
-    locked_release_count = (
+    locked_round_count = (
         database_session.scalar(
-            select(func.count(func.distinct(ProductTestReport.product_test_release_id))).where(
+            select(func.count(func.distinct(ProductTestReport.test_round_id))).where(
                 ProductTestReport.product_test_report_status == "APPROVED"
             )
         )
@@ -4510,7 +4394,7 @@ def get_product_test_system_check(database_session: Session) -> dict[str, Any]:
     )
     seed_data_presence = {
         "wifi_case": database_session.get(ProductTestCase, "SQA_PRODUCT_TEST_CASE_ID-WIFI-AP_CONFIG-001") is not None,
-        "wifi_release": database_session.get(ProductTestRelease, "SQA_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1") is not None,
+        "wifi_round": database_session.get(ProductTestRound, "ROUND-WIFI_1ST") is not None,
         "wifi_run": database_session.get(ProductTestRun, "SQA_PRODUCT_TEST_RUN_ID-20260504-0001") is not None,
         "wifi_result": database_session.get(ProductTestResult, "SQA_PRODUCT_TEST_RESULT_ID-20260504-0001") is not None,
         "wifi_report": database_session.get(ProductTestReport, "SQA_PRODUCT_TEST_REPORT_ID-SQA_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1-FULL-001") is not None,
@@ -4521,18 +4405,18 @@ def get_product_test_system_check(database_session: Session) -> dict[str, Any]:
         "unresolved_defects_count": int(unresolved_defects_count),
         "report_count": int(report_count),
         "approved_report_count": int(approved_report_count),
-        "locked_release_count": int(locked_release_count),
+        "locked_round_count": int(locked_round_count),
     }
 
 
-def get_release_id_by_result_id(database_session: Session, product_test_result_id: str) -> str:
+def get_test_round_id_by_result_id(database_session: Session, product_test_result_id: str) -> str:
     result_row = database_session.get(ProductTestResult, product_test_result_id)
     if result_row is None:
         raise LookupError("Result not found.")
     run_row = database_session.get(ProductTestRun, result_row.product_test_run_id)
     if run_row is None:
         raise LookupError("Run not found for result.")
-    return run_row.product_test_release_id
+    return run_row.test_round_id
 
 
 def list_running_run_options(database_session: Session) -> list[dict[str, Any]]:
@@ -4541,7 +4425,7 @@ def list_running_run_options(database_session: Session) -> list[dict[str, Any]]:
             row,
             [
                 "product_test_run_id",
-                "product_test_release_id",
+                "test_round_id",
                 "product_test_target_id",
                 "product_test_environment_id",
                 "product_test_run_status",
@@ -4686,7 +4570,7 @@ def get_product_test_defect_detail(database_session: Session, product_test_defec
             run_row,
             [
                 "product_test_run_id",
-                "product_test_release_id",
+                "test_round_id",
                 "product_test_target_id",
                 "product_test_environment_id",
                 "product_test_run_status",

@@ -54,12 +54,13 @@ ai_handover/
 | TASK 1~14 | ✅ 적용 완료 |
 | TASK 11/12/12-B/13 (Configs·Targets 병합, run→target 재연결) | ✅ 적용 완료 |
 | TASK 15-1 (round 13→7 캠페인) | ✅ 적용 완료 |
-| TASK 15-2 (RUN/RESULT 신 ID 매핑) | ✅ dry-run 확정 (충돌 0) |
-| TASK 15-3 (CASE 재발급) | ✅ dry-run 확정 (충돌 0, case 60→134) |
-| **TASK 15-4 (일괄 apply)** | ⬜ **다음** — 전체 ID + 전 FK + release 폐기 (최고 위험) |
-| TASK 15-5 (release 테이블 폐기 + 코드 동기화 + FK drift 수정) | ⬜ 대기 |
+| TASK 15-2 (RUN/RESULT 신 ID 매핑) | ✅ 적용 완료 (15-4에 포함) |
+| TASK 15-3 (CASE 재발급) | ✅ 적용 완료 (15-4에 포함, case 60→134) |
+| TASK 15-4 (일괄 apply) | ✅ **적용 완료** (2026-06-11). run 41 / result 375(손실0) / case 134 / procedure 339 / defect 15, integrity ok, 고아 0 |
+| TASK 15-5 (release 폐기 + 코드 동기화 + FK drift 수정) | ✅ **적용 완료** (2026-06-11). release 테이블 제거, run FK→`product_test_environment_unified`, fk_check 0, integrity ok. 코드 동기화 반영(앱 부팅·`product_test_release` 잔존 grep 검증 권장) |
 
-**지금 새 AI(cursor)에게 줄 프롬프트**: `prompts/cursor_task15_4.md` 의 본문.
+> ✅ **v2 마이그레이션(15-1~15-5) 전부 적용 완료.** 백업: 15-4 `...task15_4_102809.db`, 15-5 `...task15_5_133636.db`.
+> ⛔ 15-2/15-3/15-4/15-5 모두 apply 완료됨. **재 dry-run·재 apply 금지** (PK 충돌·손상 위험).
 
 ---
 
