@@ -62,14 +62,14 @@ def test_update_target_status(seeded_wifi_ap_db: TestClient) -> None:
 
     status, body = _post(client, [
         {"entity_type": "product_test_target", "entity_id": target_id,
-         "field_name": "product_test_target_status", "value": "INACTIVE"},
+         "field_name": "product_test_target_status", "value": "inactive"},
     ])
     assert status == 200, body
     assert body["ok"] is True
 
     with session_local() as db:
         row = db.get(ProductTestTargetUnified, target_id)
-        assert row.product_test_target_status == "INACTIVE"
+        assert row.product_test_target_status == "inactive"
 
 
 # ─────────────────────────────────────────────
