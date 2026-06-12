@@ -407,6 +407,41 @@ input.table_cell_sync_input {
     border-radius: 4px;
 }
 
+[data-incell-edit-table] td[data-field]:not([data-primary-key="1"]):not([data-readonly="1"]) {
+    cursor: text;
+}
+
+[data-incell-edit-table] tr.admin_incell_draft td {
+    background-color: rgba(37, 99, 235, 0.06);
+}
+
+[data-incell-edit-table] tr.admin_incell_error td,
+[data-incell-edit-table] td.admin_incell_required_missing {
+    background-color: rgba(239, 68, 68, 0.12);
+}
+
+[data-incell-edit-table] td.admin_incell_editing {
+    outline: 2px solid #2563eb;
+    outline-offset: -2px;
+    background-color: rgba(37, 99, 235, 0.12);
+}
+
+[data-incell-edit-table] td.admin_incell_saving,
+[data-incell-edit-table] tr.admin_incell_saving td {
+    opacity: 0.72;
+}
+
+.admin_incell_control {
+    width: 100%;
+    min-width: 96px;
+    box-sizing: border-box;
+    font: inherit;
+    padding: 4px 6px;
+    border: 1px solid #93c5fd;
+    border-radius: 4px;
+    background: #fff;
+}
+
 .basic_table td.short_value_center {
     text-align: center;
 }

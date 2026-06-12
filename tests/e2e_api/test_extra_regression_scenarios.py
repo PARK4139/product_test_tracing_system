@@ -96,6 +96,55 @@ def test_regression_admin_product_test_cases_page(seeded_wifi_ap_db: TestClient)
     page = client.get("/admin/product-test-cases", cookies=_cookies("master_admin"))
     assert page.status_code == 200
     assert "SQA_PRODUCT_TEST_CASE_ID" in page.text or "WIFI" in page.text.upper()
+    assert "등록 / Create" not in page.text
+    assert "data-incell-edit-table" in page.text
+    assert "data-incell-add-row" in page.text
+
+
+def test_regression_admin_product_test_case_incell_update_and_create(seeded_wifi_ap_db: TestClient) -> None:
+    client = seeded_wifi_ap_db
+    cookies = _cookies("master_admin")
+    update = client.post(
+        "/admin/api/product-test/fields/bulk-update",
+        cookies=cookies,
+        json={
+            "updates": [
+                {
+                    "entity_type": "product_test_case",
+                    "entity_id": "SQA_PRODUCT_TEST_CASE_ID-WIFI-AP_CONFIG-001",
+                    "field_name": "product_test_case_title",
+                    "value": "inline edited title",
+                }
+            ]
+        },
+    )
+    assert update.status_code == 200
+    assert update.json()["updated"] == 1
+    updated_page = client.get("/admin/product-test-cases", cookies=cookies)
+    assert "inline edited title" in updated_page.text
+
+    create = client.post(
+        "/admin/product-test-cases/create",
+        cookies=cookies,
+        headers={"accept": "application/json", "x-requested-with": "XMLHttpRequest"},
+        data={
+            "product_test_case_id": "SQA_PRODUCT_TEST_CASE_ID-WIFI-INLINE_EDIT-999",
+            "product_test_case_title": "inline created title",
+            "test_category": "WIFI",
+            "test_objective": "",
+            "precondition": "",
+            "expected_result": "",
+            "product_test_case_status": "ACTIVE",
+            "remark": "inline create regression",
+            "return_to": "/admin/product-test-cases",
+        },
+    )
+    assert create.status_code == 200
+    payload = create.json()
+    assert payload["ok"] is True
+    assert payload["created_row"]["product_test_case_id"] == "SQA_PRODUCT_TEST_CASE_ID-WIFI-INLINE_EDIT-999"
+    created_page = client.get("/admin/product-test-cases", cookies=cookies)
+    assert "inline created title" in created_page.text
 
 
 def test_regression_admin_report_snapshots_index(seeded_wifi_ap_db: TestClient) -> None:

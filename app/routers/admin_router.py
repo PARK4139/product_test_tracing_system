@@ -247,6 +247,14 @@ def _ensure_admin_role(current_role_name: str) -> None:
         )
 
 
+def _ensure_master_admin_role(current_role_name: str) -> None:
+    if current_role_name != ROLE_MASTER_ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This role is not allowed for this action.",
+        )
+
+
 class AdminProductTestIdCandidatesRequest(BaseModel):
     form_action: str = ""
     field_name: str = ""
@@ -718,6 +726,45 @@ def render_admin_dashboard(
     )
 
 
+@admin_router.post("/approve_tester_join")
+def approve_tester_join_admin(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+    user_account_id: int = Form(...),
+):
+    _ensure_master_admin_role(current_role_name)
+    user_account = database_session.get(UserAccount, user_account_id)
+    if user_account is None or user_account.role_name != ROLE_TESTER:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tester account not found.")
+    user_account.is_approved = True
+    user_account.updated_at = get_utc_now_datetime()
+    database_session.commit()
+    context = _admin_dashboard_product_tracing_template_context(database_session=database_session)
+    context.update({"message": "Tester approved", "message_type": "success"})
+    return _render_admin_shell_template(
+        request=request,
+        database_session=database_session,
+        current_role_name=current_role_name,
+        template_name="admin_dashboard.html",
+        page_title="Product Test Data Tracing System",
+        extra_context=context,
+    )
+
+
+@admin_router.post("/qc/db-truncate")
+def truncate_qc_database_admin(
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    _ensure_master_admin_role(current_role_name)
+    if not is_qc_mode_enabled():
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="QC mode is disabled.")
+    truncate_application_data()
+    database_session.expire_all()
+    return JSONResponse({"ok": True, "message": "Database truncated."})
+
+
 @admin_router.get("/product-test-rounds")
 def redirect_product_test_rounds_to_admin(
     current_role_name: current_role_name_dependency,
@@ -791,6 +838,91 @@ def render_product_test_reports_admin(
             "message": (request.query_params.get("message") or "").strip(),
             "message_type": (request.query_params.get("message_type") or "info").strip(),
         },
+    )
+
+
+@admin_router.get("/product-test-reports/{product_test_report_id}")
+def render_product_test_report_detail_admin(
+    product_test_report_id: str,
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    _ensure_admin_role(current_role_name)
+    detail = get_product_test_report_detail(database_session, product_test_report_id)
+    if detail is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found.")
+    return _render_admin_shell_template(
+        request=request,
+        database_session=database_session,
+        current_role_name=current_role_name,
+        template_name="product_test_report_detail_admin.html",
+        page_title="Product Test Data Tracing System",
+        extra_context={
+            **detail,
+            "message": (request.query_params.get("message") or "").strip(),
+            "message_type": (request.query_params.get("message_type") or "info").strip(),
+        },
+    )
+
+
+@admin_router.get("/product-test-reports/{product_test_report_id}/export.csv")
+def export_product_test_report_csv(
+    product_test_report_id: str,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    _ensure_admin_role(current_role_name)
+    rows = build_product_test_report_export_rows(database_session, product_test_report_id)
+    return _csv_streaming_response(rows=rows, file_name=f"{product_test_report_id}.csv")
+
+
+@admin_router.get("/product-test-reports/{product_test_report_id}/print")
+def render_product_test_report_print_admin(
+    product_test_report_id: str,
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    _ensure_admin_role(current_role_name)
+    detail = get_product_test_report_detail(database_session, product_test_report_id)
+    if detail is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found.")
+    return _render_admin_shell_template(
+        request=request,
+        database_session=database_session,
+        current_role_name=current_role_name,
+        template_name="product_test_report_detail_admin.html",
+        page_title="Product Test Data Tracing System",
+        extra_context={**detail, "print_mode": True},
+    )
+
+
+@admin_router.post("/product-test-reports/{product_test_report_id}/reject")
+def reject_product_test_report_admin(
+    product_test_report_id: str,
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+    rejection_reason: str = Form(""),
+):
+    _ensure_admin_role(current_role_name)
+    actor_name = _admin_actor_name(database_session, request)
+    try:
+        reject_product_test_report(
+            database_session,
+            product_test_report_id=product_test_report_id,
+            rejected_by=actor_name,
+            rejection_reason=rejection_reason,
+        )
+    except (LookupError, ValueError) as exception:
+        return RedirectResponse(
+            url=f"/admin/product-test-reports/{product_test_report_id}?message={str(exception)}&message_type=error",
+            status_code=303,
+        )
+    return RedirectResponse(
+        url=f"/admin/product-test-reports/{product_test_report_id}?message=Report rejected&message_type=success",
+        status_code=303,
     )
 
 
