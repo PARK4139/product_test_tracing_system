@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.models import (
     ProductTestCase,
+    ProductTestRun,
     ProductTestDefect,
     ProductTestEnvironment,
     ProductTestProcedure,
@@ -45,6 +46,7 @@ RELEASE_STATUS_EDIT_VALUES = tuple(
 
 ENTITY_MODEL_MAP = {
     "product_test_round": ProductTestRound,
+    "product_test_run": ProductTestRun,
     "product_test_target": ProductTestTargetUnified,
     "product_test_environment": ProductTestEnvironment,
     "product_test_case": ProductTestCase,
@@ -62,6 +64,14 @@ FIELD_WHITELIST: dict[str, frozenset[str]] = {
             "start_date",
             "end_date",
             "migration_status",
+        }
+    ),
+    "product_test_run": frozenset(
+        {
+            "product_test_run_status",
+            "started_at",
+            "finished_at",
+            "remark",
         }
     ),
     "product_test_target": frozenset(

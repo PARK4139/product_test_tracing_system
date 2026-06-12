@@ -34,7 +34,7 @@
     }
 
     function isSaveable(cell, row, table) {
-        if (!table.dataset.incellEditTable)        return false;
+        if (!('incellEditTable' in table.dataset))        return false;
         if (!cell.dataset.field)                   return false;
         if (cell.dataset.incellActions === "1")    return false;
         if (cell.dataset.readonly === "1")         return false;
@@ -152,7 +152,7 @@
                   "<input id=\"admin_fr_replace\" class=\"admin_fr_input\" type=\"text\" placeholder=\"바꿀 텍스트 입력…\" autocomplete=\"off\">" +
                 "</div>" +
                 "<div class=\"admin_fr_options\">" +
-                  "<label class=\"admin_fr_opt\"><input type=\"checkbox\" id=\"admin_fr_whole\"> 셀 전체 일치</label>" +
+                  "<label class=\"admin_fr_opt\"><input type=\"checkbox\" id=\"admin_fr_whole\"> 부분 문자열</label>" +
                   "<label class=\"admin_fr_opt\"><input type=\"checkbox\" id=\"admin_fr_case\"> 대소문자 구분</label>" +
                 "</div>" +
                 "<div id=\"admin_fr_preview\" class=\"admin_fr_preview\" hidden></div>" +
@@ -175,15 +175,31 @@
             document.getElementById(id).addEventListener("input",  resetPreview);
             document.getElementById(id).addEventListener("change", resetPreview);
         });
+        document.getElementById("admin_fr_find").addEventListener("input", function () { lsSave("find", this.value); });
+        document.getElementById("admin_fr_replace").addEventListener("input", function () { lsSave("replace", this.value); });
+        document.getElementById("admin_fr_whole").addEventListener("change", function () { lsSave("substring", this.checked ? "1" : ""); });
+        document.getElementById("admin_fr_case").addEventListener("change", function () { lsSave("case", this.checked ? "1" : ""); });
     }
+
+    function lsKey(k) { return "admin_fr_" + k; }
+    function lsSave(k, v) { try { localStorage.setItem(lsKey(k), v); } catch(e) {} }
+    function lsLoad(k, def) { try { return localStorage.getItem(lsKey(k)) || def; } catch(e) { return def; } }
 
     function openModal() {
         buildModal();
         getModal().style.display = "";
+        /* localStorage 복원 */
+        var findEl    = document.getElementById("admin_fr_find");
+        var replaceEl = document.getElementById("admin_fr_replace");
+        var wholeEl   = document.getElementById("admin_fr_whole");
+        var caseEl    = document.getElementById("admin_fr_case");
+        if (findEl)    findEl.value      = lsLoad("find", "");
+        if (replaceEl) replaceEl.value   = lsLoad("replace", "");
+        if (wholeEl)   wholeEl.checked   = lsLoad("substring", "1") === "1";
+        if (caseEl)    caseEl.checked    = lsLoad("case", "") === "1";
         resetPreview();
         setTimeout(function () {
-            var el = document.getElementById("admin_fr_find");
-            if (el) el.focus();
+            if (findEl) { findEl.focus(); findEl.select(); }
         }, 50);
     }
 
@@ -206,7 +222,7 @@
         return {
             findText:      (document.getElementById("admin_fr_find") ? document.getElementById("admin_fr_find").value : "").trim(),
             replaceText:   document.getElementById("admin_fr_replace") ? document.getElementById("admin_fr_replace").value : "",
-            matchWhole:    document.getElementById("admin_fr_whole")  ? document.getElementById("admin_fr_whole").checked  : false,
+            matchWhole:    document.getElementById("admin_fr_whole")  ? !document.getElementById("admin_fr_whole").checked  : true,
             caseSensitive: document.getElementById("admin_fr_case")   ? document.getElementById("admin_fr_case").checked   : false,
         };
     }

@@ -109,11 +109,11 @@
     <div class="section_header_row">
         <h3>Test Round</h3>
     </div>
-    <div class="detail_guide">v2 canonical round 목록(읽기 전용). 행을 클릭하면 관련 Runs 행이 하이라이트된다.</div>
+    <div class="detail_guide">행 클릭 시 관련 Runs 하이라이트. 셀 클릭으로 인라인 편집.</div>
     <div class="tester_table_wrap">
-        <table class="basic_table">
+        <table class="basic_table" data-incell-edit-table data-entity-type="product_test_round" data-primary-key-field="test_round_id">
             <thead><tr><th>test_round_id</th><th>test_round_name</th><th>workday</th><th>start_date</th><th>end_date</th><th>migration_status</th></tr></thead>
-            <tbody>{% for row in round_rows %}<tr class="admin_hl_row" data-round-id="{{ row.test_round_id }}"><td>{{ row.test_round_id }}</td><td>{{ row.test_round_name }}</td><td>{{ row.workday or '' }}</td><td>{{ row.start_date or '' }}</td><td>{{ row.end_date or '' }}</td><td><span class="status_badge status-{{ row.migration_status|lower }}">{{ row.migration_status }}</span></td></tr>{% endfor %}</tbody>
+            <tbody>{% for row in round_rows %}<tr class="admin_hl_row" data-round-id="{{ row.test_round_id }}" data-entity-type="product_test_round" data-entity-id="{{ row.test_round_id }}"><td data-field="test_round_id" data-primary-key="1">{{ row.test_round_id }}</td><td data-field="test_round_name">{{ row.test_round_name }}</td><td data-field="workday">{{ row.workday or '' }}</td><td data-field="start_date">{{ row.start_date or '' }}</td><td data-field="end_date">{{ row.end_date or '' }}</td><td data-field="migration_status" data-options="DRAFT|TESTING|REJECTED|APPROVED|ARCHIVED"><span class="status_badge status-{{ row.migration_status|lower }}">{{ row.migration_status }}</span></td></tr>{% endfor %}</tbody>
         </table>
     </div>
 </section>
@@ -121,9 +121,9 @@
     <div class="section_header_row">
         <h3>Runs</h3>
     </div>
-    <div class="detail_guide">run 목록(읽기 전용). 행을 클릭하면 관련 Round·Target·Env 행이 하이라이트된다.</div>
+    <div class="detail_guide">행 클릭 시 관련 Round·Target·Env 하이라이트. 셀 클릭으로 인라인 편집.</div>
     <div class="tester_table_wrap">
-        <table class="basic_table">
+        <table class="basic_table" data-incell-edit-table data-entity-type="product_test_run" data-primary-key-field="product_test_run_id">
             <thead>
                 <tr>
                     <th>run_id</th>
@@ -138,15 +138,15 @@
             </thead>
             <tbody>
                 {% for row in run_rows %}
-                <tr class="admin_hl_row" data-run-id="{{ row.product_test_run_id }}" data-round-id="{{ row.test_round_id }}" data-target-id="{{ row.product_test_target_id }}" data-env-id="{{ row.product_test_environment_id }}">
-                    <td>{{ row.product_test_run_id }}</td>
-                    <td>{{ row.test_round_id }}</td>
-                    <td>{{ row.product_test_target_id }}</td>
-                    <td>{{ row.product_test_environment_id }}</td>
-                    <td><span class="status_badge status-{{ row.product_test_run_status|lower }}">{{ row.product_test_run_status }}</span></td>
-                    <td>{{ row.started_at }}</td>
-                    <td>{{ row.finished_at or '' }}</td>
-                    <td>{{ row.remark or '' }}</td>
+                <tr class="admin_hl_row" data-run-id="{{ row.product_test_run_id }}" data-round-id="{{ row.test_round_id }}" data-target-id="{{ row.product_test_target_id }}" data-env-id="{{ row.product_test_environment_id }}" data-entity-type="product_test_run" data-entity-id="{{ row.product_test_run_id }}">
+                    <td data-field="product_test_run_id" data-primary-key="1">{{ row.product_test_run_id }}</td>
+                    <td data-field="test_round_id" data-update-readonly="1">{{ row.test_round_id }}</td>
+                    <td data-field="product_test_target_id" data-update-readonly="1">{{ row.product_test_target_id }}</td>
+                    <td data-field="product_test_environment_id" data-update-readonly="1">{{ row.product_test_environment_id }}</td>
+                    <td data-field="product_test_run_status" data-options="running|finished|cancelled"><span class="status_badge status-{{ row.product_test_run_status|lower }}">{{ row.product_test_run_status }}</span></td>
+                    <td data-field="started_at">{{ row.started_at }}</td>
+                    <td data-field="finished_at">{{ row.finished_at or '' }}</td>
+                    <td data-field="remark">{{ row.remark or '' }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
