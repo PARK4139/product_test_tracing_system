@@ -11,6 +11,7 @@ RELEASE_ID = "SQA_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1"
 TARGET_ID = "SQA_PRODUCT_TEST_TARGET_ID-MERCUSYS_MR30G-SN001"
 ENV_ID = "SQA_PRODUCT_TEST_ENVIRONMENT_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM-20260504-001"
 REPORT_ID = "SQA_PRODUCT_TEST_REPORT_ID-SQA_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1-FULL-001"
+PROCEDURE_ID = "SQA_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-001"
 DEFECT_OPENED = "SQA_PRODUCT_TEST_DEFECT_ID-20260504-0002"
 
 
@@ -167,6 +168,61 @@ def test_regression_admin_product_test_case_incell_update_and_create(seeded_wifi
     assert payload["created_row"]["product_test_case_id"] == "SQA_PRODUCT_TEST_CASE_ID-WIFI-INLINE_EDIT-999"
     created_page = client.get("/admin/product-test-cases", cookies=cookies)
     assert "inline created title" in created_page.text
+
+
+def test_regression_admin_incell_rollout_existing_cell_updates(seeded_wifi_ap_db: TestClient) -> None:
+    client = seeded_wifi_ap_db
+    cookies = _cookies("master_admin")
+    update = client.post(
+        "/admin/api/product-test/fields/bulk-update",
+        cookies=cookies,
+        json={
+            "updates": [
+                {
+                    "entity_type": "product_test_target",
+                    "entity_id": TARGET_ID,
+                    "field_name": "manufacturer",
+                    "value": "InlineTargetCo",
+                },
+                {
+                    "entity_type": "product_test_environment",
+                    "entity_id": ENV_ID,
+                    "field_name": "product_test_environment_name",
+                    "value": "Inline Edited Environment",
+                },
+                {
+                    "entity_type": "product_test_procedure",
+                    "entity_id": PROCEDURE_ID,
+                    "field_name": "acceptance_criteria",
+                    "value": "inline acceptance criteria",
+                },
+                {
+                    "entity_type": "product_test_report",
+                    "entity_id": REPORT_ID,
+                    "field_name": "product_test_report_title",
+                    "value": "inline edited report title",
+                },
+            ]
+        },
+    )
+    assert update.status_code == 200
+    assert update.json()["updated"] == 4
+
+    target_page = client.get("/admin/product-test-targets", cookies=cookies)
+    assert target_page.status_code == 200
+    assert "InlineTargetCo" in target_page.text
+
+    environment_page = client.get("/admin/product-test-environments", cookies=cookies)
+    assert environment_page.status_code == 200
+    assert "Inline Edited Environment" in environment_page.text
+
+    procedure_page = client.get("/admin/product-test-procedures", cookies=cookies)
+    assert procedure_page.status_code == 200
+    assert "inline acceptance criteria" in procedure_page.text
+
+    report_page = client.get("/admin/product-test-reports", cookies=cookies)
+    assert report_page.status_code == 200
+    assert "inline edited report title" in report_page.text
 
 
 def test_regression_admin_report_snapshots_index(seeded_wifi_ap_db: TestClient) -> None:
