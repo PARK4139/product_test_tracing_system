@@ -357,7 +357,8 @@ def _apply_status_update(
         row = database_session.get(model, entity_id)
         if row is not None:
             _touch_row(row, updated_by)
-    except ValueError:
+    except (ValueError, KeyError):
+        # KeyError: entity_type이 status-transition 시스템 미지원 (예: product_test_target)
         row = database_session.get(model, entity_id)
         if row is None:
             raise LookupError(f"{entity_type} not found.")
