@@ -32,6 +32,11 @@ from app.services.product_test_run_service._common import (
     _next_prefixed_id,
     _now_text,
     _validate_in,
+    DEFECT_PRIORITY_VALUES,
+    DEFECT_SEVERITY_VALUES,
+    EVIDENCE_TYPE_VALUES,
+    PROCEDURE_RESULT_STATUS_VALUES,
+    _query_all_rows,
 )
 from app.services.product_test_run_service._status import (
     _insert_status_transition,

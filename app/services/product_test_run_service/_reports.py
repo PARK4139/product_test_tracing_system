@@ -30,6 +30,9 @@ from app.services.product_test_run_service._common import (
     _now_text,
     _round_is_locked,
     _validate_in,
+    REPORT_TYPE_VALUES,
+    SNAPSHOT_TYPE_VALUES,
+    _query_all_rows,
 )
 from app.services.product_test_run_service._status import (
     _insert_status_transition,
