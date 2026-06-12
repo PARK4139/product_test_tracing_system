@@ -1,6 +1,38 @@
 (function () {
     "use strict";
 
+    /* ── Ctrl+Z 언두 히스토리 ─────────────────────────────── */
+    const _undoStack = [];  // [{entityType, entityId, fieldName, prevValue, cell}]
+    const MAX_UNDO = 50;
+
+    const pushUndo = (entityType, entityId, fieldName, prevValue, cell) => {
+        _undoStack.push({ entityType, entityId, fieldName, prevValue, cell });
+        if (_undoStack.length > MAX_UNDO) _undoStack.shift();
+    };
+
+    document.addEventListener("keydown", async (event) => {
+        if (!(event.ctrlKey && (event.key === "z" || event.key === "Z"))) return;
+        const tag = document.activeElement?.tagName?.toLowerCase() ?? "";
+        if (tag === "input" || tag === "textarea" || tag === "select") return;
+        if (_undoStack.length === 0) return;
+        event.preventDefault();
+        const entry = _undoStack.pop();
+        try {
+            await postBulkUpdate(
+                { entityType: entry.entityType, entityId: entry.entityId, fieldName: entry.fieldName },
+                entry.prevValue,
+            );
+            if (entry.cell && document.contains(entry.cell)) {
+                renderCellValue(entry.cell, entry.prevValue);
+            }
+            showNotice("되돌리기 완료", "success");
+        } catch (err) {
+            showNotice(err.message || "되돌리기 실패", "error");
+        }
+    });
+    /* ────────────────────────────────────────────────────── */
+
+
     const showNotice = (message, level = "info") => {
         if (typeof window.showCenterNonModalV2 === "function") {
             window.showCenterNonModalV2(message, level);
@@ -148,6 +180,7 @@
             cell.classList.add("admin_incell_saving");
             try {
                 await postBulkUpdate({ entityType, entityId, fieldName }, nextValue);
+                pushUndo(entityType, entityId, fieldName, originalValue, cell);
                 restoreCell(cell, nextValue);
                 showNotice("셀 저장 완료", "success");
             } catch (error) {

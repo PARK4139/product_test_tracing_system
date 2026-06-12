@@ -421,6 +421,8 @@ def _apply_single_update(
         old_id = entity_id_value
         new_id = str(coerced_value)
         if old_id != new_id:
+            # FK 체크 일시 중단: new_id가 PK에 없는 상태에서 FK 업데이트 시 IntegrityError 방지
+            database_session.execute(text("PRAGMA foreign_keys = OFF"))
             for fk_table in ("product_test_run", "product_test_report", "product_test_report_snapshot"):
                 database_session.execute(
                     text(f"UPDATE {fk_table} SET test_round_id = :new WHERE test_round_id = :old"),
@@ -431,6 +433,7 @@ def _apply_single_update(
                 {"new": new_id, "old": old_id},
             )
             database_session.flush()
+            database_session.execute(text("PRAGMA foreign_keys = ON"))
         return
 
     model = ENTITY_MODEL_MAP[entity_type_value]
