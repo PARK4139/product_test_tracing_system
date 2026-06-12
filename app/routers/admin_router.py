@@ -722,7 +722,7 @@ def render_admin_dashboard(
         database_session=database_session,
         current_role_name=current_role_name,
         template_name="admin_dashboard.html",
-        page_title="Product Test Data Tracing System",
+        page_title="Test Tracer",
         extra_context=context,
     )
 
@@ -748,7 +748,7 @@ def approve_tester_join_admin(
         database_session=database_session,
         current_role_name=current_role_name,
         template_name="admin_dashboard.html",
-        page_title="Product Test Data Tracing System",
+        page_title="Test Tracer",
         extra_context=context,
     )
 
@@ -786,7 +786,7 @@ def render_product_test_targets_admin(
         database_session=database_session,
         current_role_name=current_role_name,
         template_name="product_test_targets_admin.html",
-        page_title="Product Test Data Tracing System",
+        page_title="Test Tracer",
         extra_context={
             "rows": list_product_test_targets(database_session),
             "status_values": TARGET_STATUS_VALUES,
@@ -808,7 +808,7 @@ def render_product_test_environments_admin(
         database_session=database_session,
         current_role_name=current_role_name,
         template_name="product_test_environments_admin.html",
-        page_title="Product Test Data Tracing System",
+        page_title="Test Tracer",
         extra_context={
             "rows": list_product_test_environments(database_session),
             "status_values": ENVIRONMENT_STATUS_VALUES,
@@ -830,7 +830,7 @@ def render_test_config_admin(
         database_session=database_session,
         current_role_name=current_role_name,
         template_name="test_config_admin.html",
-        page_title="Product Test Data Tracing System",
+        page_title="Test Tracer",
     )
 
 
@@ -846,7 +846,7 @@ def render_product_test_cases_admin(
         database_session=database_session,
         current_role_name=current_role_name,
         template_name="product_test_cases_admin.html",
-        page_title="Product Test Data Tracing System",
+        page_title="Test Tracer",
         extra_context={
             "rows": list_product_test_cases(database_session),
             "status_values": MASTER_ACTIVE_STATUS_VALUES,
@@ -868,7 +868,7 @@ def render_product_test_procedures_admin(
         database_session=database_session,
         current_role_name=current_role_name,
         template_name="product_test_procedures_admin.html",
-        page_title="Product Test Data Tracing System",
+        page_title="Test Tracer",
         extra_context={
             "rows": list_product_test_procedures(database_session),
             "case_rows": list_product_test_cases(database_session),
@@ -892,7 +892,7 @@ def render_product_test_reports_admin(
         database_session=database_session,
         current_role_name=current_role_name,
         template_name="product_test_reports_admin.html",
-        page_title="Product Test Data Tracing System",
+        page_title="Test Tracer",
         extra_context={
             "rows": list_product_test_reports(database_session),
             "report_type_values": REPORT_TYPE_VALUES,
@@ -919,7 +919,7 @@ def render_product_test_report_detail_admin(
         database_session=database_session,
         current_role_name=current_role_name,
         template_name="product_test_report_detail_admin.html",
-        page_title="Product Test Data Tracing System",
+        page_title="Test Tracer",
         extra_context={
             **detail,
             "message": (request.query_params.get("message") or "").strip(),
@@ -936,4 +936,76 @@ def export_product_test_report_csv(
 ):
     _ensure_admin_role(current_role_name)
     rows = build_product_test_report_export_rows(database_session, product_test_report_id)
-    return _csv_streaming_response(rows=rows, file_name=f"{product_test_report_report_id}_export.csv")
+    return _csv_streaming_response(rows=rows, file_name=f"{product_test_report_id}_export.csv")
+
+
+@admin_router.get("/product-test-reports/{product_test_report_id}/print")
+def render_product_test_report_print_admin(
+    product_test_report_id: str,
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    _ensure_admin_role(current_role_name)
+    detail = get_product_test_report_detail(database_session, product_test_report_id)
+    if detail is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found.")
+    return _render_admin_shell_template(
+        request=request,
+        database_session=database_session,
+        current_role_name=current_role_name,
+        template_name="product_test_report_detail_admin.html",
+        page_title="Test Tracer",
+        extra_context={**detail, "print_mode": True},
+    )
+
+
+@admin_router.post("/product-test-reports/{product_test_report_id}/reject")
+def reject_product_test_report_admin(
+    product_test_report_id: str,
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+    rejection_reason: str = Form(""),
+):
+    _ensure_admin_role(current_role_name)
+    actor_name = _admin_actor_name(database_session, request)
+    try:
+        reject_product_test_report(
+            database_session,
+            product_test_report_id=product_test_report_id,
+            rejected_by=actor_name,
+            rejection_reason=rejection_reason,
+        )
+    except (LookupError, ValueError) as exception:
+        return RedirectResponse(
+            url=f"/admin/product-test-reports/{product_test_report_id}?message={str(exception)}&message_type=error",
+            status_code=303,
+        )
+    return RedirectResponse(
+        url=f"/admin/product-test-reports/{product_test_report_id}?message=Report rejected&message_type=success",
+        status_code=303,
+    )
+
+
+@admin_router.get("/product-test-report-snapshots")
+def render_product_test_report_snapshots_admin(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    _ensure_admin_role(current_role_name)
+    return _render_admin_shell_template(
+        request=request,
+        database_session=database_session,
+        current_role_name=current_role_name,
+        template_name="product_test_report_snapshots_admin.html",
+        page_title="Test Tracer",
+        extra_context={
+            "rows": list_product_test_report_snapshots(database_session),
+            "report_rows": list_product_test_reports(database_session),
+            "snapshot_type_values": SNAPSHOT_TYPE_VALUES,
+            "message": (request.query_params.get("message") or "").strip(),
+            "message_type": (request.query_params.get("message_type") or "info").strip(),
+        },
+    )

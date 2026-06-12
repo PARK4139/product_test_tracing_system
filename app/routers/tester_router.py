@@ -23,7 +23,7 @@ def render_tester_dashboard(
         name="tester_dashboard.html",
         context={
             "request": request,
-            "page_title": "Product Test Data Tracing System",
+            "page_title": "Test Tracer",
             "recent_test_results": [],
             "current_role_name": current_role_name,
             "current_display_name": (request.cookies.get("phone_number") or "").strip() or "Tester",

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Test Data Tracing System</title>
+    <title>Test Tracer</title>
     <link rel="icon" type="image/svg+xml" href="/static/images/favicon.svg">
     <link rel="stylesheet" href="/static/css/app.css">
 </head>
@@ -25,15 +25,15 @@
             <h1>
                 <img src="/static/images/huvitz_logo.svg" alt="Huvitz" class="header_logo">
                 {% if request.url.path.startswith('/admin') %}
-                Product Test Data Tracing System
+                Test Tracer
                 {% elif request.url.path.startswith('/user') %}
-                Product Test Data Tracing System
+                Test Tracer
                 {% elif request.url.path.startswith('/login') %}
-                Product Test Data Tracing System Login
+                Test Tracer Login
                 {% elif request.url.path.startswith('/join') %}
-                Product Test Data Tracing System Vendor Registration
+                Test Tracer Vendor Registration
                 {% else %}
-                Product Test Data Tracing System
+                Test Tracer
                 {% endif %}
             </h1>
             <div class="qc_header_actions">

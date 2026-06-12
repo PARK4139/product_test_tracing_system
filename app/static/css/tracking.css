@@ -79,6 +79,37 @@
 td.admin_fr_cell_match    { background-color: #fef3c7 !important; outline: 1px solid #f59e0b; outline-offset: -1px; }
 td.admin_fr_cell_match_pk { background-color: #fee2e2 !important; outline: 1px solid #ef4444; outline-offset: -1px; }
 
+/* ── 고급편집메뉴 ───────────────────────────────────────────────── */
+.admin_adv_menu {
+    position: fixed; z-index: 8900;
+    background: var(--color-surface, #fff);
+    border: 1px solid var(--color-border, #d1d5db);
+    border-radius: 8px;
+    box-shadow: 0 6px 24px rgba(0,0,0,.18);
+    min-width: 180px;
+    padding: 6px 0 8px;
+    display: flex; flex-direction: column;
+}
+.admin_adv_menu_header {
+    font-size: 11px; font-weight: 600; letter-spacing: .04em;
+    color: var(--color-text-secondary, #9ca3af);
+    padding: 6px 14px 4px;
+    text-transform: uppercase;
+}
+.admin_adv_menu_item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 16px;
+    background: none; border: none; cursor: pointer;
+    font-size: 14px; text-align: left; width: 100%;
+    color: var(--color-text, #111827);
+    border-radius: 0;
+}
+.admin_adv_menu_item:hover, .admin_adv_menu_item:focus {
+    background: var(--color-surface-2, #f3f4f6);
+    outline: none;
+}
+.admin_adv_menu_icon { font-size: 16px; width: 20px; text-align: center; }
+
 /* ── Cross-table row highlight ──────────────────────────────────── */
 tr.admin_hl_row { cursor: pointer; }
 tr.admin_hl_selected { background-color: #dbeafe !important; outline: 2px solid #3b82f6; outline-offset: -1px; }
