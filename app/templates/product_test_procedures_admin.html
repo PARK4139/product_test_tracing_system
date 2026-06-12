@@ -10,41 +10,15 @@
 {% if message %}
 <section class="card"><div class="non_modal_notice {{ message_type }}"><div>{{ message }}</div></div></section>
 {% endif %}
-<section class="card">
-    <div class="section_header_row"><h3>등록 / Create</h3></div>
-    <form method="post" action="/admin/product-test-procedures/create" class="form_stack" style="max-width:none;">
-        <input type="hidden" name="return_to" value="/admin/product-test-procedures">
-        <label>product_test_procedure_id<span class="required_marker">*</span></label>
-        <input type="text" name="product_test_procedure_id" required>
-        <label>product_test_case_id<span class="required_marker">*</span></label>
-        <select name="product_test_case_id" required>
-            <option value=""></option>
-            {% for row in case_rows %}<option value="{{ row.product_test_case_id }}">{{ row.product_test_case_id }}</option>{% endfor %}
-        </select>
-        <label>procedure_sequence<span class="required_marker">*</span></label>
-        <input type="number" name="procedure_sequence" required>
-        <label>procedure_action<span class="required_marker">*</span></label>
-        <textarea name="procedure_action" rows="6" required placeholder="1. 첫 번째 절차&#10;2. 두 번째 절차"></textarea>
-        <label>acceptance_criteria<span class="required_marker">*</span></label>
-        <input type="text" name="acceptance_criteria" required>
-        <label>required_evidence_type</label>
-        <select name="required_evidence_type">
-            <option value=""></option>
-            {% for value in evidence_type_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}
-        </select>
-        <label>product_test_procedure_status</label>
-        <select name="product_test_procedure_status">
-            {% for value in status_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}
-        </select>
-        <label>remark</label>
-        <input type="text" name="remark">
-        <div class="table_action_bar"><button type="submit">Save</button><button type="reset">Reset</button></div>
-    </form>
-</section>
 <section class="card" id="product_test_procedures_list_card">
-    <div class="section_header_row"><h3>목록 / List</h3></div>
+    <div class="section_header_row">
+        <h3>목록 / List</h3>
+        <div class="table_action_bar">
+            <button type="button" class="project_standard_button" data-incell-add-row>+ 행 추가</button>
+        </div>
+    </div>
     <div class="tester_table_wrap">
-        <table class="basic_table" id="product_test_procedures_list_table">
+        <table class="basic_table" id="product_test_procedures_list_table" data-incell-edit-table data-entity-type="product_test_procedure" data-primary-key-field="product_test_procedure_id" data-create-action="/admin/product-test-procedures/create">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -55,23 +29,31 @@
                     <th>Evidence</th>
                     <th>Status</th>
                     <th>Remark</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
                 {% for row in rows %}
-                <tr data-entity-id="{{ row.product_test_procedure_id }}">
-                    <td>{{ row.product_test_procedure_id }}</td>
-                    <td>{{ row.product_test_case_id }}</td>
-                    <td>{{ row.procedure_sequence }}</td>
+                <tr data-entity-type="product_test_procedure" data-entity-id="{{ row.product_test_procedure_id }}">
+                    <td data-field="product_test_procedure_id" data-primary-key="1" data-required="1">{{ row.product_test_procedure_id }}</td>
+                    <td data-field="product_test_case_id" data-required="1" data-options="{% for case_row in case_rows %}{{ case_row.product_test_case_id }}{% if not loop.last %}|{% endif %}{% endfor %}" data-update-readonly="1">{{ row.product_test_case_id }}</td>
+                    <td data-field="procedure_sequence" data-required="1" data-update-readonly="1">{{ row.procedure_sequence }}</td>
                     <td
                         class="procedure_action_summary"
+                        data-field="procedure_action"
+                        data-required="1"
+                        data-control="textarea"
+                        data-rows="6"
+                        data-modal-edit="1"
+                        data-procedure-action="1"
                         data-entity-id="{{ row.product_test_procedure_id }}"
                         data-procedure-action-b64="{{ row.procedure_action | procedure_action_b64 }}"
                     >{{ row.procedure_action | procedure_action_summary }}</td>
-                    <td>{{ row.acceptance_criteria }}</td>
-                    <td>{{ row.required_evidence_type }}</td>
-                    <td>{{ row.product_test_procedure_status }}</td>
-                    <td>{{ row.remark or '' }}</td>
+                    <td data-field="acceptance_criteria" data-required="1">{{ row.acceptance_criteria }}</td>
+                    <td data-field="required_evidence_type" data-options="{% for value in evidence_type_values %}{{ value }}{% if not loop.last %}|{% endif %}{% endfor %}">{{ row.required_evidence_type or '' }}</td>
+                    <td data-field="product_test_procedure_status" data-options="{% for value in status_values %}{{ value }}{% if not loop.last %}|{% endif %}{% endfor %}"><span class="status_badge status-{{ row.product_test_procedure_status|lower }}">{{ row.product_test_procedure_status }}</span></td>
+                    <td data-field="remark">{{ row.remark or '' }}</td>
+                    <td data-incell-actions="1"></td>
                 </tr>
                 {% endfor %}
             </tbody>

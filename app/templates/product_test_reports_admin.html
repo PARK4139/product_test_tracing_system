@@ -15,32 +15,6 @@
 {% if message %}
 <section class="card"><div class="non_modal_notice {{ message_type }}"><div>{{ message }}</div></div></section>
 {% endif %}
-<section class="card">
-    <div class="section_header_row"><h3>보고서 생성</h3></div>
-    <form method="post" action="/admin/product-test-reports/create" class="form_stack" style="max-width:none;">
-        <label>Test Round<span class="required_marker">*</span></label>
-        <select name="test_round_id" required>
-            <option value=""></option>
-            {% for row in release_options %}
-            <option value="{{ row.test_round_id }}">{{ row.test_round_id }}</option>
-            {% endfor %}
-        </select>
-        <label>Report Type<span class="required_marker">*</span></label>
-        <select name="product_test_report_type" required>
-            {% for value in report_type_values %}
-            <option value="{{ value }}">{{ value }}</option>
-            {% endfor %}
-        </select>
-        <label>Report Title<span class="required_marker">*</span></label>
-        <input type="text" name="product_test_report_title" required>
-        <label>Remark</label>
-        <input type="text" name="remark">
-        <div class="table_action_bar">
-            <button type="submit">Create</button>
-            <button type="reset">Reset</button>
-        </div>
-    </form>
-</section>
 {% if snapshot_rows %}
 <section class="card">
     <div class="section_header_row"><h3>Recent Snapshots</h3></div>
@@ -63,9 +37,14 @@
 </section>
 {% endif %}
 <section class="card">
-    <div class="section_header_row"><h3>보고서 목록</h3></div>
+    <div class="section_header_row">
+        <h3>보고서 목록</h3>
+        <div class="table_action_bar">
+            <button type="button" class="project_standard_button" data-incell-add-row>+ 행 추가</button>
+        </div>
+    </div>
     <div class="tester_table_wrap">
-        <table class="basic_table">
+        <table class="basic_table" data-incell-edit-table data-entity-type="product_test_report" data-primary-key-field="product_test_report_id" data-create-action="/admin/product-test-reports/create">
             <thead>
                 <tr>
                     <th>Report ID</th>
@@ -79,24 +58,26 @@
                     <th>Updated By</th>
                     <th>Approved At</th>
                     <th>Rejected At</th>
+                    <th>Remark</th>
                     <th>Action</th>
                 </tr>
             </thead>
             <tbody>
                 {% for row in rows %}
-                <tr>
-                    <td>{{ row.product_test_report_id }}</td>
-                    <td><a href="/admin/product-test-rounds/{{ row.test_round_id }}/trace">{{ row.test_round_id }}</a></td>
-                    <td><span class="status_badge">{{ row.product_test_report_type }}</span></td>
-                    <td><span class="status_badge status-{{ row.product_test_report_status|lower }}">{{ row.product_test_report_status }}</span></td>
-                    <td>{{ row.product_test_report_title }}</td>
-                    <td>{{ row.created_at }}</td>
-                    <td>{{ row.created_by }}</td>
-                    <td>{{ row.updated_at }}</td>
-                    <td>{{ row.updated_by }}</td>
-                    <td>{{ row.approved_at }}</td>
-                    <td>{{ row.rejected_at }}</td>
-                    <td><a href="/admin/product-test-reports/{{ row.product_test_report_id }}" class="project_standard_button">상세</a></td>
+                <tr data-entity-type="product_test_report" data-entity-id="{{ row.product_test_report_id }}">
+                    <td data-field="product_test_report_id" data-primary-key="1" data-create-readonly="1">{{ row.product_test_report_id }}</td>
+                    <td data-field="test_round_id" data-required="1" data-options="{% for option_row in release_options %}{{ option_row.test_round_id }}{% if not loop.last %}|{% endif %}{% endfor %}" data-update-readonly="1">{{ row.test_round_id }}</td>
+                    <td data-field="product_test_report_type" data-required="1" data-options="{% for value in report_type_values %}{{ value }}{% if not loop.last %}|{% endif %}{% endfor %}"><span class="status_badge">{{ row.product_test_report_type }}</span></td>
+                    <td data-field="product_test_report_status" data-options="{% for value in report_status_values %}{{ value }}{% if not loop.last %}|{% endif %}{% endfor %}"><span class="status_badge status-{{ row.product_test_report_status|lower }}">{{ row.product_test_report_status }}</span></td>
+                    <td data-field="product_test_report_title" data-required="1">{{ row.product_test_report_title }}</td>
+                    <td data-field="created_at" data-readonly="1">{{ row.created_at }}</td>
+                    <td data-field="created_by" data-readonly="1">{{ row.created_by }}</td>
+                    <td data-field="updated_at" data-readonly="1">{{ row.updated_at }}</td>
+                    <td data-field="updated_by" data-readonly="1">{{ row.updated_by }}</td>
+                    <td data-field="approved_at" data-readonly="1">{{ row.approved_at or '' }}</td>
+                    <td data-field="rejected_at" data-readonly="1">{{ row.rejected_at or '' }}</td>
+                    <td data-field="remark">{{ row.remark or '' }}</td>
+                    <td data-incell-actions="1" data-detail-template="/admin/product-test-reports/{id}"><a href="/admin/product-test-reports/{{ row.product_test_report_id }}" class="project_standard_button">상세</a></td>
                 </tr>
                 {% endfor %}
             </tbody>

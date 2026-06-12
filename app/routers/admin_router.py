@@ -146,6 +146,7 @@ def _admin_dashboard_product_tracing_template_context(*, database_session: Sessi
         "evidence_type_values": EVIDENCE_TYPE_VALUES,
         "report_rows": list_product_test_reports(database_session),
         "report_type_values": REPORT_TYPE_VALUES,
+        "report_status_values": REPORT_STATUS_VALUES,
     }
 
 
@@ -773,6 +774,66 @@ def redirect_product_test_rounds_to_admin(
     return RedirectResponse(url="/admin", status_code=303)
 
 
+@admin_router.get("/product-test-targets")
+def render_product_test_targets_admin(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    _ensure_admin_role(current_role_name)
+    return _render_admin_shell_template(
+        request=request,
+        database_session=database_session,
+        current_role_name=current_role_name,
+        template_name="product_test_targets_admin.html",
+        page_title="Product Test Data Tracing System",
+        extra_context={
+            "rows": list_product_test_targets(database_session),
+            "status_values": TARGET_STATUS_VALUES,
+            "message": (request.query_params.get("message") or "").strip(),
+            "message_type": (request.query_params.get("message_type") or "info").strip(),
+        },
+    )
+
+
+@admin_router.get("/product-test-environments")
+def render_product_test_environments_admin(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    _ensure_admin_role(current_role_name)
+    return _render_admin_shell_template(
+        request=request,
+        database_session=database_session,
+        current_role_name=current_role_name,
+        template_name="product_test_environments_admin.html",
+        page_title="Product Test Data Tracing System",
+        extra_context={
+            "rows": list_product_test_environments(database_session),
+            "status_values": ENVIRONMENT_STATUS_VALUES,
+            "message": (request.query_params.get("message") or "").strip(),
+            "message_type": (request.query_params.get("message_type") or "info").strip(),
+        },
+    )
+
+
+@admin_router.get("/test-config")
+def render_test_config_admin(
+    request: Request,
+    database_session: database_session_dependency,
+    current_role_name: current_role_name_dependency,
+):
+    _ensure_admin_role(current_role_name)
+    return _render_admin_shell_template(
+        request=request,
+        database_session=database_session,
+        current_role_name=current_role_name,
+        template_name="test_config_admin.html",
+        page_title="Product Test Data Tracing System",
+    )
+
+
 @admin_router.get("/product-test-cases")
 def render_product_test_cases_admin(
     request: Request,
@@ -835,6 +896,7 @@ def render_product_test_reports_admin(
         extra_context={
             "rows": list_product_test_reports(database_session),
             "report_type_values": REPORT_TYPE_VALUES,
+            "report_status_values": REPORT_STATUS_VALUES,
             "message": (request.query_params.get("message") or "").strip(),
             "message_type": (request.query_params.get("message_type") or "info").strip(),
         },

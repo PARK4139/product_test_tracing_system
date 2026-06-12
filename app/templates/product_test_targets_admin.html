@@ -1,2 +1,48 @@
-<section class="card"><div class="section_header_row"><h3>등록 / Create</h3></div><form method="post" action="/admin/product-test-targets/create" class="form_stack" style="max-width:none;"><label>product_test_target_id</label><input type="text" name="product_test_target_id" required><label>product_code</label><input type="text" name="product_code"><label>manufacturer</label><input type="text" name="manufacturer" required><label>model_name</label><input type="text" name="model_name" required><label>hardware_revision</label><input type="text" name="hardware_revision"><label>default_software_version</label><input type="text" name="default_software_version"><label>default_firmware_version</label><input type="text" name="default_firmware_version"><label>serial_number</label><input type="text" name="serial_number" required><label>software_version</label><input type="text" name="software_version"><label>firmware_version</label><input type="text" name="firmware_version"><label>manufacture_lot</label><input type="text" name="manufacture_lot"><label>product_test_target_status</label><select name="product_test_target_status">{% for value in status_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select><label>remark</label><input type="text" name="remark"><div class="table_action_bar"><button type="submit">Save</button><button type="reset">Reset</button></div></form></section>
-<section class="card"><div class="section_header_row"><h3>목록 / List</h3></div><div class="tester_table_wrap"><table class="basic_table"><thead><tr><th>ID</th><th>Product Code</th><th>Manufacturer</th><th>Model</th><th>HW Rev</th><th>Default SW</th><th>Default FW</th><th>Serial</th><th>SW Ver</th><th>FW Ver</th><th>Lot</th><th>Status</th><th>Created</th><th>Updated</th><th>Remark</th></tr></thead><tbody>{% for row in rows %}<tr><td>{{ row.product_test_target_id }}</td><td>{{ row.product_code or '' }}</td><td>{{ row.manufacturer or '' }}</td><td>{{ row.model_name }}</td><td>{{ row.hardware_revision or '' }}</td><td>{{ row.default_software_version or '' }}</td><td>{{ row.default_firmware_version or '' }}</td><td>{{ row.serial_number }}</td><td>{{ row.software_version or '' }}</td><td>{{ row.firmware_version or '' }}</td><td>{{ row.manufacture_lot or '' }}</td><td>{{ row.product_test_target_status }}</td><td>{{ row.created_at }}</td><td>{{ row.updated_at }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody></table></div></section>
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+    <div class="section_header_row">
+        <h3>Test Target</h3>
+        <div class="table_action_bar"><a href="/admin" class="project_standard_button">관리자 홈</a></div>
+    </div>
+    <div class="detail_guide">제품 테스트 대상 관리 · 셀 클릭으로 수정, + 행 추가로 생성.</div>
+</section>
+{% if message %}<section class="card"><div class="non_modal_notice {{ message_type }}"><div>{{ message }}</div></div></section>{% endif %}
+<section class="card">
+    <div class="section_header_row">
+        <h3>목록 / List</h3>
+        <div class="table_action_bar">
+            <button type="button" class="project_standard_button" data-incell-add-row>+ 행 추가</button>
+        </div>
+    </div>
+    <div class="tester_table_wrap">
+        <table class="basic_table" data-incell-edit-table data-entity-type="product_test_target" data-primary-key-field="product_test_target_id" data-create-action="/admin/product-test-targets/create">
+            <thead>
+                <tr><th>ID</th><th>Product Code</th><th>Manufacturer</th><th>Model</th><th>HW Rev</th><th>Default SW</th><th>Default FW</th><th>Serial</th><th>SW Ver</th><th>FW Ver</th><th>Lot</th><th>Status</th><th>Created</th><th>Updated</th><th>Remark</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr data-entity-type="product_test_target" data-entity-id="{{ row.product_test_target_id }}">
+                    <td data-field="product_test_target_id" data-primary-key="1" data-required="1">{{ row.product_test_target_id }}</td>
+                    <td data-field="product_code">{{ row.product_code or '' }}</td>
+                    <td data-field="manufacturer" data-required="1">{{ row.manufacturer or '' }}</td>
+                    <td data-field="model_name" data-required="1">{{ row.model_name }}</td>
+                    <td data-field="hardware_revision">{{ row.hardware_revision or '' }}</td>
+                    <td data-field="default_software_version">{{ row.default_software_version or '' }}</td>
+                    <td data-field="default_firmware_version">{{ row.default_firmware_version or '' }}</td>
+                    <td data-field="serial_number" data-required="1">{{ row.serial_number }}</td>
+                    <td data-field="software_version">{{ row.software_version or '' }}</td>
+                    <td data-field="firmware_version">{{ row.firmware_version or '' }}</td>
+                    <td data-field="manufacture_lot">{{ row.manufacture_lot or '' }}</td>
+                    <td data-field="product_test_target_status" data-options="{% for value in status_values %}{{ value }}{% if not loop.last %}|{% endif %}{% endfor %}"><span class="status_badge status-{{ row.product_test_target_status|lower }}">{{ row.product_test_target_status }}</span></td>
+                    <td data-field="created_at" data-readonly="1">{{ row.created_at }}</td>
+                    <td data-field="updated_at" data-readonly="1">{{ row.updated_at }}</td>
+                    <td data-field="remark">{{ row.remark or '' }}</td>
+                    <td data-incell-actions="1"></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

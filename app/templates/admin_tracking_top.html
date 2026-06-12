@@ -9,41 +9,14 @@
     <div class="admin_tab_region_body" data-admin-tab-region="configs" data-tab-aria-label="Tab View 1">
 
 <section class="card">
-    <div class="section_header_row"><h3>Test Environment</h3></div>
-    <form method="post" action="/admin/product-test-environments/create" class="admin_autosubmit_form">
-        <input type="hidden" name="return_to" value="/admin">
-        <div class="tester_table_wrap">
-            <table class="basic_table">
-                <thead><tr><th>선택</th><th>환경 ID</th><th>환경명</th><th>국가</th><th>도시</th><th>시험 업체</th><th>시험 장소</th><th>네트워크 유형</th><th>PC명</th><th>OS 버전</th><th>시험 도구명</th><th>시험 도구 버전</th><th>전압</th><th>주파수</th><th>전원 커넥터 유형</th><th>전원 조건</th><th>캡처 일시</th><th>환경 상태</th><th>비고</th></tr></thead>
-                <tbody><tr>
-                    <td><input type="checkbox" class="admin_input_row_checkbox"></td>
-                    <td><input type="text" name="product_test_environment_id" required></td>
-                    <td><input type="text" name="product_test_environment_name" required list="admin_environment_name_options"></td>
-                    <td><input type="text" name="test_country" list="admin_environment_country_options"></td>
-                    <td><input type="text" name="test_city" list="admin_environment_city_options"></td>
-                    <td><input type="text" name="test_company" list="admin_environment_company_options"></td>
-                    <td><input type="text" name="test_room" list="admin_environment_room_options"></td>
-                    <td><input type="text" name="network_type" list="admin_environment_network_type_options"></td>
-                    <td><input type="text" name="test_computer_name" list="admin_environment_computer_name_options"></td>
-                    <td><input type="text" name="operating_system_version" list="admin_environment_os_options"></td>
-                    <td><input type="text" name="test_tool_name" list="admin_environment_tool_name_options"></td>
-                    <td><input type="text" name="test_tool_version" list="admin_environment_tool_version_options"></td>
-                    <td><input type="text" name="power_voltage" list="admin_environment_power_voltage_options"></td>
-                    <td><input type="text" name="power_frequency" list="admin_environment_power_frequency_options"></td>
-                    <td><input type="text" name="power_connector_type" list="admin_environment_power_connector_type_options"></td>
-                    <td><input type="text" name="power_condition" list="admin_environment_power_condition_options"></td>
-                    <td><input type="text" name="captured_at"></td>
-                    <td><select name="product_test_environment_status"><option value=""></option>{% for value in environment_status_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
-                    <td><input type="text" name="remark"></td>
-                </tr></tbody>
-            </table>
-        </div>
-    </form>
-    <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
+    <div class="section_header_row">
+        <h3>Test Environment</h3>
+        <div class="table_action_bar"><button type="button" class="project_standard_button" data-incell-add-row>+ 행 추가</button></div>
+    </div>
     <div class="tester_table_wrap">
-        <table class="basic_table">
-            <thead><tr><th>선택</th><th>환경 ID</th><th>환경명</th><th>국가</th><th>도시</th><th>시험 업체</th><th>시험 장소</th><th>네트워크 유형</th><th>PC명</th><th>OS 버전</th><th>시험 도구명</th><th>시험 도구 버전</th><th>전압</th><th>주파수</th><th>전원 커넥터 유형</th><th>전원 조건</th><th>캡처 일시</th><th>환경 상태</th><th>비고</th></tr></thead>
-            <tbody>{% for row in environment_rows %}<tr class="admin_hl_row" data-env-id="{{ row.product_test_environment_id }}"><td><input type="checkbox" disabled></td><td>{{ row.product_test_environment_id }}</td><td>{{ row.product_test_environment_name }}</td><td>{{ row.test_country }}</td><td>{{ row.test_city }}</td><td>{{ row.test_company }}</td><td>{{ row.test_room }}</td><td>{{ row.network_type }}</td><td>{{ row.test_computer_name }}</td><td>{{ row.operating_system_version }}</td><td>{{ row.test_tool_name }}</td><td>{{ row.test_tool_version }}</td><td>{{ row.power_voltage }}</td><td>{{ row.power_frequency }}</td><td>{{ row.power_connector_type }}</td><td>{{ row.power_condition }}</td><td>{{ row.captured_at }}</td><td>{{ row.product_test_environment_status }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
+        <table class="basic_table" data-incell-edit-table data-entity-type="product_test_environment" data-primary-key-field="product_test_environment_id" data-create-action="/admin/product-test-environments/create">
+            <thead><tr><th>환경 ID</th><th>환경명</th><th>국가</th><th>도시</th><th>시험 업체</th><th>시험 장소</th><th>네트워크 유형</th><th>PC명</th><th>OS 버전</th><th>시험 도구명</th><th>시험 도구 버전</th><th>전압</th><th>주파수</th><th>전원 커넥터 유형</th><th>전원 조건</th><th>캡처 일시</th><th>환경 상태</th><th>비고</th><th>Action</th></tr></thead>
+            <tbody>{% for row in environment_rows %}<tr class="admin_hl_row" data-env-id="{{ row.product_test_environment_id }}" data-entity-type="product_test_environment" data-entity-id="{{ row.product_test_environment_id }}"><td data-field="product_test_environment_id" data-primary-key="1" data-required="1">{{ row.product_test_environment_id }}</td><td data-field="product_test_environment_name" data-required="1">{{ row.product_test_environment_name }}</td><td data-field="test_country">{{ row.test_country or '' }}</td><td data-field="test_city">{{ row.test_city or '' }}</td><td data-field="test_company">{{ row.test_company or '' }}</td><td data-field="test_room">{{ row.test_room or '' }}</td><td data-field="network_type">{{ row.network_type or '' }}</td><td data-field="test_computer_name">{{ row.test_computer_name or '' }}</td><td data-field="operating_system_version">{{ row.operating_system_version or '' }}</td><td data-field="test_tool_name">{{ row.test_tool_name or '' }}</td><td data-field="test_tool_version">{{ row.test_tool_version or '' }}</td><td data-field="power_voltage">{{ row.power_voltage or '' }}</td><td data-field="power_frequency">{{ row.power_frequency or '' }}</td><td data-field="power_connector_type">{{ row.power_connector_type or '' }}</td><td data-field="power_condition">{{ row.power_condition or '' }}</td><td data-field="captured_at">{{ row.captured_at or '' }}</td><td data-field="product_test_environment_status" data-options="{% for value in environment_status_values %}{{ value }}{% if not loop.last %}|{% endif %}{% endfor %}"><span class="status_badge status-{{ row.product_test_environment_status|lower }}">{{ row.product_test_environment_status }}</span></td><td data-field="remark">{{ row.remark or '' }}</td><td data-incell-actions="1"></td></tr>{% endfor %}</tbody>
         </table>
     </div>
 </section>

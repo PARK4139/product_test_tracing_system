@@ -101,6 +101,28 @@ def test_regression_admin_product_test_cases_page(seeded_wifi_ap_db: TestClient)
     assert "data-incell-add-row" in page.text
 
 
+def test_regression_admin_incell_rollout_pages(seeded_wifi_ap_db: TestClient) -> None:
+    client = seeded_wifi_ap_db
+    for path in [
+        "/admin/product-test-procedures",
+        "/admin/product-test-targets",
+        "/admin/product-test-environments",
+        "/admin/product-test-reports",
+    ]:
+        page = client.get(path, cookies=_cookies("master_admin"))
+        assert page.status_code == 200
+        assert "등록 / Create" not in page.text
+        assert "보고서 생성" not in page.text
+        assert "admin_autosubmit_form" not in page.text
+        assert "data-incell-edit-table" in page.text
+        assert "data-incell-add-row" in page.text
+
+    config_page = client.get("/admin/test-config", cookies=_cookies("master_admin"))
+    assert config_page.status_code == 200
+    assert "<form" not in config_page.text
+    assert "DB 미연결" in config_page.text
+
+
 def test_regression_admin_product_test_case_incell_update_and_create(seeded_wifi_ap_db: TestClient) -> None:
     client = seeded_wifi_ap_db
     cookies = _cookies("master_admin")

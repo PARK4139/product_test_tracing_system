@@ -9,20 +9,20 @@
         </div>
     </div>
     <div class="detail_guide">
-        DB 연결 전 placeholder 화면이다. 입력 섹션 구조만 준비되어 있다.
+        DB 연결 전 placeholder 화면이다. 저장 경로가 없으므로 읽기 전용 안내 표만 표시한다.
     </div>
 </section>
 
 <section class="card">
     <div class="section_header_row"><h3>테스트 구성 헤더</h3></div>
-    <form class="form_stack">
-        <label>테스트 구성 ID</label>
-        <input type="text" disabled>
-        <label>테스트 구성 버전</label>
-        <input type="text" disabled>
-        <label>상태</label>
-        <input type="text" disabled>
-    </form>
+    <table class="basic_table">
+        <thead><tr><th>항목</th><th>상태</th></tr></thead>
+        <tbody>
+            <tr><td>테스트 구성 ID</td><td>DB 미연결</td></tr>
+            <tr><td>테스트 구성 버전</td><td>DB 미연결</td></tr>
+            <tr><td>상태</td><td>DB 미연결</td></tr>
+        </tbody>
+    </table>
 </section>
 
 <section class="card">
@@ -30,8 +30,8 @@
     <table class="basic_table">
         <thead><tr><th>항목</th><th>예정 입력값</th></tr></thead>
         <tbody>
-            <tr><td>대상 항목</td><td><input type="text" disabled></td></tr>
-            <tr><td>대상 상세</td><td><input type="text" disabled></td></tr>
+            <tr><td>대상 항목</td><td>DB 미연결</td></tr>
+            <tr><td>대상 상세</td><td>DB 미연결</td></tr>
         </tbody>
     </table>
 </section>
@@ -41,8 +41,8 @@
     <table class="basic_table">
         <thead><tr><th>항목</th><th>예정 입력값</th></tr></thead>
         <tbody>
-            <tr><td>환경 항목</td><td><input type="text" disabled></td></tr>
-            <tr><td>라우터 환경</td><td><input type="text" disabled></td></tr>
+            <tr><td>환경 항목</td><td>DB 미연결</td></tr>
+            <tr><td>라우터 환경</td><td>DB 미연결</td></tr>
         </tbody>
     </table>
 </section>
@@ -52,7 +52,7 @@
     <table class="basic_table">
         <thead><tr><th>단계 순서</th><th>STR 단계</th><th>기대 결과</th></tr></thead>
         <tbody>
-            <tr><td>1</td><td><input type="text" disabled></td><td><input type="text" disabled></td></tr>
+            <tr><td>1</td><td>DB 미연결</td><td>DB 미연결</td></tr>
         </tbody>
     </table>
 </section>
@@ -62,7 +62,7 @@
     <table class="basic_table">
         <thead><tr><th>기준</th><th>상세</th></tr></thead>
         <tbody>
-            <tr><td><input type="text" disabled></td><td><input type="text" disabled></td></tr>
+            <tr><td>DB 미연결</td><td>DB 미연결</td></tr>
         </tbody>
     </table>
 </section>

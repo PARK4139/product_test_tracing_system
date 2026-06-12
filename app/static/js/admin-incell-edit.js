@@ -41,6 +41,11 @@
 
     const renderCellValue = (cell, value) => {
         const text = String(value ?? "").trim();
+        if (cell.dataset.procedureAction === "1" && typeof window.formatProcedureActionSummary === "function") {
+            cell.dataset.procedureActionB64 = btoa(String.fromCharCode(...new TextEncoder().encode(text)));
+            cell.textContent = window.formatProcedureActionSummary(text);
+            return;
+        }
         if (cell.dataset.options) {
             cell.innerHTML = text
                 ? `<span class="status_badge status-${escapeHtml(text.toLowerCase())}">${escapeHtml(text)}</span>`
@@ -88,7 +93,10 @@
         if (!row || !table || row.dataset.draftRow === "1") {
             return;
         }
-        if (!cell.dataset.field || cell.dataset.primaryKey === "1" || cell.dataset.readonly === "1") {
+        if (!cell.dataset.field || cell.dataset.primaryKey === "1" || cell.dataset.readonly === "1" || cell.dataset.updateReadonly === "1") {
+            return;
+        }
+        if (cell.classList.contains("procedure_action_summary") || cell.dataset.modalEdit === "1") {
             return;
         }
         if (cell.classList.contains("admin_incell_editing")) {
@@ -104,9 +112,16 @@
 
         const originalValue = displayValue(cell);
         const options = optionsForCell(cell);
-        const control = options.length > 0 ? document.createElement("select") : document.createElement("input");
+        const control = cell.dataset.control === "textarea"
+            ? document.createElement("textarea")
+            : options.length > 0
+              ? document.createElement("select")
+              : document.createElement("input");
         control.className = "admin_incell_control";
-        if (control instanceof HTMLInputElement) {
+        if (control instanceof HTMLTextAreaElement) {
+            control.rows = Number(cell.dataset.rows || "4") || 4;
+            control.value = originalValue;
+        } else if (control instanceof HTMLInputElement) {
             control.type = "text";
             control.value = originalValue;
         } else {
@@ -165,8 +180,14 @@
 
     const buildDraftCell = (sourceCell) => {
         const cell = document.createElement("td");
+        if (sourceCell.className) {
+            cell.className = sourceCell.className;
+        }
         if (sourceCell.dataset.field) {
             cell.dataset.field = sourceCell.dataset.field;
+        }
+        if (sourceCell.dataset.primaryKey === "1") {
+            cell.dataset.primaryKey = "1";
         }
         if (sourceCell.dataset.required === "1") {
             cell.dataset.required = "1";
@@ -177,18 +198,46 @@
         if (sourceCell.dataset.readonly === "1") {
             cell.dataset.readonly = "1";
         }
+        if (sourceCell.dataset.updateReadonly === "1") {
+            cell.dataset.updateReadonly = "1";
+        }
+        if (sourceCell.dataset.createReadonly === "1") {
+            cell.dataset.createReadonly = "1";
+        }
+        if (sourceCell.dataset.control) {
+            cell.dataset.control = sourceCell.dataset.control;
+        }
+        if (sourceCell.dataset.rows) {
+            cell.dataset.rows = sourceCell.dataset.rows;
+        }
+        if (sourceCell.dataset.modalEdit) {
+            cell.dataset.modalEdit = sourceCell.dataset.modalEdit;
+        }
+        if (sourceCell.dataset.procedureAction) {
+            cell.dataset.procedureAction = sourceCell.dataset.procedureAction;
+        }
+        if (sourceCell.dataset.incellActions === "1") {
+            cell.dataset.incellActions = "1";
+        }
         return cell;
     };
 
     const makeDraftControl = (cell) => {
-        if (cell.dataset.readonly === "1") {
+        if (cell.dataset.readonly === "1" || cell.dataset.createReadonly === "1" || cell.dataset.incellActions === "1") {
             return null;
         }
         const options = optionsForCell(cell);
-        const control = options.length > 0 ? document.createElement("select") : document.createElement("input");
+        const control = cell.dataset.control === "textarea"
+            ? document.createElement("textarea")
+            : options.length > 0
+              ? document.createElement("select")
+              : document.createElement("input");
         control.className = "admin_incell_control";
         control.name = cell.dataset.field || "";
-        if (control instanceof HTMLInputElement) {
+        if (control instanceof HTMLTextAreaElement) {
+            control.rows = Number(cell.dataset.rows || "4") || 4;
+            control.placeholder = cell.dataset.required === "1" ? "required" : "";
+        } else if (control instanceof HTMLInputElement) {
             control.type = "text";
             control.placeholder = cell.dataset.required === "1" ? "required" : "";
         } else {
@@ -231,28 +280,58 @@
         return true;
     };
 
+    const primaryKeyFieldForTable = (table) => {
+        const explicit = String(table?.dataset?.primaryKeyField || "").trim();
+        if (explicit) {
+            return explicit;
+        }
+        const pkCell = table?.querySelector("td[data-primary-key='1'][data-field]");
+        return pkCell?.dataset?.field || "";
+    };
+
+    const renderActionCell = (cell, createdRow, primaryKeyField) => {
+        const entityId = String(createdRow[primaryKeyField] ?? "").trim();
+        const detailTemplate = String(cell.dataset.detailTemplate || "").trim();
+        if (detailTemplate && entityId) {
+            const href = detailTemplate.replace("{id}", encodeURIComponent(entityId));
+            cell.innerHTML = `<a href="${escapeHtml(href)}" class="project_standard_button">상세</a>`;
+            return;
+        }
+        cell.textContent = "";
+    };
+
     const replaceDraftWithCreatedRow = (row, createdRow) => {
         const table = row.closest("[data-incell-edit-table]");
         if (!table) {
             row.remove();
             return;
         }
+        const primaryKeyField = primaryKeyFieldForTable(table);
+        const entityId = primaryKeyField ? String(createdRow[primaryKeyField] ?? "").trim() : "";
         row.dataset.draftRow = "0";
         row.dataset.entityType = table.dataset.entityType || "";
-        row.dataset.entityId = createdRow.product_test_case_id || "";
+        row.dataset.entityId = entityId;
         row.classList.remove("admin_incell_draft", "admin_incell_error");
-        row.innerHTML = `
-            <td data-field="product_test_case_id" data-primary-key="1">${escapeHtml(createdRow.product_test_case_id)}</td>
-            <td data-field="product_test_case_title" data-required="1">${escapeHtml(createdRow.product_test_case_title)}</td>
-            <td data-field="test_category" data-required="1">${escapeHtml(createdRow.test_category)}</td>
-            <td data-field="test_objective">${escapeHtml(createdRow.test_objective || "")}</td>
-            <td data-field="precondition">${escapeHtml(createdRow.precondition || "")}</td>
-            <td data-field="expected_result">${escapeHtml(createdRow.expected_result || "")}</td>
-            <td data-field="product_test_case_status" data-options="DRAFT|ACTIVE|DEPRECATED"><span class="status_badge status-${escapeHtml(String(createdRow.product_test_case_status || "").toLowerCase())}">${escapeHtml(createdRow.product_test_case_status)}</span></td>
-            <td data-field="remark">${escapeHtml(createdRow.remark || "")}</td>
-            <td data-readonly="1">${escapeHtml(createdRow.updated_at || "")}</td>
-            <td data-readonly="1"></td>
-        `;
+        Array.from(row.cells).forEach((cell) => {
+            const fieldName = cell.dataset.field || "";
+            cell.classList.remove("admin_incell_required_missing");
+            cell.querySelectorAll("input, select, textarea, button").forEach((node) => node.remove());
+            if (cell.dataset.incellActions === "1") {
+                renderActionCell(cell, createdRow, primaryKeyField);
+                return;
+            }
+            if (!fieldName) {
+                cell.textContent = "";
+                return;
+            }
+            renderCellValue(cell, createdRow[fieldName] ?? "");
+            if (cell.dataset.procedureAction === "1") {
+                cell.dataset.entityId = entityId;
+            }
+        });
+        if (typeof window.initProcedureActionCells === "function") {
+            window.initProcedureActionCells(row);
+        }
     };
 
     const saveDraftRow = async (row) => {
@@ -298,7 +377,8 @@
         row.dataset.draftRow = "1";
         Array.from(templateRow.cells).forEach((sourceCell, index) => {
             const cell = buildDraftCell(sourceCell);
-            if (index === templateRow.cells.length - 1) {
+            if (cell.dataset.incellActions === "1" || (!templateRow.querySelector("[data-incell-actions='1']") && index === templateRow.cells.length - 1)) {
+                cell.dataset.incellActions = "1";
                 cell.innerHTML = '<button type="button" class="project_standard_button" data-incell-save-row>저장</button> <button type="button" class="project_standard_button" data-incell-cancel-row>취소</button>';
             } else {
                 makeDraftControl(cell);

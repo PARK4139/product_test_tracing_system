@@ -154,28 +154,14 @@
     </div>
 </section>
 <section class="card">
-    <div class="section_header_row"><h3>Test Report</h3></div>
-    <form method="post" action="/admin/product-test-reports/create" class="admin_autosubmit_form">
-        <input type="hidden" name="return_to" value="/admin">
-        <div class="tester_table_wrap">
-            <table class="basic_table">
-                <thead><tr><th>선택</th><th>보고서 ID</th><th>시험 배포 ID</th><th>보고서 유형</th><th>상태</th><th>제목</th><th>비고</th></tr></thead>
-                <tbody><tr>
-                    <td><input type="checkbox" class="admin_input_row_checkbox"></td>
-                    <td><input type="text" name="product_test_report_id" required></td>
-                    <td><input type="text" name="test_round_id" required list="admin_report_release_id_options"></td>
-                    <td><select name="product_test_report_type"><option value=""></option>{% for value in report_type_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
-                    <td><input type="text" name="product_test_report_title"></td>
-                    <td><input type="text" name="remark"></td>
-                </tr></tbody>
-            </table>
-        </div>
-    </form>
-    <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
+    <div class="section_header_row">
+        <h3>Test Report</h3>
+        <div class="table_action_bar"><button type="button" class="project_standard_button" data-incell-add-row>+ 행 추가</button></div>
+    </div>
     <div class="tester_table_wrap">
-        <table class="basic_table">
-            <thead><tr><th>선택</th><th>보고서 ID</th><th>시험 배포 ID</th><th>보고서 유형</th><th>상태</th><th>제목</th><th>비고</th></tr></thead>
-            <tbody>{% for row in report_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_report_id }}</td><td>{{ row.test_round_id }}</td><td>{{ row.product_test_report_type }}</td><td>{{ row.product_test_report_status }}</td><td>{{ row.product_test_report_title or '' }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
+        <table class="basic_table" data-incell-edit-table data-entity-type="product_test_report" data-primary-key-field="product_test_report_id" data-create-action="/admin/product-test-reports/create">
+            <thead><tr><th>보고서 ID</th><th>시험 배포 ID</th><th>보고서 유형</th><th>상태</th><th>제목</th><th>비고</th><th>Action</th></tr></thead>
+            <tbody>{% for row in report_rows %}<tr data-entity-type="product_test_report" data-entity-id="{{ row.product_test_report_id }}"><td data-field="product_test_report_id" data-primary-key="1" data-create-readonly="1">{{ row.product_test_report_id }}</td><td data-field="test_round_id" data-required="1" data-options="{% for round_row in round_rows %}{{ round_row.test_round_id }}{% if not loop.last %}|{% endif %}{% endfor %}" data-update-readonly="1">{{ row.test_round_id }}</td><td data-field="product_test_report_type" data-required="1" data-options="{% for value in report_type_values %}{{ value }}{% if not loop.last %}|{% endif %}{% endfor %}"><span class="status_badge">{{ row.product_test_report_type }}</span></td><td data-field="product_test_report_status" data-options="{% for value in report_status_values %}{{ value }}{% if not loop.last %}|{% endif %}{% endfor %}"><span class="status_badge status-{{ row.product_test_report_status|lower }}">{{ row.product_test_report_status }}</span></td><td data-field="product_test_report_title" data-required="1">{{ row.product_test_report_title or '' }}</td><td data-field="remark">{{ row.remark or '' }}</td><td data-incell-actions="1" data-detail-template="/admin/product-test-reports/{id}"><a href="/admin/product-test-reports/{{ row.product_test_report_id }}" class="project_standard_button">상세</a></td></tr>{% endfor %}</tbody>
         </table>
     </div>
     <datalist id="admin_report_release_id_options">
@@ -183,36 +169,14 @@
     </datalist>
 </section>
 <section class="card">
-    <div class="section_header_row"><h3>Test Target</h3></div>
-    <form method="post" action="/admin/product-test-targets/create" class="admin_autosubmit_form">
-        <input type="hidden" name="return_to" value="/admin">
-        <div class="tester_table_wrap">
-            <table class="basic_table">
-                <thead><tr><th>선택</th><th>타겟 ID</th><th>제품 코드</th><th>제조사</th><th>모델명</th><th>HW 리비전</th><th>기본 SW 버전</th><th>기본 FW 버전</th><th>시리얼 번호</th><th>SW 버전</th><th>FW 버전</th><th>제조 LOT</th><th>타겟 상태</th><th>비고</th></tr></thead>
-                <tbody><tr>
-                    <td><input type="checkbox" class="admin_input_row_checkbox"></td>
-                    <td><input type="text" name="product_test_target_id" required></td>
-                    <td><input type="text" name="product_code" list="admin_target_product_code_options"></td>
-                    <td><input type="text" name="manufacturer" required list="admin_target_manufacturer_options"></td>
-                    <td><input type="text" name="model_name" required list="admin_target_model_name_options"></td>
-                    <td><input type="text" name="hardware_revision" list="admin_target_hardware_revision_options"></td>
-                    <td><input type="text" name="default_software_version" list="admin_target_default_software_version_options"></td>
-                    <td><input type="text" name="default_firmware_version" list="admin_target_default_firmware_version_options"></td>
-                    <td><input type="text" name="serial_number" required></td>
-                    <td><input type="text" name="software_version" list="admin_target_software_version_options"></td>
-                    <td><input type="text" name="firmware_version" list="admin_target_firmware_version_options"></td>
-                    <td><input type="text" name="manufacture_lot" list="admin_target_manufacture_lot_options"></td>
-                    <td><select name="product_test_target_status"><option value=""></option>{% for value in target_status_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
-                    <td><input type="text" name="remark"></td>
-                </tr></tbody>
-            </table>
-        </div>
-    </form>
-    <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
+    <div class="section_header_row">
+        <h3>Test Target</h3>
+        <div class="table_action_bar"><button type="button" class="project_standard_button" data-incell-add-row>+ 행 추가</button></div>
+    </div>
     <div class="tester_table_wrap">
-        <table class="basic_table">
-            <thead><tr><th>선택</th><th>타겟 ID</th><th>제품 코드</th><th>제조사</th><th>모델명</th><th>HW 리비전</th><th>기본 SW 버전</th><th>기본 FW 버전</th><th>시리얼 번호</th><th>SW 버전</th><th>FW 버전</th><th>제조 LOT</th><th>타겟 상태</th><th>비고</th></tr></thead>
-            <tbody>{% for row in target_rows %}<tr class="admin_hl_row" data-target-id="{{ row.product_test_target_id }}"><td><input type="checkbox" disabled></td><td>{{ row.product_test_target_id }}</td><td>{{ row.product_code or '' }}</td><td>{{ row.manufacturer or '' }}</td><td>{{ row.model_name }}</td><td>{{ row.hardware_revision or '' }}</td><td>{{ row.default_software_version or '' }}</td><td>{{ row.default_firmware_version or '' }}</td><td>{{ row.serial_number }}</td><td>{{ row.software_version or '' }}</td><td>{{ row.firmware_version or '' }}</td><td>{{ row.manufacture_lot or '' }}</td><td>{{ row.product_test_target_status }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
+        <table class="basic_table" data-incell-edit-table data-entity-type="product_test_target" data-primary-key-field="product_test_target_id" data-create-action="/admin/product-test-targets/create">
+            <thead><tr><th>타겟 ID</th><th>제품 코드</th><th>제조사</th><th>모델명</th><th>HW 리비전</th><th>기본 SW 버전</th><th>기본 FW 버전</th><th>시리얼 번호</th><th>SW 버전</th><th>FW 버전</th><th>제조 LOT</th><th>타겟 상태</th><th>비고</th><th>Action</th></tr></thead>
+            <tbody>{% for row in target_rows %}<tr class="admin_hl_row" data-target-id="{{ row.product_test_target_id }}" data-entity-type="product_test_target" data-entity-id="{{ row.product_test_target_id }}"><td data-field="product_test_target_id" data-primary-key="1" data-required="1">{{ row.product_test_target_id }}</td><td data-field="product_code">{{ row.product_code or '' }}</td><td data-field="manufacturer" data-required="1">{{ row.manufacturer or '' }}</td><td data-field="model_name" data-required="1">{{ row.model_name }}</td><td data-field="hardware_revision">{{ row.hardware_revision or '' }}</td><td data-field="default_software_version">{{ row.default_software_version or '' }}</td><td data-field="default_firmware_version">{{ row.default_firmware_version or '' }}</td><td data-field="serial_number" data-required="1">{{ row.serial_number }}</td><td data-field="software_version">{{ row.software_version or '' }}</td><td data-field="firmware_version">{{ row.firmware_version or '' }}</td><td data-field="manufacture_lot">{{ row.manufacture_lot or '' }}</td><td data-field="product_test_target_status" data-options="{% for value in target_status_values %}{{ value }}{% if not loop.last %}|{% endif %}{% endfor %}"><span class="status_badge status-{{ row.product_test_target_status|lower }}">{{ row.product_test_target_status }}</span></td><td data-field="remark">{{ row.remark or '' }}</td><td data-incell-actions="1"></td></tr>{% endfor %}</tbody>
         </table>
     </div>
 </section>
@@ -225,60 +189,26 @@
     <div class="admin_tab_region_body" data-admin-tab-region="secondary" data-tab-aria-label="Tab View 3">
 
 <section class="card">
-    <div class="section_header_row"><h3>Test Case</h3></div>
-    <form method="post" action="/admin/product-test-cases/create" class="admin_autosubmit_form">
-        <input type="hidden" name="return_to" value="/admin">
-        <div class="tester_table_wrap">
-            <table class="basic_table">
-                <thead><tr><th>선택</th><th>케이스 ID</th><th>제목</th><th>분류</th><th>목적</th><th>선행 조건</th><th>기대 결과</th><th>케이스 상태</th><th>비고</th></tr></thead>
-                <tbody><tr>
-                    <td><input type="checkbox" class="admin_input_row_checkbox"></td>
-                    <td><input type="text" name="product_test_case_id" required></td>
-                    <td><input type="text" name="product_test_case_title" required></td>
-                    <td><input type="text" name="test_category" required list="admin_case_category_options"></td>
-                    <td><input type="text" name="test_objective"></td>
-                    <td><input type="text" name="precondition"></td>
-                    <td><input type="text" name="expected_result"></td>
-                    <td><select name="product_test_case_status"><option value=""></option>{% for value in case_status_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
-                    <td><input type="text" name="remark"></td>
-                </tr></tbody>
-            </table>
-        </div>
-    </form>
-    <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
+    <div class="section_header_row">
+        <h3>Test Case</h3>
+        <div class="table_action_bar"><button type="button" class="project_standard_button" data-incell-add-row>+ 행 추가</button></div>
+    </div>
     <div class="tester_table_wrap">
-        <table class="basic_table">
-            <thead><tr><th>선택</th><th>케이스 ID</th><th>제목</th><th>분류</th><th>목적</th><th>선행 조건</th><th>기대 결과</th><th>케이스 상태</th><th>비고</th></tr></thead>
-            <tbody>{% for row in case_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_case_id }}</td><td>{{ row.product_test_case_title }}</td><td>{{ row.test_category }}</td><td>{{ row.test_objective }}</td><td>{{ row.precondition }}</td><td>{{ row.expected_result }}</td><td>{{ row.product_test_case_status }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
+        <table class="basic_table" data-incell-edit-table data-entity-type="product_test_case" data-primary-key-field="product_test_case_id" data-create-action="/admin/product-test-cases/create">
+            <thead><tr><th>케이스 ID</th><th>제목</th><th>분류</th><th>목적</th><th>선행 조건</th><th>기대 결과</th><th>케이스 상태</th><th>비고</th><th>Action</th></tr></thead>
+            <tbody>{% for row in case_rows %}<tr data-entity-type="product_test_case" data-entity-id="{{ row.product_test_case_id }}"><td data-field="product_test_case_id" data-primary-key="1" data-required="1">{{ row.product_test_case_id }}</td><td data-field="product_test_case_title" data-required="1">{{ row.product_test_case_title }}</td><td data-field="test_category" data-required="1">{{ row.test_category }}</td><td data-field="test_objective">{{ row.test_objective or '' }}</td><td data-field="precondition">{{ row.precondition or '' }}</td><td data-field="expected_result">{{ row.expected_result or '' }}</td><td data-field="product_test_case_status" data-options="{% for value in case_status_values %}{{ value }}{% if not loop.last %}|{% endif %}{% endfor %}"><span class="status_badge status-{{ row.product_test_case_status|lower }}">{{ row.product_test_case_status }}</span></td><td data-field="remark">{{ row.remark or '' }}</td><td data-incell-actions="1"></td></tr>{% endfor %}</tbody>
         </table>
     </div>
 </section>
 <section class="card">
-    <div class="section_header_row"><h3>Test Procedure</h3></div>
-    <form method="post" action="/admin/product-test-procedures/create" class="admin_autosubmit_form">
-        <input type="hidden" name="return_to" value="/admin">
-        <div class="tester_table_wrap">
-            <table class="basic_table">
-                <thead><tr><th>선택</th><th>절차 ID</th><th>케이스 ID</th><th>순번</th><th>수행 내용</th><th>합격 기준</th><th>증거 유형</th><th>절차 상태</th><th>비고</th></tr></thead>
-                <tbody><tr>
-                    <td><input type="checkbox" class="admin_input_row_checkbox"></td>
-                    <td><input type="text" name="product_test_procedure_id" required></td>
-                    <td><select name="product_test_case_id" required><option value=""></option>{% for row in case_rows %}<option value="{{ row.product_test_case_id }}">{{ row.product_test_case_id }}</option>{% endfor %}</select></td>
-                    <td><input type="number" name="procedure_sequence" required></td>
-                    <td><input type="text" name="procedure_action" required list="admin_procedure_action_options"></td>
-                    <td><input type="text" name="acceptance_criteria" required list="admin_procedure_acceptance_criteria_options"></td>
-                    <td><select name="required_evidence_type"><option value=""></option>{% for value in evidence_type_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
-                    <td><select name="product_test_procedure_status"><option value=""></option>{% for value in procedure_status_values %}<option value="{{ value }}">{{ value }}</option>{% endfor %}</select></td>
-                    <td><input type="text" name="remark"></td>
-                </tr></tbody>
-            </table>
-        </div>
-    </form>
-    <div class="table_action_bar admin_table_action_bar_top"><button type="button" class="admin_remove_rows_button">Remove Rows</button></div>
+    <div class="section_header_row">
+        <h3>Test Procedure</h3>
+        <div class="table_action_bar"><button type="button" class="project_standard_button" data-incell-add-row>+ 행 추가</button></div>
+    </div>
     <div class="tester_table_wrap">
-        <table class="basic_table">
-            <thead><tr><th>선택</th><th>절차 ID</th><th>케이스 ID</th><th>순번</th><th>수행 내용</th><th>합격 기준</th><th>증거 유형</th><th>절차 상태</th><th>비고</th></tr></thead>
-            <tbody>{% for row in procedure_rows %}<tr data-entity-id="{{ row.product_test_procedure_id }}"><td><input type="checkbox" disabled></td><td>{{ row.product_test_procedure_id }}</td><td>{{ row.product_test_case_id }}</td><td>{{ row.procedure_sequence }}</td><td class="procedure_action_summary" data-entity-id="{{ row.product_test_procedure_id }}" data-procedure-action-b64="{{ row.procedure_action | procedure_action_b64 }}">{{ row.procedure_action | procedure_action_summary }}</td><td>{{ row.acceptance_criteria }}</td><td>{{ row.required_evidence_type }}</td><td>{{ row.product_test_procedure_status }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
+        <table class="basic_table" data-incell-edit-table data-entity-type="product_test_procedure" data-primary-key-field="product_test_procedure_id" data-create-action="/admin/product-test-procedures/create">
+            <thead><tr><th>절차 ID</th><th>케이스 ID</th><th>순번</th><th>수행 내용</th><th>합격 기준</th><th>증거 유형</th><th>절차 상태</th><th>비고</th><th>Action</th></tr></thead>
+            <tbody>{% for row in procedure_rows %}<tr data-entity-type="product_test_procedure" data-entity-id="{{ row.product_test_procedure_id }}"><td data-field="product_test_procedure_id" data-primary-key="1" data-required="1">{{ row.product_test_procedure_id }}</td><td data-field="product_test_case_id" data-required="1" data-options="{% for case_row in case_rows %}{{ case_row.product_test_case_id }}{% if not loop.last %}|{% endif %}{% endfor %}" data-update-readonly="1">{{ row.product_test_case_id }}</td><td data-field="procedure_sequence" data-required="1" data-update-readonly="1">{{ row.procedure_sequence }}</td><td class="procedure_action_summary" data-field="procedure_action" data-required="1" data-control="textarea" data-rows="6" data-modal-edit="1" data-procedure-action="1" data-entity-id="{{ row.product_test_procedure_id }}" data-procedure-action-b64="{{ row.procedure_action | procedure_action_b64 }}">{{ row.procedure_action | procedure_action_summary }}</td><td data-field="acceptance_criteria" data-required="1">{{ row.acceptance_criteria }}</td><td data-field="required_evidence_type" data-options="{% for value in evidence_type_values %}{{ value }}{% if not loop.last %}|{% endif %}{% endfor %}">{{ row.required_evidence_type or '' }}</td><td data-field="product_test_procedure_status" data-options="{% for value in procedure_status_values %}{{ value }}{% if not loop.last %}|{% endif %}{% endfor %}"><span class="status_badge status-{{ row.product_test_procedure_status|lower }}">{{ row.product_test_procedure_status }}</span></td><td data-field="remark">{{ row.remark or '' }}</td><td data-incell-actions="1"></td></tr>{% endfor %}</tbody>
         </table>
     </div>
 </section>
