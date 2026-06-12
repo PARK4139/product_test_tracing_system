@@ -416,6 +416,23 @@ def _apply_single_update(
         )
         return
 
+    # test_round_id PK cascade rename
+    if entity_type_value == "product_test_round" and field_name_value == "test_round_id":
+        old_id = entity_id_value
+        new_id = str(coerced_value)
+        if old_id != new_id:
+            for fk_table in ("product_test_run", "product_test_report", "product_test_report_snapshot"):
+                database_session.execute(
+                    text(f"UPDATE {fk_table} SET test_round_id = :new WHERE test_round_id = :old"),
+                    {"new": new_id, "old": old_id},
+                )
+            database_session.execute(
+                text("UPDATE product_test_round SET test_round_id = :new WHERE test_round_id = :old"),
+                {"new": new_id, "old": old_id},
+            )
+            database_session.flush()
+        return
+
     model = ENTITY_MODEL_MAP[entity_type_value]
     row = database_session.get(model, entity_id_value)
     if row is None:
