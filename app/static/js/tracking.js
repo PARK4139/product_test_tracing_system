@@ -1422,7 +1422,7 @@ function initTrackingDataTabs(root) {
         });
     });
 
-    if (groups.length <= 1) return;
+    if (groups.length === 0) return;
 
     const sortedGroups = sortItemsByStoredOrder(groups, "trk_data_tab_order", (group) => group.id);
 
@@ -1908,9 +1908,12 @@ function adminMasterTabGroupFromCard(card, regionKey) {
             node: card,
         };
     }
-    const actions = Array.from(card.querySelectorAll("form[action]")).map(
-        (form) => form.getAttribute("action") || "",
-    );
+    const actions = [
+        ...Array.from(card.querySelectorAll("form[action]")).map((form) => form.getAttribute("action") || ""),
+        ...Array.from(card.querySelectorAll("[data-incell-edit-table][data-create-action]")).map(
+            (table) => table.dataset.createAction || "",
+        ),
+    ];
     clientLog("tabGroup", "adminMasterTabGroupFromCard regionKey=" + regionKey + " cardId=" + (card.id||"(none)") + " actions=" + JSON.stringify(actions));
     const labelMatch = ADMIN_MASTER_LABEL_BY_ACTION.find(([action]) => actions.includes(action));
     if (!labelMatch) {
