@@ -166,10 +166,11 @@ _tableObserver.observe(document.body, { childList: true, subtree: true });
         if (center_non_modal_v2_timer) {
             clearTimeout(center_non_modal_v2_timer);
         }
+        const duration = normalized_type === "error" ? 5000 : 1600;
         center_non_modal_v2_timer = setTimeout(() => {
             toast.classList.remove("is_open");
             center_non_modal_v2_timer = null;
-        }, 1600);
+        }, duration);
     };
     window.showBlueNonModalV2 = (message_text) => {
         window.showCenterNonModalV2(message_text, "info");
