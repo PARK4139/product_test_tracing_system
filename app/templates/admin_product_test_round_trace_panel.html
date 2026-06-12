@@ -1,0 +1,115 @@
+{% if trace_detail %}
+<div class="section_header_row">
+    <h3>Round Trace | {{ trace_detail.round.test_round_id }}</h3>
+</div>
+<div class="detail_guide">
+    Round: {{ trace_detail.round.test_round_id }} |
+    Status: <span class="status_badge status-{{ trace_detail.round.migration_status|lower }}">{{ trace_detail.round.migration_status }}</span>
+</div>
+<div class="tester_table_wrap" style="margin-top:8px;">
+    <table class="basic_table">
+        <tbody>
+            <tr><th>test_round_id</th><td>{{ trace_detail.round.test_round_id }}</td></tr>
+            <tr><th>test_round_name</th><td>{{ trace_detail.round.test_round_name or '' }}</td></tr>
+            <tr><th>workday</th><td>{{ trace_detail.round.workday or '' }}</td></tr>
+            <tr><th>start_date</th><td>{{ trace_detail.round.start_date or '' }}</td></tr>
+            <tr><th>end_date</th><td>{{ trace_detail.round.end_date or '' }}</td></tr>
+        </tbody>
+    </table>
+</div>
+{% for run in trace_detail.run_trace_rows %}
+<div class="detail_guide" style="margin-top:10px;">
+    Run: {{ run.product_test_run_id }} / Target: {{ run.target_summary.product_test_target_id }} / Env: {{ run.environment_summary.product_test_environment_id }} /
+    <span class="status_badge status-{{ run.product_test_run_status|lower }}">{{ run.product_test_run_status }}</span>
+</div>
+{% for result in run.result_rows %}
+<div class="detail_guide" style="margin-top:8px;">
+    Result: {{ result.product_test_result_id }} / {{ result.product_test_case_id }}
+    {% if result.case_row %}/ {{ result.case_row.product_test_case_title }}{% endif %}
+    / <span class="status_badge status-{{ result.product_test_result_status|lower }}">{{ result.product_test_result_status }}</span>
+</div>
+<div class="tester_table_wrap" style="margin-top:8px;">
+    <table class="basic_table">
+        <thead>
+            <tr>
+                <th>procedure_sequence</th>
+                <th>procedure_action</th>
+                <th>acceptance_criteria</th>
+                <th>required_evidence_type</th>
+                <th>procedure_result_status</th>
+                <th>actual_result</th>
+                <th>judgement_reason</th>
+                <th>evidence_count</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for procedure in result.procedure_rows %}
+            <tr>
+                <td>{{ procedure.procedure_sequence }}</td>
+                <td>{{ procedure.procedure_action }}</td>
+                <td>{{ procedure.acceptance_criteria }}</td>
+                <td>{{ procedure.required_evidence_type }}</td>
+                <td><span class="status_badge status-{{ procedure.product_test_procedure_result_status|lower }}">{{ procedure.product_test_procedure_result_status }}</span></td>
+                <td>{{ procedure.actual_result }}</td>
+                <td>{{ procedure.judgement_reason }}</td>
+                <td>{{ procedure.evidence_rows|length }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endfor %}
+{% endfor %}
+<div class="tester_table_wrap" style="margin-top:8px;">
+    <table class="basic_table">
+        <thead>
+            <tr>
+                <th>report_id</th>
+                <th>type</th>
+                <th>status</th>
+                <th>title</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in trace_detail.report_rows %}
+            <tr>
+                <td>{{ row.product_test_report_id }}</td>
+                <td>{{ row.product_test_report_type }}</td>
+                <td><span class="status_badge status-{{ row.product_test_report_status|lower }}">{{ row.product_test_report_status }}</span></td>
+                <td>{{ row.product_test_report_title }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<div class="tester_table_wrap" style="margin-top:8px;">
+    <table class="basic_table">
+        <thead>
+            <tr>
+                <th>transition_id</th>
+                <th>entity_type</th>
+                <th>entity_id</th>
+                <th>from_status</th>
+                <th>to_status</th>
+                <th>transition_reason</th>
+                <th>transitioned_at</th>
+                <th>transitioned_by</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in trace_detail.status_transition_rows %}
+            <tr>
+                <td>{{ row.product_test_status_transition_id }}</td>
+                <td>{{ row.entity_type }}</td>
+                <td>{{ row.entity_id }}</td>
+                <td>{{ row.from_status }}</td>
+                <td>{{ row.to_status }}</td>
+                <td>{{ row.transition_reason }}</td>
+                <td>{{ row.transitioned_at }}</td>
+                <td>{{ row.transitioned_by }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}

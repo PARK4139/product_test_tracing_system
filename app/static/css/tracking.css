@@ -1,3 +1,8 @@
+/* ── Cross-table row highlight ──────────────────────────────────── */
+tr.admin_hl_row { cursor: pointer; }
+tr.admin_hl_selected { background-color: #dbeafe !important; outline: 2px solid #3b82f6; outline-offset: -1px; }
+tr.admin_hl_related  { background-color: #fef9c3 !important; outline: 1px solid #f59e0b; outline-offset: -1px; }
+
 /* ── Tracking dashboard styles ─────────────────────────────────── */
 .tracking_section {
     display: flex;

@@ -108,15 +108,48 @@
 <section class="card" data-admin-tab-label="Test Round">
     <div class="section_header_row">
         <h3>Test Round</h3>
-        <div class="table_action_bar">
-            <a href="/admin/product-test-trace" class="project_standard_button">Trace 보기</a>
-        </div>
     </div>
-    <div class="detail_guide">v2 canonical round 목록(읽기 전용). run은 test_round_id로 연결된다.</div>
+    <div class="detail_guide">v2 canonical round 목록(읽기 전용). 행을 클릭하면 관련 Runs 행이 하이라이트된다.</div>
     <div class="tester_table_wrap">
         <table class="basic_table">
-            <thead><tr><th>test_round_id</th><th>test_round_name</th><th>workday</th><th>start_date</th><th>end_date</th><th>migration_status</th><th>Trace</th></tr></thead>
-            <tbody>{% for row in round_rows %}<tr><td>{{ row.test_round_id }}</td><td>{{ row.test_round_name }}</td><td>{{ row.workday or '' }}</td><td>{{ row.start_date or '' }}</td><td>{{ row.end_date or '' }}</td><td><span class="status_badge status-{{ row.migration_status|lower }}">{{ row.migration_status }}</span></td><td><a href="/admin/product-test-rounds/{{ row.test_round_id }}/trace" class="project_standard_button">Trace</a></td></tr>{% endfor %}</tbody>
+            <thead><tr><th>test_round_id</th><th>test_round_name</th><th>workday</th><th>start_date</th><th>end_date</th><th>migration_status</th></tr></thead>
+            <tbody>{% for row in round_rows %}<tr class="admin_hl_row" data-round-id="{{ row.test_round_id }}"><td>{{ row.test_round_id }}</td><td>{{ row.test_round_name }}</td><td>{{ row.workday or '' }}</td><td>{{ row.start_date or '' }}</td><td>{{ row.end_date or '' }}</td><td><span class="status_badge status-{{ row.migration_status|lower }}">{{ row.migration_status }}</span></td></tr>{% endfor %}</tbody>
+        </table>
+    </div>
+</section>
+<section class="card" data-admin-tab-label="Runs" id="admin_runs_tab_card">
+    <div class="section_header_row">
+        <h3>Runs</h3>
+    </div>
+    <div class="detail_guide">run 목록(읽기 전용). 행을 클릭하면 관련 Round·Target·Env 행이 하이라이트된다.</div>
+    <div class="tester_table_wrap">
+        <table class="basic_table">
+            <thead>
+                <tr>
+                    <th>run_id</th>
+                    <th>Round</th>
+                    <th>Target</th>
+                    <th>Env</th>
+                    <th>Status</th>
+                    <th>Started</th>
+                    <th>Finished</th>
+                    <th>Remark</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in run_rows %}
+                <tr class="admin_hl_row" data-run-id="{{ row.product_test_run_id }}" data-round-id="{{ row.test_round_id }}" data-target-id="{{ row.product_test_target_id }}" data-env-id="{{ row.product_test_environment_id }}">
+                    <td>{{ row.product_test_run_id }}</td>
+                    <td>{{ row.test_round_id }}</td>
+                    <td>{{ row.product_test_target_id }}</td>
+                    <td>{{ row.product_test_environment_id }}</td>
+                    <td><span class="status_badge status-{{ row.product_test_run_status|lower }}">{{ row.product_test_run_status }}</span></td>
+                    <td>{{ row.started_at }}</td>
+                    <td>{{ row.finished_at or '' }}</td>
+                    <td>{{ row.remark or '' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
         </table>
     </div>
 </section>
@@ -179,7 +212,7 @@
     <div class="tester_table_wrap">
         <table class="basic_table">
             <thead><tr><th>선택</th><th>타겟 ID</th><th>제품 코드</th><th>제조사</th><th>모델명</th><th>HW 리비전</th><th>기본 SW 버전</th><th>기본 FW 버전</th><th>시리얼 번호</th><th>SW 버전</th><th>FW 버전</th><th>제조 LOT</th><th>타겟 상태</th><th>비고</th></tr></thead>
-            <tbody>{% for row in target_rows %}<tr><td><input type="checkbox" disabled></td><td>{{ row.product_test_target_id }}</td><td>{{ row.product_code or '' }}</td><td>{{ row.manufacturer or '' }}</td><td>{{ row.model_name }}</td><td>{{ row.hardware_revision or '' }}</td><td>{{ row.default_software_version or '' }}</td><td>{{ row.default_firmware_version or '' }}</td><td>{{ row.serial_number }}</td><td>{{ row.software_version or '' }}</td><td>{{ row.firmware_version or '' }}</td><td>{{ row.manufacture_lot or '' }}</td><td>{{ row.product_test_target_status }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
+            <tbody>{% for row in target_rows %}<tr class="admin_hl_row" data-target-id="{{ row.product_test_target_id }}"><td><input type="checkbox" disabled></td><td>{{ row.product_test_target_id }}</td><td>{{ row.product_code or '' }}</td><td>{{ row.manufacturer or '' }}</td><td>{{ row.model_name }}</td><td>{{ row.hardware_revision or '' }}</td><td>{{ row.default_software_version or '' }}</td><td>{{ row.default_firmware_version or '' }}</td><td>{{ row.serial_number }}</td><td>{{ row.software_version or '' }}</td><td>{{ row.firmware_version or '' }}</td><td>{{ row.manufacture_lot or '' }}</td><td>{{ row.product_test_target_status }}</td><td>{{ row.remark or '' }}</td></tr>{% endfor %}</tbody>
         </table>
     </div>
 </section>
@@ -600,13 +633,13 @@ void (async () => {
     const buildSubmittedRowHtml = (action, row) => {
         const checkbox = '<td><input type="checkbox" class="admin_submitted_row_checkbox"></td>';
         if (action.endsWith("/product-test-rounds/create")) {
-            return `<tr>${checkbox}<td>${escapeHtml(row.test_round_id)}</td><td>${escapeHtml(row.upstream_release_id)}</td><td>${escapeHtml(row.upstream_release_system)}</td><td>${escapeHtml(row.release_sequence)}</td><td>${toStatusBadgeHtml(row.migration_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
+            return `<tr class="admin_hl_row" data-round-id="${escapeHtml(row.test_round_id)}">${checkbox}<td>${escapeHtml(row.test_round_id)}</td><td>${escapeHtml(row.upstream_release_id)}</td><td>${escapeHtml(row.upstream_release_system)}</td><td>${escapeHtml(row.release_sequence)}</td><td>${toStatusBadgeHtml(row.migration_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
         }
         if (action.endsWith("/product-test-targets/create")) {
-            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_target_id)}</td><td>${escapeHtml(row.product_code)}</td><td>${escapeHtml(row.manufacturer)}</td><td>${escapeHtml(row.model_name)}</td><td>${escapeHtml(row.hardware_revision)}</td><td>${escapeHtml(row.default_software_version)}</td><td>${escapeHtml(row.default_firmware_version)}</td><td>${escapeHtml(row.serial_number)}</td><td>${escapeHtml(row.software_version)}</td><td>${escapeHtml(row.firmware_version)}</td><td>${escapeHtml(row.manufacture_lot)}</td><td>${escapeHtml(row.product_test_target_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
+            return `<tr class="admin_hl_row" data-target-id="${escapeHtml(row.product_test_target_id)}">${checkbox}<td>${escapeHtml(row.product_test_target_id)}</td><td>${escapeHtml(row.product_code)}</td><td>${escapeHtml(row.manufacturer)}</td><td>${escapeHtml(row.model_name)}</td><td>${escapeHtml(row.hardware_revision)}</td><td>${escapeHtml(row.default_software_version)}</td><td>${escapeHtml(row.default_firmware_version)}</td><td>${escapeHtml(row.serial_number)}</td><td>${escapeHtml(row.software_version)}</td><td>${escapeHtml(row.firmware_version)}</td><td>${escapeHtml(row.manufacture_lot)}</td><td>${escapeHtml(row.product_test_target_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
         }
         if (action.endsWith("/product-test-environments/create")) {
-            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_environment_id)}</td><td>${escapeHtml(row.product_test_environment_name)}</td><td>${escapeHtml(row.test_country)}</td><td>${escapeHtml(row.test_city)}</td><td>${escapeHtml(row.test_company)}</td><td>${escapeHtml(row.test_room)}</td><td>${escapeHtml(row.network_type)}</td><td>${escapeHtml(row.test_computer_name)}</td><td>${escapeHtml(row.operating_system_version)}</td><td>${escapeHtml(row.test_tool_name)}</td><td>${escapeHtml(row.test_tool_version)}</td><td>${escapeHtml(row.power_voltage)}</td><td>${escapeHtml(row.power_frequency)}</td><td>${escapeHtml(row.power_connector_type)}</td><td>${escapeHtml(row.power_condition)}</td><td>${escapeHtml(row.captured_at)}</td><td>${escapeHtml(row.product_test_environment_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
+            return `<tr class="admin_hl_row" data-env-id="${escapeHtml(row.product_test_environment_id)}">${checkbox}<td>${escapeHtml(row.product_test_environment_id)}</td><td>${escapeHtml(row.product_test_environment_name)}</td><td>${escapeHtml(row.test_country)}</td><td>${escapeHtml(row.test_city)}</td><td>${escapeHtml(row.test_company)}</td><td>${escapeHtml(row.test_room)}</td><td>${escapeHtml(row.network_type)}</td><td>${escapeHtml(row.test_computer_name)}</td><td>${escapeHtml(row.operating_system_version)}</td><td>${escapeHtml(row.test_tool_name)}</td><td>${escapeHtml(row.test_tool_version)}</td><td>${escapeHtml(row.power_voltage)}</td><td>${escapeHtml(row.power_frequency)}</td><td>${escapeHtml(row.power_connector_type)}</td><td>${escapeHtml(row.power_condition)}</td><td>${escapeHtml(row.captured_at)}</td><td>${escapeHtml(row.product_test_environment_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
         }
         if (action.endsWith("/product-test-cases/create")) {
             return `<tr>${checkbox}<td>${escapeHtml(row.product_test_case_id)}</td><td>${escapeHtml(row.product_test_case_title)}</td><td>${escapeHtml(row.test_category)}</td><td>${escapeHtml(row.test_objective)}</td><td>${escapeHtml(row.precondition)}</td><td>${escapeHtml(row.expected_result)}</td><td>${escapeHtml(row.product_test_case_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
@@ -1824,6 +1857,64 @@ void (async () => {
         // 전역 버튼(base.html) 이 있으면 숨김
         const globalBtn = document.getElementById("table_width_toggle_button");
         if (globalBtn) globalBtn.style.display = "none";
+    })();
+
+    (function initCrossTableHighlight() {
+        let selectedRow = null;
+
+        function clearHighlights() {
+            document.querySelectorAll(".admin_hl_selected, .admin_hl_related").forEach(el => {
+                el.classList.remove("admin_hl_selected", "admin_hl_related");
+            });
+            selectedRow = null;
+        }
+
+        function highlight(row) {
+            if (selectedRow === row) {
+                clearHighlights();
+                return;
+            }
+            clearHighlights();
+            selectedRow = row;
+            row.classList.add("admin_hl_selected");
+
+            const runId    = row.dataset.runId    || "";
+            const roundId  = row.dataset.roundId  || "";
+            const targetId = row.dataset.targetId || "";
+            const envId    = row.dataset.envId    || "";
+
+            document.querySelectorAll("tr.admin_hl_row").forEach(tr => {
+                if (tr === row) return;
+                const trRun    = tr.dataset.runId    || "";
+                const trRound  = tr.dataset.roundId  || "";
+                const trTarget = tr.dataset.targetId || "";
+                const trEnv    = tr.dataset.envId    || "";
+                let related = false;
+                if (runId) {
+                    // Run 행 클릭 → 같은 round/target/env 를 가진 non-run 행
+                    if (roundId  && trRound  === roundId  && !trRun) related = true;
+                    if (targetId && trTarget === targetId && !trRun) related = true;
+                    if (envId    && trEnv    === envId    && !trRun) related = true;
+                } else if (roundId) {
+                    // Round 행 클릭 → 같은 round_id 를 가진 run 행
+                    if (trRound === roundId && trRun) related = true;
+                } else if (targetId) {
+                    // Target 행 클릭 → 같은 target_id 를 가진 run 행
+                    if (trTarget === targetId && trRun) related = true;
+                } else if (envId) {
+                    // Env 행 클릭 → 같은 env_id 를 가진 run 행
+                    if (trEnv === envId && trRun) related = true;
+                }
+                if (related) tr.classList.add("admin_hl_related");
+            });
+        }
+
+        document.addEventListener("click", (event) => {
+            if (event.target.closest("input, button, select, a, label")) return;
+            const row = event.target.closest("tr.admin_hl_row");
+            if (!row) { clearHighlights(); return; }
+            highlight(row);
+        });
     })();
 })();
 

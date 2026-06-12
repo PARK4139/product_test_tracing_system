@@ -48,6 +48,7 @@ from app.services.product_test_run_service import (
     build_product_test_trace_export_rows,
     get_product_test_report_detail,
     get_product_test_report_snapshot_detail,
+    get_product_test_run_trace_view,
     get_product_test_system_check,
     get_product_test_trace_view,
     get_test_round_id_by_result_id,
@@ -59,6 +60,7 @@ from app.services.product_test_run_service import (
     list_product_test_environments,
     list_product_test_procedures,
     list_product_test_report_snapshots,
+    list_product_test_runs,
     list_product_test_rounds,
     list_product_test_reports,
     list_target_options,
@@ -132,6 +134,7 @@ def _admin_dashboard_product_tracing_template_context(*, database_session: Sessi
     """admin_dashboard.html 표용 키. 식별자 규칙·안내·입력 순서는 ``GET /admin/api/product-test/ui/client-config`` 로 제공한다."""
     return {
         "round_rows": list_product_test_rounds(database_session),
+        "run_rows": list_product_test_runs(database_session),
         "target_rows": list_product_test_targets(database_session),
         "target_status_values": TARGET_STATUS_VALUES,
         "environment_rows": list_product_test_environments(database_session),
@@ -892,6 +895,16 @@ def render_product_test_round_trace_admin(
         result_status=result_status,
         defect_status=defect_status,
     )
+    if _is_ajax_request(request):
+        templates = request.app.state.templates
+        return templates.TemplateResponse(
+            request=request,
+            name="admin_product_test_round_trace_panel.html",
+            context={
+                "request": request,
+                "trace_detail": trace_detail,
+            },
+        )
     return _render_admin_shell_template(
         request=request,
         database_session=database_session,
@@ -927,336 +940,7 @@ def export_product_test_round_trace_csv(
         result_status=result_status,
         defect_status=defect_status,
     )
-    return _csv_streaming_response(rows=rows, file_name=f"{test_round_id}-trace.csv")
-
-
-@admin_router.get("/product-test-runs/{product_test_run_id}/trace")
-def render_product_test_run_trace_admin(
-    product_test_run_id: str,
-    current_role_name: current_role_name_dependency,
-    database_session: database_session_dependency,
-):
-    _ensure_admin_role(current_role_name)
-    try:
-        round_id = get_test_round_id_by_run_id(database_session, product_test_run_id)
-    except LookupError as exception:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exception)) from exception
-    return RedirectResponse(url=f"/admin/product-test-rounds/{round_id}/trace", status_code=303)
-
-
-@admin_router.get("/product-test-runs/{product_test_run_id}/export.csv")
-def export_product_test_run_csv(
-    product_test_run_id: str,
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-):
-    _ensure_admin_role(current_role_name)
-    rows = build_product_test_run_export_rows(database_session, product_test_run_id)
-    return _csv_streaming_response(rows=rows, file_name=f"{product_test_run_id}.csv")
-
-
-@admin_router.get("/product-test-results/{product_test_result_id}/trace")
-def render_product_test_result_trace_admin(
-    product_test_result_id: str,
-    current_role_name: current_role_name_dependency,
-    database_session: database_session_dependency,
-):
-    _ensure_admin_role(current_role_name)
-    try:
-        round_id = get_test_round_id_by_result_id(database_session, product_test_result_id)
-    except LookupError as exception:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exception)) from exception
-    return RedirectResponse(url=f"/admin/product-test-rounds/{round_id}/trace", status_code=303)
-
-
-@admin_router.get("/product-test-reports/{product_test_report_id}")
-def render_product_test_report_detail_admin(
-    product_test_report_id: str,
-    request: Request,
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-):
-    _ensure_admin_role(current_role_name)
-    detail = get_product_test_report_detail(database_session, product_test_report_id)
-    if detail is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found.")
-    return _render_admin_shell_template(
-        request=request,
-        database_session=database_session,
-        current_role_name=current_role_name,
-        template_name="product_test_report_detail_admin.html",
-        page_title="Product Test Data Tracing System",
-        extra_context={
-            **detail,
-            "message": (request.query_params.get("message") or "").strip(),
-            "message_type": (request.query_params.get("message_type") or "info").strip(),
-        },
+    return _csv_streaming_response(
+        rows=rows,
+        file_name=f"trace_{test_round_id}.csv",
     )
-
-
-@admin_router.get("/product-test-reports/{product_test_report_id}/export.csv")
-def export_product_test_report_csv(
-    product_test_report_id: str,
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-):
-    _ensure_admin_role(current_role_name)
-    rows = build_product_test_report_export_rows(database_session, product_test_report_id)
-    return _csv_streaming_response(rows=rows, file_name=f"{product_test_report_id}.csv")
-
-
-@admin_router.get("/product-test-reports/{product_test_report_id}/print")
-def render_product_test_report_print_admin(
-    product_test_report_id: str,
-    request: Request,
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-):
-    _ensure_admin_role(current_role_name)
-    detail = get_product_test_report_detail(database_session, product_test_report_id)
-    if detail is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found.")
-    return _render_admin_shell_template(
-        request=request,
-        database_session=database_session,
-        current_role_name=current_role_name,
-        template_name="product_test_report_detail_admin.html",
-        page_title="Product Test Data Tracing System",
-        extra_context={**detail, "print_mode": True},
-    )
-
-
-@admin_router.post("/product-test-reports/{product_test_report_id}/reject")
-def reject_product_test_report_admin(
-    product_test_report_id: str,
-    request: Request,
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-    rejection_reason: str = Form(""),
-):
-    _ensure_admin_role(current_role_name)
-    actor_name = _admin_actor_name(database_session, request)
-    try:
-        reject_product_test_report(
-            database_session,
-            product_test_report_id=product_test_report_id,
-            rejected_by=actor_name,
-            rejection_reason=rejection_reason,
-        )
-    except ValueError as exception:
-        return RedirectResponse(
-            url=f"/admin/product-test-reports/{product_test_report_id}?message={str(exception)}&message_type=error",
-            status_code=303,
-        )
-    return RedirectResponse(
-        url=f"/admin/product-test-reports/{product_test_report_id}?message=Report rejected&message_type=success",
-        status_code=303,
-    )
-
-
-@admin_router.get("/product-test-system-check")
-def render_product_test_system_check(
-    request: Request,
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-):
-    _ensure_admin_role(current_role_name)
-    detail = get_product_test_system_check(database_session)
-    return _render_admin_shell_template(
-        request=request,
-        database_session=database_session,
-        current_role_name=current_role_name,
-        template_name="product_test_system_check_admin.html",
-        page_title="Product Test Data Tracing System",
-        extra_context=detail,
-    )
-
-
-@admin_router.post("/create_admin")
-def create_admin_user_account(
-    request: Request,
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-    department_name: str = Form(...),
-    display_name: str = Form(...),
-    internal_title: str = Form(...),
-    phone_number: str = Form(...),
-    password: str = Form(...),
-):
-    _ensure_admin_role(current_role_name)
-    normalized_department_name = department_name.strip()
-    normalized_display_name = display_name.strip()
-    normalized_internal_title = internal_title.strip()
-    normalized_phone_number = phone_number.strip()
-    normalized_password = password.strip()
-
-    if (
-        not normalized_department_name
-        or not normalized_display_name
-        or not normalized_internal_title
-        or not normalized_phone_number
-        or not normalized_password
-    ):
-        return RedirectResponse(url="/admin?message=모든+항목을+입력해+주세요.&message_type=error", status_code=303)
-
-    existing_user_account = database_session.scalar(
-        select(UserAccount).where(UserAccount.phone_number == normalized_phone_number)
-    )
-    if existing_user_account is not None:
-        return RedirectResponse(url="/admin?message=이미+등록된+전화번호입니다.&message_type=error", status_code=303)
-
-    new_admin_account = UserAccount(
-        user_name=normalized_phone_number,
-        password_hash=normalized_password,
-        role_name=ROLE_ADMIN,
-        display_name=normalized_display_name,
-        phone_number=normalized_phone_number,
-        company_name=None,
-        department_name=normalized_department_name,
-        internal_title=normalized_internal_title,
-        is_approved=True,
-    )
-    database_session.add(new_admin_account)
-    database_session.commit()
-    return RedirectResponse(url="/admin?message=Admin+계정이+생성되었습니다.&message_type=success", status_code=303)
-
-
-@admin_router.post("/create_tester")
-def create_tester_user_account(
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-    company_name: str = Form(...),
-    display_name: str = Form(...),
-    phone_number: str = Form(...),
-    password: str = Form(...),
-):
-    _ensure_admin_role(current_role_name)
-    normalized_company_name = company_name.strip()
-    normalized_display_name = display_name.strip()
-    normalized_phone_number = phone_number.strip()
-    normalized_password = password.strip()
-
-    if (
-        not normalized_company_name
-        or not normalized_display_name
-        or not normalized_phone_number
-        or not normalized_password
-    ):
-        return RedirectResponse(url="/admin?message=모든+항목을+입력해+주세요.&message_type=error", status_code=303)
-
-    existing_user_account = database_session.scalar(
-        select(UserAccount).where(UserAccount.phone_number == normalized_phone_number)
-    )
-    if existing_user_account is not None:
-        return RedirectResponse(url="/admin?message=이미+등록된+전화번호입니다.&message_type=error", status_code=303)
-
-    new_tester_account = UserAccount(
-        user_name=normalized_phone_number,
-        password_hash=normalized_password,
-        role_name=ROLE_TESTER,
-        display_name=normalized_display_name,
-        phone_number=normalized_phone_number,
-        company_name=normalized_company_name,
-        department_name=None,
-        is_approved=True,
-    )
-    database_session.add(new_tester_account)
-    database_session.commit()
-    return RedirectResponse(url="/admin?message=Tester+계정이+생성되었습니다.&message_type=success", status_code=303)
-
-
-@admin_router.post("/approve_tester_join")
-def approve_tester_join_request(
-    request: Request,
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-    user_account_id: int = Form(...),
-):
-    _ensure_admin_role(current_role_name)
-    user_account = database_session.get(UserAccount, user_account_id)
-    if user_account is not None and user_account.role_name == "tester":
-        user_account.is_approved = True
-        database_session.commit()
-    context = _admin_dashboard_product_tracing_template_context(database_session=database_session)
-    context.update(
-        {
-            "message": "업체 등록이 승인되었습니다.",
-            "message_type": "success",
-        }
-    )
-    return _render_admin_shell_template(
-        request=request,
-        database_session=database_session,
-        current_role_name=current_role_name,
-        template_name="admin_dashboard.html",
-        page_title="Product Test Data Tracing System",
-        extra_context=context,
-    )
-
-
-@admin_router.post("/delete_tester_join")
-def delete_tester_join_request(
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-    user_account_id: int = Form(...),
-):
-    _ensure_admin_role(current_role_name)
-    user_account = database_session.get(UserAccount, user_account_id)
-    if user_account is not None and user_account.role_name == "tester":
-        database_session.delete(user_account)
-        database_session.commit()
-    return RedirectResponse(url="/admin?message=업체+회원이+삭제되었습니다.&message_type=success", status_code=303)
-
-
-@admin_router.post("/delete_admin_user")
-def delete_admin_user_account(
-    request: Request,
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-    user_account_id: int = Form(...),
-):
-    _ensure_admin_role(current_role_name)
-    target_admin_user_account = database_session.get(UserAccount, user_account_id)
-    if target_admin_user_account is not None and target_admin_user_account.role_name == ROLE_ADMIN:
-        current_phone_number = (request.cookies.get("phone_number") or "").strip()
-        target_phone_number = (target_admin_user_account.phone_number or "").strip()
-        if current_phone_number and target_phone_number and current_phone_number == target_phone_number:
-            return RedirectResponse(url="/admin", status_code=303)
-        database_session.delete(target_admin_user_account)
-        database_session.commit()
-    return RedirectResponse(url="/admin", status_code=303)
-
-
-
-
-@admin_router.post("/qc/e2e-fill")
-def start_admin_qc_e2e_fill_route(
-    request: Request,
-    current_role_name: current_role_name_dependency,
-):
-    _ensure_admin_role(current_role_name)
-    if not is_qc_mode_enabled():
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="QC mode required.",
-        )
-    admin_url = f"{request.url.scheme}://{request.url.netloc}/admin"
-    ok, message = start_admin_qc_e2e_fill(admin_url=admin_url)
-    status_code = 200 if ok else 409
-    return JSONResponse({"ok": ok, "message": message}, status_code=status_code)
-
-
-@admin_router.post("/qc/db-truncate")
-def admin_qc_db_truncate_route(
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-):
-    _ensure_admin_role(current_role_name)
-    if not is_qc_mode_enabled():
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="QC mode required.",
-        )
-    truncate_application_data()
-    database_session.expire_all()
-    return JSONResponse({"ok": True, "message": "Database truncated."})

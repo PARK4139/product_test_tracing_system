@@ -739,6 +739,32 @@ def list_product_test_rounds(database_session: Session) -> list[dict[str, Any]]:
     )
 
 
+def list_product_test_runs(database_session: Session) -> list[dict[str, Any]]:
+    rows = _list_rows_as_dicts(
+        database_session,
+        model=ProductTestRun,
+        columns=[
+            "product_test_run_id",
+            "test_round_id",
+            "product_test_target_id",
+            "product_test_environment_id",
+            "product_test_run_status",
+            "started_at",
+            "finished_at",
+            "remark",
+        ],
+        order_by_column="test_round_id",
+    )
+    return sorted(
+        rows,
+        key=lambda row: (
+            str(row.get("test_round_id") or ""),
+            str(row.get("started_at") or ""),
+            str(row.get("product_test_run_id") or ""),
+        ),
+    )
+
+
 def list_product_test_targets(database_session: Session) -> list[dict[str, Any]]:
     return _list_rows_as_dicts(
         database_session,
@@ -3656,6 +3682,46 @@ def get_test_round_id_by_run_id(database_session: Session, product_test_run_id: 
     if run_row is None:
         raise LookupError("Run not found.")
     return run_row.test_round_id
+
+
+def get_product_test_run_trace_view(database_session: Session, product_test_run_id: str) -> dict[str, Any]:
+    run_row = database_session.get(ProductTestRun, product_test_run_id)
+    if run_row is None:
+        raise LookupError("Run not found.")
+    trace_detail = get_product_test_trace_view(
+        database_session,
+        test_round_id=run_row.test_round_id,
+        product_test_target_id=run_row.product_test_target_id,
+        product_test_environment_id=run_row.product_test_environment_id,
+    )
+    run_trace = next(
+        (row for row in trace_detail["run_trace_rows"] if row["product_test_run_id"] == product_test_run_id),
+        None,
+    )
+    if run_trace is None:
+        raise LookupError("Run trace not found.")
+
+    trace_entity_ids = {product_test_run_id}
+    for result_row in run_trace["result_rows"]:
+        trace_entity_ids.add(result_row["product_test_result_id"])
+        trace_entity_ids.update(
+            procedure_row["product_test_procedure_result_id"]
+            for procedure_row in result_row["procedure_rows"]
+        )
+        trace_entity_ids.update(
+            defect_row["product_test_defect_id"]
+            for defect_row in result_row["defect_rows"]
+        )
+
+    return {
+        "round": trace_detail["round"],
+        "run_trace": run_trace,
+        "status_transition_rows": [
+            row
+            for row in trace_detail["status_transition_rows"]
+            if row["entity_id"] in trace_entity_ids
+        ],
+    }
 
 
 def _append_export_section(rows: list[list[str]], title: str, header: list[str], body_rows: list[list[Any]]) -> None:

@@ -122,11 +122,58 @@ def test_pt_e2e_007_admin_and_export(seeded_wifi_ap_db: TestClient) -> None:
     client = seeded_wifi_ap_db
     dash = client.get("/admin", cookies=_cookies("master_admin"))
     assert dash.status_code == 200
+    assert 'data-admin-tab-label="Round Trace"' in dash.text
+    assert f'data-round-trace-url="/admin/product-test-rounds/{RELEASE_ID}/trace"' in dash.text
+    assert 'data-admin-tab-label="Runs"' in dash.text
+    assert RUN_ID_SEED in dash.text
+    assert f'data-run-trace-url="/admin/product-test-runs/{RUN_ID_SEED}/trace"' in dash.text
     xlsx = client.get("/admin/export/xlsx", cookies=_cookies("master_admin"))
     assert xlsx.status_code == 200
     assert "spreadsheetml" in (xlsx.headers.get("content-type") or "").lower()
     forbidden = client.get("/admin/export/xlsx", cookies=_cookies("tester"))
     assert forbidden.status_code == 403
+
+
+def test_admin_run_trace_ajax_panel(seeded_wifi_ap_db: TestClient) -> None:
+    client = seeded_wifi_ap_db
+    response = client.get(
+        f"/admin/product-test-runs/{RUN_ID_SEED}/trace",
+        cookies=_cookies("master_admin"),
+        headers={
+            "accept": "text/html",
+            "x-requested-with": "XMLHttpRequest",
+        },
+    )
+    assert response.status_code == 200
+    assert f"Run Trace | {RUN_ID_SEED}" in response.text
+    assert RESULT_ID in response.text
+    redirect = client.get(
+        f"/admin/product-test-runs/{RUN_ID_SEED}/trace",
+        cookies=_cookies("master_admin"),
+        follow_redirects=False,
+    )
+    assert redirect.status_code == 303
+
+
+def test_admin_round_trace_ajax_panel(seeded_wifi_ap_db: TestClient) -> None:
+    client = seeded_wifi_ap_db
+    response = client.get(
+        f"/admin/product-test-rounds/{RELEASE_ID}/trace",
+        cookies=_cookies("master_admin"),
+        headers={
+            "accept": "text/html",
+            "x-requested-with": "XMLHttpRequest",
+        },
+    )
+    assert response.status_code == 200
+    assert f"Round Trace | {RELEASE_ID}" in response.text
+    assert RUN_ID_SEED in response.text
+    redirect = client.get(
+        f"/admin/product-test-rounds/{RELEASE_ID}/trace",
+        cookies=_cookies("master_admin"),
+        follow_redirects=False,
+    )
+    assert redirect.status_code == 200
 
 
 def test_admin_product_test_ui_json_api(seeded_wifi_ap_db: TestClient) -> None:
