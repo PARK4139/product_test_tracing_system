@@ -138,7 +138,7 @@ def test_admin_runs_tab_contains_highlight_links(seeded_wifi_ap_db: TestClient) 
     client = seeded_wifi_ap_db
     response = client.get("/admin", cookies=_cookies("master_admin"))
     assert response.status_code == 200
-    assert "행을 클릭하면 관련 Round" in response.text
+    assert 'data-admin-tab-label="Runs"' in response.text
     assert f'data-run-id="{RUN_ID_SEED}"' in response.text
     assert f'data-round-id="{RELEASE_ID}"' in response.text
     assert f'data-target-id="{TARGET_ID}"' in response.text
@@ -149,7 +149,7 @@ def test_admin_round_tab_contains_highlight_rows(seeded_wifi_ap_db: TestClient) 
     client = seeded_wifi_ap_db
     response = client.get("/admin", cookies=_cookies("master_admin"))
     assert response.status_code == 200
-    assert "행을 클릭하면 관련 Runs 행이 하이라이트된다" in response.text
+    assert 'data-admin-tab-label="Test Round"' in response.text
     assert f'data-round-id="{RELEASE_ID}"' in response.text
     assert RUN_ID_SEED in response.text
 

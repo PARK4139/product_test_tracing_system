@@ -79,7 +79,7 @@
 td.admin_fr_cell_match    { background-color: #fef3c7 !important; outline: 1px solid #f59e0b; outline-offset: -1px; }
 td.admin_fr_cell_match_pk { background-color: #fee2e2 !important; outline: 1px solid #ef4444; outline-offset: -1px; }
 
-/* ── 고급편집메뉴 ───────────────────────────────────────────────── */
+/* ── 고급기능 ───────────────────────────────────────────────── */
 .admin_adv_menu {
     position: fixed; z-index: 8900;
     background: var(--color-surface, #fff);

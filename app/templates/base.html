@@ -36,26 +36,14 @@
                 Test Tracer
                 {% endif %}
             </h1>
-            <div class="qc_header_actions">
-                {% if qc_mode_enabled and request.url.path.startswith('/admin') %}
-                <button id="qc_mode_e2e_test_button" type="button" class="qc_mode_action_button">
-                    E2E TEST
-                </button>
-                {% endif %}
-                {% if request.url.path == '/admin' %}
-                <button id="all_tabviews_region_fold_toggle" type="button" class="qc_mode_action_button" disabled>
-                    모든탭뷰접기
-                </button>
-                <button id="table_width_toggle_button" type="button" class="qc_mode_action_button">
-                    COMPACT
-                </button>
-                {% endif %}
-            </div>
         </div>
     </header>
     <main class="page_container">
         {% block content %}{% endblock %}
     </main>
+    <script>
+        window.qcModeEnabled = {{ 'true' if qc_mode_enabled else 'false' }};
+    </script>
     <script src="/static/js/table-cell-f2-edit.js"></script>
     <script src="/static/js/admin-incell-edit.js"></script>
     <script src="/static/js/procedure-action-modal.js"></script>

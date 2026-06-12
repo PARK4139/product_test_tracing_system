@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.models import (
@@ -59,6 +60,7 @@ ENTITY_MODEL_MAP = {
 FIELD_WHITELIST: dict[str, frozenset[str]] = {
     "product_test_round": frozenset(
         {
+            "test_round_id",
             "test_round_name",
             "workday",
             "start_date",

@@ -1,6 +1,6 @@
 /**
  * admin-find-replace.js
- * BACKTICK key -> 고급편집메뉴 -> 일괄치환 모달
+ * BACKTICK key -> 고급기능 -> 일괄치환 모달
  */
 (function () {
     "use strict";
@@ -321,7 +321,7 @@
         applyBtn.textContent = "적용";
 
         if (errorMsg) {
-            showNotice("일부 실패 (" + successCount + "/" + updates.length + "건 완료): " + errorMsg, "error");
+            showNotice("일부 실패 (" + successCount + "/" + updates.length + "건 완료)\n" + errorMsg, "error");
         } else {
             showNotice(successCount + "건 치환 완료", "success");
             closeModal();
@@ -330,9 +330,60 @@
         }
     }
 
-    /* ===== 고급편집메뉴 ===== */
+    /* ===== 고급기능 ===== */
 
     function getMenu() { return document.getElementById(MENU_ID); }
+
+    function showAdminAdvNotice(message, level) {
+        if (typeof window.showCenterNonModalV2 === "function") {
+            window.showCenterNonModalV2(message, level || "info");
+            return;
+        }
+        if (typeof window.openMessageModal === "function") {
+            window.openMessageModal(message);
+            return;
+        }
+        window.alert(message);
+    }
+
+    async function runAdminE2eTest(button) {
+        if (button.disabled) return;
+        button.disabled = true;
+        try {
+            var response = await fetch("/admin/qc/e2e-fill", {
+                method: "POST",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest",
+                    Accept: "application/json",
+                },
+                credentials: "same-origin",
+            });
+            var data = await response.json().catch(function () { return {}; });
+            var ok = response.ok && data && data.ok;
+            showAdminAdvNotice((data && data.message) || "E2E TEST 요청 처리 실패", ok ? "success" : "error");
+        } catch (_error) {
+            showAdminAdvNotice("E2E TEST 요청 중 네트워크 오류가 발생했습니다.", "error");
+        } finally {
+            window.setTimeout(function () { button.disabled = false; }, 1200);
+        }
+    }
+
+    function toggleAllCardCompact(button) {
+        var cardButtons = Array.from(document.querySelectorAll(".card_compact_toggle_btn"));
+        if (!cardButtons.length) {
+            showAdminAdvNotice("COMPACT 대상 카드가 없습니다.", "guide");
+            return;
+        }
+        var shouldCompact = document.querySelectorAll(".card.compact_mode").length !== cardButtons.length;
+        cardButtons.forEach(function (cardButton) {
+            var card = cardButton.closest(".card");
+            var isCompact = card && card.classList.contains("compact_mode");
+            if ((shouldCompact && !isCompact) || (!shouldCompact && isCompact)) {
+                cardButton.click();
+            }
+        });
+        button.textContent = shouldCompact ? "히스토리 폭" : "COMPACT";
+    }
 
     function buildMenu() {
         if (getMenu()) return;
@@ -344,7 +395,7 @@
         menu.innerHTML =
             "<div class=\"admin_adv_menu_header\">고급편집메뉴</div>" +
             "<button type=\"button\" class=\"admin_adv_menu_item\" id=\"admin_adv_find_replace_btn\">" +
-              "<span class=\"admin_adv_menu_icon\">⇄</span> 일괄치환" +
+              "<span class=\"admin_adv_menu_icon\">&#8644;</span> 일괄치환" +
             "</button>";
         document.body.appendChild(menu);
 
