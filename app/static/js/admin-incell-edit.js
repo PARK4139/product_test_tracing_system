@@ -1,6 +1,14 @@
 (function () {
     "use strict";
 
+    /* ── 셀 저장 직렬화 큐 (동시 저장 방지) ──────────────── */
+    let _saveQueue = Promise.resolve();
+
+    const enqueueSave = (fn) => {
+        _saveQueue = _saveQueue.then(fn, fn);
+        return _saveQueue;
+    };
+
     /* ── Ctrl+Z 언두 히스토리 ─────────────────────────────── */
     const _undoStack = [];  // [{entityType, entityId, fieldName, prevValue, cell}]
     const MAX_UNDO = 50;
@@ -167,7 +175,7 @@
         }
 
         let finished = false;
-        const finish = async (save) => {
+        const finish = (save) => {
             if (finished) {
                 return;
             }
@@ -177,19 +185,23 @@
                 restoreCell(cell, originalValue);
                 return;
             }
+            // Optimistic update: 서버 응답 전에 새 값을 즉시 표시 (연속 편집 시 UI 즉응성)
+            restoreCell(cell, nextValue);
             cell.classList.add("admin_incell_saving");
-            try {
-                await postBulkUpdate({ entityType, entityId, fieldName }, nextValue);
-                pushUndo(entityType, entityId, fieldName, originalValue, cell);
-                restoreCell(cell, nextValue);
-                showNotice("셀 저장 완료", "success");
-            } catch (error) {
-                restoreCell(cell, originalValue);
-                row.classList.add("admin_incell_error");
-                showNotice(error.message || "셀 저장 실패", "error");
-            } finally {
-                cell.classList.remove("admin_incell_saving");
-            }
+            enqueueSave(async () => {
+                try {
+                    await postBulkUpdate({ entityType, entityId, fieldName }, nextValue);
+                    pushUndo(entityType, entityId, fieldName, originalValue, cell);
+                    showNotice("셀 저장 완료", "success");
+                } catch (error) {
+                    // 저장 실패 → 원래 값으로 롤백
+                    restoreCell(cell, originalValue);
+                    row.classList.add("admin_incell_error");
+                    showNotice(error.message || "셀 저장 실패", "error");
+                } finally {
+                    cell.classList.remove("admin_incell_saving");
+                }
+            });
         };
 
         cell.classList.add("admin_incell_editing");
@@ -199,14 +211,14 @@
         if (control instanceof HTMLInputElement) {
             control.select();
         }
-        control.addEventListener("blur", () => void finish(true));
+        control.addEventListener("blur", () => finish(true));
         control.addEventListener("keydown", (event) => {
             if (event.key === "Enter") {
                 event.preventDefault();
-                void finish(true);
+                finish(true);
             } else if (event.key === "Escape") {
                 event.preventDefault();
-                void finish(false);
+                finish(false);
             }
         });
     };

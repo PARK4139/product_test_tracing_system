@@ -284,6 +284,8 @@
             }
             const refreshBtn = document.getElementById("trk_refresh_btn");
             if (refreshBtn && updates.some((u) => u.entity_type.startsWith("product_test_"))) {
+                // refresh 후 DOM 이 교체되므로 selectedCell 이 stale 해짐 → F2 간헐적 실패 방지
+                clearSelectedCell();
                 refreshBtn.dataset.preserveScroll = "1";
                 refreshBtn.click();
             }
@@ -555,7 +557,10 @@
             root.querySelectorAll("table").forEach((tbl) => {
                 const idxByHeader = findColumnIndexByKey(tbl, columnKey);
                 tbl.querySelectorAll("tbody tr").forEach((tr) => {
-                    const useChecked = isRowChecked(tr);
+                    // isRowChecked(tr) 는 tr마다 querySelector 를 호출해 행이 많을수록 느림.
+                    // data-checked 캐시가 있으면 그걸 쓰고, 없으면 직접 확인.
+                    const useChecked =
+                        tr.dataset.checked === "1" || isRowChecked(tr);
                     if (!rowMatchesLink(tr, link) && !useChecked) {
                         return;
                     }
@@ -570,7 +575,11 @@
         if (table) {
             scanRoot(table.closest(".card") || table.parentElement || table);
         }
-        scanRoot(document.getElementById("trk_root"));
+        // #trk_root 는 셀이 그 안에 있을 때만 스캔 (행 수가 많으면 전체 스캔이 메인 스레드를 블록)
+        const trkRoot = document.getElementById("trk_root");
+        if (trkRoot && trkRoot.contains(table)) {
+            scanRoot(trkRoot);
+        }
 
         link.topoIds.forEach((topoId) => {
             document.querySelectorAll(`tr[data-parent-release-id="${topoId}"]`).forEach((tr) => {
@@ -766,6 +775,11 @@
             if (typeof window.showCenterNonModalV2 === "function") {
                 window.showCenterNonModalV2("편집할 셀을 먼저 클릭해 주세요.", "info");
             }
+            return;
+        }
+
+        // admin-incell-edit.js 가 담당하는 테이블에서는 F2 무시 (blur 충돌 방지)
+        if (selectedCell.closest("[data-incell-edit-table]")) {
             return;
         }
 

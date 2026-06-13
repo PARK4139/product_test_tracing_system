@@ -24,6 +24,7 @@ def _apply_sqlite_pragmas(database_api_connection, _connection_record) -> None:
     cursor = database_api_connection.cursor()
     cursor.execute("PRAGMA foreign_keys=ON;")
     cursor.execute("PRAGMA journal_mode=WAL;")
+    cursor.execute("PRAGMA busy_timeout=5000;")
     cursor.execute("PRAGMA synchronous=NORMAL;")
     cursor.execute("PRAGMA mmap_size=67108864")
     cursor.execute("PRAGMA cache_size=-32768")

@@ -8,6 +8,7 @@ Playwright E2E: in-cell edit (admin-incell-edit.js) tests
   - PK 셀 클릭 → 편집 불가 (input 미출현)
   - update-readonly 셀 클릭 → 편집 불가
   - 저장 후 Ctrl+Z undo → 이전 값 복구
+  - 두 셀 빠르게 연속 편집 → 둘 다 저장 성공
 """
 from __future__ import annotations
 
@@ -50,9 +51,10 @@ def get_round_name_cell(page: Page):
     ).first
 
 
-def get_round_pk_cell(page: Page):
+def get_run_pk_cell(page: Page):
+    """product_test_run 테이블의 PK(자동생성 ID): 편집 불가."""
     return page.locator(
-        "tr[data-entity-type='product_test_round'] td[data-field='test_round_id'][data-primary-key='1']"
+        "tr[data-entity-type='product_test_run'] td[data-field='product_test_run_id'][data-primary-key='1']"
     ).first
 
 
@@ -84,7 +86,7 @@ def test_text_cell_edit_enter_saves(page: Page, live_server: str) -> None:
     inp = cell.locator("input")
     expect(inp).to_be_visible(timeout=2000)
 
-    inp.triple_click()
+    inp.click(click_count=3)
     inp.type(new_value)
     inp.press("Enter")
 
@@ -112,7 +114,7 @@ def test_text_cell_edit_escape_cancels(page: Page, live_server: str) -> None:
     inp = cell.locator("input")
     expect(inp).to_be_visible(timeout=2000)
 
-    inp.triple_click()
+    inp.click(click_count=3)
     inp.type("SHOULD_NOT_SAVE")
     inp.press("Escape")
 
@@ -151,13 +153,14 @@ def test_select_cell_edit_saves(page: Page, live_server: str) -> None:
     )
 
 
-# ── TC4: PK 셀 클릭 → 편집 불가 ──────────────────────────────────────
+# ── TC4: 자동생성 PK 셀(product_test_run_id) 클릭 → 편집 불가 ─────────
 
 def test_pk_cell_not_editable(page: Page, live_server: str) -> None:
+    """자동생성 PK(product_test_run_id)는 data-primary-key='1' 이므로 편집 불가."""
     goto_admin(page)
-    activate_tab(page, "Test Round")
+    activate_tab(page, "Runs")
 
-    cell = get_round_pk_cell(page)
+    cell = get_run_pk_cell(page)
     original = (cell.text_content() or "").strip()
 
     cell.click()
@@ -184,7 +187,174 @@ def test_update_readonly_cell_not_editable(page: Page, live_server: str) -> None
     expect(cell).to_contain_text(original)
 
 
-# ── TC6: Ctrl+Z undo ──────────────────────────────────────────────────
+# ── TC7: 두 셀 빠르게 연속 편집 → 둘 다 저장 ────────────────────────
+
+def test_rapid_two_cell_edit_both_save(page: Page, live_server: str) -> None:
+    """셀 A 편집(Enter) 직후 셀 B 클릭→편집(Enter) → 둘 다 저장 성공."""
+    goto_admin(page)
+    activate_tab(page, "Test Round")
+
+    # 첫 번째 셀: test_round_name
+    cell_a = get_round_name_cell(page)
+    original_a = (cell_a.text_content() or "").strip()
+    new_a = original_a + "_A"
+
+    # 두 번째 셀: start_date (편집 가능한 텍스트 셀)
+    cell_b = page.locator(
+        "tr[data-entity-type='product_test_round'] td[data-field='start_date']"
+    ).first
+    original_b = (cell_b.text_content() or "").strip()
+    new_b = "2099-01-01"
+
+    # ── 셀 A 편집 후 즉시 셀 B 클릭 (저장 완료 기다리지 않음) ──────
+    cell_a.click()
+    inp_a = cell_a.locator("input")
+    expect(inp_a).to_be_visible(timeout=2000)
+    inp_a.click(click_count=3)
+    inp_a.type(new_a)
+    inp_a.press("Enter")  # 저장 시작 (비동기) - 완료 기다리지 않음
+
+    # 즉시 셀 B 클릭
+    cell_b.click()
+    inp_b = cell_b.locator("input")
+    expect(inp_b).to_be_visible(timeout=2000)
+    inp_b.click(click_count=3)
+    inp_b.type(new_b)
+    inp_b.press("Enter")
+
+    # 두 번째 저장 완료 대기 (큐 직렬화이므로 두 번 완료됐을 때 텍스트 포함)
+    expect(inp_b).to_have_count(0, timeout=5000)
+
+    # 두 셀 모두 새 값으로 업데이트됐는지 확인
+    expect(cell_a).to_contain_text(new_a, timeout=5000)
+    expect(cell_b).to_contain_text(new_b, timeout=5000)
+
+
+# ── TC8: MERCUSYS round_id 행의 round_name 편집 ───────────────────────
+
+def test_mercusys_round_name_edit(page: Page, live_server: str) -> None:
+    """Rounds 탭에서 round_id 에 MERCUSYS 가 포함된 첫 번째 행의 round_name 을 편집·저장."""
+    goto_admin(page)
+    activate_tab(page, "Test Round")
+
+    row = page.locator(
+        "tr[data-entity-type='product_test_round']"
+    ).filter(
+        has=page.locator("td[data-field='test_round_id']", has_text="MERCUSYS")
+    ).first
+
+    cell = row.locator("td[data-field='test_round_name']")
+    original = (cell.text_content() or "").strip()
+    new_value = original + "_MRC"
+
+    cell.click()
+    inp = cell.locator("input")
+    expect(inp).to_be_visible(timeout=2000)
+    inp.click(click_count=3)
+    inp.type(new_value)
+    inp.press("Enter")
+
+    expect(inp).to_have_count(0, timeout=5000)
+    expect(cell).to_contain_text(new_value, timeout=5000)
+
+    page.wait_for_function(
+        "() => document.body.innerText.includes('셀 저장 완료')",
+        timeout=5000,
+    )
+
+
+
+# ── TC9: F2 on admin-incell-edit table → 충돌 없음 ─────────────────────
+# 루트 원인: table-cell-f2-edit.js 가 admin-incell-edit.js 의 input 을 가로채면
+# blur 발생 시 optimistic update 가 input 을 DOM 에서 제거 → multiEditPrimary detached
+# → 이후 타이핑 불가 (“view stops while editing”).
+# 수정: selectedCell.closest(“[data-incell-edit-table]”) 이면 F2 무시.
+
+def test_f2_does_not_break_admin_incell_edit(page: Page, live_server: str) -> None:
+    """admin-incell-edit 테이블 셀에서 F2 를 눈러도 admin 인셀 편집이 정상 동작해야 한다.
+
+    재현 시나리오:
+      1. round_name 셀 클릭 → admin-incell-edit 이 <input> 생성
+      2. F2 키 → (수정 전) table-cell-f2-edit 가 그 input 을 multiEditPrimary 로 가로채서
+         blur 발생 시 input 제거 → 편집 멈춤
+         (수정 후) F2 무시 → admin input 그대로 활성
+      3. 값 입력 후 Enter → 정상 저장
+    """
+    goto_admin(page)
+    activate_tab(page, "Test Round")
+
+    cell = get_round_name_cell(page)
+    original = (cell.text_content() or "").strip()
+    new_value = original + "_F2TEST"
+
+    # 1. 셀 클릭 → admin input 생성
+    cell.click()
+    inp = cell.locator("input")
+    expect(inp).to_be_visible(timeout=2000)
+
+    # 2. F2 키 (수정 후 무시되어야 함 → input 여전히 존재)
+    page.keyboard.press("F2")
+    expect(inp).to_be_visible(timeout=1000)  # input 이 사라지지 않아야 함
+
+    # 3. 값 입력 → Enter 저장
+    inp.click(click_count=3)
+    inp.type(new_value)
+    inp.press("Enter")
+
+    expect(inp).to_have_count(0, timeout=5000)
+    expect(cell).to_contain_text(new_value, timeout=5000)
+
+    page.wait_for_function(
+        "() => document.body.innerText.includes('\uc140 \uc800\uc7a5 \uc644\ub8cc')",
+        timeout=5000,
+    )
+
+
+# ── TC10: F2 → Enter 연속 후 재편집 정상 동작 ────────────────────
+
+def test_f2_enter_then_reeditable(page: Page, live_server: str) -> None:
+    """F2 + Enter 입력 이후에도 셀 재클릭 → 편집 가능해야 한다.
+
+    (수정 전) F2 가 admin input 을 가로채면 Enter 시 두 핸들러 모두 발화
+    → finished 플래그가 꽔여 다음 클릭 시 편집 불가.
+    (수정 후) F2 무시 → Enter 는 admin-incell-edit 핸들러만 처리 → 정상.
+    """
+    goto_admin(page)
+    activate_tab(page, "Test Round")
+
+    cell = get_round_name_cell(page)
+    original = (cell.text_content() or "").strip()
+    first_val = original + "_F2A"
+    second_val = original + "_F2B"
+
+    # 1차 편집: 클릭 → F2 → Enter
+    cell.click()
+    inp = cell.locator("input")
+    expect(inp).to_be_visible(timeout=2000)
+    page.keyboard.press("F2")
+    inp.click(click_count=3)
+    inp.type(first_val)
+    inp.press("Enter")
+    expect(inp).to_have_count(0, timeout=5000)
+    expect(cell).to_contain_text(first_val, timeout=5000)
+
+    # 2차 편집: 재클릭 → 편집 가능한지 확인
+    cell.click()
+    inp2 = cell.locator("input")
+    expect(inp2).to_be_visible(timeout=2000)
+    inp2.click(click_count=3)
+    inp2.type(second_val)
+    inp2.press("Enter")
+    expect(inp2).to_have_count(0, timeout=5000)
+    expect(cell).to_contain_text(second_val, timeout=5000)
+
+    page.wait_for_function(
+        "() => document.body.innerText.includes('\uc140 \uc800\uc7a5 \uc644\ub8cc')",
+        timeout=5000,
+    )
+
+
+# ── TC6: Ctrl+Z undo ──────────────────────────────────────────────────────
 
 def test_ctrl_z_undoes_last_cell_edit(page: Page, live_server: str) -> None:
     goto_admin(page)
@@ -198,14 +368,14 @@ def test_ctrl_z_undoes_last_cell_edit(page: Page, live_server: str) -> None:
     cell.click()
     inp = cell.locator("input")
     expect(inp).to_be_visible(timeout=2000)
-    inp.triple_click()
+    inp.click(click_count=3)
     inp.type(new_value)
     inp.press("Enter")
     expect(inp).to_have_count(0, timeout=3000)
     expect(cell).to_contain_text(new_value, timeout=3000)
 
     page.wait_for_function(
-        "() => document.body.innerText.includes('셀 저장 완료')",
+        "() => document.body.innerText.includes('\uc140 \uc800\uc7a5 \uc644\ub8cc')",
         timeout=5000,
     )
 
@@ -213,7 +383,7 @@ def test_ctrl_z_undoes_last_cell_edit(page: Page, live_server: str) -> None:
     page.keyboard.press("Control+z")
 
     page.wait_for_function(
-        "() => document.body.innerText.includes('되돌리기 완료')",
+        "() => document.body.innerText.includes('\ub418돌리기 \uc644\ub8cc')",
         timeout=5000,
     )
     expect(cell).to_contain_text(original, timeout=3000)

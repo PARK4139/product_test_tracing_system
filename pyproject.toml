@@ -29,7 +29,7 @@ filterwarnings = [
     "ignore::DeprecationWarning",
 ]
 markers = [
-    "integration: DB + service integration (Wi‑Fi AP seed smoke)",
+    "integration: DB + service integration (Wi-Fi AP seed smoke)",
 ]
 
 [tool.uv]

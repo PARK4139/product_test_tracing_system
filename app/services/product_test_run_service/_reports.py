@@ -50,6 +50,7 @@ def list_report_round_options(database_session: Session) -> list[dict[str, Any]]
 
 
 def list_product_test_reports(database_session: Session) -> list[dict[str, Any]]:
+    from app.services.product_test_run_service._common import _query_all_rows
     rows = _query_all_rows(database_session, ProductTestReport, "created_at")
     return [
         _as_dict(
@@ -77,6 +78,7 @@ def list_product_test_reports(database_session: Session) -> list[dict[str, Any]]
 
 
 def list_product_test_report_snapshots(database_session: Session) -> list[dict[str, Any]]:
+    from app.services.product_test_run_service._common import _query_all_rows
     rows = _query_all_rows(database_session, ProductTestReportSnapshot, "created_at")
     return [
         _as_dict(
