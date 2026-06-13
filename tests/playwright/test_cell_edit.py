@@ -51,10 +51,10 @@ def get_round_name_cell(page: Page):
     ).first
 
 
-def get_run_pk_cell(page: Page):
-    """product_test_run 테이블의 PK(자동생성 ID): 편집 불가."""
+def get_case_id_cell(page: Page):
+    """product_test_case 테이블의 case_id 셀."""
     return page.locator(
-        "tr[data-entity-type='product_test_run'] td[data-field='product_test_run_id'][data-primary-key='1']"
+        "tr[data-entity-type='product_test_case'] td[data-field='product_test_case_id']"
     ).first
 
 
@@ -153,22 +153,31 @@ def test_select_cell_edit_saves(page: Page, live_server: str) -> None:
     )
 
 
-# ── TC4: 자동생성 PK 셀(product_test_run_id) 클릭 → 편집 불가 ─────────
+# ── TC4: product_test_case_id 편집 → 저장 ────────────────────────────
 
 def test_pk_cell_not_editable(page: Page, live_server: str) -> None:
-    """자동생성 PK(product_test_run_id)는 data-primary-key='1' 이므로 편집 불가."""
+    """*_id 셀은 편집 가능해야 한다 (data-primary-key 제한 제거 후)."""
     goto_admin(page)
-    activate_tab(page, "Runs")
+    activate_tab(page, "Cases")
 
-    cell = get_run_pk_cell(page)
+    cell = get_case_id_cell(page)
     original = (cell.text_content() or "").strip()
+    new_value = original + "_ID"
 
     cell.click()
-    page.wait_for_timeout(500)
+    inp = cell.locator("input")
+    expect(inp).to_be_visible(timeout=2000)
+    inp.click(click_count=3)
+    inp.type(new_value)
+    inp.press("Enter")
 
-    # input이 나타나지 않아야 함
-    expect(cell.locator("input")).to_have_count(0)
-    expect(cell).to_contain_text(original)
+    expect(inp).to_have_count(0, timeout=5000)
+    expect(cell).to_contain_text(new_value, timeout=5000)
+
+    page.wait_for_function(
+        "() => document.body.innerText.includes('셀 저장 완료')",
+        timeout=5000,
+    )
 
 
 # ── TC5: update-readonly 셀 클릭 → 편집 불가 ─────────────────────────

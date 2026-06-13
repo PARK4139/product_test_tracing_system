@@ -133,7 +133,7 @@
         if (!row || !table || row.dataset.draftRow === "1") {
             return;
         }
-        if (!cell.dataset.field || cell.dataset.primaryKey === "1" || cell.dataset.readonly === "1" || cell.dataset.updateReadonly === "1") {
+        if (!cell.dataset.field || cell.dataset.readonly === "1" || cell.dataset.updateReadonly === "1") {
             return;
         }
         if (cell.classList.contains("procedure_action_summary") || cell.dataset.modalEdit === "1") {

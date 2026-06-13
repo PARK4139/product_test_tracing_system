@@ -70,6 +70,7 @@ FIELD_WHITELIST: dict[str, frozenset[str]] = {
     ),
     "product_test_run": frozenset(
         {
+            "product_test_run_id",
             "product_test_run_status",
             "started_at",
             "finished_at",
@@ -78,6 +79,7 @@ FIELD_WHITELIST: dict[str, frozenset[str]] = {
     ),
     "product_test_target": frozenset(
         {
+            "product_test_target_id",
             "product_code",
             "manufacturer",
             "model_name",
@@ -117,6 +119,7 @@ FIELD_WHITELIST: dict[str, frozenset[str]] = {
     ),
     "product_test_case": frozenset(
         {
+            "product_test_case_id",
             "product_test_case_title",
             "test_category",
             "test_objective",
@@ -128,6 +131,7 @@ FIELD_WHITELIST: dict[str, frozenset[str]] = {
     ),
     "product_test_procedure": frozenset(
         {
+            "product_test_procedure_id",
             "procedure_action",
             "acceptance_criteria",
             "required_evidence_type",
@@ -156,6 +160,7 @@ FIELD_WHITELIST: dict[str, frozenset[str]] = {
     ),
     "product_test_report": frozenset(
         {
+            "product_test_report_id",
             "product_test_report_title",
             "product_test_report_type",
             "product_test_report_status",

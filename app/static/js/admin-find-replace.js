@@ -42,10 +42,6 @@
         if (!row.dataset.entityId)                 return false;
         var et = row.dataset.entityType || table.dataset.entityType || "";
         if (!et)                                   return false;
-        /* PK는 cascade rename을 지원하는 test_round_id만 허용 */
-        if (cell.dataset.primaryKey === "1") {
-            if (!(et === "product_test_round" && cell.dataset.field === "test_round_id")) return false;
-        }
         return true;
     }
 

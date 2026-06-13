@@ -325,7 +325,7 @@ _TC_LABELS: dict[str, str] = {
     "test_cell_edit.py::test_text_cell_edit_enter_saves":               "텍스트 셀 → Enter 저장",
     "test_cell_edit.py::test_text_cell_edit_escape_cancels":            "텍스트 셀 → ESC 취소",
     "test_cell_edit.py::test_select_cell_edit_saves":                   "Select 셀 → blur 저장",
-    "test_cell_edit.py::test_pk_cell_not_editable":                     "자동생성 PK(run_id) → 편집 불가",
+    "test_cell_edit.py::test_pk_cell_not_editable":                     "case_id(*_id) → 편집 가능",
     "test_cell_edit.py::test_update_readonly_cell_not_editable":        "update-readonly 셀 → 편집 불가",
     "test_cell_edit.py::test_rapid_two_cell_edit_both_save":            "연속 두 셀 편집 → 둘 다 저장",
     "test_cell_edit.py::test_mercusys_round_name_edit":                 "MERCUSYS 행 round_name 편집",
