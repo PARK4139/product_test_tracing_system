@@ -13,7 +13,6 @@ from app.models import (
     ProductTestProcedure,
     ProductTestProcedureResult,
     ProductTestRound,
-    ProductTestReport,
     ProductTestTargetUnified,
 )
 from app.services.product_test_run_service import (
@@ -23,7 +22,6 @@ from app.services.product_test_run_service import (
     MASTER_ACTIVE_STATUS_VALUES,
     PROCEDURE_RESULT_STATUS_VALUES,
     PRODUCT_TEST_RELEASE_STATUS_VALUES,
-    REPORT_STATUS_VALUES,
     TARGET_STATUS_VALUES,
     _ensure_defect_not_locked_for_source_mutation,
     _ensure_round_not_locked_for_source_mutation,
@@ -54,7 +52,6 @@ ENTITY_MODEL_MAP = {
     "product_test_procedure": ProductTestProcedure,
     "product_test_procedure_result": ProductTestProcedureResult,
     "product_test_defect": ProductTestDefect,
-    "product_test_report": ProductTestReport,
 }
 
 FIELD_WHITELIST: dict[str, frozenset[str]] = {
@@ -158,15 +155,6 @@ FIELD_WHITELIST: dict[str, frozenset[str]] = {
             "remark",
         }
     ),
-    "product_test_report": frozenset(
-        {
-            "product_test_report_id",
-            "product_test_report_title",
-            "product_test_report_type",
-            "product_test_report_status",
-            "remark",
-        }
-    ),
 }
 
 STATUS_FIELD_VALIDATORS: dict[tuple[str, str], tuple[str, ...]] = {
@@ -175,7 +163,6 @@ STATUS_FIELD_VALIDATORS: dict[tuple[str, str], tuple[str, ...]] = {
     ("product_test_case", "product_test_case_status"): MASTER_ACTIVE_STATUS_VALUES,
     ("product_test_procedure", "product_test_procedure_status"): MASTER_ACTIVE_STATUS_VALUES,
     ("product_test_procedure_result", "product_test_procedure_result_status"): PROCEDURE_RESULT_STATUS_VALUES,
-    ("product_test_report", "product_test_report_status"): REPORT_STATUS_VALUES,
 }
 
 REQUIRED_TEXT_FIELDS = frozenset(
@@ -190,7 +177,6 @@ REQUIRED_TEXT_FIELDS = frozenset(
         "procedure_action",
         "acceptance_criteria",
         "product_test_environment_name",
-        "product_test_report_title",
         "test_category",
         "serial_number",
     }
@@ -247,7 +233,7 @@ def _coerce_field_value(entity_type: str, field_name: str, value: str) -> Any:
     status_key = (entity_type, field_name)
     if status_key in STATUS_FIELD_VALIDATORS:
         normalized = str(value or "").strip()
-        if field_name in {"product_test_report_status", "migration_status"}:
+        if field_name in {"migration_status"}:
             normalized = normalized.upper()
         else:
             normalized = normalized.lower()
@@ -289,7 +275,6 @@ def _coerce_field_value(entity_type: str, field_name: str, value: str) -> Any:
         "power_frequency",
         "power_connector_type",
         "power_condition",
-        "product_test_report_type",
     }:
         return _normalize_optional_text(value)
     return text
@@ -429,7 +414,7 @@ def _apply_single_update(
         if old_id != new_id:
             # FK 체크 일시 중단: new_id가 PK에 없는 상태에서 FK 업데이트 시 IntegrityError 방지
             database_session.execute(text("PRAGMA foreign_keys = OFF"))
-            for fk_table in ("product_test_run", "product_test_report", "product_test_report_snapshot"):
+            for fk_table in ("product_test_run",):
                 database_session.execute(
                     text(f"UPDATE {fk_table} SET test_round_id = :new WHERE test_round_id = :old"),
                     {"new": new_id, "old": old_id},
@@ -497,10 +482,6 @@ _CASCADE_DELETE_SQLS: dict[str, list[str]] = {
         "DELETE FROM product_test_result WHERE product_test_run_id IN (SELECT product_test_run_id FROM product_test_run WHERE test_round_id=:id)",
         "DELETE FROM product_test_status_transition WHERE entity_id IN (SELECT product_test_run_id FROM product_test_run WHERE test_round_id=:id)",
         "DELETE FROM product_test_run WHERE test_round_id=:id",
-        # 보고서 자식들
-        "DELETE FROM product_test_report_snapshot WHERE product_test_report_id IN (SELECT product_test_report_id FROM product_test_report WHERE test_round_id=:id)",
-        "DELETE FROM product_test_status_transition WHERE entity_id IN (SELECT product_test_report_id FROM product_test_report WHERE test_round_id=:id)",
-        "DELETE FROM product_test_report WHERE test_round_id=:id",
         # 라운드 자체
         "DELETE FROM product_test_status_transition WHERE entity_id=:id",
         "DELETE FROM product_test_round WHERE test_round_id=:id",
@@ -511,11 +492,6 @@ _CASCADE_DELETE_SQLS: dict[str, list[str]] = {
         "DELETE FROM product_test_result WHERE product_test_run_id=:id",
         "DELETE FROM product_test_status_transition WHERE entity_id=:id",
         "DELETE FROM product_test_run WHERE product_test_run_id=:id",
-    ],
-    "product_test_report": [
-        "DELETE FROM product_test_report_snapshot WHERE product_test_report_id=:id",
-        "DELETE FROM product_test_status_transition WHERE entity_id=:id",
-        "DELETE FROM product_test_report WHERE product_test_report_id=:id",
     ],
     "product_test_case": [
         "DELETE FROM product_test_evidence WHERE product_test_procedure_result_id IN (SELECT product_test_procedure_result_id FROM product_test_procedure_result WHERE product_test_procedure_id IN (SELECT product_test_procedure_id FROM product_test_procedure WHERE product_test_case_id=:id))",

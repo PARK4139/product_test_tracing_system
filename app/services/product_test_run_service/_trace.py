@@ -1,27 +1,20 @@
 from __future__ import annotations
 
-import re
 from typing import Any
 
-from sqlalchemy import func, select, text
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models import (
     ProductTestCase,
     ProductTestDefect,
-    ProductTestEnvironment,
-    ProductTestEnvironmentDefinition,
     ProductTestEvidence,
     ProductTestProcedure,
     ProductTestProcedureResult,
-    ProductTestRound,
-    ProductTestReport,
-    ProductTestReportSnapshot,
     ProductTestResult,
+    ProductTestRound,
     ProductTestRun,
     ProductTestStatusTransition,
-    ProductTestTargetUnified,
-    get_utc_now_datetime,
 )
 from app.services.product_test_run_service._common import (
     _as_dict,
@@ -34,9 +27,73 @@ from app.services.product_test_run_service._list_queries import (
     list_round_options,
     list_target_options,
 )
-from app.services.product_test_run_service._reports import (
-    _collect_round_graph,
-)
+
+
+def _collect_round_graph(database_session: Session, test_round_id: str) -> dict[str, Any]:
+    round_row = database_session.get(ProductTestRound, test_round_id)
+    run_rows = list(
+        database_session.scalars(
+            select(ProductTestRun)
+            .where(ProductTestRun.test_round_id == test_round_id)
+            .order_by(ProductTestRun.started_at.desc())
+        )
+    )
+    run_ids = [row.product_test_run_id for row in run_rows]
+    result_rows = []
+    procedure_result_rows = []
+    evidence_rows = []
+    defect_rows = []
+    if run_ids:
+        result_rows = list(
+            database_session.scalars(
+                select(ProductTestResult)
+                .where(ProductTestResult.product_test_run_id.in_(run_ids))
+                .order_by(ProductTestResult.created_at.desc())
+            )
+        )
+    result_ids = [row.product_test_result_id for row in result_rows]
+    if result_ids:
+        procedure_result_rows = list(
+            database_session.scalars(
+                select(ProductTestProcedureResult).where(
+                    ProductTestProcedureResult.product_test_result_id.in_(result_ids)
+                )
+            )
+        )
+        evidence_rows = list(
+            database_session.scalars(
+                select(ProductTestEvidence).where(ProductTestEvidence.product_test_result_id.in_(result_ids))
+            )
+        )
+        defect_rows = list(
+            database_session.scalars(
+                select(ProductTestDefect).where(ProductTestDefect.product_test_result_id.in_(result_ids))
+            )
+        )
+    entity_ids = set(
+        run_ids
+        + result_ids
+        + [row.product_test_procedure_result_id for row in procedure_result_rows]
+        + [row.product_test_defect_id for row in defect_rows]
+    )
+    status_transitions = []
+    if entity_ids:
+        status_transitions = list(
+            database_session.scalars(
+                select(ProductTestStatusTransition)
+                .where(ProductTestStatusTransition.entity_id.in_(entity_ids))
+                .order_by(ProductTestStatusTransition.transitioned_at.desc())
+            )
+        )
+    return {
+        "round": round_row,
+        "runs": run_rows,
+        "results": result_rows,
+        "procedure_results": procedure_result_rows,
+        "evidences": evidence_rows,
+        "defects": defect_rows,
+        "status_transitions": status_transitions,
+    }
 
 
 def get_product_test_trace_view(
@@ -180,18 +237,6 @@ def get_product_test_trace_view(
             "defect_status": defect_status_value,
         },
         "run_trace_rows": run_trace_rows,
-        "report_rows": [
-            _as_dict(
-                row,
-                [
-                    "product_test_report_id",
-                    "product_test_report_type",
-                    "product_test_report_status",
-                    "product_test_report_title",
-                ],
-            )
-            for row in graph["reports"]
-        ],
         "status_transition_rows": [
             _as_dict(
                 row,

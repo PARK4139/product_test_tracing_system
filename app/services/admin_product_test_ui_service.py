@@ -240,10 +240,6 @@ ADMIN_PRODUCT_TEST_WRITE_ORDER_PLANS: dict[str, dict[str, Any]] = {
             "remark",
         ],
     },
-    "/admin/product-test-reports/create": {
-        "order": ["test_round_id", "product_test_report_type", "product_test_report_title", "remark"],
-        "optional": ["remark"],
-    },
 }
 
 

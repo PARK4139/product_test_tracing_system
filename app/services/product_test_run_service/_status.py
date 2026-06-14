@@ -15,8 +15,6 @@ from app.models import (
     ProductTestProcedure,
     ProductTestProcedureResult,
     ProductTestRound,
-    ProductTestReport,
-    ProductTestReportSnapshot,
     ProductTestResult,
     ProductTestRun,
     ProductTestStatusTransition,
@@ -76,7 +74,6 @@ def _status_column_name(entity_type: str) -> str:
         "product_test_result": "product_test_result_status",
         "product_test_procedure_result": "product_test_procedure_result_status",
         "product_test_defect": "product_test_defect_status",
-        "product_test_report": "product_test_report_status",
     }[entity_type]
 
 def _validate_transition_guard(
@@ -157,31 +154,6 @@ def _validate_transition_guard(
                 raise ValueError("retest result must be passed before close.")
         if to_status == "rejected" and not reason_text:
             raise ValueError("rejection_reason is required.")
-        return
-    if entity_type == "product_test_report":
-        if to_status == "APPROVED":
-            open_defect_count = database_session.scalar(
-                select(func.count(ProductTestDefect.product_test_defect_id))
-                .join(ProductTestResult, ProductTestResult.product_test_result_id == ProductTestDefect.product_test_result_id)
-                .join(ProductTestRun, ProductTestRun.product_test_run_id == ProductTestResult.product_test_run_id)
-                .where(
-                    ProductTestRun.test_round_id == row.test_round_id,
-                    ProductTestDefect.product_test_defect_status.in_(("opened", "assigned", "fixed", "retested")),
-                )
-            ) or 0
-            if int(open_defect_count) > 0:
-                raise ValueError("Open defects exist for this release. Approval is blocked.")
-            if not str(field_updates.get("approved_at") or "").strip():
-                raise ValueError("approved_at is required.")
-            if not str(field_updates.get("approved_by") or transitioned_by).strip():
-                raise ValueError("approved_by is required.")
-        if to_status == "REJECTED":
-            if not reason_text:
-                raise ValueError("rejection_reason is required.")
-            if not str(field_updates.get("rejected_at") or "").strip():
-                raise ValueError("rejected_at is required.")
-            if not str(field_updates.get("rejected_by") or transitioned_by).strip():
-                raise ValueError("rejected_by is required.")
         return
 
 

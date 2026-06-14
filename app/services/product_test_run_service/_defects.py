@@ -15,8 +15,6 @@ from app.models import (
     ProductTestProcedure,
     ProductTestProcedureResult,
     ProductTestRound,
-    ProductTestReport,
-    ProductTestReportSnapshot,
     ProductTestResult,
     ProductTestRun,
     ProductTestStatusTransition,

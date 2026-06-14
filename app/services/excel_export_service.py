@@ -3,7 +3,7 @@ from io import BytesIO
 from openpyxl import Workbook, load_workbook
 from sqlalchemy.orm import Session
 
-from app.services.product_test_run_service import list_product_test_reports, list_runs
+from app.services.product_test_run_service import list_runs
 
 
 def build_test_result_workbook(database_session: Session) -> Workbook:
@@ -31,26 +31,6 @@ def build_test_result_workbook(database_session: Session) -> Workbook:
                 row.get("product_test_run_status"),
                 row.get("started_at"),
                 row.get("started_by"),
-            ]
-        )
-    reports_sheet = workbook.create_sheet("product_test_reports")
-    reports_sheet.append(
-        [
-            "product_test_report_id",
-            "test_round_id",
-            "product_test_report_type",
-            "product_test_report_status",
-            "product_test_report_title",
-        ]
-    )
-    for row in list_product_test_reports(database_session):
-        reports_sheet.append(
-            [
-                row.get("product_test_report_id"),
-                row.get("test_round_id"),
-                row.get("product_test_report_type"),
-                row.get("product_test_report_status"),
-                row.get("product_test_report_title"),
             ]
         )
     return workbook

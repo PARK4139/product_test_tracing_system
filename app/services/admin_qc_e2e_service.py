@@ -346,17 +346,6 @@ def _run_fill_sequence(admin_url: str) -> None:
         _wait_for_form_submission_cycle()
         _open_admin_page(driver, admin_url)
 
-        report_form = _find_form(driver, "/admin/product-test-reports/create")
-        _wait_merged_draft_row(driver, report_form)
-        _fill_field(
-            report_form,
-            "remark",
-            "RC 게이트용 내부 공유 초안. 승인 전 법무·품질 검토 예정.",
-        )
-        _fill_field(report_form, "product_test_report_type", "FULL")
-        _fill_field(report_form, "product_test_report_title", payload["report_title"])
-        _fill_field(report_form, "test_round_id", payload["test_round_id"])
-        _wait_for_form_submission_cycle()
     finally:
         try:
             driver.stop_client()

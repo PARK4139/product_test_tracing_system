@@ -15,8 +15,6 @@ from app.models import (
     ProductTestProcedure,
     ProductTestProcedureResult,
     ProductTestRound,
-    ProductTestReport,
-    ProductTestReportSnapshot,
     ProductTestResult,
     ProductTestRun,
     ProductTestStatusTransition,
@@ -647,15 +645,7 @@ def get_run_detail(database_session: Session, product_test_run_id: str) -> dict[
     run_row = database_session.get(ProductTestRun, product_test_run_id)
     if run_row is None:
         return None
-    approved_report_count = (
-        database_session.scalar(
-            select(func.count()).select_from(ProductTestReport).where(
-                ProductTestReport.test_round_id == run_row.test_round_id,
-                ProductTestReport.product_test_report_status == "APPROVED",
-            )
-        )
-        or 0
-    )
+    approved_report_count = 0
     result_row = database_session.scalar(
         select(ProductTestResult)
         .where(ProductTestResult.product_test_run_id == product_test_run_id)

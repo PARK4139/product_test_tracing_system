@@ -640,27 +640,7 @@ def get_tracking_summary(
         for r in evidence_raw
     ]
 
-    # ── Reports ────────────────────────────────────────────────────────────────
-    reports_raw = conn.execute(text("""
-        SELECT product_test_report_id, test_round_id,
-               product_test_report_type, product_test_report_status,
-               product_test_report_title, created_at
-        FROM product_test_report
-        ORDER BY created_at
-    """)).fetchall()
-
-    reports = [
-        {
-            "id": r[0],
-            "release_id": r[1],
-            "parent_release_id": resolve_parent_release(r[1] or ""),
-            "type": r[2] or "",
-            "status": r[3] or "",
-            "title": r[4] or "",
-            "created_at": r[5] or "",
-        }
-        for r in reports_raw
-    ]
+    reports = []
     physical_test_targets = [
         {
             "id": r[0] or "",

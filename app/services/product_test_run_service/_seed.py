@@ -15,8 +15,6 @@ from app.models import (
     ProductTestProcedure,
     ProductTestProcedureResult,
     ProductTestRound,
-    ProductTestReport,
-    ProductTestReportSnapshot,
     ProductTestResult,
     ProductTestRun,
     ProductTestStatusTransition,
@@ -515,29 +513,6 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
             },
         )
 
-    _upsert_model_row(
-        database_session,
-        ProductTestReport,
-        "product_test_report_id",
-        {
-            "product_test_report_id": "dummy_PRODUCT_TEST_REPORT_ID-dummy_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1-FULL-001",
-            "test_round_id": "dummy_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1",
-            "product_test_report_type": "FULL",
-            "product_test_report_status": "DRAFT",
-            "product_test_report_title": "WiFi AP 설정 적합성 시험 보고서",
-            "created_at": "2026-05-04 10:35",
-            "created_by": actor_name,
-            "updated_at": "2026-05-04 10:35",
-            "updated_by": actor_name,
-            "approved_at": None,
-            "approved_by": None,
-            "rejected_at": None,
-            "rejected_by": None,
-            "rejection_reason": None,
-            "remark": None,
-        },
-    )
-
     transition_seed_rows = [
         ("product_test_round", "dummy_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1", None, "DRAFT", "seed_release_drafted", actor_name, "2026-05-04 09:05"),
         ("product_test_round", "dummy_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1", "DRAFT", "TESTING", "seed_release_testing", actor_name, "2026-05-04 09:10"),
@@ -545,7 +520,6 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
         ("product_test_run", "dummy_PRODUCT_TEST_RUN_ID-20260504-0001", "running", "finished", "seed_run_finished", "Tester-A", "2026-05-04 10:30"),
         ("product_test_result", "dummy_PRODUCT_TEST_RESULT_ID-20260504-0001", None, "testing", "seed_result_started", "Tester-A", "2026-05-04 10:00"),
         ("product_test_result", "dummy_PRODUCT_TEST_RESULT_ID-20260504-0001", "testing", "failed", "seed_result_failed", "Tester-A", "2026-05-04 10:30"),
-        ("product_test_report", "dummy_PRODUCT_TEST_REPORT_ID-dummy_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1-FULL-001", None, "DRAFT", "seed_report_drafted", actor_name, "2026-05-04 10:35"),
         ("product_test_defect", "dummy_PRODUCT_TEST_DEFECT_ID-20260504-0001", None, "opened", "seed_defect_opened", "Tester-A", "2026-05-04 10:30"),
         ("product_test_defect", "dummy_PRODUCT_TEST_DEFECT_ID-20260504-0002", None, "opened", "seed_defect_opened", "Tester-A", "2026-05-04 10:30"),
     ]

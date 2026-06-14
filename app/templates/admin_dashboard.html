@@ -153,21 +153,7 @@
         </table>
     </div>
 </section>
-<section class="card">
-    <div class="section_header_row">
-        <h3>Test Report</h3>
-        <div class="table_action_bar"><button type="button" class="project_standard_button" data-incell-add-row>+ 행 추가</button></div>
-    </div>
-    <div class="tester_table_wrap">
-        <table class="basic_table" data-incell-edit-table data-entity-type="product_test_report" data-primary-key-field="product_test_report_id" data-create-action="/admin/product-test-reports/create">
-            <thead><tr><th>보고서 ID</th><th>시험 배포 ID</th><th>보고서 유형</th><th>상태</th><th>제목</th><th>비고</th><th>Action</th></tr></thead>
-            <tbody>{% for row in report_rows %}<tr data-entity-type="product_test_report" data-entity-id="{{ row.product_test_report_id }}"><td data-field="product_test_report_id" data-create-readonly="1">{{ row.product_test_report_id }}</td><td data-field="test_round_id" data-required="1" data-options="{% for round_row in round_rows %}{{ round_row.test_round_id }}{% if not loop.last %}|{% endif %}{% endfor %}" data-update-readonly="1">{{ row.test_round_id }}</td><td data-field="product_test_report_type" data-required="1" data-options="{% for value in report_type_values %}{{ value }}{% if not loop.last %}|{% endif %}{% endfor %}"><span class="status_badge">{{ row.product_test_report_type }}</span></td><td data-field="product_test_report_status" data-options="{% for value in report_status_values %}{{ value }}{% if not loop.last %}|{% endif %}{% endfor %}"><span class="status_badge status-{{ row.product_test_report_status|lower }}">{{ row.product_test_report_status }}</span></td><td data-field="product_test_report_title" data-required="1">{{ row.product_test_report_title or '' }}</td><td data-field="remark">{{ row.remark or '' }}</td><td data-incell-actions="1" data-detail-template="/admin/product-test-reports/{id}"><a href="/admin/product-test-reports/{{ row.product_test_report_id }}" class="project_standard_button">상세</a></td></tr>{% endfor %}</tbody>
-        </table>
-    </div>
-    <datalist id="admin_report_release_id_options">
-        {% for row in round_rows %}<option value="{{ row.test_round_id }}"></option>{% endfor %}
-    </datalist>
-</section>
+
 <section class="card">
     <div class="section_header_row">
         <h3>Test Target</h3>
@@ -2013,4 +1999,3 @@ void (async () => {
 <script src="/static/js/admin-find-replace.js"></script><script src="/static/js/admin-row-delete.js"></script>
 </div>{# /admin_dash_compact #}
 {% endblock %}
-                     

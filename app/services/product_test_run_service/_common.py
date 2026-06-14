@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from sqlalchemy import func, select, text
+from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
 from app.models import (
@@ -15,8 +15,6 @@ from app.models import (
     ProductTestProcedure,
     ProductTestProcedureResult,
     ProductTestRound,
-    ProductTestReport,
-    ProductTestReportSnapshot,
     ProductTestResult,
     ProductTestRun,
     ProductTestStatusTransition,
@@ -28,10 +26,6 @@ from app.models import (
 RUN_STATUS_VALUES = ("running", "finished", "cancelled")
 RESULT_STATUS_VALUES = ("testing", "passed", "failed", "blocked", "skipped")
 PROCEDURE_RESULT_STATUS_VALUES = ("testing", "passed", "failed", "blocked", "skipped")
-REPORT_TYPE_VALUES = ("FULL", "WIFI", "REGRESSION", "HOTFIX", "CUSTOMER")
-REPORT_STATUS_VALUES = ("DRAFT", "APPROVED", "REJECTED")
-SNAPSHOT_TYPE_VALUES = ("draft", "approval", "manual", "export")
-SNAPSHOT_FORMAT_VALUES = ("json",)
 DEFECT_SEVERITY_VALUES = ("critical", "major", "minor", "trivial")
 DEFECT_PRIORITY_VALUES = ("high", "medium", "low")
 DEFECT_STATUS_VALUES = ("opened", "assigned", "fixed", "retested", "closed", "rejected")
@@ -73,7 +67,6 @@ ENTITY_TYPE_VALUES = (
     "product_test_result",
     "product_test_procedure_result",
     "product_test_defect",
-    "product_test_report",
 )
 
 ENTITY_TRANSITIONS = {
@@ -103,11 +96,6 @@ ENTITY_TRANSITIONS = {
         "retested": {"closed", "assigned"},
         "closed": set(),
         "rejected": set(),
-    },
-    "product_test_report": {
-        "DRAFT": {"APPROVED", "REJECTED"},
-        "APPROVED": set(),
-        "REJECTED": set(),
     },
 }
 
@@ -409,7 +397,6 @@ def _entity_model(entity_type: str):
         "product_test_result": ProductTestResult,
         "product_test_procedure_result": ProductTestProcedureResult,
         "product_test_defect": ProductTestDefect,
-        "product_test_report": ProductTestReport,
     }[entity_type]
 
 
@@ -428,16 +415,8 @@ def _raise_locked_release_error() -> None:
 
 
 def _round_is_locked(database_session: Session, test_round_id: str) -> bool:
-    approved_report_count = (
-        database_session.scalar(
-            select(func.count()).select_from(ProductTestReport).where(
-                ProductTestReport.test_round_id == test_round_id,
-                ProductTestReport.product_test_report_status == "APPROVED",
-            )
-        )
-        or 0
-    )
-    return int(approved_report_count) > 0
+    # product_test_report 제거로 잠금 조건 없음
+    return False
 
 
 def _ensure_round_not_locked_for_source_mutation(

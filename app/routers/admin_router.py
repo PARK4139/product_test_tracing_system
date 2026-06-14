@@ -26,46 +26,32 @@ from app.services.admin_qc_e2e_service import start_admin_qc_e2e_fill
 from app.services.product_test_field_update_service import bulk_delete_product_test_entities, bulk_update_product_test_fields
 from app.services.product_test_run_service import (
     MASTER_ACTIVE_STATUS_VALUES,
-    REPORT_STATUS_VALUES,
-    REPORT_TYPE_VALUES,
-    SNAPSHOT_TYPE_VALUES,
     TARGET_STATUS_VALUES,
     ENVIRONMENT_STATUS_VALUES,
     EVIDENCE_TYPE_VALUES,
     PRODUCT_TEST_RELEASE_STATUS_VALUES,
     RELEASE_STAGE_VALUES,
-    approve_product_test_report,
-    compare_product_test_report_snapshots,
     create_product_test_case,
     create_product_test_environment,
     create_product_test_procedure,
-    create_product_test_report,
-    create_product_test_report_snapshot,
     create_product_test_target,
     get_product_test_identifier_guides,
-    build_product_test_report_export_rows,
     build_product_test_run_export_rows,
     build_product_test_trace_export_rows,
-    get_product_test_report_detail,
-    get_product_test_report_snapshot_detail,
     get_product_test_run_trace_view,
     get_product_test_system_check,
     get_product_test_trace_view,
     get_test_round_id_by_result_id,
     get_test_round_id_by_run_id,
-    list_report_round_options,
     list_case_options,
     list_environment_options,
     list_product_test_cases,
     list_product_test_environments,
     list_product_test_procedures,
-    list_product_test_report_snapshots,
     list_product_test_runs,
     list_product_test_rounds,
-    list_product_test_reports,
     list_target_options,
     list_product_test_targets,
-    reject_product_test_report,
 )
 
 
@@ -144,9 +130,6 @@ def _admin_dashboard_product_tracing_template_context(*, database_session: Sessi
         "procedure_rows": list_product_test_procedures(database_session),
         "procedure_status_values": MASTER_ACTIVE_STATUS_VALUES,
         "evidence_type_values": EVIDENCE_TYPE_VALUES,
-        "report_rows": list_product_test_reports(database_session),
-        "report_type_values": REPORT_TYPE_VALUES,
-        "report_status_values": REPORT_STATUS_VALUES,
     }
 
 
@@ -659,57 +642,6 @@ def create_product_test_procedure_admin(
     return _admin_create_success_response(request, target_url, "Saved", {"created_row": created_row})
 
 
-@admin_router.post("/product-test-reports/create")
-def create_product_test_report_admin(
-    request: Request,
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-    test_round_id: str = Form(""),
-    product_test_report_type: str = Form(""),
-    product_test_report_title: str = Form(""),
-    remark: str = Form(""),
-    return_to: str = Form(""),
-):
-    _ensure_admin_role(current_role_name)
-    actor_name = _admin_actor_name(database_session=database_session, request=request)
-    try:
-        report = create_product_test_report(
-            database_session,
-            test_round_id=test_round_id,
-            product_test_report_type=product_test_report_type,
-            product_test_report_title=product_test_report_title,
-            created_by=actor_name,
-            remark=remark,
-        )
-    except ValueError as exception:
-        target_url = (return_to or "").strip() or "/admin/product-test-reports"
-        return _admin_create_error_response(request, target_url, str(exception))
-    target_url = (return_to or "").strip()
-    if target_url:
-        return _admin_create_success_response(
-            request,
-            target_url,
-            "Report created",
-            {
-                "product_test_report_id": report["product_test_report_id"],
-                "created_row": report,
-            },
-        )
-    if _is_ajax_request(request):
-        return JSONResponse(
-            {
-                "ok": True,
-                "message": "Report created",
-                "product_test_report_id": report["product_test_report_id"],
-                "redirect_url": f"/admin/product-test-reports/{report['product_test_report_id']}",
-            }
-        )
-    return RedirectResponse(
-        url=f"/admin/product-test-reports/{report['product_test_report_id']}?message=Report created&message_type=success",
-        status_code=303,
-    )
-
-
 @admin_router.get("")
 def render_admin_dashboard(
     request: Request,
@@ -880,132 +812,3 @@ def render_product_test_procedures_admin(
     )
 
 
-@admin_router.get("/product-test-reports")
-def render_product_test_reports_admin(
-    request: Request,
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-):
-    _ensure_admin_role(current_role_name)
-    return _render_admin_shell_template(
-        request=request,
-        database_session=database_session,
-        current_role_name=current_role_name,
-        template_name="product_test_reports_admin.html",
-        page_title="Test Tracer",
-        extra_context={
-            "rows": list_product_test_reports(database_session),
-            "report_type_values": REPORT_TYPE_VALUES,
-            "report_status_values": REPORT_STATUS_VALUES,
-            "message": (request.query_params.get("message") or "").strip(),
-            "message_type": (request.query_params.get("message_type") or "info").strip(),
-        },
-    )
-
-
-@admin_router.get("/product-test-reports/{product_test_report_id}")
-def render_product_test_report_detail_admin(
-    product_test_report_id: str,
-    request: Request,
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-):
-    _ensure_admin_role(current_role_name)
-    detail = get_product_test_report_detail(database_session, product_test_report_id)
-    if detail is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found.")
-    return _render_admin_shell_template(
-        request=request,
-        database_session=database_session,
-        current_role_name=current_role_name,
-        template_name="product_test_report_detail_admin.html",
-        page_title="Test Tracer",
-        extra_context={
-            **detail,
-            "message": (request.query_params.get("message") or "").strip(),
-            "message_type": (request.query_params.get("message_type") or "info").strip(),
-        },
-    )
-
-
-@admin_router.get("/product-test-reports/{product_test_report_id}/export.csv")
-def export_product_test_report_csv(
-    product_test_report_id: str,
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-):
-    _ensure_admin_role(current_role_name)
-    rows = build_product_test_report_export_rows(database_session, product_test_report_id)
-    return _csv_streaming_response(rows=rows, file_name=f"{product_test_report_id}_export.csv")
-
-
-@admin_router.get("/product-test-reports/{product_test_report_id}/print")
-def render_product_test_report_print_admin(
-    product_test_report_id: str,
-    request: Request,
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-):
-    _ensure_admin_role(current_role_name)
-    detail = get_product_test_report_detail(database_session, product_test_report_id)
-    if detail is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found.")
-    return _render_admin_shell_template(
-        request=request,
-        database_session=database_session,
-        current_role_name=current_role_name,
-        template_name="product_test_report_detail_admin.html",
-        page_title="Test Tracer",
-        extra_context={**detail, "print_mode": True},
-    )
-
-
-@admin_router.post("/product-test-reports/{product_test_report_id}/reject")
-def reject_product_test_report_admin(
-    product_test_report_id: str,
-    request: Request,
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-    rejection_reason: str = Form(""),
-):
-    _ensure_admin_role(current_role_name)
-    actor_name = _admin_actor_name(database_session, request)
-    try:
-        reject_product_test_report(
-            database_session,
-            product_test_report_id=product_test_report_id,
-            rejected_by=actor_name,
-            rejection_reason=rejection_reason,
-        )
-    except (LookupError, ValueError) as exception:
-        return RedirectResponse(
-            url=f"/admin/product-test-reports/{product_test_report_id}?message={str(exception)}&message_type=error",
-            status_code=303,
-        )
-    return RedirectResponse(
-        url=f"/admin/product-test-reports/{product_test_report_id}?message=Report rejected&message_type=success",
-        status_code=303,
-    )
-
-
-@admin_router.get("/product-test-report-snapshots")
-def render_product_test_report_snapshots_admin(
-    request: Request,
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-):
-    _ensure_admin_role(current_role_name)
-    return _render_admin_shell_template(
-        request=request,
-        database_session=database_session,
-        current_role_name=current_role_name,
-        template_name="product_test_report_snapshots_admin.html",
-        page_title="Test Tracer",
-        extra_context={
-            "rows": list_product_test_report_snapshots(database_session),
-            "report_rows": list_product_test_reports(database_session),
-            "snapshot_type_values": SNAPSHOT_TYPE_VALUES,
-            "message": (request.query_params.get("message") or "").strip(),
-            "message_type": (request.query_params.get("message_type") or "info").strip(),
-        },
-    )
