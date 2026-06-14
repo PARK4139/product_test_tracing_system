@@ -5,98 +5,7 @@
 <section class="card"><div class="non_modal_notice {{ message_type }}"><div>{{ message }}</div></div></section>
 {% endif %}
 
-<datalist id="admin_release_upstream_release_id_options">
-    {% for row in round_rows %}{% if row.upstream_release_id %}<option value="{{ row.upstream_release_id }}"></option>{% endif %}{% endfor %}
-</datalist>
-<datalist id="admin_release_upstream_release_system_options">
-    {% for row in round_rows %}{% if row.upstream_release_system %}<option value="{{ row.upstream_release_system }}"></option>{% endif %}{% endfor %}
-</datalist>
-<datalist id="admin_target_product_code_options">
-    {% for row in target_rows %}{% if row.product_code %}<option value="{{ row.product_code }}"></option>{% endif %}{% endfor %}
-</datalist>
-<datalist id="admin_target_manufacturer_options">
-    {% for row in target_rows %}{% if row.manufacturer %}<option value="{{ row.manufacturer }}"></option>{% endif %}{% endfor %}
-</datalist>
-<datalist id="admin_target_model_name_options">
-    {% for row in target_rows %}{% if row.model_name %}<option value="{{ row.model_name }}"></option>{% endif %}{% endfor %}
-</datalist>
-<datalist id="admin_target_hardware_revision_options">
-    {% for row in target_rows %}{% if row.hardware_revision %}<option value="{{ row.hardware_revision }}"></option>{% endif %}{% endfor %}
-</datalist>
-<datalist id="admin_target_default_software_version_options">
-    {% for row in target_rows %}{% if row.default_software_version %}<option value="{{ row.default_software_version }}"></option>{% endif %}{% endfor %}
-</datalist>
-<datalist id="admin_target_default_firmware_version_options">
-    {% for row in target_rows %}{% if row.default_firmware_version %}<option value="{{ row.default_firmware_version }}"></option>{% endif %}{% endfor %}
-</datalist>
-<datalist id="admin_target_software_version_options">
-    {% for row in target_rows %}{% if row.software_version %}<option value="{{ row.software_version }}"></option>{% endif %}{% endfor %}
-    {% for row in target_rows %}{% if row.default_software_version %}<option value="{{ row.default_software_version }}"></option>{% endif %}{% endfor %}
-</datalist>
-<datalist id="admin_target_firmware_version_options">
-    {% for row in target_rows %}{% if row.firmware_version %}<option value="{{ row.firmware_version }}"></option>{% endif %}{% endfor %}
-    {% for row in target_rows %}{% if row.default_firmware_version %}<option value="{{ row.default_firmware_version }}"></option>{% endif %}{% endfor %}
-</datalist>
-<datalist id="admin_target_manufacture_lot_options">
-    {% for row in target_rows %}{% if row.manufacture_lot %}<option value="{{ row.manufacture_lot }}"></option>{% endif %}{% endfor %}
-</datalist>
-<datalist id="admin_environment_country_options">
-    {% for row in environment_rows %}{% if row.test_country %}<option value="{{ row.test_country }}"></option>{% endif %}{% endfor %}
-</datalist>
-<datalist id="admin_environment_city_options">
-    {% for row in environment_rows %}{% if row.test_city %}<option value="{{ row.test_city }}"></option>{% endif %}{% endfor %}
-</datalist>
-<datalist id="admin_environment_company_options">
-    {% for row in environment_rows %}{% if row.test_company %}<option value="{{ row.test_company }}"></option>{% endif %}{% endfor %}
-</datalist>
-<datalist id="admin_environment_room_options">
-    {% for row in environment_rows %}{% if row.test_room %}<option value="{{ row.test_room }}"></option>{% endif %}{% endfor %}
-</datalist>
-<datalist id="admin_environment_network_type_options">
-    {% for row in environment_rows %}{% if row.network_type %}<option value="{{ row.network_type }}"></option>{% endif %}{% endfor %}
-</datalist>
-<datalist id="admin_environment_computer_name_options">
-    {% for row in environment_rows %}{% if row.test_computer_name %}<option value="{{ row.test_computer_name }}"></option>{% endif %}{% endfor %}
-    {% for row in environment_rows %}{% if row.test_computer_name %}<option value="{{ row.test_computer_name }}"></option>{% endif %}{% endfor %}
-</datalist>
-<datalist id="admin_environment_os_options">
-    {% for row in environment_rows %}{% if row.operating_system_version %}<option value="{{ row.operating_system_version }}"></option>{% endif %}{% endfor %}
-    {% for row in environment_rows %}{% if row.operating_system_version %}<option value="{{ row.operating_system_version }}"></option>{% endif %}{% endfor %}
-</datalist>
-<datalist id="admin_environment_tool_name_options">
-    {% for row in environment_rows %}{% if row.test_tool_name %}<option value="{{ row.test_tool_name }}"></option>{% endif %}{% endfor %}
-</datalist>
-<datalist id="admin_environment_tool_version_options">
-    {% for row in environment_rows %}{% if row.test_tool_version %}<option value="{{ row.test_tool_version }}"></option>{% endif %}{% endfor %}
-    {% for row in environment_rows %}{% if row.test_tool_version %}<option value="{{ row.test_tool_version }}"></option>{% endif %}{% endfor %}
-</datalist>
-<datalist id="admin_environment_power_voltage_options">
-    {% for row in environment_rows %}{% if row.power_voltage %}<option value="{{ row.power_voltage }}"></option>{% endif %}{% endfor %}
-    {% for row in environment_rows %}{% if row.power_voltage %}<option value="{{ row.power_voltage }}"></option>{% endif %}{% endfor %}
-</datalist>
-<datalist id="admin_environment_power_frequency_options">
-    {% for row in environment_rows %}{% if row.power_frequency %}<option value="{{ row.power_frequency }}"></option>{% endif %}{% endfor %}
-    {% for row in environment_rows %}{% if row.power_frequency %}<option value="{{ row.power_frequency }}"></option>{% endif %}{% endfor %}
-</datalist>
-<datalist id="admin_environment_power_connector_type_options">
-    {% for row in environment_rows %}{% if row.power_connector_type %}<option value="{{ row.power_connector_type }}"></option>{% endif %}{% endfor %}
-    {% for row in environment_rows %}{% if row.power_connector_type %}<option value="{{ row.power_connector_type }}"></option>{% endif %}{% endfor %}
-</datalist>
-<datalist id="admin_environment_power_condition_options">
-    {% for row in environment_rows %}{% if row.power_condition %}<option value="{{ row.power_condition }}"></option>{% endif %}{% endfor %}
-</datalist>
-<datalist id="admin_environment_name_options">
-    {% for row in environment_rows %}{% if row.product_test_environment_name %}<option value="{{ row.product_test_environment_name }}"></option>{% endif %}{% endfor %}
-</datalist>
-<datalist id="admin_case_category_options">
-    {% for row in case_rows %}{% if row.test_category %}<option value="{{ row.test_category }}"></option>{% endif %}{% endfor %}
-</datalist>
-<datalist id="admin_procedure_action_options">
-    {% for row in procedure_rows %}{% if row.procedure_action %}<option value="{{ row.procedure_action }}"></option>{% endif %}{% endfor %}
-</datalist>
-<datalist id="admin_procedure_acceptance_criteria_options">
-    {% for row in procedure_rows %}{% if row.acceptance_criteria %}<option value="{{ row.acceptance_criteria }}"></option>{% endif %}{% endfor %}
-</datalist>
+{# Phase 4: entity datalists removed — tables dropped #}
 
 
 {% include "admin_tracking_top.html" %}
@@ -105,67 +14,7 @@
     <div class="section_header_row admin_tab_region_title"><h3>Tab View 2</h3></div>
     <div class="admin_tab_region_body" data-admin-tab-region="primary" data-tab-aria-label="Tab View 2">
 
-<section class="card" data-admin-tab-label="Test Round">
-    <div class="section_header_row">
-        <h3>Test Round</h3>
-    </div>
-    <div class="detail_guide">행 클릭 시 관련 Runs 하이라이트. 셀 클릭으로 인라인 편집.</div>
-    <div class="tester_table_wrap">
-        <table class="basic_table" data-incell-edit-table data-entity-type="product_test_round" data-primary-key-field="test_round_id">
-            <thead><tr><th>test_round_id</th><th>test_round_name</th><th>workday</th><th>start_date</th><th>end_date</th><th>migration_status</th></tr></thead>
-            <tbody>{% for row in round_rows %}<tr class="admin_hl_row" data-round-id="{{ row.test_round_id }}" data-entity-type="product_test_round" data-entity-id="{{ row.test_round_id }}"><td data-field="test_round_id">{{ row.test_round_id }}</td><td data-field="test_round_name">{{ row.test_round_name }}</td><td data-field="workday">{{ row.workday or '' }}</td><td data-field="start_date">{{ row.start_date or '' }}</td><td data-field="end_date">{{ row.end_date or '' }}</td><td data-field="migration_status" data-options="DRAFT|TESTING|REJECTED|APPROVED|ARCHIVED"><span class="status_badge status-{{ row.migration_status|lower }}">{{ row.migration_status }}</span></td></tr>{% endfor %}</tbody>
-        </table>
-    </div>
-</section>
-<section class="card" data-admin-tab-label="Runs" id="admin_runs_tab_card">
-    <div class="section_header_row">
-        <h3>Runs</h3>
-    </div>
-    <div class="detail_guide">행 클릭 시 관련 Round·Target·Env 하이라이트. 셀 클릭으로 인라인 편집.</div>
-    <div class="tester_table_wrap">
-        <table class="basic_table" data-incell-edit-table data-entity-type="product_test_run" data-primary-key-field="product_test_run_id">
-            <thead>
-                <tr>
-                    <th>run_id</th>
-                    <th>Round</th>
-                    <th>Target</th>
-                    <th>Config</th>
-                    <th>Status</th>
-                    <th>Started</th>
-                    <th>Finished</th>
-                    <th>Remark</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in run_rows %}
-                <tr class="admin_hl_row" data-run-id="{{ row.product_test_run_id }}" data-round-id="{{ row.test_round_id }}" data-target-id="{{ row.product_test_target_id }}" data-env-id="{{ row.product_test_environment_id }}" data-entity-type="product_test_run" data-entity-id="{{ row.product_test_run_id }}">
-                    <td data-field="product_test_run_id">{{ row.product_test_run_id }}</td>
-                    <td data-field="test_round_id" data-update-readonly="1">{{ row.test_round_id }}</td>
-                    <td data-field="product_test_target_id" data-update-readonly="1">{{ row.product_test_target_id }}</td>
-                    <td data-field="product_test_environment_id" data-update-readonly="1">{{ row.product_test_environment_id }}</td>
-                    <td data-field="product_test_run_status" data-options="running|finished|cancelled"><span class="status_badge status-{{ row.product_test_run_status|lower }}">{{ row.product_test_run_status }}</span></td>
-                    <td data-field="started_at">{{ row.started_at }}</td>
-                    <td data-field="finished_at">{{ row.finished_at or '' }}</td>
-                    <td data-field="remark">{{ row.remark or '' }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</section>
-
-<section class="card">
-    <div class="section_header_row">
-        <h3>Test Target</h3>
-        <div class="table_action_bar"><button type="button" class="project_standard_button" data-incell-add-row>+ 행 추가</button></div>
-    </div>
-    <div class="tester_table_wrap">
-        <table class="basic_table" data-incell-edit-table data-entity-type="product_test_target" data-primary-key-field="product_test_target_id" data-create-action="/admin/product-test-targets/create">
-            <thead><tr><th>타겟 ID</th><th>제품 코드</th><th>제조사</th><th>모델명</th><th>HW 리비전</th><th>기본 SW 버전</th><th>기본 FW 버전</th><th>시리얼 번호</th><th>SW 버전</th><th>FW 버전</th><th>제조 LOT</th><th>타겟 상태</th><th>비고</th><th>Action</th></tr></thead>
-            <tbody>{% for row in target_rows %}<tr class="admin_hl_row" data-target-id="{{ row.product_test_target_id }}" data-entity-type="product_test_target" data-entity-id="{{ row.product_test_target_id }}"><td data-field="product_test_target_id" data-required="1">{{ row.product_test_target_id }}</td><td data-field="product_code">{{ row.product_code or '' }}</td><td data-field="manufacturer" data-required="1">{{ row.manufacturer or '' }}</td><td data-field="model_name" data-required="1">{{ row.model_name }}</td><td data-field="hardware_revision">{{ row.hardware_revision or '' }}</td><td data-field="default_software_version">{{ row.default_software_version or '' }}</td><td data-field="default_firmware_version">{{ row.default_firmware_version or '' }}</td><td data-field="serial_number" data-required="1">{{ row.serial_number }}</td><td data-field="software_version">{{ row.software_version or '' }}</td><td data-field="firmware_version">{{ row.firmware_version or '' }}</td><td data-field="manufacture_lot">{{ row.manufacture_lot or '' }}</td><td data-field="product_test_target_status" data-options="{% for value in target_status_values %}{{ value }}{% if not loop.last %}|{% endif %}{% endfor %}"><span class="status_badge status-{{ row.product_test_target_status|lower }}">{{ row.product_test_target_status }}</span></td><td data-field="remark">{{ row.remark or '' }}</td><td data-incell-actions="1"></td></tr>{% endfor %}</tbody>
-        </table>
-    </div>
-</section>
+{# Phase 4: Test Round / Runs / Test Target entity tables removed — data now in Tab View 5 (Entity Sheets) #}
 
     </div>
 </section>
@@ -174,30 +23,7 @@
     <div class="section_header_row admin_tab_region_title"><h3>Tab View 3</h3></div>
     <div class="admin_tab_region_body" data-admin-tab-region="secondary" data-tab-aria-label="Tab View 3">
 
-<section class="card">
-    <div class="section_header_row">
-        <h3>Test Case</h3>
-        <div class="table_action_bar"><button type="button" class="project_standard_button" data-incell-add-row>+ 행 추가</button></div>
-    </div>
-    <div class="tester_table_wrap">
-        <table class="basic_table" data-incell-edit-table data-entity-type="product_test_case" data-primary-key-field="product_test_case_id" data-create-action="/admin/product-test-cases/create">
-            <thead><tr><th>케이스 ID</th><th>제목</th><th>분류</th><th>목적</th><th>선행 조건</th><th>기대 결과</th><th>케이스 상태</th><th>비고</th><th>Action</th></tr></thead>
-            <tbody>{% for row in case_rows %}<tr data-entity-type="product_test_case" data-entity-id="{{ row.product_test_case_id }}"><td data-field="product_test_case_id" data-required="1">{{ row.product_test_case_id }}</td><td data-field="product_test_case_title" data-required="1">{{ row.product_test_case_title }}</td><td data-field="test_category" data-required="1">{{ row.test_category }}</td><td data-field="test_objective">{{ row.test_objective or '' }}</td><td data-field="precondition">{{ row.precondition or '' }}</td><td data-field="expected_result">{{ row.expected_result or '' }}</td><td data-field="product_test_case_status" data-options="{% for value in case_status_values %}{{ value }}{% if not loop.last %}|{% endif %}{% endfor %}"><span class="status_badge status-{{ row.product_test_case_status|lower }}">{{ row.product_test_case_status }}</span></td><td data-field="remark">{{ row.remark or '' }}</td><td data-incell-actions="1"></td></tr>{% endfor %}</tbody>
-        </table>
-    </div>
-</section>
-<section class="card">
-    <div class="section_header_row">
-        <h3>Test Procedure</h3>
-        <div class="table_action_bar"><button type="button" class="project_standard_button" data-incell-add-row>+ 행 추가</button></div>
-    </div>
-    <div class="tester_table_wrap">
-        <table class="basic_table" data-incell-edit-table data-entity-type="product_test_procedure" data-primary-key-field="product_test_procedure_id" data-create-action="/admin/product-test-procedures/create">
-            <thead><tr><th>절차 ID</th><th>케이스 ID</th><th>순번</th><th>수행 내용</th><th>합격 기준</th><th>증거 유형</th><th>절차 상태</th><th>비고</th><th>Action</th></tr></thead>
-            <tbody>{% for row in procedure_rows %}<tr data-entity-type="product_test_procedure" data-entity-id="{{ row.product_test_procedure_id }}"><td data-field="product_test_procedure_id" data-required="1">{{ row.product_test_procedure_id }}</td><td data-field="product_test_case_id" data-required="1" data-options="{% for case_row in case_rows %}{{ case_row.product_test_case_id }}{% if not loop.last %}|{% endif %}{% endfor %}" data-update-readonly="1">{{ row.product_test_case_id }}</td><td data-field="procedure_sequence" data-required="1" data-update-readonly="1">{{ row.procedure_sequence }}</td><td class="procedure_action_summary" data-field="procedure_action" data-required="1" data-control="textarea" data-rows="6" data-modal-edit="1" data-procedure-action="1" data-entity-id="{{ row.product_test_procedure_id }}" data-procedure-action-b64="{{ row.procedure_action | procedure_action_b64 }}">{{ row.procedure_action | procedure_action_summary }}</td><td data-field="acceptance_criteria" data-required="1">{{ row.acceptance_criteria }}</td><td data-field="required_evidence_type" data-options="{% for value in evidence_type_values %}{{ value }}{% if not loop.last %}|{% endif %}{% endfor %}">{{ row.required_evidence_type or '' }}</td><td data-field="product_test_procedure_status" data-options="{% for value in procedure_status_values %}{{ value }}{% if not loop.last %}|{% endif %}{% endfor %}"><span class="status_badge status-{{ row.product_test_procedure_status|lower }}">{{ row.product_test_procedure_status }}</span></td><td data-field="remark">{{ row.remark or '' }}</td><td data-incell-actions="1"></td></tr>{% endfor %}</tbody>
-        </table>
-    </div>
-</section>
+{# Phase 4: Test Case / Test Procedure entity tables removed — data now in Tab View 5 (Entity Sheets) #}
 
 <section class="card" id="work_calendar_card">
     <div class="section_header_row"><h3>근무 캘린더</h3></div>

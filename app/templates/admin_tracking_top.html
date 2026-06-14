@@ -8,18 +8,7 @@
     </div>
     <div class="admin_tab_region_body" data-admin-tab-region="configs" data-tab-aria-label="Tab View 1">
 
-<section class="card">
-    <div class="section_header_row">
-        <h3>Test Environment</h3>
-        <div class="table_action_bar"><button type="button" class="project_standard_button" data-incell-add-row>+ 행 추가</button></div>
-    </div>
-    <div class="tester_table_wrap">
-        <table class="basic_table" data-incell-edit-table data-entity-type="product_test_environment" data-primary-key-field="product_test_environment_id" data-create-action="/admin/product-test-environments/create">
-            <thead><tr><th>환경 ID</th><th>환경명</th><th>국가</th><th>도시</th><th>시험 업체</th><th>시험 장소</th><th>네트워크 유형</th><th>PC명</th><th>OS 버전</th><th>시험 도구명</th><th>시험 도구 버전</th><th>전압</th><th>주파수</th><th>전원 커넥터 유형</th><th>전원 조건</th><th>캡처 일시</th><th>환경 상태</th><th>비고</th><th>Action</th></tr></thead>
-            <tbody>{% for row in environment_rows %}<tr class="admin_hl_row" data-env-id="{{ row.product_test_environment_id }}" data-entity-type="product_test_environment" data-entity-id="{{ row.product_test_environment_id }}"><td data-field="product_test_environment_id" data-primary-key="1" data-required="1">{{ row.product_test_environment_id }}</td><td data-field="product_test_environment_name" data-required="1">{{ row.product_test_environment_name }}</td><td data-field="test_country">{{ row.test_country or '' }}</td><td data-field="test_city">{{ row.test_city or '' }}</td><td data-field="test_company">{{ row.test_company or '' }}</td><td data-field="test_room">{{ row.test_room or '' }}</td><td data-field="network_type">{{ row.network_type or '' }}</td><td data-field="test_computer_name">{{ row.test_computer_name or '' }}</td><td data-field="operating_system_version">{{ row.operating_system_version or '' }}</td><td data-field="test_tool_name">{{ row.test_tool_name or '' }}</td><td data-field="test_tool_version">{{ row.test_tool_version or '' }}</td><td data-field="power_voltage">{{ row.power_voltage or '' }}</td><td data-field="power_frequency">{{ row.power_frequency or '' }}</td><td data-field="power_connector_type">{{ row.power_connector_type or '' }}</td><td data-field="power_condition">{{ row.power_condition or '' }}</td><td data-field="captured_at">{{ row.captured_at or '' }}</td><td data-field="product_test_environment_status" data-options="{% for value in environment_status_values %}{{ value }}{% if not loop.last %}|{% endif %}{% endfor %}"><span class="status_badge status-{{ row.product_test_environment_status|lower }}">{{ row.product_test_environment_status }}</span></td><td data-field="remark">{{ row.remark or '' }}</td><td data-incell-actions="1"></td></tr>{% endfor %}</tbody>
-        </table>
-    </div>
-</section>
+{# Phase 4: Test Environment entity table removed — data now in Tab View 5 (Entity Sheets) #}
 
     </div>
 </section>

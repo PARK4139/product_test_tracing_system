@@ -116,18 +116,18 @@ ADMIN_FORM_NOTICE_CONFIG = {
 }
 
 
-def _admin_dashboard_product_tracing_template_context(*, database_session: Session) -> dict:
-    """admin_dashboard.html 표용 키. 식별자 규칙·안내·입력 순서는 ``GET /admin/api/product-test/ui/client-config`` 로 제공한다."""
+def _admin_dashboard_product_tracing_template_context(*, database_session: Session) -> dict:  # noqa: ARG001
+    """Phase 4: 엔티티 테이블 제거 — 빈 리스트 반환 (custom_sheet_tab으로 이전 완료)."""
     return {
-        "round_rows": list_product_test_rounds(database_session),
-        "run_rows": list_product_test_runs(database_session),
-        "target_rows": list_product_test_targets(database_session),
+        "round_rows": [],
+        "run_rows": [],
+        "target_rows": [],
         "target_status_values": TARGET_STATUS_VALUES,
-        "environment_rows": list_product_test_environments(database_session),
+        "environment_rows": [],
         "environment_status_values": ENVIRONMENT_STATUS_VALUES,
-        "case_rows": list_product_test_cases(database_session),
+        "case_rows": [],
         "case_status_values": MASTER_ACTIVE_STATUS_VALUES,
-        "procedure_rows": list_product_test_procedures(database_session),
+        "procedure_rows": [],
         "procedure_status_values": MASTER_ACTIVE_STATUS_VALUES,
         "evidence_type_values": EVIDENCE_TYPE_VALUES,
     }
@@ -465,181 +465,23 @@ def _render_admin_shell_template(
 
 
 @admin_router.post("/product-test-targets/create")
-def create_product_test_target_admin(
-    request: Request,
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-    product_test_target_id: str = Form(""),
-    product_code: str = Form(""),
-    manufacturer: str = Form(""),
-    model_name: str = Form(""),
-    hardware_revision: str = Form(""),
-    default_software_version: str = Form(""),
-    default_firmware_version: str = Form(""),
-    serial_number: str = Form(""),
-    software_version: str = Form(""),
-    firmware_version: str = Form(""),
-    manufacture_lot: str = Form(""),
-    product_test_target_status: str = Form(""),
-    remark: str = Form(""),
-    return_to: str = Form(""),
-):
-    _ensure_admin_role(current_role_name)
-    try:
-        created_row = create_product_test_target(
-            database_session,
-            product_test_target_id=product_test_target_id,
-            product_code=product_code,
-            manufacturer=manufacturer,
-            model_name=model_name,
-            hardware_revision=hardware_revision,
-            default_software_version=default_software_version,
-            default_firmware_version=default_firmware_version,
-            serial_number=serial_number,
-            software_version=software_version,
-            firmware_version=firmware_version,
-            manufacture_lot=manufacture_lot,
-            product_test_target_status=product_test_target_status,
-            actor_name=_admin_actor_name(database_session, request),
-            remark=remark,
-        )
-    except ValueError as exception:
-        target_url = (return_to or "").strip() or "/admin/product-test-targets"
-        return _admin_create_error_response(request, target_url, str(exception))
-    target_url = (return_to or "").strip() or "/admin/product-test-targets"
-    return _admin_create_success_response(request, target_url, "Saved", {"created_row": created_row})
+def create_product_test_target_admin(*_args, **_kwargs):
+    raise HTTPException(status_code=410, detail="product-test-targets removed — use Entity Sheets (Tab View 5).")
 
 
 @admin_router.post("/product-test-environments/create")
-def create_product_test_environment_admin(
-    request: Request,
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-    product_test_environment_id: str = Form(""),
-    product_test_environment_name: str = Form(""),
-    test_country: str = Form(""),
-    test_city: str = Form(""),
-    test_company: str = Form(""),
-    test_building: str = Form(""),
-    test_floor: str = Form(""),
-    test_room: str = Form(""),
-    network_type: str = Form(""),
-    test_computer_name: str = Form(""),
-    operating_system_version: str = Form(""),
-    test_tool_name: str = Form(""),
-    test_tool_version: str = Form(""),
-    power_voltage: str = Form(""),
-    power_frequency: str = Form(""),
-    power_connector_type: str = Form(""),
-    power_condition: str = Form(""),
-    captured_at: str = Form(""),
-    product_test_environment_status: str = Form(""),
-    remark: str = Form(""),
-    return_to: str = Form(""),
-):
-    _ensure_admin_role(current_role_name)
-    try:
-        created_row = create_product_test_environment(
-            database_session,
-            product_test_environment_id=product_test_environment_id,
-            product_test_environment_name=product_test_environment_name,
-            test_country=test_country,
-            test_city=test_city,
-            test_company=test_company,
-            test_building=test_building,
-            test_floor=test_floor,
-            test_room=test_room,
-            network_type=network_type,
-            test_computer_name=test_computer_name,
-            operating_system_version=operating_system_version,
-            test_tool_name=test_tool_name,
-            test_tool_version=test_tool_version,
-            power_voltage=power_voltage,
-            power_frequency=power_frequency,
-            power_connector_type=power_connector_type,
-            power_condition=power_condition,
-            captured_at=captured_at,
-            product_test_environment_status=product_test_environment_status,
-            actor_name=_admin_actor_name(database_session, request),
-            remark=remark,
-        )
-    except ValueError as exception:
-        target_url = (return_to or "").strip() or "/admin/product-test-environments"
-        return _admin_create_error_response(request, target_url, str(exception))
-    target_url = (return_to or "").strip() or "/admin/product-test-environments"
-    return _admin_create_success_response(request, target_url, "Saved", {"created_row": created_row})
+def create_product_test_environment_admin(*_args, **_kwargs):
+    raise HTTPException(status_code=410, detail="product-test-environments removed — use Entity Sheets (Tab View 5).")
 
 
 @admin_router.post("/product-test-cases/create")
-def create_product_test_case_admin(
-    request: Request,
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-    product_test_case_id: str = Form(""),
-    product_test_case_title: str = Form(""),
-    test_category: str = Form(""),
-    test_objective: str = Form(""),
-    precondition: str = Form(""),
-    expected_result: str = Form(""),
-    product_test_case_status: str = Form(""),
-    remark: str = Form(""),
-    return_to: str = Form(""),
-):
-    _ensure_admin_role(current_role_name)
-    try:
-        created_row = create_product_test_case(
-            database_session,
-            product_test_case_id=product_test_case_id,
-            product_test_case_title=product_test_case_title,
-            test_category=test_category,
-            test_objective=test_objective,
-            precondition=precondition,
-            expected_result=expected_result,
-            product_test_case_status=product_test_case_status,
-            actor_name=_admin_actor_name(database_session, request),
-            remark=remark,
-        )
-    except ValueError as exception:
-        target_url = (return_to or "").strip() or "/admin/product-test-cases"
-        return _admin_create_error_response(request, target_url, str(exception))
-    target_url = (return_to or "").strip() or "/admin/product-test-cases"
-    return _admin_create_success_response(request, target_url, "Saved", {"created_row": created_row})
+def create_product_test_case_admin(*_args, **_kwargs):
+    raise HTTPException(status_code=410, detail="product-test-cases removed — use Entity Sheets (Tab View 5).")
 
 
 @admin_router.post("/product-test-procedures/create")
-def create_product_test_procedure_admin(
-    request: Request,
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-    product_test_procedure_id: str = Form(""),
-    product_test_case_id: str = Form(""),
-    procedure_sequence: int = Form(0),
-    procedure_action: str = Form(""),
-    acceptance_criteria: str = Form(""),
-    required_evidence_type: str = Form(""),
-    product_test_procedure_status: str = Form(""),
-    remark: str = Form(""),
-    return_to: str = Form(""),
-):
-    _ensure_admin_role(current_role_name)
-    try:
-        created_row = create_product_test_procedure(
-            database_session,
-            product_test_procedure_id=product_test_procedure_id,
-            product_test_case_id=product_test_case_id,
-            procedure_sequence=procedure_sequence,
-            procedure_action=procedure_action,
-            acceptance_criteria=acceptance_criteria,
-            required_evidence_type=required_evidence_type,
-            product_test_procedure_status=product_test_procedure_status,
-            actor_name=_admin_actor_name(database_session, request),
-            remark=remark,
-        )
-    except ValueError as exception:
-        target_url = (return_to or "").strip() or "/admin/product-test-procedures"
-        return _admin_create_error_response(request, target_url, str(exception))
-    target_url = (return_to or "").strip() or "/admin/product-test-procedures"
-    return _admin_create_success_response(request, target_url, "Saved", {"created_row": created_row})
+def create_product_test_procedure_admin(*_args, **_kwargs):
+    raise HTTPException(status_code=410, detail="product-test-procedures removed — use Entity Sheets (Tab View 5).")
 
 
 @admin_router.get("")
@@ -707,47 +549,13 @@ def redirect_product_test_rounds_to_admin(
 
 
 @admin_router.get("/product-test-targets")
-def render_product_test_targets_admin(
-    request: Request,
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-):
-    _ensure_admin_role(current_role_name)
-    return _render_admin_shell_template(
-        request=request,
-        database_session=database_session,
-        current_role_name=current_role_name,
-        template_name="product_test_targets_admin.html",
-        page_title="Test Tracer",
-        extra_context={
-            "rows": list_product_test_targets(database_session),
-            "status_values": TARGET_STATUS_VALUES,
-            "message": (request.query_params.get("message") or "").strip(),
-            "message_type": (request.query_params.get("message_type") or "info").strip(),
-        },
-    )
+def render_product_test_targets_admin(*_args, **_kwargs):
+    raise HTTPException(status_code=410, detail="product-test-targets removed — use Entity Sheets (Tab View 5).")
 
 
 @admin_router.get("/product-test-environments")
-def render_product_test_environments_admin(
-    request: Request,
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-):
-    _ensure_admin_role(current_role_name)
-    return _render_admin_shell_template(
-        request=request,
-        database_session=database_session,
-        current_role_name=current_role_name,
-        template_name="product_test_environments_admin.html",
-        page_title="Test Tracer",
-        extra_context={
-            "rows": list_product_test_environments(database_session),
-            "status_values": ENVIRONMENT_STATUS_VALUES,
-            "message": (request.query_params.get("message") or "").strip(),
-            "message_type": (request.query_params.get("message_type") or "info").strip(),
-        },
-    )
+def render_product_test_environments_admin(*_args, **_kwargs):
+    raise HTTPException(status_code=410, detail="product-test-environments removed — use Entity Sheets (Tab View 5).")
 
 
 @admin_router.get("/test-config")
@@ -767,48 +575,12 @@ def render_test_config_admin(
 
 
 @admin_router.get("/product-test-cases")
-def render_product_test_cases_admin(
-    request: Request,
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-):
-    _ensure_admin_role(current_role_name)
-    return _render_admin_shell_template(
-        request=request,
-        database_session=database_session,
-        current_role_name=current_role_name,
-        template_name="product_test_cases_admin.html",
-        page_title="Test Tracer",
-        extra_context={
-            "rows": list_product_test_cases(database_session),
-            "status_values": MASTER_ACTIVE_STATUS_VALUES,
-            "message": (request.query_params.get("message") or "").strip(),
-            "message_type": (request.query_params.get("message_type") or "info").strip(),
-        },
-    )
+def render_product_test_cases_admin(*_args, **_kwargs):
+    raise HTTPException(status_code=410, detail="product-test-cases removed — use Entity Sheets (Tab View 5).")
 
 
 @admin_router.get("/product-test-procedures")
-def render_product_test_procedures_admin(
-    request: Request,
-    database_session: database_session_dependency,
-    current_role_name: current_role_name_dependency,
-):
-    _ensure_admin_role(current_role_name)
-    return _render_admin_shell_template(
-        request=request,
-        database_session=database_session,
-        current_role_name=current_role_name,
-        template_name="product_test_procedures_admin.html",
-        page_title="Test Tracer",
-        extra_context={
-            "rows": list_product_test_procedures(database_session),
-            "case_rows": list_product_test_cases(database_session),
-            "status_values": MASTER_ACTIVE_STATUS_VALUES,
-            "evidence_type_values": EVIDENCE_TYPE_VALUES,
-            "message": (request.query_params.get("message") or "").strip(),
-            "message_type": (request.query_params.get("message_type") or "info").strip(),
-        },
-    )
+def render_product_test_procedures_admin(*_args, **_kwargs):
+    raise HTTPException(status_code=410, detail="product-test-procedures removed — use Entity Sheets (Tab View 5).")
 
 
