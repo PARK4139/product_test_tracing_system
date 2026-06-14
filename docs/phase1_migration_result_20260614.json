@@ -1,0 +1,27 @@
+{
+  "phase": 1,
+  "date": "2026-06-14",
+  "status": "applied",
+  "backup": "data/backups/pre_custom_sheet_migration_20260614.db",
+  "tabs_inserted": 12,
+  "tabs_skipped": 0,
+  "mapping": [
+    {"table": "product_test_round",            "region_key": "entity/round",       "tab_label": "Rounds",       "rows": 7},
+    {"table": "product_test_target_unified",   "region_key": "entity/target",      "tab_label": "Targets",      "rows": 6},
+    {"table": "product_test_environment_unified","region_key":"entity/environment", "tab_label": "Environments", "rows": 6},
+    {"table": "product_test_case",             "region_key": "entity/case",        "tab_label": "Cases",        "rows": 135},
+    {"table": "product_test_procedure",        "region_key": "entity/procedure",   "tab_label": "Procedures",   "rows": 344},
+    {"table": "product_test_run",              "region_key": "entity/run",         "tab_label": "Runs",         "rows": 41},
+    {"table": "product_test_result",           "region_key": "entity/result",      "tab_label": "Results",      "rows": 375},
+    {"table": "product_test_procedure_result", "region_key": "entity/proc_result", "tab_label": "Proc Results", "rows": 0},
+    {"table": "product_test_defect",           "region_key": "entity/defect",      "tab_label": "Defects",      "rows": 17},
+    {"table": "product_test_evidence",         "region_key": "entity/evidence",    "tab_label": "Evidence",     "rows": 0},
+    {"table": "product_test_status_transition","region_key": "entity/status_log",  "tab_label": "Status Log",   "rows": 16},
+    {"table": "work_calendar",                 "region_key": "entity/calendar",    "tab_label": "Calendar",     "rows": 0}
+  ],
+  "notes": [
+    "Original tables preserved (not dropped)",
+    "WAL/SHM not deletable due to Windows lock — SQLite salt mismatch on app restart will auto-reset WAL",
+    "Existing sheet 'configs/새 시트 1' untouched"
+  ]
+}

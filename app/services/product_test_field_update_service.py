@@ -407,6 +407,82 @@ def _apply_single_update(
         )
         return
 
+    # product_test_run_id PK cascade rename
+    if entity_type_value == "product_test_run" and field_name_value == "product_test_run_id":
+        old_id = entity_id_value
+        new_id = str(coerced_value)
+        if old_id != new_id:
+            database_session.execute(text("PRAGMA foreign_keys = OFF"))
+            for fk_table in ("product_test_result",):
+                database_session.execute(
+                    text(f"UPDATE {fk_table} SET product_test_run_id = :new WHERE product_test_run_id = :old"),
+                    {"new": new_id, "old": old_id},
+                )
+            database_session.execute(
+                text("UPDATE product_test_run SET product_test_run_id = :new WHERE product_test_run_id = :old"),
+                {"new": new_id, "old": old_id},
+            )
+            database_session.flush()
+            database_session.execute(text("PRAGMA foreign_keys = ON"))
+        return
+
+    # product_test_target_id PK cascade rename
+    if entity_type_value == "product_test_target" and field_name_value == "product_test_target_id":
+        old_id = entity_id_value
+        new_id = str(coerced_value)
+        if old_id != new_id:
+            database_session.execute(text("PRAGMA foreign_keys = OFF"))
+            for fk_table in ("product_test_run",):
+                database_session.execute(
+                    text(f"UPDATE {fk_table} SET product_test_target_id = :new WHERE product_test_target_id = :old"),
+                    {"new": new_id, "old": old_id},
+                )
+            database_session.execute(
+                text("UPDATE product_test_target_unified SET product_test_target_id = :new WHERE product_test_target_id = :old"),
+                {"new": new_id, "old": old_id},
+            )
+            database_session.flush()
+            database_session.execute(text("PRAGMA foreign_keys = ON"))
+        return
+
+    # product_test_case_id PK cascade rename
+    if entity_type_value == "product_test_case" and field_name_value == "product_test_case_id":
+        old_id = entity_id_value
+        new_id = str(coerced_value)
+        if old_id != new_id:
+            database_session.execute(text("PRAGMA foreign_keys = OFF"))
+            for fk_table in ("product_test_procedure", "product_test_result"):
+                database_session.execute(
+                    text(f"UPDATE {fk_table} SET product_test_case_id = :new WHERE product_test_case_id = :old"),
+                    {"new": new_id, "old": old_id},
+                )
+            database_session.execute(
+                text("UPDATE product_test_case SET product_test_case_id = :new WHERE product_test_case_id = :old"),
+                {"new": new_id, "old": old_id},
+            )
+            database_session.flush()
+            database_session.execute(text("PRAGMA foreign_keys = ON"))
+        return
+
+    # product_test_procedure_id PK cascade rename
+    if entity_type_value == "product_test_procedure" and field_name_value == "product_test_procedure_id":
+        old_id = entity_id_value
+        new_id = str(coerced_value)
+        if old_id != new_id:
+            database_session.execute(text("PRAGMA foreign_keys = OFF"))
+            for fk_table in ("product_test_procedure_result",):
+                database_session.execute(
+                    text(f"UPDATE {fk_table} SET product_test_procedure_id = :new WHERE product_test_procedure_id = :old"),
+                    {"new": new_id, "old": old_id},
+                )
+            database_session.execute(
+                text("UPDATE product_test_procedure SET product_test_procedure_id = :new WHERE product_test_procedure_id = :old"),
+                {"new": new_id, "old": old_id},
+            )
+            database_session.flush()
+            database_session.execute(text("PRAGMA foreign_keys = ON"))
+        return
+
     # test_round_id PK cascade rename
     if entity_type_value == "product_test_round" and field_name_value == "test_round_id":
         old_id = entity_id_value

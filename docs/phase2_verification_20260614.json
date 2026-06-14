@@ -1,0 +1,25 @@
+{
+  "phase": 2,
+  "date": "2026-06-14",
+  "status": "verified",
+  "service_file": "app/services/custom_sheet_trace_service.py",
+  "verification": {
+    "rounds_checked": 7,
+    "chains": ["round→run", "run→result", "result→defect", "case→result"],
+    "result": "ALL MATCH",
+    "sample_case_checks": 5
+  },
+  "public_api": [
+    "collect_round_graph_cs(db, test_round_id)",
+    "get_round_summary_cs(db, test_round_id)",
+    "get_all_rounds_summary_cs(db)",
+    "get_defects_for_result_cs(db, result_id)",
+    "get_results_for_run_cs(db, run_id)",
+    "get_case_row_cs(db, case_id)",
+    "get_run_row_cs(db, run_id)",
+    "list_round_options_cs(db)",
+    "list_target_options_cs(db)",
+    "list_environment_options_cs(db)",
+    "list_case_options_cs(db)"
+  ]
+}

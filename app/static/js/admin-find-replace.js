@@ -264,18 +264,60 @@
             return;
         }
 
+        var DETAIL_LIMIT = 200;
+        var detailRows = saveable.slice(0, DETAIL_LIMIT).map(function (r, idx) {
+            var newVal = applyReplace(r.originalValue, opts.findText, opts.replaceText, opts.matchWhole, opts.caseSensitive);
+            var isPk = r.pk;
+            return "<tr class=\"admin_fr_detail_row" + (isPk ? " admin_fr_detail_pk" : "") + "\" data-idx=\"" + idx + "\">" +
+                "<td class=\"admin_fr_dc_type\">" + esc(r.entityType) + "</td>" +
+                "<td class=\"admin_fr_dc_field\">" + esc(r.fieldName) + "</td>" +
+                "<td class=\"admin_fr_dc_old\">" + esc(r.originalValue) + "</td>" +
+                "<td class=\"admin_fr_dc_arrow\">→</td>" +
+                "<td class=\"admin_fr_dc_new\">" + esc(newVal) + "</td>" +
+            "</tr>";
+        }).join("");
+        var moreNote = saveable.length > DETAIL_LIMIT
+            ? "<div class=\"admin_fr_detail_more\">… 외 " + (saveable.length - DETAIL_LIMIT) + "건 (클릭 탐색 불가)</div>"
+            : "";
+
         preview.innerHTML =
             "<div class=\"admin_fr_preview_summary\">" +
               "<strong>변경될 셀: " + saveable.length + "개</strong>" +
               (pkItems.length ? "<span class=\"admin_fr_pk_warn\"> (PK/FK 포함 " + pkItems.length + "건 ⚠️)</span>" : "") +
               (skipped.length ? "<span class=\"admin_fr_skip_note\"> · 저장 불가(파생) 셀 " + skipped.length + "개 제외</span>" : "") +
+              "<span class=\"admin_fr_skip_note\"> · 행 클릭 시 해당 셀로 이동</span>" +
             "</div>" +
             "<table class=\"admin_fr_table_summary\">" +
               "<thead><tr><th>entity_type</th><th>건수</th></tr></thead>" +
               "<tbody>" + tableRows + "</tbody>" +
-            "</table>";
+            "</table>" +
+            "<div class=\"admin_fr_detail_wrap\">" +
+              "<table class=\"admin_fr_detail_table\">" +
+                "<thead><tr>" +
+                  "<th>entity_type</th><th>field</th>" +
+                  "<th>현재 값</th><th></th><th>변경 후</th>" +
+                "</tr></thead>" +
+                "<tbody>" + detailRows + "</tbody>" +
+              "</table>" +
+              moreNote +
+            "</div>";
         preview.hidden = false;
         applyBtn.hidden = false;
+
+        /* 클릭 → 해당 셀로 이동 */
+        preview.querySelectorAll(".admin_fr_detail_row").forEach(function (tr) {
+            tr.addEventListener("click", function () {
+                var idx = parseInt(this.dataset.idx, 10);
+                var r = saveable[idx];
+                if (!r || !r.cell) return;
+                closeModal();
+                setTimeout(function () {
+                    r.cell.scrollIntoView({ behavior: "smooth", block: "center" });
+                    r.cell.classList.add("admin_fr_cell_jump");
+                    setTimeout(function () { r.cell.classList.remove("admin_fr_cell_jump"); }, 1800);
+                }, 80);
+            });
+        });
     }
 
     async function runApply() {

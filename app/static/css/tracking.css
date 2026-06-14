@@ -78,6 +78,37 @@
 /* cell match highlight */
 td.admin_fr_cell_match    { background-color: #fef3c7 !important; outline: 1px solid #f59e0b; outline-offset: -1px; }
 td.admin_fr_cell_match_pk { background-color: #fee2e2 !important; outline: 1px solid #ef4444; outline-offset: -1px; }
+/* jump flash when navigating from preview */
+@keyframes admin_fr_jump_flash {
+    0%   { background-color: #2563eb !important; color: #fff; }
+    60%  { background-color: #bfdbfe !important; color: inherit; }
+    100% { background-color: inherit; color: inherit; }
+}
+td.admin_fr_cell_jump { animation: admin_fr_jump_flash 1.8s ease forwards; }
+/* detail list */
+.admin_fr_detail_wrap {
+    margin-top: 10px; max-height: 220px; overflow-y: auto;
+    border: 1px solid var(--color-border, #e5e7eb); border-radius: 4px;
+}
+.admin_fr_detail_table {
+    border-collapse: collapse; width: 100%; font-size: 12px;
+}
+.admin_fr_detail_table thead th {
+    position: sticky; top: 0; background: var(--color-surface, #f3f4f6);
+    border-bottom: 1px solid var(--color-border, #e5e7eb);
+    padding: 4px 8px; text-align: left; z-index: 1;
+}
+.admin_fr_detail_table td { padding: 3px 8px; border-bottom: 1px solid var(--color-border-light, #f3f4f6); }
+.admin_fr_detail_row { cursor: pointer; }
+.admin_fr_detail_row:hover { background: #eff6ff; }
+.admin_fr_detail_pk { background: #fff7ed; }
+.admin_fr_detail_pk:hover { background: #ffedd5; }
+.admin_fr_dc_old { color: #b91c1c; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.admin_fr_dc_new { color: #166534; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.admin_fr_dc_arrow { color: var(--color-text-secondary, #9ca3af); padding: 3px 4px; }
+.admin_fr_dc_type { color: var(--color-text-secondary, #6b7280); font-size: 11px; }
+.admin_fr_dc_field { font-weight: 500; }
+.admin_fr_detail_more { font-size: 11px; color: var(--color-text-secondary, #9ca3af); padding: 4px 8px; }
 
 /* ── 고급기능 ───────────────────────────────────────────────── */
 .admin_adv_menu {
@@ -968,10 +999,14 @@ tr.trk_row_highlighted.hl-default td:first-child { border-left: 3px solid #eab30
 }
 .custom_sheet_toolbar {
     display: flex;
+    justify-content: flex-end;
+    margin-bottom: 8px;
+}
+.custom_sheet_toolbar_inner {
+    display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 6px;
-    margin-bottom: 8px;
 }
 .custom_sheet_toolbar_sep {
     width: 1px;
@@ -1058,6 +1093,12 @@ tr.trk_row_highlighted.hl-default td:first-child { border-left: 3px solid #eab30
     width: 100%;
     font-size: 0.8rem;
 }
+/* 행 선택 체크박스 컬럼 */
+.custom_sheet_table .custom_sheet_col_check {
+    width: 32px; text-align: center; padding: 0 4px;
+}
+.custom_sheet_cb_all, .custom_sheet_cb_row { cursor: pointer; }
+.custom_sheet_table tbody tr.is-row-selected > td { background: #eff6ff !important; }
 .custom_sheet_table thead th {
     position: sticky;
     top: 0;
@@ -1067,10 +1108,14 @@ tr.trk_row_highlighted.hl-default td:first-child { border-left: 3px solid #eab30
     padding: 6px 8px;
     text-align: left;
     font-weight: 700;
-    cursor: default;
+    cursor: grab;
     white-space: nowrap;
     user-select: none;
 }
+/* column drag-to-reorder */
+.custom_sheet_table thead th.custom_sheet_col_dragging { opacity: 0.35; }
+.custom_sheet_table thead th.cs_drop_left  { border-left:  3px solid #3b82f6; }
+.custom_sheet_table thead th.cs_drop_right { border-right: 3px solid #3b82f6; }
 .custom_sheet_table thead th.has-sort,
 .custom_sheet_table thead th.has-filter {
     background: #eff6ff;

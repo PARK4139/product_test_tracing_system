@@ -2122,6 +2122,7 @@ function initAdminMasterDataTabRegion(regionBody) {
 //           POST /admin/api/custom-sheets/{id}/compute (합계/평균/최소/최대/중앙값/개수)
 const customSheetCache = new Map();
 const customSheetSaveTimers = new Map();
+let _csDragColKey = null; // column drag-to-reorder 상태
 
 function customSheetPanelId(sheetId) {
     return "custom_" + sheetId;
@@ -2171,29 +2172,31 @@ function buildCustomSheetPanel(sheet) {
     panel.setAttribute("role", "tabpanel");
     panel.innerHTML = `
         <div class="custom_sheet_toolbar">
-            <select class="custom_sheet_add_row_pos" title="새 행을 추가할 위치 (선택한 셀 기준)">
-                <option value="above" selected>위에 추가</option>
-                <option value="below">아래에 추가</option>
-            </select>
-            <button type="button" class="custom_sheet_btn" data-action="add-row" title="선택한 셀의 행을 기준으로 위/아래 옵션에 따라 새 행을 추가합니다 (선택이 없으면 맨 위/맨 아래)">+ 행</button>
-            <button type="button" class="custom_sheet_btn" data-action="del-row" title="셀을 선택한 뒤 이 버튼에 마우스를 올리면 삭제될 행이 표시되고, 클릭하면 삭제됩니다">- 행</button>
-            <button type="button" class="custom_sheet_btn" data-action="add-col" title="열 추가">+ 열</button>
-            <button type="button" class="custom_sheet_btn" data-action="del-col" title="셀을 선택한 뒤 이 버튼에 마우스를 올리면 삭제될 열이 표시되고, 클릭하면 삭제됩니다">- 열</button>
-            <span class="custom_sheet_toolbar_sep"></span>
-            <input type="search" class="custom_sheet_filter" placeholder="필터(텍스트 포함)" />
-            <span class="custom_sheet_toolbar_sep"></span>
-            <select class="custom_sheet_compute_col"></select>
-            <select class="custom_sheet_compute_op">
-                <option value="sum">합계</option>
-                <option value="avg">평균</option>
-                <option value="min">최소</option>
-                <option value="max">최대</option>
-                <option value="median">중앙값</option>
-                <option value="count">개수</option>
-            </select>
-            <button type="button" class="custom_sheet_btn custom_sheet_btn_primary" data-action="compute">∑ 계산</button>
-            <span class="custom_sheet_compute_result"></span>
-            <span class="custom_sheet_save_status" data-state="idle">저장됨</span>
+            <div class="custom_sheet_toolbar_inner">
+                <select class="custom_sheet_add_row_pos" title="새 행을 추가할 위치 (선택한 셀 기준)">
+                    <option value="above" selected>위에 추가</option>
+                    <option value="below">아래에 추가</option>
+                </select>
+                <button type="button" class="custom_sheet_btn" data-action="add-row" title="선택한 셀의 행을 기준으로 위/아래 옵션에 따라 새 행을 추가합니다 (선택이 없으면 맨 위/맨 아래)">+ 행</button>
+                <button type="button" class="custom_sheet_btn" data-action="del-row" title="셀을 선택한 뒤 이 버튼에 마우스를 올리면 삭제될 행이 표시되고, 클릭하면 삭제됩니다">- 행</button>
+                <button type="button" class="custom_sheet_btn" data-action="add-col" title="열 추가">+ 열</button>
+                <button type="button" class="custom_sheet_btn" data-action="del-col" title="셀을 선택한 뒤 이 버튼에 마우스를 올리면 삭제될 열이 표시되고, 클릭하면 삭제됩니다">- 열</button>
+                <span class="custom_sheet_toolbar_sep"></span>
+                <input type="search" class="custom_sheet_filter" placeholder="필터(텍스트 포함)" />
+                <span class="custom_sheet_toolbar_sep"></span>
+                <select class="custom_sheet_compute_col"></select>
+                <select class="custom_sheet_compute_op">
+                    <option value="sum">합계</option>
+                    <option value="avg">평균</option>
+                    <option value="min">최소</option>
+                    <option value="max">최대</option>
+                    <option value="median">중앙값</option>
+                    <option value="count">개수</option>
+                </select>
+                <button type="button" class="custom_sheet_btn custom_sheet_btn_primary" data-action="compute">∑ 계산</button>
+                <span class="custom_sheet_compute_result"></span>
+                <span class="custom_sheet_save_status" data-state="idle">저장됨</span>
+            </div>
         </div>
         <div class="custom_sheet_table_wrap">
             <table class="custom_sheet_table">
@@ -2233,7 +2236,20 @@ function renderCustomSheetTable(panel, sheet) {
     const view = sheet._view || (sheet._view = { sortKey: "", sortDir: "asc", filterText: "", colFilters: {} });
     if (!view.colFilters) view.colFilters = {};
 
+    if (!sheet._selectedRows) sheet._selectedRows = new Set();
+
     const headRow = document.createElement("tr");
+
+    /* ── 체크박스 전체선택 헤더 ── */
+    const thCheck = document.createElement("th");
+    thCheck.className = "custom_sheet_col_check";
+    const cbAll = document.createElement("input");
+    cbAll.type = "checkbox";
+    cbAll.title = "전체 선택 / 해제";
+    cbAll.className = "custom_sheet_cb_all";
+    thCheck.appendChild(cbAll);
+    headRow.appendChild(thCheck);
+
     const thIndex = document.createElement("th");
     thIndex.className = "custom_sheet_col_index";
     thIndex.textContent = "#";
@@ -2423,10 +2439,82 @@ function renderCustomSheetTable(panel, sheet) {
         th.appendChild(markSpan);
         th.appendChild(menuToggle);
         th.appendChild(menu);
+
+        // ── 컬럼 드래그 이동 ──────────────────────────────────────
+        th.draggable = true;
+        th.addEventListener("dragstart", (e) => {
+            _csDragColKey = col.key;
+            e.dataTransfer.effectAllowed = "move";
+            e.dataTransfer.setData("text/plain", col.key); // Firefox 필요
+            setTimeout(() => th.classList.add("custom_sheet_col_dragging"), 0);
+        });
+        th.addEventListener("dragend", () => {
+            _csDragColKey = null;
+            th.classList.remove("custom_sheet_col_dragging");
+            headRow.querySelectorAll("th").forEach((el) => {
+                el.classList.remove("cs_drop_left", "cs_drop_right");
+            });
+        });
+        th.addEventListener("dragover", (e) => {
+            if (!_csDragColKey || _csDragColKey === col.key) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "move";
+            const rect = th.getBoundingClientRect();
+            const dropRight = e.clientX >= rect.left + rect.width / 2;
+            headRow.querySelectorAll("th").forEach((el) => {
+                if (el !== th) el.classList.remove("cs_drop_left", "cs_drop_right");
+            });
+            th.classList.toggle("cs_drop_left",  !dropRight);
+            th.classList.toggle("cs_drop_right", dropRight);
+        });
+        th.addEventListener("dragleave", () => {
+            th.classList.remove("cs_drop_left", "cs_drop_right");
+        });
+        th.addEventListener("drop", (e) => {
+            e.preventDefault();
+            const dragKey = _csDragColKey;
+            if (!dragKey || dragKey === col.key) return;
+            const fromIdx = sheet.columns.findIndex((c) => c.key === dragKey);
+            if (fromIdx === -1) return;
+            const rect = th.getBoundingClientRect();
+            const dropRight = e.clientX >= rect.left + rect.width / 2;
+            const cols = sheet.columns.slice();
+            const [moved] = cols.splice(fromIdx, 1);
+            const toIdx = cols.findIndex((c) => c.key === col.key);
+            cols.splice(dropRight ? toIdx + 1 : toIdx, 0, moved);
+            sheet.columns = cols;
+            scheduleCustomSheetSave(sheet, panel);
+            renderCustomSheetTable(panel, sheet);
+        });
+
         headRow.appendChild(th);
     });
     thead.innerHTML = "";
     thead.appendChild(headRow);
+
+    /* cbAll 상태 동기화 함수 */
+    function syncCbAll() {
+        const allTr = Array.from(tbody.querySelectorAll("tr[data-row-index]"));
+        const checkedCount = allTr.filter((tr) => tr.classList.contains("is-row-selected")).length;
+        cbAll.checked = allTr.length > 0 && checkedCount === allTr.length;
+        cbAll.indeterminate = checkedCount > 0 && checkedCount < allTr.length;
+    }
+    cbAll.addEventListener("change", () => {
+        const allTr = Array.from(tbody.querySelectorAll("tr[data-row-index]"));
+        allTr.forEach((tr) => {
+            const idx = Number(tr.dataset.rowIndex);
+            const cb = tr.querySelector(".custom_sheet_cb_row");
+            if (cbAll.checked) {
+                sheet._selectedRows.add(idx);
+                tr.classList.add("is-row-selected");
+                if (cb) cb.checked = true;
+            } else {
+                sheet._selectedRows.delete(idx);
+                tr.classList.remove("is-row-selected");
+                if (cb) cb.checked = false;
+            }
+        });
+    });
 
     const colSelect = panel.querySelector(".custom_sheet_compute_col");
     if (colSelect) {
@@ -2495,6 +2583,28 @@ function renderCustomSheetTable(panel, sheet) {
     rowsView.forEach(({ row, index }) => {
         const tr = document.createElement("tr");
         tr.dataset.rowIndex = String(index);
+
+        /* ── 행 선택 체크박스 ── */
+        const tdCheck = document.createElement("td");
+        tdCheck.className = "custom_sheet_col_check";
+        const cbRow = document.createElement("input");
+        cbRow.type = "checkbox";
+        cbRow.className = "custom_sheet_cb_row";
+        cbRow.checked = sheet._selectedRows.has(index);
+        if (cbRow.checked) tr.classList.add("is-row-selected");
+        cbRow.addEventListener("change", () => {
+            if (cbRow.checked) {
+                sheet._selectedRows.add(index);
+                tr.classList.add("is-row-selected");
+            } else {
+                sheet._selectedRows.delete(index);
+                tr.classList.remove("is-row-selected");
+            }
+            syncCbAll();
+        });
+        tdCheck.appendChild(cbRow);
+        tr.appendChild(tdCheck);
+
         const tdIndex = document.createElement("td");
         tdIndex.className = "custom_sheet_row_index";
         tdIndex.textContent = String(index + 1);
