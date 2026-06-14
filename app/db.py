@@ -204,8 +204,6 @@ def _ensure_product_test_project_id_columns() -> None:
         "product_test_procedure_result",
         "product_test_defect",
         "product_test_evidence",
-        "product_test_report",
-        "product_test_report_snapshot",
         "product_test_status_transition",
     ]
     with engine.begin() as connection:

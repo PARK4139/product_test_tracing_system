@@ -1251,3 +1251,78 @@ html {
     min-width: 0;
     box-sizing: border-box;
 }
+
+/* ── admin-row-delete: 체크박스 열 + 플로팅 삭제 바 ────────────────────────── */
+th.admin_row_del_col,
+td.admin_row_del_col {
+    width: 32px;
+    min-width: 32px;
+    max-width: 32px;
+    text-align: center;
+    padding: 4px 0;
+    vertical-align: middle;
+}
+
+td.admin_row_del_col input[type="checkbox"],
+th.admin_row_del_col input[type="checkbox"] {
+    cursor: pointer;
+    width: 15px;
+    height: 15px;
+    accent-color: #d9534f;
+}
+
+/* 선택된 행 강조 */
+[data-incell-edit-table] tbody tr:has(.admin_row_del_cb:checked) {
+    background-color: #fff3f3;
+}
+
+/* 플로팅 바 */
+.admin_row_del_bar {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #2c2c2c;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.admin_row_del_count {
+    font-weight: 600;
+    margin-right: 4px;
+}
+
+.admin_row_del_btn_del {
+    background-color: #d9534f !important;
+    border-color: #c9302c !important;
+    color: #fff !important;
+    padding: 5px 14px;
+    font-size: 13px;
+}
+
+.admin_row_del_btn_del:hover {
+    background-color: #c9302c !important;
+}
+
+.admin_row_del_btn_cancel {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.4);
+    color: #ccc;
+    padding: 5px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.admin_row_del_btn_cancel:hover {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+}

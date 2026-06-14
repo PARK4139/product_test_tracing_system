@@ -487,6 +487,67 @@ def bulk_update_product_test_fields(
     return {"updated": updated_count, "skipped": max(0, len(updates) - len(deduped))}
 
 
+# entity_type → cascade DELETE 문 목록 (실행 순서: 자식 → 부모)
+# 파라미터: :id = 삭제 대상 PK 값
+_CASCADE_DELETE_SQLS: dict[str, list[str]] = {
+    "product_test_round": [
+        # 런 자식들 (evidence → result → run 경로)
+        "DELETE FROM product_test_evidence WHERE product_test_result_id IN (SELECT product_test_result_id FROM product_test_result WHERE product_test_run_id IN (SELECT product_test_run_id FROM product_test_run WHERE test_round_id=:id))",
+        "DELETE FROM product_test_procedure_result WHERE product_test_result_id IN (SELECT product_test_result_id FROM product_test_result WHERE product_test_run_id IN (SELECT product_test_run_id FROM product_test_run WHERE test_round_id=:id))",
+        "DELETE FROM product_test_result WHERE product_test_run_id IN (SELECT product_test_run_id FROM product_test_run WHERE test_round_id=:id)",
+        "DELETE FROM product_test_status_transition WHERE entity_id IN (SELECT product_test_run_id FROM product_test_run WHERE test_round_id=:id)",
+        "DELETE FROM product_test_run WHERE test_round_id=:id",
+        # 보고서 자식들
+        "DELETE FROM product_test_report_snapshot WHERE product_test_report_id IN (SELECT product_test_report_id FROM product_test_report WHERE test_round_id=:id)",
+        "DELETE FROM product_test_status_transition WHERE entity_id IN (SELECT product_test_report_id FROM product_test_report WHERE test_round_id=:id)",
+        "DELETE FROM product_test_report WHERE test_round_id=:id",
+        # 라운드 자체
+        "DELETE FROM product_test_status_transition WHERE entity_id=:id",
+        "DELETE FROM product_test_round WHERE test_round_id=:id",
+    ],
+    "product_test_run": [
+        "DELETE FROM product_test_evidence WHERE product_test_result_id IN (SELECT product_test_result_id FROM product_test_result WHERE product_test_run_id=:id)",
+        "DELETE FROM product_test_procedure_result WHERE product_test_result_id IN (SELECT product_test_result_id FROM product_test_result WHERE product_test_run_id=:id)",
+        "DELETE FROM product_test_result WHERE product_test_run_id=:id",
+        "DELETE FROM product_test_status_transition WHERE entity_id=:id",
+        "DELETE FROM product_test_run WHERE product_test_run_id=:id",
+    ],
+    "product_test_report": [
+        "DELETE FROM product_test_report_snapshot WHERE product_test_report_id=:id",
+        "DELETE FROM product_test_status_transition WHERE entity_id=:id",
+        "DELETE FROM product_test_report WHERE product_test_report_id=:id",
+    ],
+    "product_test_case": [
+        "DELETE FROM product_test_evidence WHERE product_test_procedure_result_id IN (SELECT product_test_procedure_result_id FROM product_test_procedure_result WHERE product_test_procedure_id IN (SELECT product_test_procedure_id FROM product_test_procedure WHERE product_test_case_id=:id))",
+        "DELETE FROM product_test_evidence WHERE product_test_result_id IN (SELECT product_test_result_id FROM product_test_result WHERE product_test_case_id=:id)",
+        "DELETE FROM product_test_procedure_result WHERE product_test_procedure_id IN (SELECT product_test_procedure_id FROM product_test_procedure WHERE product_test_case_id=:id)",
+        "DELETE FROM product_test_procedure_result WHERE product_test_result_id IN (SELECT product_test_result_id FROM product_test_result WHERE product_test_case_id=:id)",
+        "DELETE FROM product_test_result WHERE product_test_case_id=:id",
+        "DELETE FROM product_test_procedure WHERE product_test_case_id=:id",
+        "DELETE FROM product_test_case WHERE product_test_case_id=:id",
+    ],
+    "product_test_procedure": [
+        "DELETE FROM product_test_evidence WHERE product_test_procedure_result_id IN (SELECT product_test_procedure_result_id FROM product_test_procedure_result WHERE product_test_procedure_id=:id)",
+        "DELETE FROM product_test_procedure_result WHERE product_test_procedure_id=:id",
+        "DELETE FROM product_test_procedure WHERE product_test_procedure_id=:id",
+    ],
+    "product_test_target": [
+        "DELETE FROM product_test_target_unified WHERE product_test_target_id=:id",
+    ],
+    "product_test_environment": [
+        "DELETE FROM product_test_environment_unified WHERE product_test_environment_id=:id",
+    ],
+    "product_test_defect": [
+        "UPDATE product_test_evidence SET product_test_defect_id=NULL WHERE product_test_defect_id=:id",
+        "DELETE FROM product_test_defect WHERE product_test_defect_id=:id",
+    ],
+    "product_test_procedure_result": [
+        "UPDATE product_test_evidence SET product_test_procedure_result_id=NULL WHERE product_test_procedure_result_id=:id",
+        "DELETE FROM product_test_procedure_result WHERE product_test_procedure_result_id=:id",
+    ],
+}
+
+
 def bulk_delete_product_test_entities(
     database_session: Session,
     *,
@@ -509,20 +570,26 @@ def bulk_delete_product_test_entities(
     if not deduped_ids:
         return {"deleted": 0, "skipped": len(entity_ids)}
 
-    model = ENTITY_MODEL_MAP[entity_type_value]
+    cascade_sqls = _CASCADE_DELETE_SQLS.get(entity_type_value)
     deleted_count = 0
-    for entity_id in deduped_ids:
-        if entity_type_value == "product_test_defect":
-            _ensure_defect_not_locked_for_source_mutation(
-                database_session,
-                product_test_defect_id=entity_id,
-            )
 
-        row = database_session.get(model, entity_id)
-        if row is None:
-            raise LookupError(f"{entity_type_value} not found: {entity_id}")
-        database_session.delete(row)
-        deleted_count += 1
+    if cascade_sqls:
+        # FK 제약 OFF → cascade 순서대로 삭제 → FK 제약 ON
+        database_session.execute(text("PRAGMA foreign_keys=OFF"))
+        for entity_id in deduped_ids:
+            for stmt in cascade_sqls:
+                database_session.execute(text(stmt), {"id": entity_id})
+            deleted_count += 1
+        database_session.execute(text("PRAGMA foreign_keys=ON"))
+    else:
+        # cascade 정의 없는 entity는 ORM delete (FK 제약 있을 경우 에러 반환)
+        model = ENTITY_MODEL_MAP[entity_type_value]
+        for entity_id in deduped_ids:
+            row = database_session.get(model, entity_id)
+            if row is None:
+                raise LookupError(f"{entity_type_value} not found: {entity_id}")
+            database_session.delete(row)
+            deleted_count += 1
 
     database_session.commit()
     return {"deleted": deleted_count, "skipped": max(0, len(entity_ids) - len(deduped_ids))}
