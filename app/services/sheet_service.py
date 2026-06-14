@@ -124,10 +124,19 @@ def _sheet_meta(table_name: str) -> dict[str, Any]:
     }
 
 
-def get_sheet_payload(database_session: Session, table_name: str) -> dict[str, Any]:
+_REMOVED_SHEET_TABLES = frozenset({"case", "result", "release", "defect", "evidence"})
+
+
+def get_sheet_payload(database_session: Session, table_name: str) -> dict[str, Any]:  # noqa: ARG001
     normalized_name = (table_name or "").strip().lower()
     if normalized_name not in SUPPORTED_SHEET_TABLES:
         raise ValueError(f"Unsupported sheet table: {table_name}")
+    # Phase 4: entity tables dropped — these analysis sheets are no longer available.
+    if normalized_name in _REMOVED_SHEET_TABLES:
+        raise ValueError(
+            f"Sheet '{table_name}' has been removed (entity tables dropped in Phase 4). "
+            "Use Entity Sheets (Tab View 5) instead."
+        )
     if normalized_name == "case":
         return _build_case_sheet(database_session)
     if normalized_name == "result":
