@@ -98,7 +98,7 @@ def _ensure_seed_status_transition(
     date_digits = re.sub(r"\D", "", str(transitioned_at or ""))[:8]
     if len(date_digits) < 8:
         date_digits = get_utc_now_datetime().astimezone().strftime("%Y%m%d")
-    transition_prefix = f"SQA_PRODUCT_TEST_STATUS_TRANSITION_ID-{date_digits}"
+    transition_prefix = f"dummy_PRODUCT_TEST_STATUS_TRANSITION_ID-{date_digits}"
     row = ProductTestStatusTransition(
         product_test_status_transition_id=_next_prefixed_id(
             database_session,
@@ -123,7 +123,7 @@ def _ensure_seed_status_transition(
 
 
 def seed_product_test_wifi_ap_configuration_sample_data(database_session: Session) -> None:
-    actor_name = "SQA_MASTER"
+    actor_name = "dummy_MASTER"
     seed_created_at = "2026-05-04 09:00"
     seed_updated_at = "2026-05-04 10:30"
 
@@ -132,7 +132,7 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
         ProductTestTargetUnified,
         "product_test_target_id",
         {
-            "product_test_target_id": "SQA_PRODUCT_TEST_TARGET_ID-MERCUSYS_MR30G-SN001",
+            "product_test_target_id": "dummy_PRODUCT_TEST_TARGET_ID-MERCUSYS_MR30G-SN001",
             "product_code": "MERCUSYS_MR30G",
             "manufacturer": "MERCUSYS",
             "model_name": "MR30G",
@@ -157,7 +157,7 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
         ProductTestEnvironment,
         "product_test_environment_id",
         {
-            "product_test_environment_id": "SQA_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM",
+            "product_test_environment_id": "dummy_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM",
             "product_test_environment_name": "Huvitz Anyang Connectivity Room Standard Environment",
             "test_country": "Korea",
             "test_city": "Anyang",
@@ -191,7 +191,7 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
         ProductTestEnvironment,
         "product_test_environment_id",
         {
-            "product_test_environment_id": "SQA_PRODUCT_TEST_ENVIRONMENT_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM-20260504-001",
+            "product_test_environment_id": "dummy_PRODUCT_TEST_ENVIRONMENT_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM-20260504-001",
             "product_test_environment_name": "Huvitz Anyang Connectivity Room Snapshot 20260504",
             "test_country": "Korea",
             "test_city": "Anyang",
@@ -225,7 +225,7 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
         ProductTestCase,
         "product_test_case_id",
         {
-            "product_test_case_id": "SQA_PRODUCT_TEST_CASE_ID-WIFI-AP_CONFIG-001",
+            "product_test_case_id": "dummy_PRODUCT_TEST_CASE_ID-WIFI-AP_CONFIG-001",
             "product_test_case_title": "WiFi AP 설정 적합성 검증",
             "test_category": "WiFi",
             "test_objective": "RS9116 WiFi 모듈 기준으로 AP 설정이 권장 조건을 만족하는지 확인",
@@ -242,7 +242,7 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
 
     procedure_seed_rows = [
         {
-            "product_test_procedure_id": "SQA_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-001",
+            "product_test_procedure_id": "dummy_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-001",
             "procedure_sequence": 1,
             "procedure_action": "WiFi Band 분리설정 확인",
             "acceptance_criteria": "2.4GHz, 5GHz의 SSID를 분리하는 것을 권장\n[기대결과] 2.4GHz와 5GHz SSID가 분리되어 있어야 함",
@@ -250,7 +250,7 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
             "remark": "분리하지 않은 경우 임베디드 장비가 2.4GHz로 할당될 가능성이 높음. 원하는 SSID에 접근할 수 있도록 분리 권장.",
         },
         {
-            "product_test_procedure_id": "SQA_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-002",
+            "product_test_procedure_id": "dummy_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-002",
             "procedure_sequence": 2,
             "procedure_action": "WiFi Channel 설정 확인",
             "acceptance_criteria": "2.4GHz는 1~11번 채널 고정 사용 권장. 5GHz는 DFS 채널이 아닌 36, 40, 44, 48 채널 고정 사용 권장\n[기대결과] 2.4GHz는 1~11번 고정 채널, 5GHz는 DFS가 아닌 36, 40, 44, 48 채널이어야 함",
@@ -258,7 +258,7 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
             "remark": "5GHz에서 DFS 채널을 사용하는 경우 WiFi 모듈이 AP를 검색하지 못할 수 있음.",
         },
         {
-            "product_test_procedure_id": "SQA_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-003",
+            "product_test_procedure_id": "dummy_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-003",
             "procedure_sequence": 3,
             "procedure_action": "Channel Bandwidth 설정 확인",
             "acceptance_criteria": "20MHz 사용 권장\n[기대결과] Channel Bandwidth가 20MHz로 설정되어 있어야 함",
@@ -266,7 +266,7 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
             "remark": "WiFi 모듈 RS9116은 20MHz만 지원함.",
         },
         {
-            "product_test_procedure_id": "SQA_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-004",
+            "product_test_procedure_id": "dummy_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-004",
             "procedure_sequence": 4,
             "procedure_action": "WiFi 규격 Mode 설정 확인",
             "acceptance_criteria": "802.11 a/b/g/n, WiFi 4 권장\n[기대결과] WiFi Mode가 802.11 a/b/g/n, WiFi 4 호환 범위여야 함",
@@ -274,7 +274,7 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
             "remark": "일반적으로 하위 호환은 되나 WiFi 6(ax)부터 Beacon 제어 방식 차이로 AP에 따라 정상 parsing이 안 될 가능성이 있음.",
         },
         {
-            "product_test_procedure_id": "SQA_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-005",
+            "product_test_procedure_id": "dummy_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-005",
             "procedure_sequence": 5,
             "procedure_action": "WiFi Security 설정 확인",
             "acceptance_criteria": "WPA2 설정 권장\n[기대결과] AP Security가 WPA2로 설정되어 있어야 함",
@@ -289,7 +289,7 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
             "product_test_procedure_id",
             {
                 "product_test_procedure_id": item["product_test_procedure_id"],
-                "product_test_case_id": "SQA_PRODUCT_TEST_CASE_ID-WIFI-AP_CONFIG-001",
+                "product_test_case_id": "dummy_PRODUCT_TEST_CASE_ID-WIFI-AP_CONFIG-001",
                 "procedure_sequence": item["procedure_sequence"],
                 "procedure_action": item["procedure_action"],
                 "acceptance_criteria": item["acceptance_criteria"],
@@ -308,7 +308,7 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
         ProductTestRound,
         "test_round_id",
         {
-            "test_round_id": "SQA_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1",
+            "test_round_id": "dummy_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1",
             "test_round_name": "MERCUSYS MR30G 1.0.0 RC1 Sample Round",
             "workday": None,
             "start_date": "2026-05-04",
@@ -329,10 +329,10 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
         ProductTestRun,
         "product_test_run_id",
         {
-            "product_test_run_id": "SQA_PRODUCT_TEST_RUN_ID-20260504-0001",
-            "test_round_id": "SQA_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1",
-            "product_test_target_id": "SQA_PRODUCT_TEST_TARGET_ID-MERCUSYS_MR30G-SN001",
-            "product_test_environment_id": "SQA_PRODUCT_TEST_ENVIRONMENT_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM-20260504-001",
+            "product_test_run_id": "dummy_PRODUCT_TEST_RUN_ID-20260504-0001",
+            "test_round_id": "dummy_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1",
+            "product_test_target_id": "dummy_PRODUCT_TEST_TARGET_ID-MERCUSYS_MR30G-SN001",
+            "product_test_environment_id": "dummy_PRODUCT_TEST_ENVIRONMENT_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM-20260504-001",
             "product_test_run_status": "finished",
             "started_at": "2026-05-04 10:00",
             "started_by": "Tester-A",
@@ -355,9 +355,9 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
         ProductTestResult,
         "product_test_result_id",
         {
-            "product_test_result_id": "SQA_PRODUCT_TEST_RESULT_ID-20260504-0001",
-            "product_test_run_id": "SQA_PRODUCT_TEST_RUN_ID-20260504-0001",
-            "product_test_case_id": "SQA_PRODUCT_TEST_CASE_ID-WIFI-AP_CONFIG-001",
+            "product_test_result_id": "dummy_PRODUCT_TEST_RESULT_ID-20260504-0001",
+            "product_test_run_id": "dummy_PRODUCT_TEST_RUN_ID-20260504-0001",
+            "product_test_case_id": "dummy_PRODUCT_TEST_CASE_ID-WIFI-AP_CONFIG-001",
             "product_test_result_status": "failed",
             "actual_result": "5GHz Channel이 DFS 채널로 설정되어 있고 Security가 WPA3로 설정되어 있음",
             "judgement_reason": "Procedure 2, Procedure 5 기준 미충족",
@@ -375,36 +375,36 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
 
     procedure_result_seed_rows = [
         {
-            "product_test_procedure_result_id": "SQA_PRODUCT_TEST_PROCEDURE_RESULT_ID-20260504-0001",
-            "product_test_procedure_id": "SQA_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-001",
+            "product_test_procedure_result_id": "dummy_PRODUCT_TEST_PROCEDURE_RESULT_ID-20260504-0001",
+            "product_test_procedure_id": "dummy_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-001",
             "product_test_procedure_result_status": "passed",
             "actual_result": "2.4GHz와 5GHz SSID가 분리되어 있음",
             "judgement_reason": None,
         },
         {
-            "product_test_procedure_result_id": "SQA_PRODUCT_TEST_PROCEDURE_RESULT_ID-20260504-0002",
-            "product_test_procedure_id": "SQA_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-002",
+            "product_test_procedure_result_id": "dummy_PRODUCT_TEST_PROCEDURE_RESULT_ID-20260504-0002",
+            "product_test_procedure_id": "dummy_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-002",
             "product_test_procedure_result_status": "failed",
             "actual_result": "5GHz Channel이 DFS 채널로 설정되어 있음",
             "judgement_reason": "DFS 채널 사용으로 RS9116 AP scan 실패 가능",
         },
         {
-            "product_test_procedure_result_id": "SQA_PRODUCT_TEST_PROCEDURE_RESULT_ID-20260504-0003",
-            "product_test_procedure_id": "SQA_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-003",
+            "product_test_procedure_result_id": "dummy_PRODUCT_TEST_PROCEDURE_RESULT_ID-20260504-0003",
+            "product_test_procedure_id": "dummy_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-003",
             "product_test_procedure_result_status": "passed",
             "actual_result": "Channel Bandwidth 20MHz 확인",
             "judgement_reason": None,
         },
         {
-            "product_test_procedure_result_id": "SQA_PRODUCT_TEST_PROCEDURE_RESULT_ID-20260504-0004",
-            "product_test_procedure_id": "SQA_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-004",
+            "product_test_procedure_result_id": "dummy_PRODUCT_TEST_PROCEDURE_RESULT_ID-20260504-0004",
+            "product_test_procedure_id": "dummy_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-004",
             "product_test_procedure_result_status": "passed",
             "actual_result": "WiFi Mode가 802.11 b/g/n 호환으로 설정됨",
             "judgement_reason": None,
         },
         {
-            "product_test_procedure_result_id": "SQA_PRODUCT_TEST_PROCEDURE_RESULT_ID-20260504-0005",
-            "product_test_procedure_id": "SQA_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-005",
+            "product_test_procedure_result_id": "dummy_PRODUCT_TEST_PROCEDURE_RESULT_ID-20260504-0005",
+            "product_test_procedure_id": "dummy_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-005",
             "product_test_procedure_result_status": "failed",
             "actual_result": "AP Security가 WPA3로 설정되어 있음",
             "judgement_reason": "WPA2 권장 조건 미충족",
@@ -417,7 +417,7 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
             "product_test_procedure_result_id",
             {
                 "product_test_procedure_result_id": item["product_test_procedure_result_id"],
-                "product_test_result_id": "SQA_PRODUCT_TEST_RESULT_ID-20260504-0001",
+                "product_test_result_id": "dummy_PRODUCT_TEST_RESULT_ID-20260504-0001",
                 "product_test_procedure_id": item["product_test_procedure_id"],
                 "product_test_procedure_result_status": item["product_test_procedure_result_status"],
                 "actual_result": item["actual_result"],
@@ -436,11 +436,11 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
 
     for index, procedure_result_id in enumerate(
         [
-            "SQA_PRODUCT_TEST_PROCEDURE_RESULT_ID-20260504-0001",
-            "SQA_PRODUCT_TEST_PROCEDURE_RESULT_ID-20260504-0002",
-            "SQA_PRODUCT_TEST_PROCEDURE_RESULT_ID-20260504-0003",
-            "SQA_PRODUCT_TEST_PROCEDURE_RESULT_ID-20260504-0004",
-            "SQA_PRODUCT_TEST_PROCEDURE_RESULT_ID-20260504-0005",
+            "dummy_PRODUCT_TEST_PROCEDURE_RESULT_ID-20260504-0001",
+            "dummy_PRODUCT_TEST_PROCEDURE_RESULT_ID-20260504-0002",
+            "dummy_PRODUCT_TEST_PROCEDURE_RESULT_ID-20260504-0003",
+            "dummy_PRODUCT_TEST_PROCEDURE_RESULT_ID-20260504-0004",
+            "dummy_PRODUCT_TEST_PROCEDURE_RESULT_ID-20260504-0005",
         ],
         start=1,
     ):
@@ -449,8 +449,8 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
             ProductTestEvidence,
             "product_test_evidence_id",
             {
-                "product_test_evidence_id": f"SQA_PRODUCT_TEST_EVIDENCE_ID-20260504-{index:04d}",
-                "product_test_result_id": "SQA_PRODUCT_TEST_RESULT_ID-20260504-0001",
+                "product_test_evidence_id": f"dummy_PRODUCT_TEST_EVIDENCE_ID-20260504-{index:04d}",
+                "product_test_result_id": "dummy_PRODUCT_TEST_RESULT_ID-20260504-0001",
                 "product_test_procedure_result_id": procedure_result_id,
                 "product_test_defect_id": None,
                 "product_test_evidence_type": "screenshot",
@@ -471,14 +471,14 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
 
     defect_seed_rows = [
         {
-            "product_test_defect_id": "SQA_PRODUCT_TEST_DEFECT_ID-20260504-0001",
-            "product_test_procedure_result_id": "SQA_PRODUCT_TEST_PROCEDURE_RESULT_ID-20260504-0002",
+            "product_test_defect_id": "dummy_PRODUCT_TEST_DEFECT_ID-20260504-0001",
+            "product_test_procedure_result_id": "dummy_PRODUCT_TEST_PROCEDURE_RESULT_ID-20260504-0002",
             "defect_title": "5GHz DFS Channel 설정으로 RS9116 AP Scan 실패 가능",
             "defect_description": "5GHz 채널이 DFS 채널로 설정되어 있어 RS9116 WiFi 모듈이 AP를 검색하지 못할 수 있음.",
         },
         {
-            "product_test_defect_id": "SQA_PRODUCT_TEST_DEFECT_ID-20260504-0002",
-            "product_test_procedure_result_id": "SQA_PRODUCT_TEST_PROCEDURE_RESULT_ID-20260504-0005",
+            "product_test_defect_id": "dummy_PRODUCT_TEST_DEFECT_ID-20260504-0002",
+            "product_test_procedure_result_id": "dummy_PRODUCT_TEST_PROCEDURE_RESULT_ID-20260504-0005",
             "defect_title": "WPA3 Security 설정으로 WiFi 접속 오류 가능",
             "defect_description": "WPA3 Security 설정으로 인해 RS9116 WiFi 모듈 접속 오류가 발생할 수 있음.",
         },
@@ -490,7 +490,7 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
             "product_test_defect_id",
             {
                 "product_test_defect_id": item["product_test_defect_id"],
-                "product_test_result_id": "SQA_PRODUCT_TEST_RESULT_ID-20260504-0001",
+                "product_test_result_id": "dummy_PRODUCT_TEST_RESULT_ID-20260504-0001",
                 "product_test_procedure_result_id": item["product_test_procedure_result_id"],
                 "defect_title": item["defect_title"],
                 "defect_description": item["defect_description"],
@@ -520,8 +520,8 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
         ProductTestReport,
         "product_test_report_id",
         {
-            "product_test_report_id": "SQA_PRODUCT_TEST_REPORT_ID-SQA_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1-FULL-001",
-            "test_round_id": "SQA_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1",
+            "product_test_report_id": "dummy_PRODUCT_TEST_REPORT_ID-dummy_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1-FULL-001",
+            "test_round_id": "dummy_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1",
             "product_test_report_type": "FULL",
             "product_test_report_status": "DRAFT",
             "product_test_report_title": "WiFi AP 설정 적합성 시험 보고서",
@@ -539,15 +539,15 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
     )
 
     transition_seed_rows = [
-        ("product_test_round", "SQA_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1", None, "DRAFT", "seed_release_drafted", actor_name, "2026-05-04 09:05"),
-        ("product_test_round", "SQA_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1", "DRAFT", "TESTING", "seed_release_testing", actor_name, "2026-05-04 09:10"),
-        ("product_test_run", "SQA_PRODUCT_TEST_RUN_ID-20260504-0001", None, "running", "seed_run_started", "Tester-A", "2026-05-04 10:00"),
-        ("product_test_run", "SQA_PRODUCT_TEST_RUN_ID-20260504-0001", "running", "finished", "seed_run_finished", "Tester-A", "2026-05-04 10:30"),
-        ("product_test_result", "SQA_PRODUCT_TEST_RESULT_ID-20260504-0001", None, "testing", "seed_result_started", "Tester-A", "2026-05-04 10:00"),
-        ("product_test_result", "SQA_PRODUCT_TEST_RESULT_ID-20260504-0001", "testing", "failed", "seed_result_failed", "Tester-A", "2026-05-04 10:30"),
-        ("product_test_report", "SQA_PRODUCT_TEST_REPORT_ID-SQA_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1-FULL-001", None, "DRAFT", "seed_report_drafted", actor_name, "2026-05-04 10:35"),
-        ("product_test_defect", "SQA_PRODUCT_TEST_DEFECT_ID-20260504-0001", None, "opened", "seed_defect_opened", "Tester-A", "2026-05-04 10:30"),
-        ("product_test_defect", "SQA_PRODUCT_TEST_DEFECT_ID-20260504-0002", None, "opened", "seed_defect_opened", "Tester-A", "2026-05-04 10:30"),
+        ("product_test_round", "dummy_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1", None, "DRAFT", "seed_release_drafted", actor_name, "2026-05-04 09:05"),
+        ("product_test_round", "dummy_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1", "DRAFT", "TESTING", "seed_release_testing", actor_name, "2026-05-04 09:10"),
+        ("product_test_run", "dummy_PRODUCT_TEST_RUN_ID-20260504-0001", None, "running", "seed_run_started", "Tester-A", "2026-05-04 10:00"),
+        ("product_test_run", "dummy_PRODUCT_TEST_RUN_ID-20260504-0001", "running", "finished", "seed_run_finished", "Tester-A", "2026-05-04 10:30"),
+        ("product_test_result", "dummy_PRODUCT_TEST_RESULT_ID-20260504-0001", None, "testing", "seed_result_started", "Tester-A", "2026-05-04 10:00"),
+        ("product_test_result", "dummy_PRODUCT_TEST_RESULT_ID-20260504-0001", "testing", "failed", "seed_result_failed", "Tester-A", "2026-05-04 10:30"),
+        ("product_test_report", "dummy_PRODUCT_TEST_REPORT_ID-dummy_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1-FULL-001", None, "DRAFT", "seed_report_drafted", actor_name, "2026-05-04 10:35"),
+        ("product_test_defect", "dummy_PRODUCT_TEST_DEFECT_ID-20260504-0001", None, "opened", "seed_defect_opened", "Tester-A", "2026-05-04 10:30"),
+        ("product_test_defect", "dummy_PRODUCT_TEST_DEFECT_ID-20260504-0002", None, "opened", "seed_defect_opened", "Tester-A", "2026-05-04 10:30"),
     ]
     for item in procedure_result_seed_rows:
         transition_seed_rows.append(

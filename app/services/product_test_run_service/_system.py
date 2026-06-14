@@ -96,11 +96,11 @@ def get_product_test_system_check(database_session: Session) -> dict[str, Any]:
         or 0
     )
     seed_data_presence = {
-        "wifi_case": database_session.get(ProductTestCase, "SQA_PRODUCT_TEST_CASE_ID-WIFI-AP_CONFIG-001") is not None,
+        "wifi_case": database_session.get(ProductTestCase, "dummy_PRODUCT_TEST_CASE_ID-WIFI-AP_CONFIG-001") is not None,
         "wifi_round": database_session.get(ProductTestRound, "ROUND-WIFI_1ST") is not None,
-        "wifi_run": database_session.get(ProductTestRun, "SQA_PRODUCT_TEST_RUN_ID-20260504-0001") is not None,
-        "wifi_result": database_session.get(ProductTestResult, "SQA_PRODUCT_TEST_RESULT_ID-20260504-0001") is not None,
-        "wifi_report": database_session.get(ProductTestReport, "SQA_PRODUCT_TEST_REPORT_ID-SQA_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1-FULL-001") is not None,
+        "wifi_run": database_session.get(ProductTestRun, "dummy_PRODUCT_TEST_RUN_ID-20260504-0001") is not None,
+        "wifi_result": database_session.get(ProductTestResult, "dummy_PRODUCT_TEST_RESULT_ID-20260504-0001") is not None,
+        "wifi_report": database_session.get(ProductTestReport, "dummy_PRODUCT_TEST_REPORT_ID-dummy_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1-FULL-001") is not None,
     }
     return {
         "table_rows": table_rows,

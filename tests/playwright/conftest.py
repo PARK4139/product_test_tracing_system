@@ -32,6 +32,35 @@ def _boot_server() -> None:
     uvicorn.run(app, host="127.0.0.1", port=LIVE_SERVER_PORT, log_level="error")
 
 
+def _purge_dummy_seed_data() -> None:
+    """세션 종료 시 dummy_ 접두어 더미 데이터를 FK 역순으로 삭제한다."""
+    from app.db import engine
+
+    # 삭제 순서: 자식 테이블 → 부모 테이블 (FK 역순)
+    stmts = [
+        "DELETE FROM product_test_status_transition WHERE entity_id LIKE 'dummy_%'",
+        "DELETE FROM product_test_evidence         WHERE product_test_run_id IN "
+        "  (SELECT product_test_run_id FROM product_test_run WHERE test_round_id LIKE 'dummy_%')",
+        "DELETE FROM product_test_procedure_result WHERE product_test_run_id IN "
+        "  (SELECT product_test_run_id FROM product_test_run WHERE test_round_id LIKE 'dummy_%')",
+        "DELETE FROM product_test_result           WHERE product_test_run_id IN "
+        "  (SELECT product_test_run_id FROM product_test_run WHERE test_round_id LIKE 'dummy_%')",
+        "DELETE FROM product_test_run              WHERE test_round_id        LIKE 'dummy_%'",
+        "DELETE FROM product_test_report_snapshot  WHERE product_test_report_id LIKE 'dummy_%'",
+        "DELETE FROM product_test_report           WHERE product_test_report_id LIKE 'dummy_%'",
+        "DELETE FROM product_test_round            WHERE test_round_id        LIKE 'dummy_%'",
+        "DELETE FROM product_test_target_unified   WHERE product_test_target_id LIKE 'dummy_%'",
+    ]
+    try:
+        with engine.begin() as conn:
+            conn.execute(text("PRAGMA foreign_keys=OFF"))
+            for stmt in stmts:
+                conn.execute(text(stmt))
+            conn.execute(text("PRAGMA foreign_keys=ON"))
+    except Exception:
+        pass  # 임시 DB 삭제 직전이므로 오류 무시
+
+
 # ── 부모 conftest reset_database override ────────────────────────────
 # 부모 conftest의 autouse reset_database가 playwright DB를 매 테스트마다
 # DROP하지 못하도록 no-op으로 override한다.
@@ -90,6 +119,9 @@ def live_server() -> Generator[str, None, None]:
         pytest.fail("live_server: server startup timeout")
 
     yield LIVE_SERVER_BASE
+
+    # 마지막 TC 완료 후 dummy_ 더미 데이터 삭제
+    _purge_dummy_seed_data()
 
     try:
         os.unlink(_TMP_DB)

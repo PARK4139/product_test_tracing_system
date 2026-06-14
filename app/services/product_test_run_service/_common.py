@@ -113,7 +113,7 @@ ENTITY_TRANSITIONS = {
 
 _sample_product_test_target_rows = [
     {
-        "product_test_target_id": "SQA_PRODUCT_TEST_TARGET_ID-HRK_9000A-SN001",
+        "product_test_target_id": "dummy_PRODUCT_TEST_TARGET_ID-HRK_9000A-SN001",
         "product_code": "HRK_9000A",
         "manufacturer": "Huvitz",
         "model_name": "HRK-9000A",
@@ -126,16 +126,16 @@ _sample_product_test_target_rows = [
         "manufacture_lot": "LOT-202605",
         "product_test_target_status": "ACTIVE",
         "created_at": "2026-05-05 10:00:00",
-        "created_by": "SQA_MASTER",
+        "created_by": "dummy_MASTER",
         "updated_at": "2026-05-05 10:00:00",
-        "updated_by": "SQA_MASTER",
+        "updated_by": "dummy_MASTER",
         "remark": "",
     }
 ]
 
 _sample_product_test_environment_definition_rows = [
     {
-        "product_test_environment_definition_id": "SQA_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM",
+        "product_test_environment_definition_id": "dummy_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM",
         "product_test_environment_definition_name": "Huvitz Anyang Connectivity Room Standard Environment",
         "test_country": "Korea",
         "test_city": "Anyang",
@@ -154,17 +154,17 @@ _sample_product_test_environment_definition_rows = [
         "power_condition": "Commercial AC power",
         "product_test_environment_definition_status": "ACTIVE",
         "created_at": "2026-05-05 09:00:00",
-        "created_by": "SQA_MASTER",
+        "created_by": "dummy_MASTER",
         "updated_at": "2026-05-05 09:00:00",
-        "updated_by": "SQA_MASTER",
+        "updated_by": "dummy_MASTER",
         "remark": "",
     }
 ]
 
 _sample_product_test_environment_rows = [
     {
-        "product_test_environment_id": "SQA_PRODUCT_TEST_ENVIRONMENT_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM-20260504-001",
-        "product_test_environment_definition_id": "SQA_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM",
+        "product_test_environment_id": "dummy_PRODUCT_TEST_ENVIRONMENT_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM-20260504-001",
+        "product_test_environment_definition_id": "dummy_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM",
         "product_test_environment_name": "Anyang Connectivity Room Snapshot",
         "test_computer_name": "SQA-PC-01",
         "operating_system_version": "Windows 10",
@@ -176,16 +176,16 @@ _sample_product_test_environment_rows = [
         "captured_at": "2026-05-05 09:15:00",
         "product_test_environment_status": "ACTIVE",
         "created_at": "2026-05-05 09:15:00",
-        "created_by": "SQA_MASTER",
+        "created_by": "dummy_MASTER",
         "updated_at": "2026-05-05 09:15:00",
-        "updated_by": "SQA_MASTER",
+        "updated_by": "dummy_MASTER",
         "remark": "",
     }
 ]
 
 _sample_product_test_case_rows = [
     {
-        "product_test_case_id": "SQA_PRODUCT_TEST_CASE_ID-WIFI-AP_CONFIG-001",
+        "product_test_case_id": "dummy_PRODUCT_TEST_CASE_ID-WIFI-AP_CONFIG-001",
         "product_test_case_title": "WiFi AP 설정 적합성 검증",
         "test_category": "WiFi",
         "test_objective": "RS9116 WiFi 모듈 기준으로 AP 설정이 권장 조건을 만족하는지 확인",
@@ -193,82 +193,82 @@ _sample_product_test_case_rows = [
         "expected_result": "AP 설정값이 RS9116 모듈 권장 조건을 만족해야 함",
         "product_test_case_status": "ACTIVE",
         "created_at": "2026-05-05 08:30:00",
-        "created_by": "SQA_MASTER",
+        "created_by": "dummy_MASTER",
         "updated_at": "2026-05-05 08:30:00",
-        "updated_by": "SQA_MASTER",
+        "updated_by": "dummy_MASTER",
         "remark": "",
     }
 ]
 
 _sample_product_test_procedure_rows = [
     {
-            "product_test_procedure_id": "SQA_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-001",
-            "product_test_case_id": "SQA_PRODUCT_TEST_CASE_ID-WIFI-AP_CONFIG-001",
+            "product_test_procedure_id": "dummy_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-001",
+            "product_test_case_id": "dummy_PRODUCT_TEST_CASE_ID-WIFI-AP_CONFIG-001",
         "procedure_sequence": 1,
         "procedure_action": "WiFi Band 분리설정 확인",
         "acceptance_criteria": "2.4GHz, 5GHz의 SSID를 분리하는 것을 권장\n[기대결과] 2.4GHz와 5GHz SSID가 분리되어 있어야 함",
         "required_evidence_type": "screenshot",
         "product_test_procedure_status": "ACTIVE",
         "created_at": "2026-05-05 08:40:00",
-        "created_by": "SQA_MASTER",
+        "created_by": "dummy_MASTER",
         "updated_at": "2026-05-05 08:40:00",
-        "updated_by": "SQA_MASTER",
+        "updated_by": "dummy_MASTER",
         "remark": "분리하지 않은 경우 임베디드 장비가 2.4GHz로 할당될 가능성이 높음.",
     },
     {
-            "product_test_procedure_id": "SQA_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-002",
-            "product_test_case_id": "SQA_PRODUCT_TEST_CASE_ID-WIFI-AP_CONFIG-001",
+            "product_test_procedure_id": "dummy_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-002",
+            "product_test_case_id": "dummy_PRODUCT_TEST_CASE_ID-WIFI-AP_CONFIG-001",
         "procedure_sequence": 2,
         "procedure_action": "WiFi Channel 설정 확인",
         "acceptance_criteria": "2.4GHz는 1~11번 채널 고정 사용 권장. 5GHz는 DFS가 아닌 36, 40, 44, 48 채널 고정 사용 권장\n[기대결과] 2.4GHz는 1~11번 고정 채널, 5GHz는 DFS가 아닌 36, 40, 44, 48 채널이어야 함",
         "required_evidence_type": "screenshot",
         "product_test_procedure_status": "ACTIVE",
         "created_at": "2026-05-05 08:41:00",
-        "created_by": "SQA_MASTER",
+        "created_by": "dummy_MASTER",
         "updated_at": "2026-05-05 08:41:00",
-        "updated_by": "SQA_MASTER",
+        "updated_by": "dummy_MASTER",
         "remark": "5GHz에서 DFS 채널을 사용하는 경우 WiFi 모듈이 AP를 검색하지 못할 수 있음.",
     },
     {
-            "product_test_procedure_id": "SQA_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-003",
-            "product_test_case_id": "SQA_PRODUCT_TEST_CASE_ID-WIFI-AP_CONFIG-001",
+            "product_test_procedure_id": "dummy_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-003",
+            "product_test_case_id": "dummy_PRODUCT_TEST_CASE_ID-WIFI-AP_CONFIG-001",
         "procedure_sequence": 3,
         "procedure_action": "Channel Bandwidth 설정 확인",
         "acceptance_criteria": "20MHz 사용 권장\n[기대결과] Channel Bandwidth가 20MHz로 설정되어 있어야 함",
         "required_evidence_type": "screenshot",
         "product_test_procedure_status": "active",
         "created_at": "2026-05-05 08:42:00",
-        "created_by": "SQA_MASTER",
+        "created_by": "dummy_MASTER",
         "updated_at": "2026-05-05 08:42:00",
-        "updated_by": "SQA_MASTER",
+        "updated_by": "dummy_MASTER",
         "remark": "WiFi 모듈 RS9116은 20MHz만 지원함.",
     },
     {
-            "product_test_procedure_id": "SQA_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-004",
-            "product_test_case_id": "SQA_PRODUCT_TEST_CASE_ID-WIFI-AP_CONFIG-001",
+            "product_test_procedure_id": "dummy_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-004",
+            "product_test_case_id": "dummy_PRODUCT_TEST_CASE_ID-WIFI-AP_CONFIG-001",
         "procedure_sequence": 4,
         "procedure_action": "WiFi 규격 Mode 설정 확인",
         "acceptance_criteria": "802.11 a/b/g/n, WiFi 4 권장\n[기대결과] WiFi Mode가 802.11 a/b/g/n, WiFi 4 호환 범위여야 함",
         "required_evidence_type": "screenshot",
         "product_test_procedure_status": "active",
         "created_at": "2026-05-05 08:43:00",
-        "created_by": "SQA_MASTER",
+        "created_by": "dummy_MASTER",
         "updated_at": "2026-05-05 08:43:00",
-        "updated_by": "SQA_MASTER",
+        "updated_by": "dummy_MASTER",
         "remark": "일반적으로 하위 호환은 되나 WiFi 6(ax)부터 Beacon 제어 방식 차이로 parsing 이 안 될 가능성이 있음.",
     },
     {
-            "product_test_procedure_id": "SQA_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-005",
-            "product_test_case_id": "SQA_PRODUCT_TEST_CASE_ID-WIFI-AP_CONFIG-001",
+            "product_test_procedure_id": "dummy_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-005",
+            "product_test_case_id": "dummy_PRODUCT_TEST_CASE_ID-WIFI-AP_CONFIG-001",
         "procedure_sequence": 5,
         "procedure_action": "WiFi Security 설정 확인",
         "acceptance_criteria": "WPA2 설정 권장\n[기대결과] AP Security가 WPA2로 설정되어 있어야 함",
         "required_evidence_type": "screenshot",
         "product_test_procedure_status": "active",
         "created_at": "2026-05-05 08:44:00",
-        "created_by": "SQA_MASTER",
+        "created_by": "dummy_MASTER",
         "updated_at": "2026-05-05 08:44:00",
-        "updated_by": "SQA_MASTER",
+        "updated_by": "dummy_MASTER",
         "remark": "WPA3 설정 시 접속 오류 발생 가능.",
     },
 ]
@@ -351,21 +351,21 @@ def _validate_in(value: str, allowed_values: tuple[str, ...], field_name: str) -
 
 
 _PRODUCT_TEST_ID_RULES: dict[str, re.Pattern[str]] = {
-    "test_round_id": re.compile(r"^SQA_PRODUCT_TEST_RELEASE_ID-[A-Z0-9_]+-[0-9]+(?:\.[0-9]+)*-(?:RC[0-9]+|GA|HF[0-9]+)$"),
-    "product_test_target_id": re.compile(r"^SQA_PRODUCT_TEST_TARGET_ID-[A-Z0-9_]+-[A-Z0-9_]+$"),
-    "product_test_environment_definition_id": re.compile(r"^SQA_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-[A-Z0-9_]+(?:-[A-Z0-9_]+){2,}$"),
-    "product_test_environment_id": re.compile(r"^SQA_PRODUCT_TEST_ENVIRONMENT_ID-[A-Z0-9_]+(?:-[A-Z0-9_]+){2,}-\d{8}-\d{3}$"),
-    "product_test_case_id": re.compile(r"^SQA_PRODUCT_TEST_CASE_ID-[A-Z0-9_]+(?:-[A-Z0-9_]+)+-\d{3}$"),
-    "product_test_procedure_id": re.compile(r"^SQA_PRODUCT_TEST_PROCEDURE_ID-[A-Z0-9_]+(?:-[A-Z0-9_]+)+-\d{3}$"),
+    "test_round_id": re.compile(r"^dummy_PRODUCT_TEST_RELEASE_ID-[A-Z0-9_]+-[0-9]+(?:\.[0-9]+)*-(?:RC[0-9]+|GA|HF[0-9]+)$"),
+    "product_test_target_id": re.compile(r"^dummy_PRODUCT_TEST_TARGET_ID-[A-Z0-9_]+-[A-Z0-9_]+$"),
+    "product_test_environment_definition_id": re.compile(r"^dummy_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-[A-Z0-9_]+(?:-[A-Z0-9_]+){2,}$"),
+    "product_test_environment_id": re.compile(r"^dummy_PRODUCT_TEST_ENVIRONMENT_ID-[A-Z0-9_]+(?:-[A-Z0-9_]+){2,}-\d{8}-\d{3}$"),
+    "product_test_case_id": re.compile(r"^dummy_PRODUCT_TEST_CASE_ID-[A-Z0-9_]+(?:-[A-Z0-9_]+)+-\d{3}$"),
+    "product_test_procedure_id": re.compile(r"^dummy_PRODUCT_TEST_PROCEDURE_ID-[A-Z0-9_]+(?:-[A-Z0-9_]+)+-\d{3}$"),
 }
 
 PRODUCT_TEST_IDENTIFIER_GUIDES: dict[str, str] = {
-    "test_round_id": "PRODUCT_TEST_RELEASE_ID 작성규칙위반. SQA_PRODUCT_TEST_RELEASE_ID-ITEM-1.0.0-RC1 쓰거나 SQA_PRODUCT_TEST_RELEASE_ID-ITEM-1.0.0-GA 써라.",
-    "product_test_target_id": "PRODUCT_TEST_TARGET_ID 작성규칙위반. SQA_PRODUCT_TEST_TARGET_ID-HRK_9000A-SN001 써라.",
-    "product_test_environment_definition_id": "PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID 작성규칙위반. SQA_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-COMPANY-CITY-ROOM 써라.",
-    "product_test_environment_id": "PRODUCT_TEST_ENVIRONMENT_ID 작성규칙위반. SQA_PRODUCT_TEST_ENVIRONMENT_ID-COMPANY-CITY-ROOM-YYYYMMDD-001 써라.",
-    "product_test_case_id": "PRODUCT_TEST_CASE_ID 작성규칙위반. SQA_PRODUCT_TEST_CASE_ID-WIFI-AP_CONFIG-001 써라.",
-    "product_test_procedure_id": "PRODUCT_TEST_PROCEDURE_ID 작성규칙위반. SQA_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-001 써라.",
+    "test_round_id": "PRODUCT_TEST_RELEASE_ID 작성규칙위반. dummy_PRODUCT_TEST_RELEASE_ID-ITEM-1.0.0-RC1 쓰거나 dummy_PRODUCT_TEST_RELEASE_ID-ITEM-1.0.0-GA 써라.",
+    "product_test_target_id": "PRODUCT_TEST_TARGET_ID 작성규칙위반. dummy_PRODUCT_TEST_TARGET_ID-HRK_9000A-SN001 써라.",
+    "product_test_environment_definition_id": "PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID 작성규칙위반. dummy_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-COMPANY-CITY-ROOM 써라.",
+    "product_test_environment_id": "PRODUCT_TEST_ENVIRONMENT_ID 작성규칙위반. dummy_PRODUCT_TEST_ENVIRONMENT_ID-COMPANY-CITY-ROOM-YYYYMMDD-001 써라.",
+    "product_test_case_id": "PRODUCT_TEST_CASE_ID 작성규칙위반. dummy_PRODUCT_TEST_CASE_ID-WIFI-AP_CONFIG-001 써라.",
+    "product_test_procedure_id": "PRODUCT_TEST_PROCEDURE_ID 작성규칙위반. dummy_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-001 써라.",
 }
 
 

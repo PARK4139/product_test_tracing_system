@@ -51,10 +51,10 @@ def get_round_name_cell(page: Page):
     ).first
 
 
-def get_case_id_cell(page: Page):
-    """product_test_case 테이블의 case_id 셀."""
+def get_round_id_cell(page: Page):
+    """product_test_round 테이블의 test_round_id 셀 (*_id 편집 가능 여부 검증용)."""
     return page.locator(
-        "tr[data-entity-type='product_test_case'] td[data-field='product_test_case_id']"
+        "tr[data-entity-type='product_test_round'] td[data-field='test_round_id']"
     ).first
 
 
@@ -153,14 +153,18 @@ def test_select_cell_edit_saves(page: Page, live_server: str) -> None:
     )
 
 
-# ── TC4: product_test_case_id 편집 → 저장 ────────────────────────────
+# ── TC4: test_round_id (*_id) 편집 → 저장 ───────────────────────────
 
 def test_pk_cell_not_editable(page: Page, live_server: str) -> None:
-    """*_id 셀은 편집 가능해야 한다 (data-primary-key 제한 제거 후)."""
-    goto_admin(page)
-    activate_tab(page, "Cases")
+    """*_id 셀은 편집 가능해야 한다 (data-primary-key 제한 제거 후).
 
-    cell = get_case_id_cell(page)
+    test_round_id 셀을 직접 편집해 저장이 성공하는지 확인한다.
+    "Cases" 탭은 별도 탭 레이블이 없으므로 "Test Round" 탭의 test_round_id 사용.
+    """
+    goto_admin(page)
+    activate_tab(page, "Test Round")
+
+    cell = get_round_id_cell(page)
     original = (cell.text_content() or "").strip()
     new_value = original + "_ID"
 

@@ -11,7 +11,7 @@ from playwright.sync_api import Page, expect
 from tests.playwright.conftest import LIVE_SERVER_BASE
 
 ADMIN_URL = f"{LIVE_SERVER_BASE}/admin"
-ROUND_OLD_ID = "SQA_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1"
+ROUND_OLD_ID = "dummy_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1"
 ROUND_NEW_ID = "ROUND-MERCUSYS_MR30G-1.0.0-RC1"
 
 ADMIN_COOKIES = [
@@ -94,9 +94,13 @@ def test_preview_no_match(page: Page, live_server: str) -> None:
     expect(apply_btn).to_have_attribute("hidden", "")
 
 
-# ── TC4: preview shows PK warning ─────────────────────────────────────
+# ── TC4: preview shows round_id scan result ───────────────────────────
 
 def test_preview_shows_pk_warning_for_round_id(page: Page, live_server: str) -> None:
+    """test_round_id 배치교체 스캔 → 프리뷰에 product_test_round 테이블 노출 + 적용 버튼 활성화.
+
+    Note: data-primary-key="1" 속성 제거 후 PK 경고는 더 이상 표시되지 않음.
+    """
     goto_admin(page)
     open_batch_replace_modal(page)
     fill_find_replace(page, ROUND_OLD_ID, ROUND_NEW_ID, substring=False)
@@ -104,7 +108,6 @@ def test_preview_shows_pk_warning_for_round_id(page: Page, live_server: str) -> 
 
     preview = page.locator("#admin_fr_preview")
     expect(preview).to_be_visible(timeout=5000)
-    expect(preview).to_contain_text("PK")
     expect(preview).to_contain_text("product_test_round")
 
     # 적용 버튼 노출
@@ -116,9 +119,10 @@ def test_preview_shows_pk_warning_for_round_id(page: Page, live_server: str) -> 
 def test_apply_batch_replace_round_id(page: Page, live_server: str) -> None:
     goto_admin(page)
 
-    # 변경 전: DOM에 기존 ID 셀 존재 확인 (hidden 탭 안이어도 DOM에는 있음)
+    # product_test_round 행의 test_round_id 셀만 지정
+    # (product_test_run 행에도 같은 data-field가 있어 entity-type으로 범위 좁힘)
     old_cell = page.locator(
-        f"td[data-field='test_round_id'][data-primary-key='1']"
+        "tr[data-entity-type='product_test_round'] td[data-field='test_round_id']"
     ).filter(has_text=ROUND_OLD_ID)
     expect(old_cell).to_have_count(1)
 
@@ -134,9 +138,9 @@ def test_apply_batch_replace_round_id(page: Page, live_server: str) -> None:
         timeout=5000,
     )
 
-    # DOM에서 새 ID로 변경됐는지 확인
+    # DOM에서 새 ID로 변경됐는지 확인 (round 행만 검사)
     new_cell = page.locator(
-        "td[data-field='test_round_id'][data-primary-key='1']"
+        "tr[data-entity-type='product_test_round'] td[data-field='test_round_id']"
     ).filter(has_text=ROUND_NEW_ID)
     expect(new_cell).to_have_count(1)
     expect(old_cell).to_have_count(0)
