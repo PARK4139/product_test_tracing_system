@@ -27,12 +27,12 @@ from app.services.product_test_field_update_service import bulk_delete_product_t
 from app.services.product_test_run_service import (
     MASTER_ACTIVE_STATUS_VALUES,
     TARGET_STATUS_VALUES,
-    ENVIRONMENT_STATUS_VALUES,
+    CONFIG_STATUS_VALUES,
     EVIDENCE_TYPE_VALUES,
     PRODUCT_TEST_RELEASE_STATUS_VALUES,
     RELEASE_STAGE_VALUES,
     create_product_test_case,
-    create_product_test_environment,
+    create_product_test_config,
     create_product_test_procedure,
     create_product_test_target,
     get_product_test_identifier_guides,
@@ -44,9 +44,9 @@ from app.services.product_test_run_service import (
     get_test_round_id_by_result_id,
     get_test_round_id_by_run_id,
     list_case_options,
-    list_environment_options,
+    list_config_options,
     list_product_test_cases,
-    list_product_test_environments,
+    list_product_test_configs,
     list_product_test_procedures,
     list_product_test_runs,
     list_product_test_rounds,
@@ -116,18 +116,17 @@ ADMIN_FORM_NOTICE_CONFIG = {
 }
 
 
-def _admin_dashboard_product_tracing_template_context(*, database_session: Session) -> dict:  # noqa: ARG001
-    """Phase 4: 엔티티 테이블 제거 — 빈 리스트 반환 (custom_sheet_tab으로 이전 완료)."""
+def _admin_dashboard_product_tracing_template_context(*, database_session: Session) -> dict:
     return {
-        "round_rows": [],
-        "run_rows": [],
-        "target_rows": [],
+        "round_rows": list_product_test_rounds(database_session),
+        "run_rows": list_product_test_runs(database_session),
+        "target_rows": list_product_test_targets(database_session),
         "target_status_values": TARGET_STATUS_VALUES,
-        "environment_rows": [],
-        "environment_status_values": ENVIRONMENT_STATUS_VALUES,
-        "case_rows": [],
+        "config_rows": list_product_test_configs(database_session),
+        "config_status_values": CONFIG_STATUS_VALUES,
+        "case_rows": list_product_test_cases(database_session),
         "case_status_values": MASTER_ACTIVE_STATUS_VALUES,
-        "procedure_rows": [],
+        "procedure_rows": list_product_test_procedures(database_session),
         "procedure_status_values": MASTER_ACTIVE_STATUS_VALUES,
         "evidence_type_values": EVIDENCE_TYPE_VALUES,
     }
@@ -469,8 +468,8 @@ def create_product_test_target_admin(*_args, **_kwargs):
     raise HTTPException(status_code=410, detail="product-test-targets removed — use Entity Sheets (Tab View 5).")
 
 
-@admin_router.post("/product-test-environments/create")
-def create_product_test_environment_admin(*_args, **_kwargs):
+@admin_router.post("/product-test-configs/create")
+def create_product_test_config_admin(*_args, **_kwargs):
     raise HTTPException(status_code=410, detail="product-test-environments removed — use Entity Sheets (Tab View 5).")
 
 
@@ -553,8 +552,8 @@ def render_product_test_targets_admin(*_args, **_kwargs):
     raise HTTPException(status_code=410, detail="product-test-targets removed — use Entity Sheets (Tab View 5).")
 
 
-@admin_router.get("/product-test-environments")
-def render_product_test_environments_admin(*_args, **_kwargs):
+@admin_router.get("/product-test-configs")
+def render_product_test_configs_admin(*_args, **_kwargs):
     raise HTTPException(status_code=410, detail="product-test-environments removed — use Entity Sheets (Tab View 5).")
 
 

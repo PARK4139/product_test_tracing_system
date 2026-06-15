@@ -9,7 +9,7 @@ from app.models import (
     ProductTestCase,
     ProductTestRun,
     ProductTestDefect,
-    ProductTestEnvironment,
+    ProductTestConfig,
     ProductTestProcedure,
     ProductTestProcedureResult,
     ProductTestRound,
@@ -18,7 +18,7 @@ from app.models import (
 from app.services.product_test_run_service import (
     DEFECT_PRIORITY_VALUES,
     DEFECT_SEVERITY_VALUES,
-    ENVIRONMENT_STATUS_VALUES,
+    CONFIG_STATUS_VALUES,
     MASTER_ACTIVE_STATUS_VALUES,
     PROCEDURE_RESULT_STATUS_VALUES,
     PRODUCT_TEST_RELEASE_STATUS_VALUES,
@@ -47,7 +47,7 @@ ENTITY_MODEL_MAP = {
     "product_test_round": ProductTestRound,
     "product_test_run": ProductTestRun,
     "product_test_target": ProductTestTargetUnified,
-    "product_test_environment": ProductTestEnvironment,
+    "product_test_config": ProductTestConfig,
     "product_test_case": ProductTestCase,
     "product_test_procedure": ProductTestProcedure,
     "product_test_procedure_result": ProductTestProcedureResult,
@@ -91,9 +91,9 @@ FIELD_WHITELIST: dict[str, frozenset[str]] = {
             "remark",
         }
     ),
-    "product_test_environment": frozenset(
+    "product_test_config": frozenset(
         {
-            "product_test_environment_name",
+            "product_test_config_name",
             "test_country",
             "test_city",
             "test_company",
@@ -110,7 +110,7 @@ FIELD_WHITELIST: dict[str, frozenset[str]] = {
             "power_connector_type",
             "power_condition",
             "captured_at",
-            "product_test_environment_status",
+            "product_test_config_status",
             "remark",
         }
     ),
@@ -159,7 +159,7 @@ FIELD_WHITELIST: dict[str, frozenset[str]] = {
 
 STATUS_FIELD_VALIDATORS: dict[tuple[str, str], tuple[str, ...]] = {
     ("product_test_target", "product_test_target_status"): TARGET_STATUS_VALUES,
-    ("product_test_environment", "product_test_environment_status"): ENVIRONMENT_STATUS_VALUES,
+    ("product_test_config", "product_test_config_status"): CONFIG_STATUS_VALUES,
     ("product_test_case", "product_test_case_status"): MASTER_ACTIVE_STATUS_VALUES,
     ("product_test_procedure", "product_test_procedure_status"): MASTER_ACTIVE_STATUS_VALUES,
     ("product_test_procedure_result", "product_test_procedure_result_status"): PROCEDURE_RESULT_STATUS_VALUES,
@@ -176,7 +176,7 @@ REQUIRED_TEXT_FIELDS = frozenset(
         "product_test_case_title",
         "procedure_action",
         "acceptance_criteria",
-        "product_test_environment_name",
+        "product_test_config_name",
         "test_category",
         "serial_number",
     }
@@ -490,3 +490,136 @@ def _apply_single_update(
         if old_id != new_id:
             pass  # Phase 4: entity tables dropped — unreachable
         return
+
+
+def bulk_update_product_test_fields(
+    database_session: Session,
+    *,
+    updates: list[dict[str, str]],
+    updated_by: str,
+) -> dict[str, Any]:
+    if not updates:
+        return {"updated": 0, "skipped": 0}
+
+    deduped: dict[tuple[str, str, str], str] = {}
+    for item in updates:
+        key = (
+            str(item.get("entity_type") or "").strip(),
+            str(item.get("entity_id") or "").strip(),
+            str(item.get("field_name") or "").strip(),
+        )
+        if not key[0] or not key[1] or not key[2]:
+            continue
+        deduped[key] = str(item.get("value") if item.get("value") is not None else "")
+
+    updated_count = 0
+    for (entity_type, entity_id, field_name), raw_value in deduped.items():
+        _apply_single_update(
+            database_session,
+            entity_type=entity_type,
+            entity_id=entity_id,
+            field_name=field_name,
+            value=raw_value,
+            updated_by=updated_by,
+        )
+        updated_count += 1
+
+    database_session.commit()
+    return {"updated": updated_count, "skipped": max(0, len(updates) - len(deduped))}
+
+
+# entity_type별 cascade DELETE SQL 목록 (실행 순서: 자식 먼저, 부모 나중)
+# 파라미터: :id = 삭제 대상 PK 값
+_CASCADE_DELETE_SQLS: dict[str, list[str]] = {
+    "product_test_round": [
+        "DELETE FROM product_test_evidence WHERE product_test_result_id IN (SELECT product_test_result_id FROM product_test_result WHERE product_test_run_id IN (SELECT product_test_run_id FROM product_test_run WHERE test_round_id=:id))",
+        "DELETE FROM product_test_procedure_result WHERE product_test_result_id IN (SELECT product_test_result_id FROM product_test_result WHERE product_test_run_id IN (SELECT product_test_run_id FROM product_test_run WHERE test_round_id=:id))",
+        "DELETE FROM product_test_result WHERE product_test_run_id IN (SELECT product_test_run_id FROM product_test_run WHERE test_round_id=:id)",
+        "DELETE FROM product_test_status_transition WHERE entity_id IN (SELECT product_test_run_id FROM product_test_run WHERE test_round_id=:id)",
+        "DELETE FROM product_test_run WHERE test_round_id=:id",
+        "DELETE FROM product_test_status_transition WHERE entity_id=:id",
+        "DELETE FROM product_test_round WHERE test_round_id=:id",
+    ],
+    "product_test_run": [
+        "DELETE FROM product_test_evidence WHERE product_test_result_id IN (SELECT product_test_result_id FROM product_test_result WHERE product_test_run_id=:id)",
+        "DELETE FROM product_test_procedure_result WHERE product_test_result_id IN (SELECT product_test_result_id FROM product_test_result WHERE product_test_run_id=:id)",
+        "DELETE FROM product_test_result WHERE product_test_run_id=:id",
+        "DELETE FROM product_test_status_transition WHERE entity_id=:id",
+        "DELETE FROM product_test_run WHERE product_test_run_id=:id",
+    ],
+    "product_test_case": [
+        "DELETE FROM product_test_evidence WHERE product_test_procedure_result_id IN (SELECT product_test_procedure_result_id FROM product_test_procedure_result WHERE product_test_procedure_id IN (SELECT product_test_procedure_id FROM product_test_procedure WHERE product_test_case_id=:id))",
+        "DELETE FROM product_test_evidence WHERE product_test_result_id IN (SELECT product_test_result_id FROM product_test_result WHERE product_test_case_id=:id)",
+        "DELETE FROM product_test_procedure_result WHERE product_test_procedure_id IN (SELECT product_test_procedure_id FROM product_test_procedure WHERE product_test_case_id=:id)",
+        "DELETE FROM product_test_procedure_result WHERE product_test_result_id IN (SELECT product_test_result_id FROM product_test_result WHERE product_test_case_id=:id)",
+        "DELETE FROM product_test_result WHERE product_test_case_id=:id",
+        "DELETE FROM product_test_procedure WHERE product_test_case_id=:id",
+        "DELETE FROM product_test_case WHERE product_test_case_id=:id",
+    ],
+    "product_test_procedure": [
+        "DELETE FROM product_test_evidence WHERE product_test_procedure_result_id IN (SELECT product_test_procedure_result_id FROM product_test_procedure_result WHERE product_test_procedure_id=:id)",
+        "DELETE FROM product_test_procedure_result WHERE product_test_procedure_id=:id",
+        "DELETE FROM product_test_procedure WHERE product_test_procedure_id=:id",
+    ],
+    "product_test_target": [
+        "DELETE FROM product_test_target_unified WHERE product_test_target_id=:id",
+    ],
+    "product_test_config": [
+        "DELETE FROM product_test_config_unified WHERE product_test_config_id=:id",
+    ],
+    "product_test_defect": [
+        "UPDATE product_test_evidence SET product_test_defect_id=NULL WHERE product_test_defect_id=:id",
+        "DELETE FROM product_test_defect WHERE product_test_defect_id=:id",
+    ],
+    "product_test_procedure_result": [
+        "UPDATE product_test_evidence SET product_test_procedure_result_id=NULL WHERE product_test_procedure_result_id=:id",
+        "DELETE FROM product_test_procedure_result WHERE product_test_procedure_result_id=:id",
+    ],
+}
+
+
+def bulk_delete_product_test_entities(
+    database_session: Session,
+    *,
+    entity_type: str,
+    entity_ids: list[str],
+) -> dict[str, Any]:
+    entity_type_value = str(entity_type or "").strip()
+    if entity_type_value not in ENTITY_MODEL_MAP:
+        raise ValueError(f"Unsupported entity_type: {entity_type_value}")
+
+    deduped_ids = []
+    seen_ids = set()
+    for raw_id in entity_ids:
+        entity_id = str(raw_id or "").strip()
+        if not entity_id or entity_id in seen_ids:
+            continue
+        seen_ids.add(entity_id)
+        deduped_ids.append(entity_id)
+
+    if not deduped_ids:
+        return {"deleted": 0, "skipped": len(entity_ids)}
+
+    cascade_sqls = _CASCADE_DELETE_SQLS.get(entity_type_value)
+    deleted_count = 0
+
+    if cascade_sqls:
+        # FK 제약 OFF → cascade 순서대로 삭제 → FK 제약 ON
+        database_session.execute(text("PRAGMA foreign_keys=OFF"))
+        for entity_id in deduped_ids:
+            for stmt in cascade_sqls:
+                database_session.execute(text(stmt), {"id": entity_id})
+            deleted_count += 1
+        database_session.execute(text("PRAGMA foreign_keys=ON"))
+    else:
+        # cascade 정의 없는 entity는 ORM delete (FK 제약 걸릴 경우 에러 반환)
+        model = ENTITY_MODEL_MAP[entity_type_value]
+        for entity_id in deduped_ids:
+            row = database_session.get(model, entity_id)
+            if row is None:
+                raise LookupError(f"{entity_type_value} not found: {entity_id}")
+            database_session.delete(row)
+            deleted_count += 1
+
+    database_session.commit()
+    return {"deleted": deleted_count, "skipped": max(0, len(entity_ids) - len(deduped_ids))}

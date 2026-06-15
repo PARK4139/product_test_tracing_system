@@ -54,11 +54,11 @@ def _build_target_id(definition_id: str, serial_number: str) -> str:
     return f"SQA_PRODUCT_TEST_TARGET_ID-{core}-{str(serial_number or '').strip()}"
 
 
-def _build_environment_definition_id(company: str, city: str, room: str) -> str:
+def _build_config_definition_id(company: str, city: str, room: str) -> str:
     return f"SQA_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-{_normalize_segment(company)}-{_normalize_segment(city)}-{_normalize_segment(room)}"
 
 
-def _build_environment_id(definition_id: str, captured_at: str) -> str:
+def _build_config_id(definition_id: str, captured_at: str) -> str:
     core = str(definition_id or "").strip().removeprefix("SQA_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-")
     date_digits = re.sub(r"\D+", "", str(captured_at or ""))[:8]
     return f"SQA_PRODUCT_TEST_ENVIRONMENT_ID-{core}-{date_digits}-001"
@@ -90,9 +90,9 @@ def _build_example_payload() -> dict[str, str]:
     company_name = "Huvitz"
     city_name = "Anyang"
     room_name = f"Connectivity_Lab_3F_{compact}"
-    environment_definition_id = _build_environment_definition_id(company_name, city_name, room_name)
+    config_definition_id = _build_config_definition_id(company_name, city_name, room_name)
     captured_at = f"{stamp[:4]}-{stamp[4:6]}-{stamp[6:8]} 14:30:00"
-    environment_id = _build_environment_id(environment_definition_id, captured_at)
+    config_id = _build_config_id(config_definition_id, captured_at)
 
     case_title = f"WiFi 5GHz 채널 고정 및 DFS 회피 확인 ({compact})"
     case_category = "WIFI"
@@ -108,9 +108,9 @@ def _build_example_payload() -> dict[str, str]:
         "model_name": model_name,
         "serial_number": serial_number,
         "target_id": target_id,
-        "environment_definition_id": environment_definition_id,
+        "config_definition_id": config_definition_id,
         "captured_at": captured_at,
-        "environment_id": environment_id,
+        "config_id": config_id,
         "case_title": case_title,
         "case_category": case_category,
         "case_id": case_id,
@@ -228,66 +228,66 @@ def _run_fill_sequence(admin_url: str) -> None:
         _wait_for_form_submission_cycle()
         _open_admin_page(driver, admin_url)
 
-        environment_definition_form = _find_form(driver, "/admin/product-test-environment-definitions/create")
-        _wait_merged_draft_row(driver, environment_definition_form)
-        _fill_field(environment_definition_form, "test_country", "South Korea")
-        _fill_field(environment_definition_form, "test_city", "Anyang")
-        _fill_field(environment_definition_form, "test_company", "Huvitz")
-        _fill_field(environment_definition_form, "test_room", payload["test_room"])
-        _fill_field(environment_definition_form, "network_type", "ISOLATED_LAB_VLAN")
-        _fill_field(environment_definition_form, "test_computer_name", "PT-LAB-WS03")
-        _fill_field(environment_definition_form, "operating_system_version", "Windows 11 Pro 23H2")
-        _fill_field(environment_definition_form, "test_tool_name", "Wireshark")
-        _fill_field(environment_definition_form, "test_tool_version", "4.2.5")
-        _fill_field(environment_definition_form, "power_voltage", "220 V AC")
-        _fill_field(environment_definition_form, "power_frequency", "60 Hz")
-        _fill_field(environment_definition_form, "power_connector_type", "IEC 60320 C13")
+        config_definition_form = _find_form(driver, "/admin/product-test-config-definitions/create")
+        _wait_merged_draft_row(driver, config_definition_form)
+        _fill_field(config_definition_form, "test_country", "South Korea")
+        _fill_field(config_definition_form, "test_city", "Anyang")
+        _fill_field(config_definition_form, "test_company", "Huvitz")
+        _fill_field(config_definition_form, "test_room", payload["test_room"])
+        _fill_field(config_definition_form, "network_type", "ISOLATED_LAB_VLAN")
+        _fill_field(config_definition_form, "test_computer_name", "PT-LAB-WS03")
+        _fill_field(config_definition_form, "operating_system_version", "Windows 11 Pro 23H2")
+        _fill_field(config_definition_form, "test_tool_name", "Wireshark")
+        _fill_field(config_definition_form, "test_tool_version", "4.2.5")
+        _fill_field(config_definition_form, "power_voltage", "220 V AC")
+        _fill_field(config_definition_form, "power_frequency", "60 Hz")
+        _fill_field(config_definition_form, "power_connector_type", "IEC 60320 C13")
         _fill_field(
-            environment_definition_form,
+            config_definition_form,
             "power_condition",
             "상용 전원, THD 5% 미만, UPS 경로 비차단",
         )
-        _fill_field(environment_definition_form, "product_test_environment_definition_status", "ACTIVE")
+        _fill_field(config_definition_form, "product_test_config_definition_status", "ACTIVE")
         _fill_field(
-            environment_definition_form,
+            config_definition_form,
             "remark",
             "3층 연결성 실험실 표준 구성. 5GHz 비-DFS 채널 고정 정책 적용.",
         )
-        _fill_field(environment_definition_form, "product_test_environment_definition_id", payload["environment_definition_id"])
+        _fill_field(config_definition_form, "product_test_config_definition_id", payload["config_definition_id"])
         _fill_field(
-            environment_definition_form,
-            "product_test_environment_definition_name",
+            config_definition_form,
+            "product_test_config_definition_name",
             f"Huvitz Anyang · Connectivity Lab 표준환경 ({payload['upstream_release_id']})",
         )
         _wait_for_form_submission_cycle()
         _open_admin_page(driver, admin_url)
 
-        environment_form = _find_form(driver, "/admin/product-test-environments/create")
-        _wait_merged_draft_row(driver, environment_form)
-        _fill_field(environment_form, "test_computer_name", "PT-LAB-WS03")
-        _fill_field(environment_form, "operating_system_version", "Windows 11 Pro 23H2")
-        _fill_field(environment_form, "test_tool_version", "4.2.5")
-        _fill_field(environment_form, "network_type", "ISOLATED_LAB_VLAN")
-        _fill_field(environment_form, "power_voltage", "220 V AC")
-        _fill_field(environment_form, "power_frequency", "60 Hz")
-        _fill_field(environment_form, "power_connector_type", "IEC 60320 C13")
-        _fill_field(environment_form, "captured_at", payload["captured_at"])
-        _fill_field(environment_form, "product_test_environment_status", "ACTIVE")
+        config_form = _find_form(driver, "/admin/product-test-configs/create")
+        _wait_merged_draft_row(driver, config_form)
+        _fill_field(config_form, "test_computer_name", "PT-LAB-WS03")
+        _fill_field(config_form, "operating_system_version", "Windows 11 Pro 23H2")
+        _fill_field(config_form, "test_tool_version", "4.2.5")
+        _fill_field(config_form, "network_type", "ISOLATED_LAB_VLAN")
+        _fill_field(config_form, "power_voltage", "220 V AC")
+        _fill_field(config_form, "power_frequency", "60 Hz")
+        _fill_field(config_form, "power_connector_type", "IEC 60320 C13")
+        _fill_field(config_form, "captured_at", payload["captured_at"])
+        _fill_field(config_form, "product_test_config_status", "ACTIVE")
         _fill_field(
-            environment_form,
+            config_form,
             "remark",
             "캡처 시점 기준 스냅샷. AP·PC 시간 NTP 동기화 완료.",
         )
-        _fill_field(environment_form, "product_test_environment_id", payload["environment_id"])
+        _fill_field(config_form, "product_test_config_id", payload["config_id"])
         _fill_field(
-            environment_form,
-            "product_test_environment_name",
+            config_form,
+            "product_test_config_name",
             f"HRK-9000A WiFi 시험 스냅샷 · {payload['captured_at'][:10]}",
         )
         _fill_field(
-            environment_form,
-            "product_test_environment_definition_id",
-            payload["environment_definition_id"],
+            config_form,
+            "product_test_config_definition_id",
+            payload["config_definition_id"],
         )
         _wait_for_form_submission_cycle()
         _open_admin_page(driver, admin_url)

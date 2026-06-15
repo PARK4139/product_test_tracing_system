@@ -9,8 +9,8 @@ from sqlalchemy.orm import Session
 from app.models import (
     ProductTestCase,
     ProductTestDefect,
-    ProductTestEnvironment,
-    ProductTestEnvironmentDefinition,
+    ProductTestConfig,
+    ProductTestConfigDefinition,
     ProductTestEvidence,
     ProductTestProcedure,
     ProductTestProcedureResult,
@@ -61,7 +61,7 @@ RELEASE_STAGE_VALUES = ("RC", "GA", "HF")
 PRODUCT_TEST_RELEASE_STATUS_VALUES = ("DRAFT", "TESTING", "REJECTED", "APPROVED", "ARCHIVED")
 MASTER_ACTIVE_STATUS_VALUES = ("DRAFT", "ACTIVE", "DEPRECATED")
 TARGET_STATUS_VALUES = ("active", "inactive", "damaged", "returned", "archived")
-ENVIRONMENT_STATUS_VALUES = ("active", "inactive", "archived")
+CONFIG_STATUS_VALUES = ("active", "inactive", "archived")
 ENTITY_TYPE_VALUES = (
     "product_test_run",
     "product_test_result",
@@ -121,10 +121,10 @@ _sample_product_test_target_rows = [
     }
 ]
 
-_sample_product_test_environment_definition_rows = [
+_sample_product_test_config_definition_rows = [
     {
-        "product_test_environment_definition_id": "dummy_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM",
-        "product_test_environment_definition_name": "Huvitz Anyang Connectivity Room Standard Environment",
+        "product_test_config_definition_id": "dummy_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM",
+        "product_test_config_definition_name": "Huvitz Anyang Connectivity Room Standard Environment",
         "test_country": "Korea",
         "test_city": "Anyang",
         "test_company": "Huvitz",
@@ -140,7 +140,7 @@ _sample_product_test_environment_definition_rows = [
         "power_frequency": "60Hz",
         "power_connector_type": "OO_CONNECTOR",
         "power_condition": "Commercial AC power",
-        "product_test_environment_definition_status": "ACTIVE",
+        "product_test_config_definition_status": "ACTIVE",
         "created_at": "2026-05-05 09:00:00",
         "created_by": "dummy_MASTER",
         "updated_at": "2026-05-05 09:00:00",
@@ -149,11 +149,11 @@ _sample_product_test_environment_definition_rows = [
     }
 ]
 
-_sample_product_test_environment_rows = [
+_sample_product_test_config_rows = [
     {
-        "product_test_environment_id": "dummy_PRODUCT_TEST_ENVIRONMENT_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM-20260504-001",
-        "product_test_environment_definition_id": "dummy_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM",
-        "product_test_environment_name": "Anyang Connectivity Room Snapshot",
+        "product_test_config_id": "dummy_PRODUCT_TEST_ENVIRONMENT_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM-20260504-001",
+        "product_test_config_definition_id": "dummy_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM",
+        "product_test_config_name": "Anyang Connectivity Room Snapshot",
         "test_computer_name": "SQA-PC-01",
         "operating_system_version": "Windows 10",
         "test_tool_version": "1.0.0",
@@ -162,7 +162,7 @@ _sample_product_test_environment_rows = [
         "power_frequency": "60Hz",
         "power_connector_type": "OO_CONNECTOR",
         "captured_at": "2026-05-05 09:15:00",
-        "product_test_environment_status": "ACTIVE",
+        "product_test_config_status": "ACTIVE",
         "created_at": "2026-05-05 09:15:00",
         "created_by": "dummy_MASTER",
         "updated_at": "2026-05-05 09:15:00",
@@ -341,8 +341,8 @@ def _validate_in(value: str, allowed_values: tuple[str, ...], field_name: str) -
 _PRODUCT_TEST_ID_RULES: dict[str, re.Pattern[str]] = {
     "test_round_id": re.compile(r"^dummy_PRODUCT_TEST_RELEASE_ID-[A-Z0-9_]+-[0-9]+(?:\.[0-9]+)*-(?:RC[0-9]+|GA|HF[0-9]+)$"),
     "product_test_target_id": re.compile(r"^dummy_PRODUCT_TEST_TARGET_ID-[A-Z0-9_]+-[A-Z0-9_]+$"),
-    "product_test_environment_definition_id": re.compile(r"^dummy_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-[A-Z0-9_]+(?:-[A-Z0-9_]+){2,}$"),
-    "product_test_environment_id": re.compile(r"^dummy_PRODUCT_TEST_ENVIRONMENT_ID-[A-Z0-9_]+(?:-[A-Z0-9_]+){2,}-\d{8}-\d{3}$"),
+    "product_test_config_definition_id": re.compile(r"^dummy_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-[A-Z0-9_]+(?:-[A-Z0-9_]+){2,}$"),
+    "product_test_config_id": re.compile(r"^dummy_PRODUCT_TEST_ENVIRONMENT_ID-[A-Z0-9_]+(?:-[A-Z0-9_]+){2,}-\d{8}-\d{3}$"),
     "product_test_case_id": re.compile(r"^dummy_PRODUCT_TEST_CASE_ID-[A-Z0-9_]+(?:-[A-Z0-9_]+)+-\d{3}$"),
     "product_test_procedure_id": re.compile(r"^dummy_PRODUCT_TEST_PROCEDURE_ID-[A-Z0-9_]+(?:-[A-Z0-9_]+)+-\d{3}$"),
 }
@@ -350,8 +350,8 @@ _PRODUCT_TEST_ID_RULES: dict[str, re.Pattern[str]] = {
 PRODUCT_TEST_IDENTIFIER_GUIDES: dict[str, str] = {
     "test_round_id": "PRODUCT_TEST_RELEASE_ID 작성규칙위반. dummy_PRODUCT_TEST_RELEASE_ID-ITEM-1.0.0-RC1 쓰거나 dummy_PRODUCT_TEST_RELEASE_ID-ITEM-1.0.0-GA 써라.",
     "product_test_target_id": "PRODUCT_TEST_TARGET_ID 작성규칙위반. dummy_PRODUCT_TEST_TARGET_ID-HRK_9000A-SN001 써라.",
-    "product_test_environment_definition_id": "PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID 작성규칙위반. dummy_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-COMPANY-CITY-ROOM 써라.",
-    "product_test_environment_id": "PRODUCT_TEST_ENVIRONMENT_ID 작성규칙위반. dummy_PRODUCT_TEST_ENVIRONMENT_ID-COMPANY-CITY-ROOM-YYYYMMDD-001 써라.",
+    "product_test_config_definition_id": "PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID 작성규칙위반. dummy_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-COMPANY-CITY-ROOM 써라.",
+    "product_test_config_id": "PRODUCT_TEST_ENVIRONMENT_ID 작성규칙위반. dummy_PRODUCT_TEST_ENVIRONMENT_ID-COMPANY-CITY-ROOM-YYYYMMDD-001 써라.",
     "product_test_case_id": "PRODUCT_TEST_CASE_ID 작성규칙위반. dummy_PRODUCT_TEST_CASE_ID-WIFI-AP_CONFIG-001 써라.",
     "product_test_procedure_id": "PRODUCT_TEST_PROCEDURE_ID 작성규칙위반. dummy_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-001 써라.",
 }

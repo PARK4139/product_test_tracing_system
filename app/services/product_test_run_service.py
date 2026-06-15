@@ -11,8 +11,8 @@ from sqlalchemy.orm import Session
 from app.models import (
     ProductTestCase,
     ProductTestDefect,
-    ProductTestEnvironment,
-    ProductTestEnvironmentDefinition,
+    ProductTestConfig,
+    ProductTestConfigDefinition,
     ProductTestEvidence,
     ProductTestProcedure,
     ProductTestProcedureResult,
@@ -69,7 +69,7 @@ RELEASE_STAGE_VALUES = ("RC", "GA", "HF")
 PRODUCT_TEST_RELEASE_STATUS_VALUES = ("DRAFT", "TESTING", "REJECTED", "APPROVED", "ARCHIVED")
 MASTER_ACTIVE_STATUS_VALUES = ("DRAFT", "ACTIVE", "DEPRECATED")
 TARGET_STATUS_VALUES = ("ACTIVE", "INACTIVE", "DAMAGED", "RETURNED", "ARCHIVED")
-ENVIRONMENT_STATUS_VALUES = ("ACTIVE", "INACTIVE", "ARCHIVED")
+CONFIG_STATUS_VALUES = ("ACTIVE", "INACTIVE", "ARCHIVED")
 ENTITY_TYPE_VALUES = (
     "product_test_run",
     "product_test_result",
@@ -135,10 +135,10 @@ _sample_product_test_target_rows = [
     }
 ]
 
-_sample_product_test_environment_definition_rows = [
+_sample_product_test_config_definition_rows = [
     {
-        "product_test_environment_definition_id": "SQA_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM",
-        "product_test_environment_definition_name": "Huvitz Anyang Connectivity Room Standard Environment",
+        "product_test_config_definition_id": "SQA_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM",
+        "product_test_config_definition_name": "Huvitz Anyang Connectivity Room Standard Environment",
         "test_country": "Korea",
         "test_city": "Anyang",
         "test_company": "Huvitz",
@@ -154,7 +154,7 @@ _sample_product_test_environment_definition_rows = [
         "power_frequency": "60Hz",
         "power_connector_type": "OO_CONNECTOR",
         "power_condition": "Commercial AC power",
-        "product_test_environment_definition_status": "ACTIVE",
+        "product_test_config_definition_status": "ACTIVE",
         "created_at": "2026-05-05 09:00:00",
         "created_by": "SQA_MASTER",
         "updated_at": "2026-05-05 09:00:00",
@@ -163,11 +163,11 @@ _sample_product_test_environment_definition_rows = [
     }
 ]
 
-_sample_product_test_environment_rows = [
+_sample_product_test_config_rows = [
     {
-        "product_test_environment_id": "SQA_PRODUCT_TEST_ENVIRONMENT_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM-20260504-001",
-        "product_test_environment_definition_id": "SQA_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM",
-        "product_test_environment_name": "Anyang Connectivity Room Snapshot",
+        "product_test_config_id": "SQA_PRODUCT_TEST_ENVIRONMENT_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM-20260504-001",
+        "product_test_config_definition_id": "SQA_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM",
+        "product_test_config_name": "Anyang Connectivity Room Snapshot",
         "test_computer_name": "SQA-PC-01",
         "operating_system_version": "Windows 10",
         "test_tool_version": "1.0.0",
@@ -176,7 +176,7 @@ _sample_product_test_environment_rows = [
         "power_frequency": "60Hz",
         "power_connector_type": "OO_CONNECTOR",
         "captured_at": "2026-05-05 09:15:00",
-        "product_test_environment_status": "ACTIVE",
+        "product_test_config_status": "ACTIVE",
         "created_at": "2026-05-05 09:15:00",
         "created_by": "SQA_MASTER",
         "updated_at": "2026-05-05 09:15:00",
@@ -355,8 +355,8 @@ def _validate_in(value: str, allowed_values: tuple[str, ...], field_name: str) -
 _PRODUCT_TEST_ID_RULES: dict[str, re.Pattern[str]] = {
     "test_round_id": re.compile(r"^SQA_PRODUCT_TEST_RELEASE_ID-[A-Z0-9_]+-[0-9]+(?:\.[0-9]+)*-(?:RC[0-9]+|GA|HF[0-9]+)$"),
     "product_test_target_id": re.compile(r"^SQA_PRODUCT_TEST_TARGET_ID-[A-Z0-9_]+-[A-Z0-9_]+$"),
-    "product_test_environment_definition_id": re.compile(r"^SQA_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-[A-Z0-9_]+(?:-[A-Z0-9_]+){2,}$"),
-    "product_test_environment_id": re.compile(r"^SQA_PRODUCT_TEST_ENVIRONMENT_ID-[A-Z0-9_]+(?:-[A-Z0-9_]+){2,}-\d{8}-\d{3}$"),
+    "product_test_config_definition_id": re.compile(r"^SQA_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-[A-Z0-9_]+(?:-[A-Z0-9_]+){2,}$"),
+    "product_test_config_id": re.compile(r"^SQA_PRODUCT_TEST_ENVIRONMENT_ID-[A-Z0-9_]+(?:-[A-Z0-9_]+){2,}-\d{8}-\d{3}$"),
     "product_test_case_id": re.compile(r"^SQA_PRODUCT_TEST_CASE_ID-[A-Z0-9_]+(?:-[A-Z0-9_]+)+-\d{3}$"),
     "product_test_procedure_id": re.compile(r"^SQA_PRODUCT_TEST_PROCEDURE_ID-[A-Z0-9_]+(?:-[A-Z0-9_]+)+-\d{3}$"),
 }
@@ -364,8 +364,8 @@ _PRODUCT_TEST_ID_RULES: dict[str, re.Pattern[str]] = {
 PRODUCT_TEST_IDENTIFIER_GUIDES: dict[str, str] = {
     "test_round_id": "PRODUCT_TEST_RELEASE_ID 작성규칙위반. SQA_PRODUCT_TEST_RELEASE_ID-ITEM-1.0.0-RC1 쓰거나 SQA_PRODUCT_TEST_RELEASE_ID-ITEM-1.0.0-GA 써라.",
     "product_test_target_id": "PRODUCT_TEST_TARGET_ID 작성규칙위반. SQA_PRODUCT_TEST_TARGET_ID-HRK_9000A-SN001 써라.",
-    "product_test_environment_definition_id": "PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID 작성규칙위반. SQA_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-COMPANY-CITY-ROOM 써라.",
-    "product_test_environment_id": "PRODUCT_TEST_ENVIRONMENT_ID 작성규칙위반. SQA_PRODUCT_TEST_ENVIRONMENT_ID-COMPANY-CITY-ROOM-YYYYMMDD-001 써라.",
+    "product_test_config_definition_id": "PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID 작성규칙위반. SQA_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-COMPANY-CITY-ROOM 써라.",
+    "product_test_config_id": "PRODUCT_TEST_ENVIRONMENT_ID 작성규칙위반. SQA_PRODUCT_TEST_ENVIRONMENT_ID-COMPANY-CITY-ROOM-YYYYMMDD-001 써라.",
     "product_test_case_id": "PRODUCT_TEST_CASE_ID 작성규칙위반. SQA_PRODUCT_TEST_CASE_ID-WIFI-AP_CONFIG-001 써라.",
     "product_test_procedure_id": "PRODUCT_TEST_PROCEDURE_ID 작성규칙위반. SQA_PRODUCT_TEST_PROCEDURE_ID-WIFI-AP_CONFIG-001-001 써라.",
 }
@@ -747,7 +747,7 @@ def list_product_test_runs(database_session: Session) -> list[dict[str, Any]]:
             "product_test_run_id",
             "test_round_id",
             "product_test_target_id",
-            "product_test_environment_id",
+            "product_test_config_id",
             "product_test_run_status",
             "started_at",
             "finished_at",
@@ -792,13 +792,13 @@ def list_product_test_targets(database_session: Session) -> list[dict[str, Any]]
     )
 
 
-def list_product_test_environment_definitions(database_session: Session) -> list[dict[str, Any]]:
+def list_product_test_config_definitions(database_session: Session) -> list[dict[str, Any]]:
     return _list_rows_as_dicts(
         database_session,
-        model=ProductTestEnvironmentDefinition,
+        model=ProductTestConfigDefinition,
         columns=[
-            "product_test_environment_definition_id",
-            "product_test_environment_definition_name",
+            "product_test_config_definition_id",
+            "product_test_config_definition_name",
             "test_country",
             "test_city",
             "test_company",
@@ -814,7 +814,7 @@ def list_product_test_environment_definitions(database_session: Session) -> list
             "power_frequency",
             "power_connector_type",
             "power_condition",
-            "product_test_environment_status",
+            "product_test_config_status",
             "created_at",
             "created_by",
             "updated_at",
@@ -825,13 +825,13 @@ def list_product_test_environment_definitions(database_session: Session) -> list
     )
 
 
-def list_product_test_environments(database_session: Session) -> list[dict[str, Any]]:
+def list_product_test_configs(database_session: Session) -> list[dict[str, Any]]:
     return _list_rows_as_dicts(
         database_session,
-        model=ProductTestEnvironment,
+        model=ProductTestConfig,
         columns=[
-            "product_test_environment_id",
-            "product_test_environment_name",
+            "product_test_config_id",
+            "product_test_config_name",
             "test_country",
             "test_city",
             "test_company",
@@ -848,7 +848,7 @@ def list_product_test_environments(database_session: Session) -> list[dict[str, 
             "power_connector_type",
             "power_condition",
             "captured_at",
-            "product_test_environment_status",
+            "product_test_config_status",
             "created_at",
             "created_by",
             "updated_at",
@@ -911,8 +911,8 @@ def list_target_options(database_session: Session) -> list[dict[str, Any]]:
     return list_product_test_targets(database_session)
 
 
-def list_environment_options(database_session: Session) -> list[dict[str, Any]]:
-    return list_product_test_environments(database_session)
+def list_config_options(database_session: Session) -> list[dict[str, Any]]:
+    return list_product_test_configs(database_session)
 
 
 def list_case_options(database_session: Session) -> list[dict[str, Any]]:
@@ -1005,11 +1005,11 @@ def create_product_test_target(
     )
 
 
-def create_product_test_environment_definition(
+def create_product_test_config_definition(
     database_session: Session,
     *,
-    product_test_environment_definition_id: str,
-    product_test_environment_definition_name: str,
+    product_test_config_definition_id: str,
+    product_test_config_definition_name: str,
     test_country: str,
     test_city: str,
     test_company: str,
@@ -1025,27 +1025,27 @@ def create_product_test_environment_definition(
     power_frequency: str,
     power_connector_type: str,
     power_condition: str,
-    product_test_environment_definition_status: str,
+    product_test_config_definition_status: str,
     actor_name: str,
     remark: str,
 ) -> dict[str, Any]:
-    definition_id = _validate_product_test_identifier_format("product_test_environment_definition_id", product_test_environment_definition_id)
-    definition_name = str(product_test_environment_definition_name or "").strip()
+    definition_id = _validate_product_test_identifier_format("product_test_config_definition_id", product_test_config_definition_id)
+    definition_name = str(product_test_config_definition_name or "").strip()
     if not definition_id or not definition_name:
-        raise ValueError("product_test_environment_definition_id and name are required.")
-    environment_id = definition_id.replace("CONFIG_DEF-", "CONFIG-", 1) if definition_id.startswith("CONFIG_DEF-") else definition_id
-    if database_session.get(ProductTestEnvironment, environment_id) is not None:
-        raise ValueError("product_test_environment_definition_id already exists.")
+        raise ValueError("product_test_config_definition_id and name are required.")
+    config_id = definition_id.replace("CONFIG_DEF-", "CONFIG-", 1) if definition_id.startswith("CONFIG_DEF-") else definition_id
+    if database_session.get(ProductTestConfig, config_id) is not None:
+        raise ValueError("product_test_config_definition_id already exists.")
     status_value = _validate_in(
-        str(product_test_environment_definition_status or "").strip().upper(),
+        str(product_test_config_definition_status or "").strip().upper(),
         MASTER_ACTIVE_STATUS_VALUES,
-        "product_test_environment_definition_status",
+        "product_test_config_definition_status",
     )
     now_text = _now_text()
-    row = ProductTestEnvironment(
-        product_test_environment_id=environment_id,
-        product_test_environment_name=definition_name,
-        product_test_environment_status=status_value,
+    row = ProductTestConfig(
+        product_test_config_id=config_id,
+        product_test_config_name=definition_name,
+        product_test_config_status=status_value,
         test_country=str(test_country or "").strip() or None,
         test_city=str(test_city or "").strip() or None,
         test_company=str(test_company or "").strip() or None,
@@ -1073,8 +1073,8 @@ def create_product_test_environment_definition(
     return _as_dict(
         row,
         [
-            "product_test_environment_id",
-            "product_test_environment_name",
+            "product_test_config_id",
+            "product_test_config_name",
             "test_country",
             "test_city",
             "test_company",
@@ -1090,7 +1090,7 @@ def create_product_test_environment_definition(
             "power_frequency",
             "power_connector_type",
             "power_condition",
-            "product_test_environment_status",
+            "product_test_config_status",
             "created_at",
             "created_by",
             "updated_at",
@@ -1100,11 +1100,11 @@ def create_product_test_environment_definition(
     )
 
 
-def create_product_test_environment(
+def create_product_test_config(
     database_session: Session,
     *,
-    product_test_environment_id: str,
-    product_test_environment_name: str,
+    product_test_config_id: str,
+    product_test_config_name: str,
     test_country: str,
     test_city: str,
     test_company: str,
@@ -1121,25 +1121,25 @@ def create_product_test_environment(
     power_connector_type: str,
     power_condition: str,
     captured_at: str,
-    product_test_environment_status: str,
+    product_test_config_status: str,
     actor_name: str,
     remark: str,
 ) -> dict[str, Any]:
-    environment_id = _validate_product_test_identifier_format("product_test_environment_id", product_test_environment_id)
-    environment_name = str(product_test_environment_name or "").strip()
-    if not environment_id or not environment_name:
-        raise ValueError("product_test_environment_id and name are required.")
-    if database_session.get(ProductTestEnvironment, environment_id) is not None:
-        raise ValueError("product_test_environment_id already exists.")
+    config_id = _validate_product_test_identifier_format("product_test_config_id", product_test_config_id)
+    config_name = str(product_test_config_name or "").strip()
+    if not config_id or not config_name:
+        raise ValueError("product_test_config_id and name are required.")
+    if database_session.get(ProductTestConfig, config_id) is not None:
+        raise ValueError("product_test_config_id already exists.")
     status_value = _validate_in(
-        str(product_test_environment_status or "").strip().upper(),
-        ENVIRONMENT_STATUS_VALUES,
-        "product_test_environment_status",
+        str(product_test_config_status or "").strip().upper(),
+        CONFIG_STATUS_VALUES,
+        "product_test_config_status",
     )
     now_text = _now_text()
-    row = ProductTestEnvironment(
-        product_test_environment_id=environment_id,
-        product_test_environment_name=environment_name,
+    row = ProductTestConfig(
+        product_test_config_id=config_id,
+        product_test_config_name=config_name,
         test_country=str(test_country or "").strip() or None,
         test_city=str(test_city or "").strip() or None,
         test_company=str(test_company or "").strip() or None,
@@ -1156,7 +1156,7 @@ def create_product_test_environment(
         power_connector_type=str(power_connector_type or "").strip() or None,
         power_condition=str(power_condition or "").strip() or None,
         captured_at=str(captured_at or "").strip() or None,
-        product_test_environment_status=status_value,
+        product_test_config_status=status_value,
         created_at=now_text,
         created_by=actor_name,
         updated_at=now_text,
@@ -1168,8 +1168,8 @@ def create_product_test_environment(
     return _as_dict(
         row,
         [
-            "product_test_environment_id",
-            "product_test_environment_name",
+            "product_test_config_id",
+            "product_test_config_name",
             "test_country",
             "test_city",
             "test_company",
@@ -1186,7 +1186,7 @@ def create_product_test_environment(
             "power_connector_type",
             "power_condition",
             "captured_at",
-            "product_test_environment_status",
+            "product_test_config_status",
             "created_at",
             "created_by",
             "updated_at",
@@ -1434,11 +1434,11 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
 
     _upsert_model_row(
         database_session,
-        ProductTestEnvironment,
-        "product_test_environment_id",
+        ProductTestConfig,
+        "product_test_config_id",
         {
-            "product_test_environment_id": "SQA_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM",
-            "product_test_environment_name": "Huvitz Anyang Connectivity Room Standard Environment",
+            "product_test_config_id": "SQA_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM",
+            "product_test_config_name": "Huvitz Anyang Connectivity Room Standard Environment",
             "test_country": "Korea",
             "test_city": "Anyang",
             "test_company": "Huvitz",
@@ -1454,7 +1454,7 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
             "power_frequency": "60Hz",
             "power_connector_type": "OO_CONNECTOR",
             "power_condition": "Commercial AC power",
-            "product_test_environment_status": "active",
+            "product_test_config_status": "active",
             "created_at": seed_created_at,
             "created_by": actor_name,
             "updated_at": seed_updated_at,
@@ -1468,11 +1468,11 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
 
     _upsert_model_row(
         database_session,
-        ProductTestEnvironment,
-        "product_test_environment_id",
+        ProductTestConfig,
+        "product_test_config_id",
         {
-            "product_test_environment_id": "SQA_PRODUCT_TEST_ENVIRONMENT_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM-20260504-001",
-            "product_test_environment_name": "Huvitz Anyang Connectivity Room Snapshot 20260504",
+            "product_test_config_id": "SQA_PRODUCT_TEST_ENVIRONMENT_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM-20260504-001",
+            "product_test_config_name": "Huvitz Anyang Connectivity Room Snapshot 20260504",
             "test_country": "Korea",
             "test_city": "Anyang",
             "test_company": "Huvitz",
@@ -1489,7 +1489,7 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
             "power_connector_type": "OO_CONNECTOR",
             "power_condition": "Commercial AC power",
             "captured_at": "2026-05-04 09:00",
-            "product_test_environment_status": "active",
+            "product_test_config_status": "active",
             "created_at": seed_created_at,
             "created_by": actor_name,
             "updated_at": seed_updated_at,
@@ -1612,7 +1612,7 @@ def seed_product_test_wifi_ap_configuration_sample_data(database_session: Sessio
             "product_test_run_id": "SQA_PRODUCT_TEST_RUN_ID-20260504-0001",
             "test_round_id": "SQA_PRODUCT_TEST_RELEASE_ID-MERCUSYS_MR30G-1.0.0-RC1",
             "product_test_target_id": "SQA_PRODUCT_TEST_TARGET_ID-MERCUSYS_MR30G-SN001",
-            "product_test_environment_id": "SQA_PRODUCT_TEST_ENVIRONMENT_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM-20260504-001",
+            "product_test_config_id": "SQA_PRODUCT_TEST_ENVIRONMENT_ID-HUVITZ-ANYANG-CONNECTIVITY_ROOM-20260504-001",
             "product_test_run_status": "finished",
             "started_at": "2026-05-04 10:00",
             "started_by": "Tester-A",
@@ -1888,7 +1888,7 @@ def list_runs(database_session: Session) -> list[dict[str, Any]]:
                 "product_test_run_id",
                 "test_round_id",
                 "product_test_target_id",
-                "product_test_environment_id",
+                "product_test_config_id",
                 "product_test_run_status",
                 "started_at",
                 "started_by",
@@ -1912,18 +1912,18 @@ def start_run(
     *,
     test_round_id: str,
     product_test_target_id: str,
-    product_test_environment_id: str,
+    product_test_config_id: str,
     started_by: str,
 ) -> dict[str, Any]:
     round_row = database_session.get(ProductTestRound, str(test_round_id or "").strip())
     target = database_session.get(ProductTestTargetUnified, str(product_test_target_id or "").strip())
-    environment = database_session.get(ProductTestEnvironment, str(product_test_environment_id or "").strip())
+    environment = database_session.get(ProductTestConfig, str(product_test_config_id or "").strip())
     if round_row is None:
         raise ValueError("Unknown test_round_id.")
     if target is None:
         raise ValueError("Unknown product_test_target_id.")
     if environment is None:
-        raise ValueError("Unknown product_test_environment_id.")
+        raise ValueError("Unknown product_test_config_id.")
     _ensure_round_not_locked_for_source_mutation(
         database_session,
         test_round_id=round_row.test_round_id,
@@ -1940,7 +1940,7 @@ def start_run(
         product_test_run_id=run_id,
         test_round_id=round_row.test_round_id,
         product_test_target_id=target.product_test_target_id,
-        product_test_environment_id=environment.product_test_environment_id,
+        product_test_config_id=environment.product_test_config_id,
         product_test_run_status="running",
         started_at=now_text,
         started_by=started_by,
@@ -1971,7 +1971,7 @@ def start_run(
             "product_test_run_id",
             "test_round_id",
             "product_test_target_id",
-            "product_test_environment_id",
+            "product_test_config_id",
             "product_test_run_status",
             "started_at",
             "started_by",
@@ -2636,7 +2636,7 @@ def get_run_detail(database_session: Session, product_test_run_id: str) -> dict[
                     "product_test_run_id",
                     "test_round_id",
                     "product_test_target_id",
-                    "product_test_environment_id",
+                    "product_test_config_id",
                     "started_at",
                     "started_by",
                     "finished_at",
@@ -2694,10 +2694,10 @@ def get_run_detail(database_session: Session, product_test_run_id: str) -> dict[
             ],
         ),
         "target_summary": _target_summary(database_session, run_row.product_test_target_id),
-        "environment_summary": _environment_summary(database_session, run_row.product_test_environment_id),
+        "config_summary": _config_summary(database_session, run_row.product_test_config_id),
         "round_options": list_round_options(database_session),
         "target_options": list_target_options(database_session),
-        "environment_options": list_environment_options(database_session),
+        "config_options": list_config_options(database_session),
         "case_options": list_case_options(database_session),
     }
 
@@ -3126,14 +3126,14 @@ def _target_summary(database_session: Session, product_test_target_id: str) -> d
     }
 
 
-def _environment_summary(database_session: Session, product_test_environment_id: str) -> dict[str, Any]:
-    environment_row = database_session.get(ProductTestEnvironment, product_test_environment_id)
-    if environment_row is None:
-        fallback = _find_fallback_row(_sample_product_test_environment_rows, "product_test_environment_id", product_test_environment_id) or {}
-        definition_row = _find_fallback_row(_sample_product_test_environment_definition_rows, "product_test_environment_definition_id", fallback.get("product_test_environment_definition_id", "")) or {}
+def _config_summary(database_session: Session, product_test_config_id: str) -> dict[str, Any]:
+    config_row = database_session.get(ProductTestConfig, product_test_config_id)
+    if config_row is None:
+        fallback = _find_fallback_row(_sample_product_test_config_rows, "product_test_config_id", product_test_config_id) or {}
+        definition_row = _find_fallback_row(_sample_product_test_config_definition_rows, "product_test_config_definition_id", fallback.get("product_test_config_definition_id", "")) or {}
         return {
-            "product_test_environment_id": product_test_environment_id,
-            "product_test_environment_name": fallback.get("product_test_environment_name", ""),
+            "product_test_config_id": product_test_config_id,
+            "product_test_config_name": fallback.get("product_test_config_name", ""),
             "test_country": definition_row.get("test_country", ""),
             "test_city": definition_row.get("test_city", ""),
             "test_company": definition_row.get("test_company", ""),
@@ -3150,22 +3150,22 @@ def _environment_summary(database_session: Session, product_test_environment_id:
             "power_condition": definition_row.get("power_condition", ""),
         }
     return {
-        "product_test_environment_id": environment_row.product_test_environment_id,
-        "product_test_environment_name": environment_row.product_test_environment_name,
-        "test_country": environment_row.test_country or "",
-        "test_city": environment_row.test_city or "",
-        "test_company": environment_row.test_company or "",
-        "test_building": environment_row.test_building or "",
-        "test_floor": environment_row.test_floor or "",
-        "test_room": environment_row.test_room or "",
-        "network_type": environment_row.network_type or "",
-        "test_computer_name": environment_row.test_computer_name or "",
-        "operating_system_version": environment_row.operating_system_version or "",
-        "test_tool_version": environment_row.test_tool_version or "",
-        "power_voltage": environment_row.power_voltage or "",
-        "power_frequency": environment_row.power_frequency or "",
-        "power_connector_type": environment_row.power_connector_type or "",
-        "power_condition": environment_row.power_condition or "",
+        "product_test_config_id": config_row.product_test_config_id,
+        "product_test_config_name": config_row.product_test_config_name,
+        "test_country": config_row.test_country or "",
+        "test_city": config_row.test_city or "",
+        "test_company": config_row.test_company or "",
+        "test_building": config_row.test_building or "",
+        "test_floor": config_row.test_floor or "",
+        "test_room": config_row.test_room or "",
+        "network_type": config_row.network_type or "",
+        "test_computer_name": config_row.test_computer_name or "",
+        "operating_system_version": config_row.operating_system_version or "",
+        "test_tool_version": config_row.test_tool_version or "",
+        "power_voltage": config_row.power_voltage or "",
+        "power_frequency": config_row.power_frequency or "",
+        "power_connector_type": config_row.power_connector_type or "",
+        "power_condition": config_row.power_condition or "",
     }
 
 
@@ -3356,13 +3356,13 @@ def get_product_test_report_detail(database_session: Session, product_test_repor
             {
                 "product_test_run_id": row.product_test_run_id,
                 "product_test_target_id": row.product_test_target_id,
-                "product_test_environment_id": row.product_test_environment_id,
+                "product_test_config_id": row.product_test_config_id,
                 "product_test_run_status": row.product_test_run_status,
                 "started_at": row.started_at,
                 "started_by": row.started_by,
                 "finished_at": row.finished_at or "",
                 "target_summary": _target_summary(database_session, row.product_test_target_id),
-                "environment_summary": _environment_summary(database_session, row.product_test_environment_id),
+                "config_summary": _config_summary(database_session, row.product_test_config_id),
             }
             for row in graph["runs"]
         ],
@@ -3506,14 +3506,14 @@ def get_product_test_trace_view(
     *,
     test_round_id: str,
     product_test_target_id: str = "",
-    product_test_environment_id: str = "",
+    product_test_config_id: str = "",
     product_test_case_id: str = "",
     result_status: str = "",
     defect_status: str = "",
 ) -> dict[str, Any]:
     graph = _collect_round_graph(database_session, test_round_id)
     target_id = str(product_test_target_id or "").strip()
-    environment_id = str(product_test_environment_id or "").strip()
+    config_id = str(product_test_config_id or "").strip()
     case_id = str(product_test_case_id or "").strip()
     result_status_value = str(result_status or "").strip()
     defect_status_value = str(defect_status or "").strip()
@@ -3529,7 +3529,7 @@ def get_product_test_trace_view(
     for run_row in graph["runs"]:
         if target_id and run_row.product_test_target_id != target_id:
             continue
-        if environment_id and run_row.product_test_environment_id != environment_id:
+        if config_id and run_row.product_test_config_id != config_id:
             continue
         result_rows = []
         scoped_result_rows = [
@@ -3617,7 +3617,7 @@ def get_product_test_trace_view(
                 "product_test_run_id": run_row.product_test_run_id,
                 "product_test_run_status": run_row.product_test_run_status,
                 "target_summary": _target_summary(database_session, run_row.product_test_target_id),
-                "environment_summary": _environment_summary(database_session, run_row.product_test_environment_id),
+                "config_summary": _config_summary(database_session, run_row.product_test_config_id),
                 "result_rows": result_rows,
             }
         )
@@ -3636,7 +3636,7 @@ def get_product_test_trace_view(
         "filters": {
             "test_round_id": test_round_id,
             "product_test_target_id": target_id,
-            "product_test_environment_id": environment_id,
+            "product_test_config_id": config_id,
             "product_test_case_id": case_id,
             "result_status": result_status_value,
             "defect_status": defect_status_value,
@@ -3672,7 +3672,7 @@ def get_product_test_trace_view(
         ],
         "round_options": list_round_options(database_session),
         "target_options": list_target_options(database_session),
-        "environment_options": list_environment_options(database_session),
+        "config_options": list_config_options(database_session),
         "case_options": list_case_options(database_session),
     }
 
@@ -3692,7 +3692,7 @@ def get_product_test_run_trace_view(database_session: Session, product_test_run_
         database_session,
         test_round_id=run_row.test_round_id,
         product_test_target_id=run_row.product_test_target_id,
-        product_test_environment_id=run_row.product_test_environment_id,
+        product_test_config_id=run_row.product_test_config_id,
     )
     run_trace = next(
         (row for row in trace_detail["run_trace_rows"] if row["product_test_run_id"] == product_test_run_id),
@@ -3818,8 +3818,8 @@ def build_product_test_report_export_rows(database_session: Session, product_tes
         "Environment Summary",
         [
             "product_test_run_id",
-            "product_test_environment_id",
-            "product_test_environment_name",
+            "product_test_config_id",
+            "product_test_config_name",
             "test_country",
             "test_city",
             "test_company",
@@ -3837,22 +3837,22 @@ def build_product_test_report_export_rows(database_session: Session, product_tes
         ],
         [[
             run["product_test_run_id"],
-            run["environment_summary"].get("product_test_environment_id"),
-            run["environment_summary"].get("product_test_environment_name"),
-            run["environment_summary"].get("test_country"),
-            run["environment_summary"].get("test_city"),
-            run["environment_summary"].get("test_company"),
-            run["environment_summary"].get("test_building"),
-            run["environment_summary"].get("test_floor"),
-            run["environment_summary"].get("test_room"),
-            run["environment_summary"].get("network_type"),
-            run["environment_summary"].get("test_computer_name"),
-            run["environment_summary"].get("operating_system_version"),
-            run["environment_summary"].get("test_tool_version"),
-            run["environment_summary"].get("power_voltage"),
-            run["environment_summary"].get("power_frequency"),
-            run["environment_summary"].get("power_connector_type"),
-            run["environment_summary"].get("power_condition"),
+            run["config_summary"].get("product_test_config_id"),
+            run["config_summary"].get("product_test_config_name"),
+            run["config_summary"].get("test_country"),
+            run["config_summary"].get("test_city"),
+            run["config_summary"].get("test_company"),
+            run["config_summary"].get("test_building"),
+            run["config_summary"].get("test_floor"),
+            run["config_summary"].get("test_room"),
+            run["config_summary"].get("network_type"),
+            run["config_summary"].get("test_computer_name"),
+            run["config_summary"].get("operating_system_version"),
+            run["config_summary"].get("test_tool_version"),
+            run["config_summary"].get("power_voltage"),
+            run["config_summary"].get("power_frequency"),
+            run["config_summary"].get("power_connector_type"),
+            run["config_summary"].get("power_condition"),
         ] for run in detail["run_summaries"]],
     )
     summary = detail["result_summary"]
@@ -4038,7 +4038,7 @@ def build_product_test_trace_export_rows(
     *,
     test_round_id: str,
     product_test_target_id: str = "",
-    product_test_environment_id: str = "",
+    product_test_config_id: str = "",
     product_test_case_id: str = "",
     result_status: str = "",
     defect_status: str = "",
@@ -4047,7 +4047,7 @@ def build_product_test_trace_export_rows(
         database_session,
         test_round_id=test_round_id,
         product_test_target_id=product_test_target_id,
-        product_test_environment_id=product_test_environment_id,
+        product_test_config_id=product_test_config_id,
         product_test_case_id=product_test_case_id,
         result_status=result_status,
         defect_status=defect_status,
@@ -4083,8 +4083,8 @@ def build_product_test_trace_export_rows(
             run["product_test_run_status"],
             run["target_summary"].get("product_test_target_id"),
             run["target_summary"].get("serial_number"),
-            run["environment_summary"].get("product_test_environment_id"),
-            run["environment_summary"].get("product_test_environment_name"),
+            run["config_summary"].get("product_test_config_id"),
+            run["config_summary"].get("product_test_config_name"),
         ])
         for result in run["result_rows"]:
             for procedure in result["procedure_rows"]:
@@ -4129,8 +4129,8 @@ def build_product_test_trace_export_rows(
             "product_test_run_status",
             "product_test_target_id",
             "serial_number",
-            "product_test_environment_id",
-            "product_test_environment_name",
+            "product_test_config_id",
+            "product_test_config_name",
         ],
         run_rows,
     )
@@ -4235,7 +4235,7 @@ def build_product_test_run_export_rows(database_session: Session, product_test_r
             "product_test_run_id",
             "test_round_id",
             "product_test_target_id",
-            "product_test_environment_id",
+            "product_test_config_id",
             "product_test_run_status",
             "started_at",
             "started_by",
@@ -4249,7 +4249,7 @@ def build_product_test_run_export_rows(database_session: Session, product_test_r
             detail["run"]["product_test_run_id"],
             detail["run"]["test_round_id"],
             detail["run"]["product_test_target_id"],
-            detail["run"]["product_test_environment_id"],
+            detail["run"]["product_test_config_id"],
             detail["run"]["status"],
             detail["run"]["started_at"],
             detail["run"]["started_by"],
@@ -4392,8 +4392,8 @@ def get_product_test_system_check(database_session: Session) -> dict[str, Any]:
     table_names = [
         "product_test_round",
         "product_test_target_unified",
-        "product_test_environment_definition",
-        "product_test_environment",
+        "product_test_config_definition",
+        "product_test_config",
         "product_test_case",
         "product_test_procedure",
         "product_test_run",
@@ -4481,7 +4481,7 @@ def list_running_run_options(database_session: Session) -> list[dict[str, Any]]:
                 "product_test_run_id",
                 "test_round_id",
                 "product_test_target_id",
-                "product_test_environment_id",
+                "product_test_config_id",
                 "product_test_run_status",
                 "started_at",
             ],
@@ -4625,7 +4625,7 @@ def get_product_test_defect_detail(database_session: Session, product_test_defec
                 "product_test_run_id",
                 "test_round_id",
                 "product_test_target_id",
-                "product_test_environment_id",
+                "product_test_config_id",
                 "product_test_run_status",
                 "started_at",
             ],

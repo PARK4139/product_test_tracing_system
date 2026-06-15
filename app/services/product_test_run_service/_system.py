@@ -9,8 +9,8 @@ from sqlalchemy.orm import Session
 from app.models import (
     ProductTestCase,
     ProductTestDefect,
-    ProductTestEnvironment,
-    ProductTestEnvironmentDefinition,
+    ProductTestConfig,
+    ProductTestConfigDefinition,
     ProductTestEvidence,
     ProductTestProcedure,
     ProductTestProcedureResult,
@@ -29,7 +29,7 @@ from app.services.product_test_run_service._list_queries import (
     list_product_test_rounds,
     list_product_test_runs,
     list_product_test_targets,
-    list_product_test_environments,
+    list_product_test_configs,
     list_product_test_cases,
     list_product_test_procedures,
 )
@@ -39,8 +39,8 @@ def get_product_test_system_check(database_session: Session) -> dict[str, Any]:
     table_names = [
         "product_test_round",
         "product_test_target_unified",
-        "product_test_environment_definition",
-        "product_test_environment",
+        "product_test_config_definition",
+        "product_test_config",
         "product_test_case",
         "product_test_procedure",
         "product_test_run",

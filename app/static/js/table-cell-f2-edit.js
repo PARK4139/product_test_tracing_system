@@ -41,11 +41,11 @@
                 13: "remark",
             },
         },
-        "/admin/product-test-environments/create": {
-            entityType: "product_test_environment",
+        "/admin/product-test-configs/create": {
+            entityType: "product_test_config",
             idColumnIndex: 1,
             fieldsByIndex: {
-                2: "product_test_environment_name",
+                2: "product_test_config_name",
                 3: "test_country",
                 4: "test_city",
                 5: "test_company",
@@ -60,7 +60,7 @@
                 14: "power_connector_type",
                 15: "power_condition",
                 16: "captured_at",
-                17: "product_test_environment_status",
+                17: "product_test_config_status",
                 18: "remark",
             },
         },

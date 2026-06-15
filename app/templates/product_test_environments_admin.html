@@ -2,10 +2,10 @@
 {% block content %}
 <section class="card">
     <div class="section_header_row">
-        <h3>Test Environment</h3>
+        <h3>Test Config</h3>
         <div class="table_action_bar"><a href="/admin" class="project_standard_button">관리자 홈</a></div>
     </div>
-    <div class="detail_guide">제품 테스트 환경 관리 · 셀 클릭으로 수정, + 행 추가로 생성.</div>
+    <div class="detail_guide">제품 테스트 구성 관리 · 셀 클릭으로 수정, + 행 추가로 생성.</div>
 </section>
 {% if message %}<section class="card"><div class="non_modal_notice {{ message_type }}"><div>{{ message }}</div></div></section>{% endif %}
 <section class="card">
@@ -16,15 +16,15 @@
         </div>
     </div>
     <div class="tester_table_wrap">
-        <table class="basic_table" data-incell-edit-table data-entity-type="product_test_environment" data-primary-key-field="product_test_environment_id" data-create-action="/admin/product-test-environments/create">
+        <table class="basic_table" data-incell-edit-table data-entity-type="product_test_config" data-primary-key-field="product_test_config_id" data-create-action="/admin/product-test-configs/create">
             <thead>
                 <tr><th>ID</th><th>Name</th><th>Country</th><th>City</th><th>Company</th><th>Building</th><th>Floor</th><th>Room</th><th>Network</th><th>PC</th><th>OS</th><th>Tool</th><th>Tool Ver</th><th>Voltage</th><th>Frequency</th><th>Connector</th><th>Power</th><th>Captured At</th><th>Status</th><th>Remark</th><th>Action</th></tr>
             </thead>
             <tbody>
                 {% for row in rows %}
-                <tr data-entity-type="product_test_environment" data-entity-id="{{ row.product_test_environment_id }}">
-                    <td data-field="product_test_environment_id" data-primary-key="1" data-required="1">{{ row.product_test_environment_id }}</td>
-                    <td data-field="product_test_environment_name" data-required="1">{{ row.product_test_environment_name }}</td>
+                <tr data-entity-type="product_test_config" data-entity-id="{{ row.product_test_config_id }}">
+                    <td data-field="product_test_config_id" data-primary-key="1" data-required="1">{{ row.product_test_config_id }}</td>
+                    <td data-field="product_test_config_name" data-required="1">{{ row.product_test_config_name }}</td>
                     <td data-field="test_country">{{ row.test_country or '' }}</td>
                     <td data-field="test_city">{{ row.test_city or '' }}</td>
                     <td data-field="test_company">{{ row.test_company or '' }}</td>
@@ -41,7 +41,7 @@
                     <td data-field="power_connector_type">{{ row.power_connector_type or '' }}</td>
                     <td data-field="power_condition">{{ row.power_condition or '' }}</td>
                     <td data-field="captured_at">{{ row.captured_at or '' }}</td>
-                    <td data-field="product_test_environment_status" data-options="{% for value in status_values %}{{ value }}{% if not loop.last %}|{% endif %}{% endfor %}"><span class="status_badge status-{{ row.product_test_environment_status|lower }}">{{ row.product_test_environment_status }}</span></td>
+                    <td data-field="product_test_config_status" data-options="{% for value in status_values %}{{ value }}{% if not loop.last %}|{% endif %}{% endfor %}"><span class="status_badge status-{{ row.product_test_config_status|lower }}">{{ row.product_test_config_status }}</span></td>
                     <td data-field="remark">{{ row.remark or '' }}</td>
                     <td data-incell-actions="1"></td>
                 </tr>

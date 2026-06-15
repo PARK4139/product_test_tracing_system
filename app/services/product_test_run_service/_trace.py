@@ -20,10 +20,10 @@ from app.services.product_test_run_service._common import (
     _as_dict,
 )
 from app.services.product_test_run_service._list_queries import (
-    _environment_summary,
+    _config_summary,
     _target_summary,
     list_case_options,
-    list_environment_options,
+    list_config_options,
     list_round_options,
     list_target_options,
 )
@@ -101,14 +101,14 @@ def get_product_test_trace_view(
     *,
     test_round_id: str,
     product_test_target_id: str = "",
-    product_test_environment_id: str = "",
+    product_test_config_id: str = "",
     product_test_case_id: str = "",
     result_status: str = "",
     defect_status: str = "",
 ) -> dict[str, Any]:
     graph = _collect_round_graph(database_session, test_round_id)
     target_id = str(product_test_target_id or "").strip()
-    environment_id = str(product_test_environment_id or "").strip()
+    config_id = str(product_test_config_id or "").strip()
     case_id = str(product_test_case_id or "").strip()
     result_status_value = str(result_status or "").strip()
     defect_status_value = str(defect_status or "").strip()
@@ -124,7 +124,7 @@ def get_product_test_trace_view(
     for run_row in graph["runs"]:
         if target_id and run_row.product_test_target_id != target_id:
             continue
-        if environment_id and run_row.product_test_environment_id != environment_id:
+        if config_id and run_row.product_test_config_id != config_id:
             continue
         result_rows = []
         scoped_result_rows = [
@@ -212,7 +212,7 @@ def get_product_test_trace_view(
                 "product_test_run_id": run_row.product_test_run_id,
                 "product_test_run_status": run_row.product_test_run_status,
                 "target_summary": _target_summary(database_session, run_row.product_test_target_id),
-                "environment_summary": _environment_summary(database_session, run_row.product_test_environment_id),
+                "config_summary": _config_summary(database_session, run_row.product_test_config_id),
                 "result_rows": result_rows,
             }
         )
@@ -231,7 +231,7 @@ def get_product_test_trace_view(
         "filters": {
             "test_round_id": test_round_id,
             "product_test_target_id": target_id,
-            "product_test_environment_id": environment_id,
+            "product_test_config_id": config_id,
             "product_test_case_id": case_id,
             "result_status": result_status_value,
             "defect_status": defect_status_value,
@@ -255,6 +255,53 @@ def get_product_test_trace_view(
         ],
         "round_options": list_round_options(database_session),
         "target_options": list_target_options(database_session),
-        "environment_options": list_environment_options(database_session),
+        "config_options": list_config_options(database_session),
         "case_options": list_case_options(database_session),
+    }
+
+
+def get_test_round_id_by_run_id(database_session: Session, product_test_run_id: str) -> str:
+    run_row = database_session.get(ProductTestRun, product_test_run_id)
+    if run_row is None:
+        raise LookupError("Run not found.")
+    return run_row.test_round_id
+
+
+def get_product_test_run_trace_view(database_session: Session, product_test_run_id: str) -> dict[str, Any]:
+    run_row = database_session.get(ProductTestRun, product_test_run_id)
+    if run_row is None:
+        raise LookupError("Run not found.")
+    trace_detail = get_product_test_trace_view(
+        database_session,
+        test_round_id=run_row.test_round_id,
+        product_test_target_id=run_row.product_test_target_id,
+        product_test_config_id=run_row.product_test_config_id,
+    )
+    run_trace = next(
+        (row for row in trace_detail["run_trace_rows"] if row["product_test_run_id"] == product_test_run_id),
+        None,
+    )
+    if run_trace is None:
+        raise LookupError("Run trace not found.")
+
+    trace_entity_ids = {product_test_run_id}
+    for result_row in run_trace["result_rows"]:
+        trace_entity_ids.add(result_row["product_test_result_id"])
+        trace_entity_ids.update(
+            procedure_row["product_test_procedure_result_id"]
+            for procedure_row in result_row["procedure_rows"]
+        )
+        trace_entity_ids.update(
+            defect_row["product_test_defect_id"]
+            for defect_row in result_row["defect_rows"]
+        )
+
+    return {
+        "round": trace_detail["round"],
+        "run_trace": run_trace,
+        "status_transition_rows": [
+            row
+            for row in trace_detail["status_transition_rows"]
+            if row["entity_id"] in trace_entity_ids
+        ],
     }

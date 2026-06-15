@@ -227,7 +227,7 @@ def list_target_options_cs(db: Session) -> list[dict[str, str]]:
     ]
 
 
-def list_environment_options_cs(db: Session) -> list[dict[str, str]]:
+def list_config_options_cs(db: Session) -> list[dict[str, str]]:
     rows = _rows(db, "entity/environment")
     return [
         {

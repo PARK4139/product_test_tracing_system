@@ -82,6 +82,7 @@ def _get_or_create_project_engine(project_id: str) -> Engine:
     event.listen(proj_engine, "connect", _apply_sqlite_pragmas)
 
     from app import models
+    _migrate_environment_to_config(proj_engine)
     models.Base.metadata.create_all(bind=proj_engine)
 
     with _project_engines_lock:
@@ -158,17 +159,48 @@ def truncate_application_data() -> None:
             connection.execute(text("DELETE FROM sqlite_sequence"))
 
 
+def _migrate_environment_to_config(db_engine=None) -> None:
+    """product_test_environment_* → product_test_config_* DB schema rename (idempotent)."""
+    target = db_engine if db_engine is not None else engine
+    with target.begin() as connection:
+        old_exists = connection.execute(
+            text("SELECT 1 FROM sqlite_master WHERE type='table' AND name='product_test_environment_unified' LIMIT 1")
+        ).fetchone()
+        if old_exists is None:
+            return
+        connection.execute(text("PRAGMA foreign_keys=OFF"))
+        try:
+            connection.execute(text("DROP VIEW IF EXISTS product_test_environment"))
+            connection.execute(text("DROP VIEW IF EXISTS product_test_environment_definition"))
+            connection.execute(text("ALTER TABLE product_test_environment_unified RENAME TO product_test_config_unified"))
+            connection.execute(text("ALTER TABLE product_test_config_unified RENAME COLUMN product_test_environment_id TO product_test_config_id"))
+            connection.execute(text("ALTER TABLE product_test_config_unified RENAME COLUMN product_test_environment_name TO product_test_config_name"))
+            connection.execute(text("ALTER TABLE product_test_config_unified RENAME COLUMN product_test_environment_status TO product_test_config_status"))
+            run_col_exists = connection.execute(
+                text("SELECT 1 FROM pragma_table_info('product_test_run') WHERE name='product_test_environment_id' LIMIT 1")
+            ).fetchone()
+            if run_col_exists is not None:
+                connection.execute(text("ALTER TABLE product_test_run RENAME COLUMN product_test_environment_id TO product_test_config_id"))
+            connection.execute(text("DROP INDEX IF EXISTS ix_product_test_environment_unified_project_id"))
+            connection.execute(text("CREATE INDEX IF NOT EXISTS ix_product_test_config_unified_project_id ON product_test_config_unified(project_id)"))
+            connection.execute(text("DROP INDEX IF EXISTS ix_product_test_run_product_test_environment_id"))
+            connection.execute(text("CREATE INDEX IF NOT EXISTS ix_product_test_run_product_test_config_id ON product_test_run(product_test_config_id)"))
+        finally:
+            connection.execute(text("PRAGMA foreign_keys=ON"))
+
+
 def initialize_database() -> None:
     from app import models
 
     try:
         _drop_legacy_tables()
+        _migrate_environment_to_config()
         models.Base.metadata.create_all(bind=engine)
         _ensure_user_account_columns()
         _ensure_defect_columns()
         _ensure_product_test_project_id_columns()
         _ensure_product_test_project_id_indexes()
-        _ensure_environment_compatibility_views()
+        _ensure_config_compatibility_views()
         _logger.info("[db] DB 초기화 완료  url=%s", app_settings.sqlite_database_url)
     except Exception as exc:
         _logger.error("[db] DB 초기화 실패: %s\n%s", exc, traceback.format_exc())
@@ -196,7 +228,7 @@ def _ensure_product_test_project_id_columns() -> None:
     tables = [
         "product_test_round",
         "product_test_target_unified",
-        "product_test_environment_unified",
+        "product_test_config_unified",
         "product_test_case",
         "product_test_procedure",
         "product_test_run",
@@ -228,7 +260,7 @@ def _ensure_product_test_project_id_indexes() -> None:
     index_defs = [
         ("ix_product_test_round_project_id",                 "product_test_round"),
         ("ix_product_test_target_unified_project_id",       "product_test_target_unified"),
-        ("ix_product_test_environment_unified_project_id", "product_test_environment_unified"),
+        ("ix_product_test_config_unified_project_id", "product_test_config_unified"),
         ("ix_product_test_case_project_id",                  "product_test_case"),
         ("ix_product_test_procedure_project_id",             "product_test_procedure"),
         ("ix_product_test_run_project_id",                   "product_test_run"),
@@ -242,6 +274,12 @@ def _ensure_product_test_project_id_indexes() -> None:
     ]
     with engine.begin() as connection:
         for index_name, table_name in index_defs:
+            exists = connection.execute(
+                text("SELECT 1 FROM sqlite_master WHERE type='table' AND name=:t LIMIT 1"),
+                {"t": table_name},
+            ).fetchone()
+            if exists is None:
+                continue
             connection.execute(
                 text(
                     f"CREATE INDEX IF NOT EXISTS {index_name}"
@@ -283,25 +321,25 @@ def _ensure_user_account_columns() -> None:
             )
 
 
-def _ensure_environment_compatibility_views() -> None:
+def _ensure_config_compatibility_views() -> None:
     with engine.begin() as connection:
         unified_exists = connection.execute(
-            text("SELECT 1 FROM sqlite_master WHERE type='table' AND name='product_test_environment_unified' LIMIT 1")
+            text("SELECT 1 FROM sqlite_master WHERE type='table' AND name='product_test_config_unified' LIMIT 1")
         ).fetchone()
         if unified_exists is None:
             return
-        connection.execute(text('DROP VIEW IF EXISTS product_test_environment'))
-        connection.execute(text('DROP VIEW IF EXISTS product_test_environment_definition'))
+        connection.execute(text('DROP VIEW IF EXISTS product_test_config'))
+        connection.execute(text('DROP VIEW IF EXISTS product_test_config_definition'))
         connection.execute(text("""
-            CREATE VIEW product_test_environment AS
+            CREATE VIEW product_test_config AS
             SELECT
-                product_test_environment_id,
+                product_test_config_id,
                 CASE
-                    WHEN product_test_environment_id LIKE 'CONFIG-%'
-                        THEN 'CONFIG_DEF-' || SUBSTR(product_test_environment_id, LENGTH('CONFIG-') + 1)
-                    ELSE product_test_environment_id
-                END AS product_test_environment_definition_id,
-                product_test_environment_name,
+                    WHEN product_test_config_id LIKE 'CONFIG-%'
+                        THEN 'CONFIG_DEF-' || SUBSTR(product_test_config_id, LENGTH('CONFIG-') + 1)
+                    ELSE product_test_config_id
+                END AS product_test_config_definition_id,
+                product_test_config_name,
                 test_computer_name,
                 operating_system_version,
                 test_tool_version,
@@ -310,24 +348,24 @@ def _ensure_environment_compatibility_views() -> None:
                 power_frequency,
                 power_connector_type,
                 captured_at,
-                product_test_environment_status,
+                product_test_config_status,
                 created_at,
                 created_by,
                 updated_at,
                 updated_by,
                 remark,
                 project_id
-            FROM product_test_environment_unified
+            FROM product_test_config_unified
         """))
         connection.execute(text("""
-            CREATE VIEW product_test_environment_definition AS
+            CREATE VIEW product_test_config_definition AS
             SELECT
                 CASE
-                    WHEN product_test_environment_id LIKE 'CONFIG-%'
-                        THEN 'CONFIG_DEF-' || SUBSTR(product_test_environment_id, LENGTH('CONFIG-') + 1)
-                    ELSE product_test_environment_id
-                END AS product_test_environment_definition_id,
-                product_test_environment_name AS product_test_environment_definition_name,
+                    WHEN product_test_config_id LIKE 'CONFIG-%'
+                        THEN 'CONFIG_DEF-' || SUBSTR(product_test_config_id, LENGTH('CONFIG-') + 1)
+                    ELSE product_test_config_id
+                END AS product_test_config_definition_id,
+                product_test_config_name AS product_test_config_definition_name,
                 test_country,
                 test_city,
                 test_company,
@@ -343,12 +381,12 @@ def _ensure_environment_compatibility_views() -> None:
                 power_frequency,
                 power_connector_type,
                 power_condition,
-                product_test_environment_status AS product_test_environment_definition_status,
+                product_test_config_status AS product_test_config_definition_status,
                 created_at,
                 created_by,
                 updated_at,
                 updated_by,
                 remark,
                 project_id
-            FROM product_test_environment_unified
+            FROM product_test_config_unified
         """))

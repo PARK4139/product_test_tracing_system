@@ -9,8 +9,8 @@ from sqlalchemy.orm import Session
 from app.models import (
     ProductTestCase,
     ProductTestDefect,
-    ProductTestEnvironment,
-    ProductTestEnvironmentDefinition,
+    ProductTestConfig,
+    ProductTestConfigDefinition,
     ProductTestEvidence,
     ProductTestProcedure,
     ProductTestProcedureResult,
@@ -28,7 +28,7 @@ from app.services.product_test_run_service._common import (
     _validate_in,
     _validate_product_test_identifier_format,
     build_product_code,
-    ENVIRONMENT_STATUS_VALUES,
+    CONFIG_STATUS_VALUES,
     EVIDENCE_TYPE_VALUES,
     MASTER_ACTIVE_STATUS_VALUES,
     TARGET_STATUS_VALUES,
@@ -112,11 +112,11 @@ def create_product_test_target(
     )
 
 
-def create_product_test_environment_definition(
+def create_product_test_config_definition(
     database_session: Session,
     *,
-    product_test_environment_definition_id: str,
-    product_test_environment_definition_name: str,
+    product_test_config_definition_id: str,
+    product_test_config_definition_name: str,
     test_country: str,
     test_city: str,
     test_company: str,
@@ -132,27 +132,27 @@ def create_product_test_environment_definition(
     power_frequency: str,
     power_connector_type: str,
     power_condition: str,
-    product_test_environment_definition_status: str,
+    product_test_config_definition_status: str,
     actor_name: str,
     remark: str,
 ) -> dict[str, Any]:
-    definition_id = _validate_product_test_identifier_format("product_test_environment_definition_id", product_test_environment_definition_id)
-    definition_name = str(product_test_environment_definition_name or "").strip()
+    definition_id = _validate_product_test_identifier_format("product_test_config_definition_id", product_test_config_definition_id)
+    definition_name = str(product_test_config_definition_name or "").strip()
     if not definition_id or not definition_name:
-        raise ValueError("product_test_environment_definition_id and name are required.")
-    environment_id = definition_id.replace("CONFIG_DEF-", "CONFIG-", 1) if definition_id.startswith("CONFIG_DEF-") else definition_id
-    if database_session.get(ProductTestEnvironment, environment_id) is not None:
-        raise ValueError("product_test_environment_definition_id already exists.")
+        raise ValueError("product_test_config_definition_id and name are required.")
+    config_id = definition_id.replace("CONFIG_DEF-", "CONFIG-", 1) if definition_id.startswith("CONFIG_DEF-") else definition_id
+    if database_session.get(ProductTestConfig, config_id) is not None:
+        raise ValueError("product_test_config_definition_id already exists.")
     status_value = _validate_in(
-        str(product_test_environment_definition_status or "").strip().upper(),
+        str(product_test_config_definition_status or "").strip().upper(),
         MASTER_ACTIVE_STATUS_VALUES,
-        "product_test_environment_definition_status",
+        "product_test_config_definition_status",
     )
     now_text = _now_text()
-    row = ProductTestEnvironment(
-        product_test_environment_id=environment_id,
-        product_test_environment_name=definition_name,
-        product_test_environment_status=status_value,
+    row = ProductTestConfig(
+        product_test_config_id=config_id,
+        product_test_config_name=definition_name,
+        product_test_config_status=status_value,
         test_country=str(test_country or "").strip() or None,
         test_city=str(test_city or "").strip() or None,
         test_company=str(test_company or "").strip() or None,
@@ -180,8 +180,8 @@ def create_product_test_environment_definition(
     return _as_dict(
         row,
         [
-            "product_test_environment_id",
-            "product_test_environment_name",
+            "product_test_config_id",
+            "product_test_config_name",
             "test_country",
             "test_city",
             "test_company",
@@ -197,7 +197,7 @@ def create_product_test_environment_definition(
             "power_frequency",
             "power_connector_type",
             "power_condition",
-            "product_test_environment_status",
+            "product_test_config_status",
             "created_at",
             "created_by",
             "updated_at",
@@ -207,11 +207,11 @@ def create_product_test_environment_definition(
     )
 
 
-def create_product_test_environment(
+def create_product_test_config(
     database_session: Session,
     *,
-    product_test_environment_id: str,
-    product_test_environment_name: str,
+    product_test_config_id: str,
+    product_test_config_name: str,
     test_country: str,
     test_city: str,
     test_company: str,
@@ -228,25 +228,25 @@ def create_product_test_environment(
     power_connector_type: str,
     power_condition: str,
     captured_at: str,
-    product_test_environment_status: str,
+    product_test_config_status: str,
     actor_name: str,
     remark: str,
 ) -> dict[str, Any]:
-    environment_id = _validate_product_test_identifier_format("product_test_environment_id", product_test_environment_id)
-    environment_name = str(product_test_environment_name or "").strip()
-    if not environment_id or not environment_name:
-        raise ValueError("product_test_environment_id and name are required.")
-    if database_session.get(ProductTestEnvironment, environment_id) is not None:
-        raise ValueError("product_test_environment_id already exists.")
+    config_id = _validate_product_test_identifier_format("product_test_config_id", product_test_config_id)
+    config_name = str(product_test_config_name or "").strip()
+    if not config_id or not config_name:
+        raise ValueError("product_test_config_id and name are required.")
+    if database_session.get(ProductTestConfig, config_id) is not None:
+        raise ValueError("product_test_config_id already exists.")
     status_value = _validate_in(
-        str(product_test_environment_status or "").strip().upper(),
-        ENVIRONMENT_STATUS_VALUES,
-        "product_test_environment_status",
+        str(product_test_config_status or "").strip().upper(),
+        CONFIG_STATUS_VALUES,
+        "product_test_config_status",
     )
     now_text = _now_text()
-    row = ProductTestEnvironment(
-        product_test_environment_id=environment_id,
-        product_test_environment_name=environment_name,
+    row = ProductTestConfig(
+        product_test_config_id=config_id,
+        product_test_config_name=config_name,
         test_country=str(test_country or "").strip() or None,
         test_city=str(test_city or "").strip() or None,
         test_company=str(test_company or "").strip() or None,
@@ -263,7 +263,7 @@ def create_product_test_environment(
         power_connector_type=str(power_connector_type or "").strip() or None,
         power_condition=str(power_condition or "").strip() or None,
         captured_at=str(captured_at or "").strip() or None,
-        product_test_environment_status=status_value,
+        product_test_config_status=status_value,
         created_at=now_text,
         created_by=actor_name,
         updated_at=now_text,
@@ -275,8 +275,8 @@ def create_product_test_environment(
     return _as_dict(
         row,
         [
-            "product_test_environment_id",
-            "product_test_environment_name",
+            "product_test_config_id",
+            "product_test_config_name",
             "test_country",
             "test_city",
             "test_company",
@@ -293,7 +293,7 @@ def create_product_test_environment(
             "power_connector_type",
             "power_condition",
             "captured_at",
-            "product_test_environment_status",
+            "product_test_config_status",
             "created_at",
             "created_by",
             "updated_at",

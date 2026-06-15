@@ -317,7 +317,7 @@ void (async () => {
     const getEntityTypeForAction = (action) => {
         if (action.endsWith("/product-test-rounds/create")) return "product_test_round";
         if (action.endsWith("/product-test-targets/create")) return "product_test_target";
-        if (action.endsWith("/product-test-environments/create")) return "product_test_environment";
+        if (action.endsWith("/product-test-configs/create")) return "product_test_config";
         if (action.endsWith("/product-test-cases/create")) return "product_test_case";
         if (action.endsWith("/product-test-procedures/create")) return "product_test_procedure";
         if (action.endsWith("/product-test-reports/create")) return "product_test_report";
@@ -367,8 +367,8 @@ void (async () => {
         if (action.endsWith("/product-test-targets/create")) {
             return `<tr class="admin_hl_row" data-target-id="${escapeHtml(row.product_test_target_id)}">${checkbox}<td>${escapeHtml(row.product_test_target_id)}</td><td>${escapeHtml(row.product_code)}</td><td>${escapeHtml(row.manufacturer)}</td><td>${escapeHtml(row.model_name)}</td><td>${escapeHtml(row.hardware_revision)}</td><td>${escapeHtml(row.default_software_version)}</td><td>${escapeHtml(row.default_firmware_version)}</td><td>${escapeHtml(row.serial_number)}</td><td>${escapeHtml(row.software_version)}</td><td>${escapeHtml(row.firmware_version)}</td><td>${escapeHtml(row.manufacture_lot)}</td><td>${escapeHtml(row.product_test_target_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
         }
-        if (action.endsWith("/product-test-environments/create")) {
-            return `<tr class="admin_hl_row" data-env-id="${escapeHtml(row.product_test_environment_id)}">${checkbox}<td>${escapeHtml(row.product_test_environment_id)}</td><td>${escapeHtml(row.product_test_environment_name)}</td><td>${escapeHtml(row.test_country)}</td><td>${escapeHtml(row.test_city)}</td><td>${escapeHtml(row.test_company)}</td><td>${escapeHtml(row.test_room)}</td><td>${escapeHtml(row.network_type)}</td><td>${escapeHtml(row.test_computer_name)}</td><td>${escapeHtml(row.operating_system_version)}</td><td>${escapeHtml(row.test_tool_name)}</td><td>${escapeHtml(row.test_tool_version)}</td><td>${escapeHtml(row.power_voltage)}</td><td>${escapeHtml(row.power_frequency)}</td><td>${escapeHtml(row.power_connector_type)}</td><td>${escapeHtml(row.power_condition)}</td><td>${escapeHtml(row.captured_at)}</td><td>${escapeHtml(row.product_test_environment_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
+        if (action.endsWith("/product-test-configs/create")) {
+            return `<tr class="admin_hl_row" data-env-id="${escapeHtml(row.product_test_config_id)}">${checkbox}<td>${escapeHtml(row.product_test_config_id)}</td><td>${escapeHtml(row.product_test_config_name)}</td><td>${escapeHtml(row.test_country)}</td><td>${escapeHtml(row.test_city)}</td><td>${escapeHtml(row.test_company)}</td><td>${escapeHtml(row.test_room)}</td><td>${escapeHtml(row.network_type)}</td><td>${escapeHtml(row.test_computer_name)}</td><td>${escapeHtml(row.operating_system_version)}</td><td>${escapeHtml(row.test_tool_name)}</td><td>${escapeHtml(row.test_tool_version)}</td><td>${escapeHtml(row.power_voltage)}</td><td>${escapeHtml(row.power_frequency)}</td><td>${escapeHtml(row.power_connector_type)}</td><td>${escapeHtml(row.power_condition)}</td><td>${escapeHtml(row.captured_at)}</td><td>${escapeHtml(row.product_test_config_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
         }
         if (action.endsWith("/product-test-cases/create")) {
             return `<tr>${checkbox}<td>${escapeHtml(row.product_test_case_id)}</td><td>${escapeHtml(row.product_test_case_title)}</td><td>${escapeHtml(row.test_category)}</td><td>${escapeHtml(row.test_objective)}</td><td>${escapeHtml(row.precondition)}</td><td>${escapeHtml(row.expected_result)}</td><td>${escapeHtml(row.product_test_case_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
@@ -510,11 +510,11 @@ void (async () => {
                 fieldCell("product_test_target_status"),
                 fieldCell("remark"),
             ];
-        } else if (action.endsWith("/product-test-environments/create")) {
+        } else if (action.endsWith("/product-test-configs/create")) {
             cells = [
                 checkboxCell,
-                fieldCell("product_test_environment_id"),
-                fieldCell("product_test_environment_name"),
+                fieldCell("product_test_config_id"),
+                fieldCell("product_test_config_name"),
                 fieldCell("test_country"),
                 fieldCell("test_city"),
                 fieldCell("test_company"),
@@ -529,7 +529,7 @@ void (async () => {
                 fieldCell("power_connector_type"),
                 fieldCell("power_condition"),
                 fieldCell("captured_at"),
-                fieldCell("product_test_environment_status"),
+                fieldCell("product_test_config_status"),
                 fieldCell("remark"),
             ];
         } else if (action.endsWith("/product-test-cases/create")) {
@@ -697,14 +697,14 @@ void (async () => {
             return;
         }
 
-        if (action.endsWith("/product-test-environments/create")) {
-            const environmentIdField = form.querySelector('[name="product_test_environment_id"]');
+        if (action.endsWith("/product-test-configs/create")) {
+            const environmentIdField = form.querySelector('[name="product_test_config_id"]');
             const companyField = form.querySelector('[name="test_company"]');
             const cityField = form.querySelector('[name="test_city"]');
             const roomField = form.querySelector('[name="test_room"]');
             const capturedAtField = form.querySelector('[name="captured_at"]');
             const refresh = async () => {
-                const candidates = await fetchIdCandidates(form, "product_test_environment_id");
+                const candidates = await fetchIdCandidates(form, "product_test_config_id");
                 setAutofillValue(environmentIdField, candidates[0] || "");
             };
             [companyField, cityField, roomField, capturedAtField].forEach((field) => {

@@ -9,8 +9,8 @@ from sqlalchemy.orm import Session
 from app.models import (
     ProductTestCase,
     ProductTestDefect,
-    ProductTestEnvironment,
-    ProductTestEnvironmentDefinition,
+    ProductTestConfig,
+    ProductTestConfigDefinition,
     ProductTestEvidence,
     ProductTestProcedure,
     ProductTestProcedureResult,
@@ -42,11 +42,11 @@ from app.services.product_test_run_service._status import (
 )
 from app.services.product_test_run_service._list_queries import (
     list_case_options,
-    list_environment_options,
+    list_config_options,
     list_round_options,
     list_target_options,
     _target_summary,
-    _environment_summary,
+    _config_summary,
 )
 
 
@@ -59,7 +59,7 @@ def list_runs(database_session: Session) -> list[dict[str, Any]]:
                 "product_test_run_id",
                 "test_round_id",
                 "product_test_target_id",
-                "product_test_environment_id",
+                "product_test_config_id",
                 "product_test_run_status",
                 "started_at",
                 "started_by",
@@ -83,18 +83,18 @@ def start_run(
     *,
     test_round_id: str,
     product_test_target_id: str,
-    product_test_environment_id: str,
+    product_test_config_id: str,
     started_by: str,
 ) -> dict[str, Any]:
     round_row = database_session.get(ProductTestRound, str(test_round_id or "").strip())
     target = database_session.get(ProductTestTargetUnified, str(product_test_target_id or "").strip())
-    environment = database_session.get(ProductTestEnvironment, str(product_test_environment_id or "").strip())
+    environment = database_session.get(ProductTestConfig, str(product_test_config_id or "").strip())
     if round_row is None:
         raise ValueError("Unknown test_round_id.")
     if target is None:
         raise ValueError("Unknown product_test_target_id.")
     if environment is None:
-        raise ValueError("Unknown product_test_environment_id.")
+        raise ValueError("Unknown product_test_config_id.")
     _ensure_round_not_locked_for_source_mutation(
         database_session,
         test_round_id=round_row.test_round_id,
@@ -111,7 +111,7 @@ def start_run(
         product_test_run_id=run_id,
         test_round_id=round_row.test_round_id,
         product_test_target_id=target.product_test_target_id,
-        product_test_environment_id=environment.product_test_environment_id,
+        product_test_config_id=environment.product_test_config_id,
         product_test_run_status="running",
         started_at=now_text,
         started_by=started_by,
@@ -142,7 +142,7 @@ def start_run(
             "product_test_run_id",
             "test_round_id",
             "product_test_target_id",
-            "product_test_environment_id",
+            "product_test_config_id",
             "product_test_run_status",
             "started_at",
             "started_by",
@@ -799,7 +799,7 @@ def get_run_detail(database_session: Session, product_test_run_id: str) -> dict[
                     "product_test_run_id",
                     "test_round_id",
                     "product_test_target_id",
-                    "product_test_environment_id",
+                    "product_test_config_id",
                     "started_at",
                     "started_by",
                     "finished_at",
@@ -857,9 +857,9 @@ def get_run_detail(database_session: Session, product_test_run_id: str) -> dict[
             ],
         ),
         "target_summary": _target_summary(database_session, run_row.product_test_target_id),
-        "environment_summary": _environment_summary(database_session, run_row.product_test_environment_id),
+        "config_summary": _config_summary(database_session, run_row.product_test_config_id),
         "round_options": list_round_options(database_session),
         "target_options": list_target_options(database_session),
-        "environment_options": list_environment_options(database_session),
+        "config_options": list_config_options(database_session),
         "case_options": list_case_options(database_session),
     }

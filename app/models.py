@@ -154,20 +154,20 @@ class ProductTestTargetUnified(Base):
     remark: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
-class ProductTestEnvironment(Base):
-    __tablename__ = "product_test_environment_unified"
+class ProductTestConfig(Base):
+    __tablename__ = "product_test_config_unified"
     __table_args__ = (
-        Index("ix_product_test_environment_unified_project_id", "project_id"),
+        Index("ix_product_test_config_unified_project_id", "project_id"),
     )
 
-    product_test_environment_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    product_test_config_id: Mapped[str] = mapped_column(Text, primary_key=True)
     project_id: Mapped[str | None] = mapped_column(
         Text,
         ForeignKey("project.project_id"),
         nullable=True,
     )
-    product_test_environment_name: Mapped[str] = mapped_column(Text, nullable=False)
-    product_test_environment_status: Mapped[str] = mapped_column(Text, nullable=False)
+    product_test_config_name: Mapped[str] = mapped_column(Text, nullable=False)
+    product_test_config_status: Mapped[str] = mapped_column(Text, nullable=False)
     test_country: Mapped[str | None] = mapped_column(Text, nullable=True)
     test_city: Mapped[str | None] = mapped_column(Text, nullable=True)
     test_company: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -191,22 +191,22 @@ class ProductTestEnvironment(Base):
     remark: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     @property
-    def product_test_environment_definition_id(self) -> str:
-        environment_id = str(self.product_test_environment_id or "")
-        if environment_id.startswith("CONFIG-"):
-            return "CONFIG_DEF-" + environment_id[len("CONFIG-"):]
-        return environment_id
+    def product_test_config_definition_id(self) -> str:
+        config_id = str(self.product_test_config_id or "")
+        if config_id.startswith("CONFIG-"):
+            return "CONFIG_DEF-" + config_id[len("CONFIG-"):]
+        return config_id
 
     @property
-    def product_test_environment_definition_name(self) -> str:
-        return str(self.product_test_environment_name or "")
+    def product_test_config_definition_name(self) -> str:
+        return str(self.product_test_config_name or "")
 
     @property
-    def product_test_environment_definition_status(self) -> str:
-        return str(self.product_test_environment_status or "")
+    def product_test_config_definition_status(self) -> str:
+        return str(self.product_test_config_status or "")
 
 
-ProductTestEnvironmentDefinition = ProductTestEnvironment
+ProductTestConfigDefinition = ProductTestConfig
 
 class ProductTestCase(Base):
     __tablename__ = "product_test_case"
@@ -269,7 +269,7 @@ class ProductTestRun(Base):
         Index("ix_product_test_run_project_id", "project_id"),
         Index("ix_product_test_run_test_round_id", "test_round_id"),
         Index("ix_product_test_run_product_test_target_id", "product_test_target_id"),
-        Index("ix_product_test_run_product_test_environment_id", "product_test_environment_id"),
+        Index("ix_product_test_run_product_test_config_id", "product_test_config_id"),
     )
 
     product_test_run_id: Mapped[str] = mapped_column(Text, primary_key=True)
@@ -288,9 +288,9 @@ class ProductTestRun(Base):
         ForeignKey("product_test_target_unified.product_test_target_id"),
         nullable=False,
     )
-    product_test_environment_id: Mapped[str] = mapped_column(
+    product_test_config_id: Mapped[str] = mapped_column(
         Text,
-        ForeignKey("product_test_environment_unified.product_test_environment_id"),
+        ForeignKey("product_test_config_unified.product_test_config_id"),
         nullable=False,
     )
     product_test_run_status: Mapped[str] = mapped_column(Text, nullable=False)

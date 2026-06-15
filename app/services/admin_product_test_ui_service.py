@@ -84,7 +84,7 @@ def _build_target_id_candidate(model_value: str, serial_value: str) -> str:
     return f"SQA_PRODUCT_TEST_TARGET_ID-{model_core}-{serial_core}"
 
 
-def _build_environment_template_id_candidate(
+def _build_config_template_id_candidate(
     company_value: str,
     city_value: str,
     room_value: str,
@@ -97,7 +97,7 @@ def _build_environment_template_id_candidate(
     return f"SQA_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-{company}-{city}-{room}"
 
 
-def _build_environment_id_candidate(definition_value: str, captured_at_value: str) -> str:
+def _build_config_id_candidate(definition_value: str, captured_at_value: str) -> str:
     definition_core = _strip_prefix(definition_value, "SQA_PRODUCT_TEST_ENVIRONMENT_DEFINITION_ID-")
     date_digits = _capture_date_digits(captured_at_value)
     if not definition_core or not date_digits:
@@ -164,14 +164,14 @@ ADMIN_PRODUCT_TEST_WRITE_ORDER_PLANS: dict[str, dict[str, Any]] = {
             "remark",
         ],
     },
-    "/admin/product-test-environments/create": {
+    "/admin/product-test-configs/create": {
         "order": [
-            "product_test_environment_name",
+            "product_test_config_name",
             "test_company",
             "test_city",
             "test_room",
             "captured_at",
-            "product_test_environment_id",
+            "product_test_config_id",
             "test_country",
             "test_building",
             "test_floor",
@@ -184,7 +184,7 @@ ADMIN_PRODUCT_TEST_WRITE_ORDER_PLANS: dict[str, dict[str, Any]] = {
             "power_frequency",
             "power_connector_type",
             "power_condition",
-            "product_test_environment_status",
+            "product_test_config_status",
             "remark",
         ],
         "optional": [
@@ -200,7 +200,7 @@ ADMIN_PRODUCT_TEST_WRITE_ORDER_PLANS: dict[str, dict[str, Any]] = {
             "power_frequency",
             "power_connector_type",
             "power_condition",
-            "product_test_environment_status",
+            "product_test_config_status",
             "remark",
         ],
     },
@@ -297,7 +297,7 @@ def list_product_test_id_candidates(
                     out3.append(c)
         return _unique_nonempty(out3)
 
-    if fn == "product_test_environment_id" and action.endswith("/product-test-environments/create"):
+    if fn == "product_test_config_id" and action.endswith("/product-test-configs/create"):
         companies = _read_strings(gv("test_company"), hint("test_company"))
         cities = _read_strings(gv("test_city"), hint("test_city"))
         rooms = _read_strings(gv("test_room"), hint("test_room"))
@@ -306,11 +306,11 @@ def list_product_test_id_candidates(
         for co in companies:
             for ci in cities:
                 for room in rooms:
-                    definition_id = _build_environment_template_id_candidate(co, ci, room)
+                    definition_id = _build_config_template_id_candidate(co, ci, room)
                     if not definition_id:
                         continue
                     for cap in caps:
-                        c = _build_environment_id_candidate(definition_id, cap)
+                        c = _build_config_id_candidate(definition_id, cap)
                         if c:
                             out5.append(c)
         return _unique_nonempty(out5)

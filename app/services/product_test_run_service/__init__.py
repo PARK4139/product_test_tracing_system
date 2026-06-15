@@ -25,7 +25,7 @@ from app.services.product_test_run_service._common import (
     DEFECT_STATUS_VALUES,
     ENTITY_TRANSITIONS,
     ENTITY_TYPE_VALUES,
-    ENVIRONMENT_STATUS_VALUES,
+    CONFIG_STATUS_VALUES,
     EVIDENCE_TYPE_VALUES,
     MASTER_ACTIVE_STATUS_VALUES,
     PROCEDURE_RESULT_STATUS_VALUES,
@@ -60,10 +60,10 @@ from app.services.product_test_run_service._status import (
 # ── 조회 쿼리 ────────────────────────────────────────────────────────────────
 from app.services.product_test_run_service._list_queries import (
     list_case_options,
-    list_environment_options,
+    list_config_options,
     list_product_test_cases,
-    list_product_test_environment_definitions,
-    list_product_test_environments,
+    list_product_test_config_definitions,
+    list_product_test_configs,
     list_product_test_procedures,
     list_product_test_rounds,
     list_product_test_runs,
@@ -76,8 +76,8 @@ from app.services.product_test_run_service._list_queries import (
 # ── 마스터 데이터 ────────────────────────────────────────────────────────────
 from app.services.product_test_run_service._master_data import (
     create_product_test_case,
-    create_product_test_environment,
-    create_product_test_environment_definition,
+    create_product_test_config,
+    create_product_test_config_definition,
     create_product_test_procedure,
     create_product_test_target,
 )
@@ -134,7 +134,7 @@ __all__ = [
     # 상수
     "BLOCKED_REASON_EXAMPLES", "DEFECT_PRIORITY_VALUES", "DEFECT_SEVERITY_VALUES",
     "DEFECT_STATUS_VALUES", "ENTITY_TRANSITIONS", "ENTITY_TYPE_VALUES",
-    "ENVIRONMENT_STATUS_VALUES", "EVIDENCE_TYPE_VALUES", "MASTER_ACTIVE_STATUS_VALUES",
+    "CONFIG_STATUS_VALUES", "EVIDENCE_TYPE_VALUES", "MASTER_ACTIVE_STATUS_VALUES",
     "PROCEDURE_RESULT_STATUS_VALUES", "PRODUCT_TEST_IDENTIFIER_GUIDES",
     "PRODUCT_TEST_RELEASE_STATUS_VALUES", "RELEASE_STAGE_VALUES",
     "RESULT_STATUS_VALUES", "RUN_STATUS_VALUES",
@@ -149,14 +149,14 @@ __all__ = [
     # 상태
     "_insert_status_transition", "ensure_product_test_status_transition_recorded",
     # 조회
-    "list_case_options", "list_environment_options", "list_product_test_cases",
-    "list_product_test_environment_definitions", "list_product_test_environments",
+    "list_case_options", "list_config_options", "list_product_test_cases",
+    "list_product_test_config_definitions", "list_product_test_configs",
     "list_product_test_procedures", "list_product_test_rounds", "list_product_test_runs",
     "list_product_test_targets", "list_round_options", "list_running_run_options",
     "list_target_options",
     # 마스터 데이터
-    "create_product_test_case", "create_product_test_environment",
-    "create_product_test_environment_definition", "create_product_test_procedure",
+    "create_product_test_case", "create_product_test_config",
+    "create_product_test_config_definition", "create_product_test_procedure",
     "create_product_test_target",
     # 시드
     "seed_product_test_wifi_ap_configuration_sample_data",

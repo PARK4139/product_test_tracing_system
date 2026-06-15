@@ -22,10 +22,10 @@
             <option value=""></option>
             {% for row in target_options %}<option value="{{ row.product_test_target_id }}">{{ row.product_test_target_id }} / {{ row.serial_number }}</option>{% endfor %}
         </select>
-        <label>Product Test Environment | 제품 테스트 환경</label>
-        <select name="product_test_environment_id" required>
+        <label>Product Test Config | 제품 테스트 환경</label>
+        <select name="product_test_config_id" required>
             <option value=""></option>
-            {% for row in environment_options %}<option value="{{ row.product_test_environment_id }}">{{ row.product_test_environment_id }}</option>{% endfor %}
+            {% for row in config_options %}<option value="{{ row.product_test_config_id }}">{{ row.product_test_config_id }}</option>{% endfor %}
         </select>
         <div class="table_action_bar"><button type="submit">Start Run</button><button type="reset">Reset</button></div>
     </form>
@@ -34,14 +34,14 @@
     <div class="section_header_row"><h3>실행 목록</h3></div>
     <div class="tester_table_wrap">
         <table class="basic_table">
-            <thead><tr><th>Run ID</th><th>Round</th><th>Target</th><th>Environment</th><th>Status</th><th>Started At</th><th>Started By</th><th>Action</th></tr></thead>
+            <thead><tr><th>Run ID</th><th>Round</th><th>Target</th><th>Config</th><th>Status</th><th>Started At</th><th>Started By</th><th>Action</th></tr></thead>
             <tbody>
                 {% for row in rows %}
                 <tr>
                     <td>{{ row.product_test_run_id }}</td>
                     <td>{{ row.test_round_id }}</td>
                     <td>{{ row.product_test_target_id }}</td>
-                    <td>{{ row.product_test_environment_id }}</td>
+                    <td>{{ row.product_test_config_id }}</td>
                     <td>{{ row.product_test_run_status }}</td>
                     <td>{{ row.started_at }}</td>
                     <td>{{ row.started_by }}</td>

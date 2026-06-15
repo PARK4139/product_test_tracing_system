@@ -9,8 +9,8 @@ from sqlalchemy.orm import Session
 from app.models import (
     ProductTestCase,
     ProductTestDefect,
-    ProductTestEnvironment,
-    ProductTestEnvironmentDefinition,
+    ProductTestConfig,
+    ProductTestConfigDefinition,
     ProductTestEvidence,
     ProductTestProcedure,
     ProductTestProcedureResult,
@@ -26,8 +26,8 @@ from app.services.product_test_run_service._common import (
     _find_fallback_row,
     _list_rows_as_dicts,
     _query_all_rows,
-    _sample_product_test_environment_definition_rows,
-    _sample_product_test_environment_rows,
+    _sample_product_test_config_definition_rows,
+    _sample_product_test_config_rows,
     _sample_product_test_target_rows,
 )
 
@@ -61,7 +61,7 @@ def list_product_test_runs(database_session: Session) -> list[dict[str, Any]]:
             "product_test_run_id",
             "test_round_id",
             "product_test_target_id",
-            "product_test_environment_id",
+            "product_test_config_id",
             "product_test_run_status",
             "started_at",
             "finished_at",
@@ -106,13 +106,13 @@ def list_product_test_targets(database_session: Session) -> list[dict[str, Any]]
     )
 
 
-def list_product_test_environment_definitions(database_session: Session) -> list[dict[str, Any]]:
+def list_product_test_config_definitions(database_session: Session) -> list[dict[str, Any]]:
     return _list_rows_as_dicts(
         database_session,
-        model=ProductTestEnvironmentDefinition,
+        model=ProductTestConfigDefinition,
         columns=[
-            "product_test_environment_definition_id",
-            "product_test_environment_definition_name",
+            "product_test_config_definition_id",
+            "product_test_config_definition_name",
             "test_country",
             "test_city",
             "test_company",
@@ -128,7 +128,7 @@ def list_product_test_environment_definitions(database_session: Session) -> list
             "power_frequency",
             "power_connector_type",
             "power_condition",
-            "product_test_environment_status",
+            "product_test_config_status",
             "created_at",
             "created_by",
             "updated_at",
@@ -139,13 +139,13 @@ def list_product_test_environment_definitions(database_session: Session) -> list
     )
 
 
-def list_product_test_environments(database_session: Session) -> list[dict[str, Any]]:
+def list_product_test_configs(database_session: Session) -> list[dict[str, Any]]:
     return _list_rows_as_dicts(
         database_session,
-        model=ProductTestEnvironment,
+        model=ProductTestConfig,
         columns=[
-            "product_test_environment_id",
-            "product_test_environment_name",
+            "product_test_config_id",
+            "product_test_config_name",
             "test_country",
             "test_city",
             "test_company",
@@ -162,7 +162,7 @@ def list_product_test_environments(database_session: Session) -> list[dict[str, 
             "power_connector_type",
             "power_condition",
             "captured_at",
-            "product_test_environment_status",
+            "product_test_config_status",
             "created_at",
             "created_by",
             "updated_at",
@@ -225,8 +225,8 @@ def list_target_options(database_session: Session) -> list[dict[str, Any]]:
     return list_product_test_targets(database_session)
 
 
-def list_environment_options(database_session: Session) -> list[dict[str, Any]]:
-    return list_product_test_environments(database_session)
+def list_config_options(database_session: Session) -> list[dict[str, Any]]:
+    return list_product_test_configs(database_session)
 
 
 def list_case_options(database_session: Session) -> list[dict[str, Any]]:
@@ -258,14 +258,14 @@ def _target_summary(database_session: Session, product_test_target_id: str) -> d
     }
 
 
-def _environment_summary(database_session: Session, product_test_environment_id: str) -> dict[str, Any]:
-    environment_row = database_session.get(ProductTestEnvironment, product_test_environment_id)
-    if environment_row is None:
-        fallback = _find_fallback_row(_sample_product_test_environment_rows, "product_test_environment_id", product_test_environment_id) or {}
-        definition_row = _find_fallback_row(_sample_product_test_environment_definition_rows, "product_test_environment_definition_id", fallback.get("product_test_environment_definition_id", "")) or {}
+def _config_summary(database_session: Session, product_test_config_id: str) -> dict[str, Any]:
+    config_row = database_session.get(ProductTestConfig, product_test_config_id)
+    if config_row is None:
+        fallback = _find_fallback_row(_sample_product_test_config_rows, "product_test_config_id", product_test_config_id) or {}
+        definition_row = _find_fallback_row(_sample_product_test_config_definition_rows, "product_test_config_definition_id", fallback.get("product_test_config_definition_id", "")) or {}
         return {
-            "product_test_environment_id": product_test_environment_id,
-            "product_test_environment_name": fallback.get("product_test_environment_name", ""),
+            "product_test_config_id": product_test_config_id,
+            "product_test_config_name": fallback.get("product_test_config_name", ""),
             "test_country": definition_row.get("test_country", ""),
             "test_city": definition_row.get("test_city", ""),
             "test_company": definition_row.get("test_company", ""),
@@ -282,22 +282,22 @@ def _environment_summary(database_session: Session, product_test_environment_id:
             "power_condition": definition_row.get("power_condition", ""),
         }
     return {
-        "product_test_environment_id": environment_row.product_test_environment_id,
-        "product_test_environment_name": environment_row.product_test_environment_name,
-        "test_country": environment_row.test_country or "",
-        "test_city": environment_row.test_city or "",
-        "test_company": environment_row.test_company or "",
-        "test_building": environment_row.test_building or "",
-        "test_floor": environment_row.test_floor or "",
-        "test_room": environment_row.test_room or "",
-        "network_type": environment_row.network_type or "",
-        "test_computer_name": environment_row.test_computer_name or "",
-        "operating_system_version": environment_row.operating_system_version or "",
-        "test_tool_version": environment_row.test_tool_version or "",
-        "power_voltage": environment_row.power_voltage or "",
-        "power_frequency": environment_row.power_frequency or "",
-        "power_connector_type": environment_row.power_connector_type or "",
-        "power_condition": environment_row.power_condition or "",
+        "product_test_config_id": config_row.product_test_config_id,
+        "product_test_config_name": config_row.product_test_config_name,
+        "test_country": config_row.test_country or "",
+        "test_city": config_row.test_city or "",
+        "test_company": config_row.test_company or "",
+        "test_building": config_row.test_building or "",
+        "test_floor": config_row.test_floor or "",
+        "test_room": config_row.test_room or "",
+        "network_type": config_row.network_type or "",
+        "test_computer_name": config_row.test_computer_name or "",
+        "operating_system_version": config_row.operating_system_version or "",
+        "test_tool_version": config_row.test_tool_version or "",
+        "power_voltage": config_row.power_voltage or "",
+        "power_frequency": config_row.power_frequency or "",
+        "power_connector_type": config_row.power_connector_type or "",
+        "power_condition": config_row.power_condition or "",
     }
 
 def list_running_run_options(database_session: Session) -> list[dict[str, Any]]:
@@ -308,7 +308,7 @@ def list_running_run_options(database_session: Session) -> list[dict[str, Any]]:
                 "product_test_run_id",
                 "test_round_id",
                 "product_test_target_id",
-                "product_test_environment_id",
+                "product_test_config_id",
                 "product_test_run_status",
                 "started_at",
             ],

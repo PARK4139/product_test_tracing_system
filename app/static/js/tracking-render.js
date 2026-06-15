@@ -145,10 +145,10 @@ function buildMasterDataSections(data, releases) {
         { key: "remark", label: "Remark", width: "260px", field: "remark" }
     ], data.test_targets || []);
 
-    html += buildSimpleDataTableSection("Test Configs", "trk_test_environment_table", [
+    html += buildSimpleDataTableSection("Test Configs", "trk_test_config_table", [
         { key: "id", label: "Config ID", width: "330px", transform: v => stripConfigPrefix(v) },
         { key: "definition_id", label: "Definition ID", width: "360px" },
-        { key: "name", label: "Name", width: "200px", field: "product_test_environment_name" },
+        { key: "name", label: "Name", width: "200px", field: "product_test_config_name" },
         { key: "country", label: "Country", width: "90px" },
         { key: "city", label: "City", width: "90px" },
         { key: "company", label: "Company", width: "120px" },
@@ -160,9 +160,9 @@ function buildMasterDataSections(data, releases) {
         { key: "power_voltage", label: "Voltage", width: "90px", field: "power_voltage" },
         { key: "power_frequency", label: "Freq.", width: "80px", field: "power_frequency" },
         { key: "captured_at", label: "Captured", width: "120px", field: "captured_at" },
-        { key: "status", label: "Status", width: "100px", field: "product_test_environment_status" },
+        { key: "status", label: "Status", width: "100px", field: "product_test_config_status" },
         { key: "remark", label: "Remark", width: "260px", field: "remark" }
-    ], data.test_environments || [], { entityType: "product_test_environment" });
+    ], data.test_configs || [], { entityType: "product_test_config" });
 
     html += buildSimpleDataTableSection("Test Case", "trk_test_case_master_table", [
         { key: "id", label: "Case ID", width: "330px" },
