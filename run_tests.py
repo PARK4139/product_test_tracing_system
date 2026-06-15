@@ -7,6 +7,7 @@
 
 from __future__ import annotations
 
+import argparse
 import ast
 import datetime
 import shutil
@@ -20,6 +21,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent
 PLAYWRIGHT_TEST_DIR = PROJECT_ROOT / "tests" / "playwright"
 LOG_PATH = PROJECT_ROOT / "run_tests.log"
+AI_HANDOVER_TEST_MD = PROJECT_ROOT / "ai_handover" / "test.md"
 
 
 class _Tee:
@@ -30,7 +32,11 @@ class _Tee:
         self._log = log_file
 
     def write(self, data: str) -> int:
-        self._terminal.write(data)
+        try:
+            self._terminal.write(data)
+        except UnicodeEncodeError:
+            enc = getattr(self._terminal, "encoding", None) or "ascii"
+            self._terminal.write(data.encode(enc, errors="replace").decode(enc, errors="replace"))
         try:
             self._log.write(data)
         except Exception:
@@ -436,6 +442,30 @@ def prompt_tc_selection(tcs: list[str]) -> list[str]:
 
 # TODO : _________________________________________________ 6. RUN
 
+def _write_handover_test_md(output: str, returncode: int) -> None:
+    """pytest -v 출력 파싱 → ai_handover/test.md 결과 요약 저장."""
+    import re
+    passed, failed, errors = [], [], []
+    summary_line = ""
+    for line in output.splitlines():
+        m = re.search(r"(tests[\\/]playwright[\\/]\S+)\s+(PASSED|FAILED|ERROR)", line)
+        if m:
+            tc = re.sub(r"\[chromium\]$", "", m.group(1)).strip()
+            {"PASSED": passed, "FAILED": failed, "ERROR": errors}[m.group(2)].append(tc)
+        if re.search(r"\d+ (passed|failed|error)", line):
+            summary_line = line.strip()
+
+    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    icon = "✅" if returncode == 0 else "❌"
+    parts = [f"# Test Results — {now}  {icon}", "", f"**{summary_line or ('ALL PASSED' if returncode == 0 else 'FAILED')}**", ""]
+    for label, items in [("Passed", passed), ("Failed", failed), ("Error", errors)]:
+        if items:
+            parts += [f"## {label} ({len(items)})", ""] + [f"- `{tc}`" for tc in items] + [""]
+    AI_HANDOVER_TEST_MD.parent.mkdir(exist_ok=True)
+    AI_HANDOVER_TEST_MD.write_text("\n".join(parts), encoding="utf-8")
+    print(f"\n  → ai_handover/test.md 갱신됨")
+
+
 def run_tcs(tc_paths: list[str], headed: bool, slowmo_ms: int) -> int:
     args = [
         "uv", "run", "pytest",
@@ -452,18 +482,38 @@ def run_tcs(tc_paths: list[str], headed: bool, slowmo_ms: int) -> int:
     print_section(f"Running: {label}")
     print("  " + " ".join(args))
 
-    result = subprocess.run(
+    proc = subprocess.Popen(
         args=args,
         cwd=str(PROJECT_ROOT),
-        capture_output=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
         shell=False,
     )
-    return result.returncode
+    captured: list[str] = []
+    assert proc.stdout
+    for line in proc.stdout:
+        clean = line.replace("�", "?")
+        sys.stdout.write(clean)
+        sys.stdout.flush()
+        captured.append(line)
+    proc.wait()
+    try:
+        _write_handover_test_md("".join(captured), proc.returncode)
+    except Exception as e:
+        print(f"  [warn] ai_handover/test.md 쓰기 실패: {e}")
+    return proc.returncode
 
 
 # TODO : _________________________________________________ 7. MAIN
 
 def main() -> int:
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("--auto", action="store_true", help="headless, all TCs, no prompts")
+    args, _ = parser.parse_known_args()
+
     _setup_logging()
     print_section("Playwright E2E Test Runner")
 
@@ -475,16 +525,26 @@ def main() -> int:
         return 1
     print("\n  All prerequisites satisfied.")
 
-    print_section("2/3  Select Run Mode")
-    headed, slowmo_ms = _select_run_mode()
+    if args.auto:
+        print_section("2/3  Run Mode  [AUTO: headless, all TCs]")
+        headed, slowmo_ms = False, 0
+        tcs = discover_tcs()
+        if not tcs:
+            print("[ERROR] No TCs found in tests/playwright/.")
+            return 1
+        print(f"  Found {len(tcs)} TCs.")
+        selected = [f"tests/playwright/{tc}" for tc in tcs]
+    else:
+        print_section("2/3  Select Run Mode")
+        headed, slowmo_ms = _select_run_mode()
 
-    print_section("3/3  Select TC")
-    tcs = discover_tcs()
-    if not tcs:
-        print("[ERROR] No TCs found in tests/playwright/.")
-        return 1
-    print(f"  Found {len(tcs)} TCs.")
-    selected = prompt_tc_selection(tcs)
+        print_section("3/3  Select TC")
+        tcs = discover_tcs()
+        if not tcs:
+            print("[ERROR] No TCs found in tests/playwright/.")
+            return 1
+        print(f"  Found {len(tcs)} TCs.")
+        selected = prompt_tc_selection(tcs)
 
     return run_tcs(selected, headed, slowmo_ms)
 

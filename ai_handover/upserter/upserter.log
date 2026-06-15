@@ -2,6 +2,52 @@
 
 ---
 
+## TASK 21 — Environment → Config 전체 리네임 (2026-06-15)
+
+계획: `../planner/planner.log` TASK 21.
+
+### 커밋 이력
+| 커밋 | 내용 |
+|---|---|
+| `3137aed` | feat: rename Environment → Config across codebase + DB migration |
+
+### 변경 파일 (26개)
+Python 14개: `app/models.py`, `app/db.py`, `app/routers/admin_router.py`, `app/services/admin_product_test_ui_service.py`, `app/services/admin_qc_e2e_service.py`, `app/services/excel_export_service.py`, `app/services/product_test_field_update_service.py`, `app/services/custom_sheet_trace_service.py`, `product_test_run_service/_common.py`, `_defects.py`, `_exports.py`, `_list_queries.py`, `_master_data.py`, `_runs.py`, `_seed.py`, `_status.py`, `_system.py`, `_trace.py`, `__init__.py`
+Templates 3개: `product_test_environments_admin.html`, `admin_dashboard.html`, `tester_product_test_runs.html`
+JS 3개: `table-cell-f2-edit.js`, `tracking-render.js`, `tracking.js`
+
+### 변경 내용 + 안전 근거
+- Python 치환 스크립트로 26개 파일 일괄 처리 (longest-match-first 순서).
+- `db.py`에 `_migrate_environment_to_config(db_engine=None)` 추가:
+  - old table 존재 시만 실행 (idempotent).
+  - `product_test_environment_unified` → `product_test_config_unified` RENAME.
+  - 컬럼 3개 + `product_test_run.product_test_environment_id` RENAME.
+  - 인덱스 DROP/CREATE, 뷰 DROP/CREATE.
+  - `initialize_database()`와 `_get_or_create_project_engine()` 모두 `create_all` 직전 호출.
+
+### 보존 항목 (변경 안 한 것)
+| 항목 | 이유 |
+|---|---|
+| `SQA_PRODUCT_TEST_ENVIRONMENT_ID-*` | DB 저장 ID 포맷 (데이터 값) |
+| `"environment_issue"` | DB 저장 blocked reason 코드 |
+| `"entity/environment"` | custom_sheet_trace DB region_key |
+| custom_sheet JSON `environment_name` 필드 | DB 저장 JSON 키 |
+
+### 검증 필요 항목 (→ tester / 사용자)
+- [ ] `GET /admin` 200, 기능 동일
+- [ ] DB: `product_test_config_unified` 존재, `product_test_environment_unified` 없음
+- [ ] `PRAGMA table_info(product_test_run)` → `product_test_config_id` 존재
+- [ ] tester 폼 config 셀렉트 정상
+- [ ] tracking view "Test Configs" 탭 정상
+- [ ] `run_tests.cmd --auto` green
+- [x] `py_compile` OK (19개 Python 파일) — upserter 확인
+- [x] `node --check` OK (3개 JS 파일) — upserter 확인
+
+### 롤백
+DB: `data/backups/` 최신 백업 복원 + git revert `3137aed`.
+
+---
+
 ## TASK 20 — Tab View 5 빈 시트 탭 제거 (2026-06-15)
 
 작업: DB 행 삭제 (코드 수정 없음). 계획 `../planner/planner.log` TASK 20.

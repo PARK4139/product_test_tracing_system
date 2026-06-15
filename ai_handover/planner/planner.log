@@ -2,6 +2,124 @@
 
 ---
 
+## TASK 23 — Tab View 5 Status Log 시트 탭 제거 (2026-06-15)
+
+상태: ⏳ 계획만. **실행 = upserter (사용자/외부).** Claude 미실행.
+
+### 목적
+Tab View 5 현재 9개 시트 탭 중 **Status Log만 useless** → 제거. 화면 정리 + 감사 무결성 보호.
+
+### 판정 근거 (읽기전용 조사)
+| 시트 탭 | 원본 테이블 live_rows | 판정 |
+|---|---|---|
+| Rounds/Targets/Environments/Cases/Procedures/Runs/Results | **0** | 시트 rows_json이 실데이터 저장소 → **유지** |
+| **Status Log** | **16** (라이브) | 원본 `product_test_status_transition` 가 코드(`sheet_service`)로 라이브 적재됨. 시트는 phase1(06-14) **고정 스냅샷** → 갱신 안 됨 + trace 패널/리포트가 동일 이력 라이브 표시 → **중복·stale → 제거** |
+
+- 추가 위험: append-only 감사 로그를 시트 탭으로 두면 수동 편집 가능 → 무결성 훼손. 시트 의미상 부적합.
+
+### 삭제 대상 (`custom_sheet_tab` 1행)
+| custom_sheet_tab_id | region_key | tab_label |
+|---|---|---|
+| `sheet_22c33bc82367` | entity/status_log | Status Log |
+
+- ⚠️ ID는 DB 재마이그레이션 시 바뀔 수 있음 → 삭제 전 `region_key='entity/status_log'` 로 재조회해 확정.
+- **원본 `product_test_status_transition`(16행)은 손대지 않음.** 시트 스냅샷만 제거.
+
+### 단계 (upserter 수행: 백업 → dry-run → apply)
+1. 백업 `data/backups/pre_remove_status_log_<ts>.db` (sqlite backup API).
+2. dry-run: `SELECT ... WHERE region_key='entity/status_log'` 1행 = Status Log 확인. 아니면 중단.
+3. `DELETE FROM custom_sheet_tab WHERE region_key='entity/status_log';`
+4. `PRAGMA wal_checkpoint(TRUNCATE)`.
+5. `SELECT COUNT(*) FROM product_test_status_transition` = 16 (불변) 확인.
+
+### 검증 (tester = 사용자)
+- `GET /admin` 200, Tab View 5 에서 Status Log 사라짐 (탭 9→8).
+- trace 패널 감사이력 라이브 표시 여전.
+- `run_tests.cmd --auto` green.
+
+### 롤백
+백업 DB 복원 (스냅샷이라 원본 테이블 무관, 손실 0).
+
+### 별건 관찰 (이 계획 범위 밖, upserter 확인 요)
+- `product_test_config_unified` 테이블 부재 (TASK 21 Environment→Config 마이그레이션이 이 DB에 미적용 가능성). 별도 점검 필요.
+
+---
+
+## TASK 22 — Claude=planner 전용 경계 규칙 강화 (2026-06-15)
+
+상태: ✅ 적용(거버넌스 문서 편집). 커밋은 upserter 몫.
+
+### 목적
+`session.rule` 역할표가 upserter=Claude(기본)로 오기재 → **Claude=planner 전용**으로 교정. 이번 세션 TASK 20에서 Claude가 DB 삭제·커밋 직접 수행한 경계 위반 재발 방지.
+
+### 변경 (거버넌스 문서만, 코드/DB/git 무관)
+- `session/session.rule`: 역할표 담당 재배정(planner=Claude 유일, upserter/tester/debugger=사용자·외부) + "## Claude 경계" 섹션 신설.
+- `planner.rule`: "Claude 유일 역할, 코드·DB·커밋·앱·테스트 절대 실행 안 함" 명시.
+- `README.md`: planner=★Claude 전용, upserter=사용자/외부 정정.
+- `memory/user_role_adder.md` + `MEMORY.md`: Claude role = planner.
+
+### 핵심 규칙
+- Claude = 계획 + 읽기전용 조사만. 실행 금지.
+- **계획 승인 ≠ 실행 허가** — 적용은 upserter.
+
+### 검증
+- 코드/DB 무변경. `ai_handover/` 에 "Claude 경계" 존재, upserter=Claude 잔존 0.
+
+---
+
+## TASK 21 — Environment → Config 전체 리네임 (2026-06-15)
+
+상태: ✅ upserter 적용 완료 (2026-06-15). 상세 `../upserter/upserter.log`.
+
+### 목적
+코드베이스 전체에서 "Environment" 개념을 "Config"로 통일. DB 스키마(테이블·컬럼·인덱스·뷰)부터 Python 모델·서비스·라우터·템플릿·JS까지 일괄 적용. UI 라벨("Environment" → "Config") 포함.
+
+### 변경 대상 파일 + 이유
+| 파일/범위 | 이유 |
+|---|---|
+| `app/db.py` | DB migration 함수 추가, view 재생성, 초기화 순서 수정 |
+| `app/models.py` | `ProductTestEnvironment` → `ProductTestConfig`, FK 컬럼명 |
+| `app/routers/admin_router.py` | 임포트·라우트·템플릿 변수 |
+| `app/services/admin_product_test_ui_service.py` | 함수명·라우트키·필드명 |
+| `app/services/admin_qc_e2e_service.py` | 함수명·변수·폼 필드명 |
+| `app/services/excel_export_service.py` | 컬럼 참조 |
+| `app/services/product_test_field_update_service.py` | 엔티티 타입·SQL·필드명 |
+| `app/services/product_test_run_service/*` (8개) | 모델 임포트·함수·필드명 |
+| `app/services/custom_sheet_trace_service.py` | 함수명만 (내부 JSON 키는 보존) |
+| `app/templates/product_test_environments_admin.html` | entity-type 속성·필드명·제목 |
+| `app/templates/admin_dashboard.html` | JS 엔티티 타입·라우트 조건·필드명 |
+| `app/templates/tester_product_test_runs.html` | 라벨·셀렉트명·컬럼 헤더 |
+| `app/static/js/table-cell-f2-edit.js` | 라우트 키·엔티티 타입·필드명 |
+| `app/static/js/tracking-render.js` | 테이블 ID·필드명·엔티티 타입 |
+| `app/static/js/tracking.js` | 테이블 셀렉터·라우트 라벨 |
+
+### 단계
+1. Python 치환 스크립트 실행 (26개 파일 일괄).
+2. `db.py`에 `_migrate_environment_to_config()` 추가 → `initialize_database()`에서 `create_all` 직전 호출.
+3. `py_compile` + `node --check` 검증.
+4. 커밋.
+
+### DB 마이그레이션 (앱 기동 시 자동, idempotent)
+```sql
+ALTER TABLE product_test_environment_unified RENAME TO product_test_config_unified;
+ALTER TABLE product_test_config_unified RENAME COLUMN product_test_environment_id TO product_test_config_id;
+ALTER TABLE product_test_config_unified RENAME COLUMN product_test_environment_name TO product_test_config_name;
+ALTER TABLE product_test_config_unified RENAME COLUMN product_test_environment_status TO product_test_config_status;
+ALTER TABLE product_test_run RENAME COLUMN product_test_environment_id TO product_test_config_id;
+-- + 인덱스 DROP/CREATE, 뷰 DROP/CREATE
+```
+
+### 검증 방법
+- `GET /admin` 200, 기능 동일.
+- DB: `product_test_config_unified` 존재, `product_test_environment_unified` 없음.
+- `run_tests.cmd --auto` green (사용자 수행).
+
+### 위험 / 보존
+- **보존**: `SQA_PRODUCT_TEST_ENVIRONMENT_ID-*` ID 포맷(저장 데이터값), `"environment_issue"` 상태코드(저장값), `"entity/environment"` custom sheet region_key(저장값), custom_sheet JSON 필드 `environment_name`(저장값).
+- `_migrate_environment_to_config` idempotent — old table 없으면 즉시 return.
+
+---
+
 ## TASK 20 — Tab View 5 빈 엔티티 시트 탭 제거 (2026-06-15)
 
 상태: ✅ upserter 적용 완료 (2026-06-15). 상세 `../upserter/upserter.log`.

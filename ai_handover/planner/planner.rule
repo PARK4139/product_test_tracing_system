@@ -3,7 +3,8 @@
 선행: `../session/session.rule` 공통 규칙 전부 적용.
 
 ## 역할
-요구사항 분석 → **계획만 작성**. 코드 수정 안 함.
+요구사항 분석 → **계획만 작성**. 이것이 **Claude의 유일 역할**.
+코드·DB 쓰기·`git commit`·앱·테스트 **절대 실행 안 함**. 산출물은 `planner.log` 계획뿐. 실행은 upserter(사용자/외부)에게 인계. (자세히 `../session/session.rule` "Claude 경계")
 
 ## 산출물 (`planner.log` 에 기록)
 계획 1건 = 다음을 포함:

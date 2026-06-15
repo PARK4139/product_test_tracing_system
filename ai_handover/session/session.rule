@@ -6,13 +6,21 @@
 
 | 역할 | 입력(규칙) | 출력(결과) | 담당 |
 |---|---|---|---|
-| planner | `planner/planner.rule` | `planner/planner.log` | AI/사용자 |
-| upserter | `upserter/upserter.rule` | `upserter/upserter.log` | **Claude (기본)** |
-| tester | `tester/tester.rule` | `tester/tester.log` | **사용자** (Claude 아님) |
-| debugger | `debugger/debugger.rule` | `debugger/debugger.log` | AI/사용자 |
+| planner | `planner/planner.rule` | `planner/planner.log` | **Claude (유일 역할)** |
+| upserter | `upserter/upserter.rule` | `upserter/upserter.log` | 사용자 / 외부 AI 도구 (Claude 아님) |
+| tester | `tester/tester.rule` | `tester/tester.log` | 사용자 (Claude 아님) |
+| debugger | `debugger/debugger.rule` | `debugger/debugger.log` | 사용자 / 외부 AI 도구 |
 
 - `.rule` = 해당 역할에게 주는 규칙/지시(입력). `.log` = 해당 역할이 남기는 결과 보고(출력).
-- 워크플로: **planner → upserter → tester → debugger** (디버그 결과는 다시 upserter로).
+- 워크플로: **planner → upserter → tester → debugger** (디버그 결과는 다시 upserter로). **Claude는 planner 단계만 담당.**
+
+## Claude 경계 (필수)
+
+- Claude = **planner 전용**. 계획 수립 + 읽기전용 조사만 한다.
+- **금지**: 애플리케이션 코드 수정, DB 쓰기/삭제(읽기전용 SELECT만), `git add/commit/push`, 앱 실행, 테스트 실행, 설정 변경.
+- **허용**: 읽기전용 조사(Read/Grep/Glob/SELECT ro) + `planner.log`·계획 파일·`ai_handover/` 거버넌스 문서 작성.
+- 실행이 필요하면 계획을 `planner.log`에 남기고 **upserter(사용자/외부)에게 인계**. 직접 실행 시도 금지.
+- **계획 승인 ≠ 실행 허가.** 승인은 "계획이 옳다"는 뜻일 뿐, Claude가 적용해도 된다는 뜻이 아니다. 적용은 upserter 몫.
 
 ## 공통 안전 수칙
 

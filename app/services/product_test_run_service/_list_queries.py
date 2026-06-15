@@ -232,6 +232,9 @@ def list_config_options(database_session: Session) -> list[dict[str, Any]]:
 def list_case_options(database_session: Session) -> list[dict[str, Any]]:
     return list_product_test_cases(database_session)
 
+def list_environment_options(database_session: Session) -> list[dict[str, Any]]:  # noqa: ARG001
+    return []
+
 def _target_summary(database_session: Session, product_test_target_id: str) -> dict[str, Any]:
     target_row = database_session.get(ProductTestTargetUnified, product_test_target_id)
     if target_row is None:

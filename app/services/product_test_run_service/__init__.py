@@ -61,6 +61,7 @@ from app.services.product_test_run_service._status import (
 from app.services.product_test_run_service._list_queries import (
     list_case_options,
     list_config_options,
+    list_environment_options,
     list_product_test_cases,
     list_product_test_config_definitions,
     list_product_test_configs,
@@ -149,7 +150,7 @@ __all__ = [
     # 상태
     "_insert_status_transition", "ensure_product_test_status_transition_recorded",
     # 조회
-    "list_case_options", "list_config_options", "list_product_test_cases",
+    "list_case_options", "list_config_options", "list_environment_options", "list_product_test_cases",
     "list_product_test_config_definitions", "list_product_test_configs",
     "list_product_test_procedures", "list_product_test_rounds", "list_product_test_runs",
     "list_product_test_targets", "list_round_options", "list_running_run_options",
