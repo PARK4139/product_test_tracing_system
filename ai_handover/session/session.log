@@ -20,7 +20,7 @@
 | TASK 15-4 (일괄 apply) | ✅ 완료 (2026-06-11). run 41 / result 375(손실0) / case 134 / procedure 339 / defect 15, 고아 0 |
 | TASK 15-5 (release 폐기 + FK drift 수정) | ✅ 완료 (2026-06-11). release 테이블 제거, run FK→`product_test_environment_unified`, integrity ok |
 | TASK 15-6 (코드/테스트 동기화) | ✅ 완료 (2026-06-11). `pytest 73 passed`, `GET /admin` 200 |
-| TASK 19 (빈 Tab View 2 + 죽은 sheet 코드 제거) | ✅ 완료 (2026-06-15). 상세 `../adder/adder.log` |
+| TASK 19 (빈 Tab View 2 + 죽은 sheet 코드 제거) | ✅ 완료 (2026-06-15). 상세 `../upserter/upserter.log` |
 
 > ⛔ 15-2/15-3/15-4/15-5 모두 apply 완료. **재 dry-run·재 apply 금지** (PK 충돌·손상 위험).
 

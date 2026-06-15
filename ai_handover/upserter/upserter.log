@@ -1,4 +1,27 @@
-# adder.log — 애더 구현 결과 (최신순)
+# upserter.log — 업서터 구현 결과 (최신순)
+
+---
+
+## TASK 20 — Tab View 5 빈 시트 탭 제거 (2026-06-15)
+
+작업: DB 행 삭제 (코드 수정 없음). 계획 `../planner/planner.log` TASK 20.
+
+### 적용
+- 백업: `data/backups/pre_remove_empty_tabs_20260615_172303.db` (sqlite backup API).
+- dry-run 검증: 대상 3행 모두 `rows_json='[]'` 확인 후 삭제.
+- DELETE `custom_sheet_tab` 3행: Proc Results(`sheet_d5e7a3072f90`), Evidence(`sheet_1d2d157fd188`), Calendar(`sheet_1f7b568c4085`).
+- `PRAGMA wal_checkpoint(TRUNCATE)`.
+- `custom_sheet_tab` count: 12 → 9.
+
+### 검증 필요 항목 (→ tester / 사용자)
+- [ ] `GET /admin` 200, Tab View 5 에서 Proc Results/Evidence/Calendar 사라짐
+- [ ] 잔존 탭(Rounds…Status Log) 데이터·동작 동일
+- [ ] `run_tests.cmd --auto` green
+- [x] count 12→9 — upserter 확인
+- [x] 백업 생성 — upserter 확인
+
+### 롤백
+`data/backups/pre_remove_empty_tabs_20260615_172303.db` 복원 (데이터 손실 0 — rows_json=`[]`).
 
 ---
 
@@ -42,6 +65,6 @@
 - [ ] `run_tests.cmd --auto` 전체 green (회귀 0)
 - [ ] `GET /admin` 200, 탭 2/3/4/5 렌더 정상, 빈 Tab View 2만 사라짐
 - [ ] Test Round / Runs 인라인 편집·하이라이트 동작 동일
-- [x] `py_compile` OK (sheet_service.py, sheet_router.py) — adder 확인
-- [x] `node --check` OK (tracking.js) — adder 확인
-- [x] NULL 바이트 제거 완료 — adder 확인
+- [x] `py_compile` OK (sheet_service.py, sheet_router.py) — upserter 확인
+- [x] `node --check` OK (tracking.js) — upserter 확인
+- [x] NULL 바이트 제거 완료 — upserter 확인

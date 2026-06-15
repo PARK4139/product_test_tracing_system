@@ -2,9 +2,47 @@
 
 ---
 
+## TASK 20 — Tab View 5 빈 엔티티 시트 탭 제거 (2026-06-15)
+
+상태: ✅ upserter 적용 완료 (2026-06-15). 상세 `../upserter/upserter.log`.
+
+### 목적
+Tab View 5 — Entity Sheets 13개 시트 탭 중 **빈 탭 3개**(`rows_json = []`) 제거. 화면 정리. **범위 = 빈 탭만** (정적 카드·`configs/새 시트 1`·데이터 보유 탭 제외).
+
+### 삭제 대상 (`custom_sheet_tab` DB 행 3개)
+| custom_sheet_tab_id | region_key | tab_label |
+|---|---|---|
+| `sheet_d5e7a3072f90` | entity/proc_result | Proc Results |
+| `sheet_1d2d157fd188` | entity/evidence | Evidence |
+| `sheet_1f7b568c4085` | entity/calendar | Calendar |
+
+### ⚠️ 주의
+- Proc Results / Evidence = `docs/data_integrity_diagnosis_20260608.md` P0 추적성 입력 대상. 삭제 = 입력경로 제거. 재개 시 "+"로 재생성(스키마는 `columns_json` 보존본 참고).
+- Calendar = 빈값 + Tab View 3 「근무 캘린더」 중복 → 영향 최소.
+
+### 작업 성격
+코드 수정 아님. DB 행 삭제. 기존 경로: `DELETE /admin/api/custom-sheets/{id}` (`app/routers/tracking_router.py:1183` `delete_custom_sheet`).
+
+### 단계 (dry-run → 승인 → 백업 → apply)
+1. 백업: `data/backups/` 에 DB 복사. 경로 기록.
+2. dry-run: 대상 3행 SELECT 재확인 (rows_json=`[]`). 아니면 중단·질문.
+3. apply: `DELETE FROM custom_sheet_tab WHERE custom_sheet_tab_id IN ('sheet_d5e7a3072f90','sheet_1d2d157fd188','sheet_1f7b568c4085');`
+4. `PRAGMA wal_checkpoint(TRUNCATE)`.
+
+### 검증 (tester = 사용자)
+- `GET /admin` 200, Tab View 5 탭 13→10, 3탭 사라짐.
+- 잔존 탭 데이터·동작 동일.
+- `run_tests.cmd --auto` green.
+- `COUNT(*) custom_sheet_tab` = 기존-3.
+
+### 롤백
+백업 DB 복원 (rows_json=`[]` → 데이터 손실 0).
+
+---
+
 ## TASK 19 — 빈 탭 영역 + 죽은 sheet 코드 제거 (2026-06-15)
 
-상태: ✅ adder 구현 완료 (`../adder/adder.log` 참조).
+상태: ✅ upserter 구현 완료 (`../upserter/upserter.log` 참조).
 
 ### 목적
 관리자 대시보드 빈 껍데기 탭 제거 + 도달 불가 죽은 코드 삭제. 동작 100% 보존, DB 변경 없음.

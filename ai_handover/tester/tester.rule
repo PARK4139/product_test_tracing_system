@@ -6,7 +6,7 @@
 **사용자** (또는 별도 도구). **Claude(AI)는 이 역할을 수행하지 않는다.**
 
 ## 역할
-adder 구현 검증. `adder.log`의 "검증 필요 항목" 체크리스트를 실행.
+upserter 구현 검증. `upserter.log`의 "검증 필요 항목" 체크리스트를 실행.
 
 ## 실행
 - **항상 `run_tests.cmd --auto`.** bare cmd 금지(대화형 프롬프트에서 멈춤).

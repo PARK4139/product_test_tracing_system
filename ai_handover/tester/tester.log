@@ -4,7 +4,14 @@
 
 ---
 
+## TASK 20 (2026-06-15)
+- 상태: ⏳ 검증 대기. upserter 적용 완료(`../upserter/upserter.log`). 백업 `pre_remove_empty_tabs_20260615_172303.db`.
+- 실행 필요: `run_tests.cmd --auto`, `GET /admin` 200, Tab View 5 에서 Proc Results/Evidence/Calendar 사라짐 확인.
+- 결과: _(미기록)_
+
+---
+
 ## TASK 19 (2026-06-15)
-- 상태: ⏳ 검증 대기. adder 구현 완료(`../adder/adder.log`).
+- 상태: ⏳ 검증 대기. upserter 구현 완료(`../upserter/upserter.log`).
 - 실행 필요: `run_tests.cmd --auto`, `GET /admin` 200, Test Round/Runs 동작 확인.
 - 결과: _(미기록)_

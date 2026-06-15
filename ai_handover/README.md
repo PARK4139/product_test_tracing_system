@@ -11,7 +11,7 @@ ai_handover/
 │  ├─ session.rule          ← 공통 세션 규칙 (모든 역할 선행) + 역할 정의 + 안전 수칙
 │  └─ session.log           ← 세션 진행상황 + 정본 포인터
 ├─ planner/   planner.rule  + planner.log    ← 계획
-├─ adder/     adder.rule    + adder.log       ← 구현 (★Claude 기본 역할)
+├─ upserter/     upserter.rule    + upserter.log       ← 구현 (★Claude 기본 역할)
 ├─ tester/    tester.rule   + tester.log      ← 검증 (★사용자 담당, Claude 아님)
 ├─ debugger/  debugger.rule + debugger.log    ← 디버그
 ├─ master_architecture.md   ← 목표 구조 정본 (참조)
@@ -23,7 +23,7 @@ ai_handover/
 
 - **규칙(.rule)** = 역할에게 주는 지시(입력). 새 AI에 해당 `.rule` 본문을 전달.
 - **결과(.log)** = 역할이 남기는 보고(출력). 최신순 누적.
-- 워크플로: **planner → adder → tester → debugger** (디버그 결과는 다시 adder).
+- 워크플로: **planner → upserter → tester → debugger** (디버그 결과는 다시 upserter).
 - 시작 전 반드시 `session/session.rule` 먼저 읽을 것.
 
 ## 핵심 규칙 (요약, 전체는 session.rule)

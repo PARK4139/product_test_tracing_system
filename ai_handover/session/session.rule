@@ -7,12 +7,12 @@
 | 역할 | 입력(규칙) | 출력(결과) | 담당 |
 |---|---|---|---|
 | planner | `planner/planner.rule` | `planner/planner.log` | AI/사용자 |
-| adder | `adder/adder.rule` | `adder/adder.log` | **Claude (기본)** |
+| upserter | `upserter/upserter.rule` | `upserter/upserter.log` | **Claude (기본)** |
 | tester | `tester/tester.rule` | `tester/tester.log` | **사용자** (Claude 아님) |
 | debugger | `debugger/debugger.rule` | `debugger/debugger.log` | AI/사용자 |
 
 - `.rule` = 해당 역할에게 주는 규칙/지시(입력). `.log` = 해당 역할이 남기는 결과 보고(출력).
-- 워크플로: **planner → adder → tester → debugger** (디버그 결과는 다시 adder로).
+- 워크플로: **planner → upserter → tester → debugger** (디버그 결과는 다시 upserter로).
 
 ## 공통 안전 수칙
 
@@ -27,7 +27,7 @@
 ## 테스트 정책
 
 - 테스트는 **항상 `run_tests.cmd --auto`** 로만 실행. bare cmd는 대화형 프롬프트에서 멈춤.
-- **Claude(AI)는 테스트를 실행하지 않는다.** 검증은 사용자(tester 역할) 담당. adder는 "검증 필요 항목"만 `adder.log`에 남기고 넘긴다.
+- **Claude(AI)는 테스트를 실행하지 않는다.** 검증은 사용자(tester 역할) 담당. upserter는 "검증 필요 항목"만 `upserter.log`에 남기고 넘긴다.
 
 ## 결과 기록 규약
 
