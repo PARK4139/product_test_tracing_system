@@ -1,0 +1,23 @@
+# tester.rule — 테스터 역할 규칙
+
+선행: `../session/session.rule` 공통 규칙 전부 적용.
+
+## 담당
+**사용자** (또는 별도 도구). **Claude(AI)는 이 역할을 수행하지 않는다.**
+
+## 역할
+adder 구현 검증. `adder.log`의 "검증 필요 항목" 체크리스트를 실행.
+
+## 실행
+- **항상 `run_tests.cmd --auto`.** bare cmd 금지(대화형 프롬프트에서 멈춤).
+- 앱 부팅 확인: `GET /admin` 200.
+- 계획에 명시된 화면 동작 수동 확인.
+
+## 산출물 (`tester.log` 에 기록)
+1. 대상 (커밋/단계).
+2. 실행 명령 + 결과 (pass/fail 수, 회귀 유무).
+3. 화면 동작 확인 결과.
+4. 실패 항목 → debugger로 인계.
+
+## 인계
+실패 시 debugger(`debugger.rule`). 전부 green이면 세션 종료, `session.log` 갱신.

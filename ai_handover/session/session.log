@@ -1,0 +1,33 @@
+# session.log — 세션 진행상황 / 정본 인덱스
+
+> AI 협업 핸드오버 인덱스. 역할별 상세는 `../<role>/`.
+
+## 정본 참조 문서
+
+- `../master_architecture.md` — 목표 구조 정본 (7탭 + v2: ROUND→RUN→RESULT, 네이밍/정책).
+- `../tasks/` — 개별 TASK 상세 스펙 (TASK 10~15, 역사적 정본).
+- 진단/dry-run 산출물은 `docs/`에 유지 (스크립트가 생성하는 경로).
+
+## v2 마이그레이션 진행상황 (2026-06-11 기준)
+
+| 단계 | 상태 |
+|---|---|
+| TASK 1~14 | ✅ 적용 완료 |
+| TASK 11/12/12-B/13 (Configs·Targets 병합, run→target 재연결) | ✅ 완료 |
+| TASK 15-1 (round 13→7 캠페인) | ✅ 완료 |
+| TASK 15-2 (RUN/RESULT 신 ID 매핑) | ✅ 완료 (15-4 포함) |
+| TASK 15-3 (CASE 재발급, 60→134) | ✅ 완료 (15-4 포함) |
+| TASK 15-4 (일괄 apply) | ✅ 완료 (2026-06-11). run 41 / result 375(손실0) / case 134 / procedure 339 / defect 15, 고아 0 |
+| TASK 15-5 (release 폐기 + FK drift 수정) | ✅ 완료 (2026-06-11). release 테이블 제거, run FK→`product_test_environment_unified`, integrity ok |
+| TASK 15-6 (코드/테스트 동기화) | ✅ 완료 (2026-06-11). `pytest 73 passed`, `GET /admin` 200 |
+| TASK 19 (빈 Tab View 2 + 죽은 sheet 코드 제거) | ✅ 완료 (2026-06-15). 상세 `../adder/adder.log` |
+
+> ⛔ 15-2/15-3/15-4/15-5 모두 apply 완료. **재 dry-run·재 apply 금지** (PK 충돌·손상 위험).
+
+## 미해결 / 주의
+
+- **마운트 읽기 불안정**: 일부 환경에서 live `data/*.db`가 torn-read로 malformed처럼 보일 수 있음(실제 손상 아님). 의심 시 `PRAGMA integrity_check` + 최신 백업 대조.
+
+## 구 문서
+
+- 옛 `README.md`, `handover_main.md`, `prompts/`, `add.md` → `../archive/legacy_20260615/` 로 이동(보존).

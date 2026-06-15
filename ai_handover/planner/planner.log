@@ -1,0 +1,34 @@
+# planner.log — 플래너 결과 (최신순)
+
+---
+
+## TASK 19 — 빈 탭 영역 + 죽은 sheet 코드 제거 (2026-06-15)
+
+상태: ✅ adder 구현 완료 (`../adder/adder.log` 참조).
+
+### 목적
+관리자 대시보드 빈 껍데기 탭 제거 + 도달 불가 죽은 코드 삭제. 동작 100% 보존, DB 변경 없음.
+
+### 점검 결과
+- Tab View 5 — Entity Sheets (`admin_dashboard.html:77-104`): 탭 2개(Test Round, Runs) 모두 실데이터+인라인 편집 살아있음 → **유지**.
+- 사용자 "+" 커스텀 시트 탭은 localStorage/DB 저장 → 코드 판단 불가 → 손대지 않음.
+
+### 변경 대상 + 이유
+| 파일 | 이유 |
+|---|---|
+| `app/templates/admin_dashboard.html` | Tab View 2 빈 섹션(`#admin_tab_region_primary`) — 내용 0, 빈 박스만 렌더 |
+| `app/static/js/tracking.js` | `admin_primary`/`tabview_2` 참조 정리 |
+| `app/services/sheet_service.py` | `get_sheet_payload` + `_build_*_sheet` 5종 — 항상 ValueError, 도달 불가 |
+| `app/routers/sheet_router.py` | `GET /admin/api/sheet/{table_name}` — 항상 404 dead route |
+
+### 단계
+1. Tab View 2 빈 섹션 제거 → 검증 → 커밋.
+2. sheet_service 죽은 코드 제거 (호출처 grep 확인 후) → 검증 → 커밋.
+
+### 검증 방법
+- `GET /admin` 200, 탭 2/3/4/5 정상, 빈 Tab View 2만 사라짐.
+- Test Round/Runs 인라인 편집 동작 동일.
+- `run_tests.cmd --auto` green (사용자 수행).
+
+### 위험 / 보존
+- 보존: `SUPPORTED_SHEET_TABLES`, `SHEET_EDIT_CONFIG`, `TABLE_MODEL_MAP`, `_sheet_meta`, `preview/apply_sheet_update`, `preview/apply_evidence_create` (전부 alive).
