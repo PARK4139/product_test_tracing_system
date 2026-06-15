@@ -911,7 +911,6 @@ function consolidateCardHeaderToolbar(root) {
 
 const TAB_VIEW_TABLE_FOLD_META = {
     admin_configs: { regionKey: "tabview_1", shell: "#admin_tab_region_configs", groupKey: "admin_configs" },
-    admin_primary: { regionKey: "tabview_2", shell: "#admin_tab_region_primary", groupKey: "admin_primary" },
     admin_secondary: { regionKey: "tabview_3", shell: "#admin_tab_region_secondary", groupKey: "admin_secondary" },
     admin_quaternary: { regionKey: "tabview_4", shell: "#admin_tab_region_quaternary", groupKey: "admin_quaternary" },
 };
