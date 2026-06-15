@@ -40,3 +40,6 @@ task*_post_*/
 /task12b_dbscan_*
 /task12b_verify_*
 /task13_*
+
+# AI add-session autosave (duplicate of ai_handover/upserter/upserter.log)
+ai_handover/add.md
