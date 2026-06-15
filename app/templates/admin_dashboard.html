@@ -1,0 +1,1821 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="admin_dash_compact">
+{% if message %}
+<section class="card"><div class="non_modal_notice {{ message_type }}"><div>{{ message }}</div></div></section>
+{% endif %}
+
+{# Phase 4: entity datalists removed — tables dropped #}
+
+
+{% include "admin_tracking_top.html" %}
+
+<section class="card admin_tab_region_shell" id="admin_tab_region_primary">
+    <div class="section_header_row admin_tab_region_title"><h3>Tab View 2</h3></div>
+    <div class="admin_tab_region_body" data-admin-tab-region="primary" data-tab-aria-label="Tab View 2">
+
+{# Phase 4: Test Round / Runs / Test Target entity tables removed — data now in Tab View 5 (Entity Sheets) #}
+
+    </div>
+</section>
+
+<section class="card admin_tab_region_shell" id="admin_tab_region_secondary">
+    <div class="section_header_row admin_tab_region_title"><h3>Tab View 3</h3></div>
+    <div class="admin_tab_region_body" data-admin-tab-region="secondary" data-tab-aria-label="Tab View 3">
+
+{# Phase 4: Test Case / Test Procedure entity tables removed — data now in Tab View 5 (Entity Sheets) #}
+
+<section class="card" id="work_calendar_card">
+    <div class="section_header_row"><h3>근무 캘린더</h3></div>
+
+    {# 입력 폼 #}
+    <div class="tester_table_wrap">
+        <table class="basic_table" id="wc_input_table">
+            <thead><tr><th>선택</th><th>날짜 (YYYY-MM-DD)</th><th>근무 여부</th><th>유형</th><th>비고</th></tr></thead>
+            <tbody><tr>
+                <td><input type="checkbox" class="admin_input_row_checkbox"></td>
+                <td><input type="date" id="wc_date" style="width:100%;box-sizing:border-box"></td>
+                <td>
+                    <select id="wc_is_workday" style="width:100%;box-sizing:border-box">
+                        <option value="1">근무일</option>
+                        <option value="0">비근무일</option>
+                    </select>
+                </td>
+                <td>
+                    <select id="wc_day_type" style="width:100%;box-sizing:border-box">
+                        <option value="WORKDAY">WORKDAY</option>
+                        <option value="HOLIDAY">HOLIDAY</option>
+                        <option value="WEEKEND">WEEKEND</option>
+                    </select>
+                </td>
+                <td><input type="text" id="wc_note" placeholder="비고" style="width:100%;box-sizing:border-box"></td>
+            </tr></tbody>
+        </table>
+    </div>
+
+    <div class="table_action_bar admin_table_action_bar_top">
+        <button type="button" id="wc_save_btn">저장</button>
+        <button type="button" id="wc_delete_btn" style="margin-left:6px">Remove Rows</button>
+        <span id="wc_msg" style="font-size:0.8rem;margin-left:10px;color:var(--color-text-muted,#71717a)"></span>
+    </div>
+
+    {# 목록 테이블 #}
+    <div class="tester_table_wrap">
+        <table class="basic_table" id="wc_list_table">
+            <thead><tr><th>선택</th><th>날짜</th><th>근무 여부</th><th>유형</th><th>비고</th></tr></thead>
+            <tbody id="wc_tbody">
+                <tr><td colspan="5" style="text-align:center;color:var(--color-text-muted,#71717a);padding:16px">로딩 중…</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+
+    </div>
+</section>
+
+<section class="card admin_tab_region_shell" id="admin_tab_region_entity">
+    <div class="section_header_row admin_tab_region_title"><h3>Tab View 5 — Entity Sheets</h3></div>
+    <div class="admin_tab_region_body" data-admin-tab-region="entity" data-tab-aria-label="Tab View 5">
+    </div>
+</section>
+
+<section class="card admin_tab_region_shell" id="admin_tab_region_quaternary">
+    <div class="section_header_row admin_tab_region_title"><h3>Tab View 4</h3></div>
+    <div class="admin_tab_region_body" data-admin-tab-region="quaternary" data-tab-aria-label="Tab View 4">
+
+<section class="card" data-admin-tab-label="시험 추적">
+    <div class="section_header_row"><h3>시험 추적</h3></div>
+    <div class="table_action_bar admin_table_action_bar_top">
+        <button type="button" id="trk_refresh_btn">↻ 데이터 새로고침</button>
+        <button type="button" id="trk_ui_state_mode_btn" style="margin-left:8px">화면 설정 저장: DB(다른 PC와 공유)</button>
+    </div>
+    <div class="tracking_section" id="trk_root">
+        <div class="trk_loading" id="trk_loading_msg">데이터 로딩 중…</div>
+    </div>
+</section>
+
+    </div>
+</section>
+
+<script>
+(function () {
+    "use strict";
+
+    const DAY_LABEL = { "1": "근무일", "0": "비근무일", 1: "근무일", 0: "비근무일" };
+    const TYPE_LABEL = { WORKDAY: "근무", HOLIDAY: "공휴일", WEEKEND: "주말" };
+
+    function showMsg(text, ok) {
+        const el = document.getElementById("wc_msg");
+        if (!el) return;
+        el.textContent = text;
+        el.style.color = ok ? "var(--color-success,#22c55e)" : "#ef4444";
+        setTimeout(() => { el.textContent = ""; }, 3000);
+    }
+
+    function renderRows(rows) {
+        const tbody = document.getElementById("wc_tbody");
+        if (!tbody) return;
+        if (!rows || rows.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--color-text-muted,#71717a);padding:16px">등록된 캘린더가 없습니다.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = rows.map(r => `<tr data-date="${r.date}">
+            <td><input type="checkbox" disabled></td>
+            <td>${r.date}</td>
+            <td>${DAY_LABEL[r.is_workday] || r.is_workday}</td>
+            <td>${TYPE_LABEL[r.day_type] || r.day_type}</td>
+            <td>${r.note || ""}</td>
+        </tr>`).join("");
+    }
+
+    function loadCalendar() {
+        fetch("/admin/api/work-calendar")
+            .then(r => r.json())
+            .then(renderRows)
+            .catch(err => {
+                const tbody = document.getElementById("wc_tbody");
+                if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="color:#ef4444;text-align:center;padding:16px">로드 실패: ${err.message}</td></tr>`;
+            });
+    }
+
+    function saveCalendar() {
+        const date = (document.getElementById("wc_date") || {}).value || "";
+        const isWorkday = parseInt((document.getElementById("wc_is_workday") || {}).value || "1");
+        const dayType = (document.getElementById("wc_day_type") || {}).value || "WORKDAY";
+        const note = (document.getElementById("wc_note") || {}).value || "";
+
+        if (!date) { showMsg("날짜를 입력하세요.", false); return; }
+
+        fetch("/admin/api/work-calendar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ calendar_date: date, is_workday: isWorkday, day_type: dayType, note }),
+        })
+        .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+        .then(() => { showMsg("저장 완료", true); loadCalendar(); })
+        .catch(err => showMsg("저장 실패: " + err.message, false));
+    }
+
+    function deleteSelected() {
+        const rows = document.querySelectorAll("#wc_tbody tr");
+        const checkboxes = document.querySelectorAll("#wc_list_table tbody input[type=checkbox]:checked");
+        if (checkboxes.length === 0) {
+            // fallback: enable checkboxes first
+            document.querySelectorAll("#wc_list_table tbody input[type=checkbox]").forEach(cb => cb.disabled = false);
+            showMsg("삭제할 행을 선택하세요.", false);
+            return;
+        }
+        const dates = Array.from(checkboxes).map(cb => cb.closest("tr").dataset.date).filter(Boolean);
+        if (dates.length === 0) return;
+
+        Promise.all(dates.map(date =>
+            fetch(`/admin/api/work-calendar/${date}`, { method: "DELETE" })
+        ))
+        .then(() => { showMsg(`${dates.length}건 삭제 완료`, true); loadCalendar(); })
+        .catch(err => showMsg("삭제 실패: " + err.message, false));
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        /* 잔여 draft 행 정리 */
+        document.querySelectorAll("tr.admin_merged_draft_row").forEach(r => r.remove());
+        loadCalendar();
+        const saveBtn = document.getElementById("wc_save_btn");
+        const delBtn  = document.getElementById("wc_delete_btn");
+        if (saveBtn) saveBtn.addEventListener("click", saveCalendar);
+        if (delBtn)  delBtn.addEventListener("click", deleteSelected);
+
+        // Enable checkboxes in list table for selection
+        document.getElementById("wc_list_table") && document.getElementById("wc_list_table")
+            .addEventListener("click", e => {
+                const cb = e.target.closest("input[type=checkbox]");
+                if (cb) cb.disabled = false;
+            });
+    });
+})();
+</script>
+
+<script>
+void (async () => {
+    const adminRootPath = window.location.pathname.replace(/\/+$/, "") || "/";
+    if (adminRootPath !== "/admin") {
+        return;
+    }
+
+    const forms = Array.from(document.querySelectorAll("form.admin_autosubmit_form"));
+    if (forms.length === 0) {
+        return;
+    }
+
+    const adminUiConfigResponse = await fetch("/admin/api/product-test/ui/client-config", {
+        credentials: "same-origin",
+        headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+    });
+    if (!adminUiConfigResponse.ok) {
+        window.console?.error?.("admin ui client-config failed", adminUiConfigResponse.status);
+        return;
+    }
+    const adminUiConfig = await adminUiConfigResponse.json();
+    const serverIdRules = adminUiConfig.id_rules || {};
+    const serverIdGuides = adminUiConfig.id_guides || {};
+    const adminNoticeConfig = adminUiConfig.notice_config || {};
+    const ADMIN_WRITE_ORDER_PLANS = Object.fromEntries(
+        Object.entries(adminUiConfig.write_order_plans || {}).map(([actionKey, plan]) => [
+            actionKey,
+            {
+                order: Array.isArray(plan.order) ? plan.order : [],
+                optional: new Set(Array.isArray(plan.optional) ? plan.optional : []),
+            },
+        ]),
+    );
+    const idValidationRules = Object.fromEntries(
+        Object.entries(serverIdRules).map(([fieldName, patternText]) => [fieldName, new RegExp(patternText)]),
+    );
+
+    const uniqueNonEmpty = (values) =>
+        Array.from(
+            new Set(
+                (values || [])
+                    .map((value) => String(value || "").trim())
+                    .filter(Boolean),
+            ),
+        );
+    const setAutofillValue = (field, nextValue) => {
+        if (!field || !nextValue) {
+            return;
+        }
+        const currentValue = String(field.value || "").trim();
+        const lastSuggestedValue = String(field.dataset.lastSuggestedValue || "").trim();
+        const userLocked = field.dataset.userLocked === "true";
+        if (userLocked && currentValue && currentValue !== lastSuggestedValue) {
+            return;
+        }
+        field.value = nextValue;
+        field.dataset.lastSuggestedValue = nextValue;
+    };
+    const bindManualOverride = (field) => {
+        if (!field) {
+            return;
+        }
+        field.addEventListener("input", () => {
+            const currentValue = String(field.value || "").trim();
+            const lastSuggestedValue = String(field.dataset.lastSuggestedValue || "").trim();
+            field.dataset.userLocked = currentValue && currentValue !== lastSuggestedValue ? "true" : "false";
+        });
+    };
+    const stripTypedIdPrefix = (value, prefix) => {
+        const text = String(value || "").trim();
+        return text.startsWith(prefix) ? text.slice(prefix.length) : text;
+    };
+    const showNotice = ({ message, level = "info", mode = "non_modal", title = "" }) => {
+        if (!message) {
+            return;
+        }
+        if (level === "guide") {
+            if (window.showCenterNonModalV2) {
+                window.showCenterNonModalV2(message, "guide");
+                return;
+            }
+            if (window.openMessageModal) {
+                window.openMessageModal(message, { type: "info", title: title || "안내" });
+            }
+            return;
+        }
+        if (mode === "modal" && window.openMessageModal) {
+            const modalType = level === "error" ? "error" : level === "success" ? "success" : "";
+            window.openMessageModal(message, {
+                type: modalType,
+                title: title || "",
+                ok_text: "확인",
+            });
+            return;
+        }
+        if (window.showCenterNonModalV2) {
+            window.showCenterNonModalV2(message, level);
+            return;
+        }
+        if (window.openMessageModal) {
+            window.openMessageModal(message);
+        }
+    };
+    const getIdValidationMessage = (fieldName) => {
+        return serverIdGuides[fieldName] || `${fieldName} 형식이 맞지 않습니다. 수정하세요.`;
+    };
+    const escapeHtml = (value) =>
+        String(value || "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+    const toStatusBadgeHtml = (value) => {
+        const text = String(value || "").trim();
+        if (!text) {
+            return "";
+        }
+        return `<span class="status_badge status-${text.toLowerCase()}">${escapeHtml(text)}</span>`;
+    };
+    const findOutputTableBodyForForm = (form) => {
+        const card = form.closest(".card");
+        if (!card) {
+            return null;
+        }
+        const allTableBodies = Array.from(card.querySelectorAll(".tester_table_wrap table.basic_table tbody"));
+        return allTableBodies.length >= 2 ? allTableBodies[1] : null;
+    };
+    const getEntityTypeForAction = (action) => {
+        if (action.endsWith("/product-test-rounds/create")) return "product_test_round";
+        if (action.endsWith("/product-test-targets/create")) return "product_test_target";
+        if (action.endsWith("/product-test-environments/create")) return "product_test_environment";
+        if (action.endsWith("/product-test-cases/create")) return "product_test_case";
+        if (action.endsWith("/product-test-procedures/create")) return "product_test_procedure";
+        if (action.endsWith("/product-test-reports/create")) return "product_test_report";
+        return "";
+    };
+    const getSubmittedRowId = (row) => {
+        const checkbox = row?.querySelector?.(".admin_submitted_row_checkbox");
+        return String(checkbox?.dataset?.entityId || row?.dataset?.entityId || row?.children?.[1]?.textContent || "").trim();
+    };
+    const deleteSubmittedRows = async (form, rows) => {
+        const entityType = getEntityTypeForAction(String(form.getAttribute("action") || ""));
+        const entityIds = rows.map(getSubmittedRowId).filter(Boolean);
+        if (!entityType || entityIds.length === 0) {
+            showNotice({ message: "삭제할 제출 행 ID를 찾지 못했습니다.", level: "error", mode: "non_modal" });
+            return;
+        }
+        const response = await fetch("/admin/api/product-test/entities/bulk-delete", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "X-Requested-With": "XMLHttpRequest",
+            },
+            body: JSON.stringify({ entity_type: entityType, entity_ids: entityIds }),
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || result.ok === false) {
+            showNotice({
+                message: result.message || "제출된 목록 행 삭제에 실패했습니다.",
+                level: "error",
+                mode: "non_modal",
+            });
+            return;
+        }
+        rows.forEach(row => row.remove());
+        showNotice({
+            message: `${result.deleted ?? entityIds.length}개 행을 삭제했습니다.`,
+            level: "success",
+            mode: "non_modal",
+        });
+    };
+    const buildSubmittedRowHtml = (action, row) => {
+        const checkbox = '<td><input type="checkbox" class="admin_submitted_row_checkbox"></td>';
+        if (action.endsWith("/product-test-rounds/create")) {
+            return `<tr class="admin_hl_row" data-round-id="${escapeHtml(row.test_round_id)}">${checkbox}<td>${escapeHtml(row.test_round_id)}</td><td>${escapeHtml(row.upstream_release_id)}</td><td>${escapeHtml(row.upstream_release_system)}</td><td>${escapeHtml(row.release_sequence)}</td><td>${toStatusBadgeHtml(row.migration_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
+        }
+        if (action.endsWith("/product-test-targets/create")) {
+            return `<tr class="admin_hl_row" data-target-id="${escapeHtml(row.product_test_target_id)}">${checkbox}<td>${escapeHtml(row.product_test_target_id)}</td><td>${escapeHtml(row.product_code)}</td><td>${escapeHtml(row.manufacturer)}</td><td>${escapeHtml(row.model_name)}</td><td>${escapeHtml(row.hardware_revision)}</td><td>${escapeHtml(row.default_software_version)}</td><td>${escapeHtml(row.default_firmware_version)}</td><td>${escapeHtml(row.serial_number)}</td><td>${escapeHtml(row.software_version)}</td><td>${escapeHtml(row.firmware_version)}</td><td>${escapeHtml(row.manufacture_lot)}</td><td>${escapeHtml(row.product_test_target_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
+        }
+        if (action.endsWith("/product-test-environments/create")) {
+            return `<tr class="admin_hl_row" data-env-id="${escapeHtml(row.product_test_environment_id)}">${checkbox}<td>${escapeHtml(row.product_test_environment_id)}</td><td>${escapeHtml(row.product_test_environment_name)}</td><td>${escapeHtml(row.test_country)}</td><td>${escapeHtml(row.test_city)}</td><td>${escapeHtml(row.test_company)}</td><td>${escapeHtml(row.test_room)}</td><td>${escapeHtml(row.network_type)}</td><td>${escapeHtml(row.test_computer_name)}</td><td>${escapeHtml(row.operating_system_version)}</td><td>${escapeHtml(row.test_tool_name)}</td><td>${escapeHtml(row.test_tool_version)}</td><td>${escapeHtml(row.power_voltage)}</td><td>${escapeHtml(row.power_frequency)}</td><td>${escapeHtml(row.power_connector_type)}</td><td>${escapeHtml(row.power_condition)}</td><td>${escapeHtml(row.captured_at)}</td><td>${escapeHtml(row.product_test_environment_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
+        }
+        if (action.endsWith("/product-test-cases/create")) {
+            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_case_id)}</td><td>${escapeHtml(row.product_test_case_title)}</td><td>${escapeHtml(row.test_category)}</td><td>${escapeHtml(row.test_objective)}</td><td>${escapeHtml(row.precondition)}</td><td>${escapeHtml(row.expected_result)}</td><td>${escapeHtml(row.product_test_case_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
+        }
+        if (action.endsWith("/product-test-procedures/create")) {
+            const actionSummary = (typeof window.formatProcedureActionSummary === "function")
+                ? window.formatProcedureActionSummary(row.procedure_action)
+                : escapeHtml(row.procedure_action);
+            const actionB64 = btoa(unescape(encodeURIComponent(String(row.procedure_action || ""))));
+            return `<tr data-entity-id="${escapeHtml(row.product_test_procedure_id)}">${checkbox}<td>${escapeHtml(row.product_test_procedure_id)}</td><td>${escapeHtml(row.product_test_case_id)}</td><td>${escapeHtml(row.procedure_sequence)}</td><td class="procedure_action_summary" data-entity-id="${escapeHtml(row.product_test_procedure_id)}" data-procedure-action-b64="${escapeHtml(actionB64)}">${escapeHtml(actionSummary)}</td><td>${escapeHtml(row.acceptance_criteria)}</td><td>${escapeHtml(row.required_evidence_type)}</td><td>${escapeHtml(row.product_test_procedure_status)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
+        }
+        if (action.endsWith("/product-test-reports/create")) {
+            return `<tr>${checkbox}<td>${escapeHtml(row.product_test_report_id)}</td><td>${escapeHtml(row.test_round_id)}</td><td>${escapeHtml(row.product_test_report_type)}</td><td>${toStatusBadgeHtml(row.product_test_report_status)}</td><td>${escapeHtml(row.product_test_report_title)}</td><td>${escapeHtml(row.remark)}</td></tr>`;
+        }
+        return "";
+    };
+    const insertSubmittedRow = (form, row) => {
+        if (!row || typeof row !== "object") {
+            return;
+        }
+        const tbody = findOutputTableBodyForForm(form);
+        if (!tbody) {
+            return;
+        }
+        const rowHtml = buildSubmittedRowHtml(String(form.getAttribute("action") || ""), row);
+        if (!rowHtml) {
+            return;
+        }
+        tbody.insertAdjacentHTML("afterbegin", rowHtml);
+        if (typeof window.initProcedureActionCells === "function") {
+            window.initProcedureActionCells(tbody);
+        }
+        setupSubmittedTableSelection(form);
+        /* draft 행 제거 */
+        const draftRow = tbody.querySelector("tr.admin_merged_draft_row");
+        if (draftRow) draftRow.remove();
+    };
+    const getNextEmptyColumnSuggestion = (form, payload) => {
+        const fields = getFields(form);
+        for (const field of fields) {
+            const value = String(payload[field.name] || "").trim();
+            if (value) {
+                continue;
+            }
+            const cell = field.closest("td");
+            const row = cell ? cell.parentElement : null;
+            const table = row ? row.closest("table") : null;
+            if (!cell || !row || !table) {
+                continue;
+            }
+            const cellIndex = Array.from(row.children).indexOf(cell);
+            const headerCell = table.querySelectorAll("thead tr th")[cellIndex];
+            const headerText = String(headerCell?.textContent || field.name || "").trim();
+            if (headerText && headerText !== "SELECTED") {
+                return `다음 입력: ${headerText}`;
+            }
+        }
+        return "다음 입력 없음. 자동제출 대기.";
+    };
+    const setupSubmittedTableSelection = (form) => {
+        const card = form.closest(".card");
+        if (!card) {
+            return;
+        }
+        const outputTable = Array.from(card.querySelectorAll(".tester_table_wrap table.basic_table"))[1];
+        if (!outputTable) {
+            return;
+        }
+        outputTable.querySelectorAll('input[type="checkbox"][disabled]').forEach((checkbox) => {
+            checkbox.disabled = false;
+            checkbox.classList.add("admin_submitted_row_checkbox");
+        });
+        outputTable.querySelectorAll(".admin_submitted_row_checkbox").forEach((checkbox) => {
+            const row = checkbox.closest("tr");
+            const entityId = getSubmittedRowId(row);
+            if (entityId) {
+                checkbox.dataset.entityId = entityId;
+                if (row) row.dataset.entityId = entityId;
+            }
+        });
+        const actionBar = card.querySelector(".admin_table_action_bar_top");
+        if (!actionBar || actionBar.querySelector(".admin_select_all_submitted_button")) {
+            return;
+        }
+        const selectAllButton = document.createElement("button");
+        selectAllButton.type = "button";
+        selectAllButton.className = "admin_select_all_submitted_button";
+        selectAllButton.textContent = "모든 행 선택";
+        let allSelected = false;
+        selectAllButton.addEventListener("click", () => {
+            allSelected = !allSelected;
+            outputTable.querySelectorAll(".admin_submitted_row_checkbox").forEach((checkbox) => {
+                checkbox.checked = allSelected;
+            });
+            selectAllButton.textContent = allSelected ? "모든 행 해제" : "모든 행 선택";
+        });
+        actionBar.prepend(selectAllButton);
+    };
+    const buildAutoPlaceholderCell = (text = "자동계산") => {
+        const cell = document.createElement("td");
+        cell.innerHTML = `<span class="delta_value is_placeholder">${escapeHtml(text)}</span>`;
+        return cell;
+    };
+    const detachCellBySelector = (form, selector) => {
+        const field = form.querySelector(selector);
+        return field ? field.closest("td") : null;
+    };
+    const buildMergedDraftRow = (form) => {
+        const action = String(form.getAttribute("action") || "");
+        const row = document.createElement("tr");
+        row.className = "admin_merged_draft_row";
+        const checkboxCell = form.querySelector(".admin_input_row_checkbox")?.closest("td");
+        const fieldCell = (name) => detachCellBySelector(form, `[name="${name}"]`);
+        let cells = [];
+        if (action.endsWith("/product-test-rounds/create")) {
+            cells = [
+                checkboxCell,
+                fieldCell("test_round_id"),
+                fieldCell("upstream_release_id"),
+                fieldCell("upstream_release_system"),
+                buildAutoPlaceholderCell(),
+                fieldCell("migration_status"),
+                fieldCell("remark"),
+            ];
+        } else if (action.endsWith("/product-test-targets/create")) {
+            cells = [
+                checkboxCell,
+                fieldCell("product_test_target_id"),
+                fieldCell("product_code"),
+                fieldCell("manufacturer"),
+                fieldCell("model_name"),
+                fieldCell("hardware_revision"),
+                fieldCell("default_software_version"),
+                fieldCell("default_firmware_version"),
+                fieldCell("serial_number"),
+                fieldCell("software_version"),
+                fieldCell("firmware_version"),
+                fieldCell("manufacture_lot"),
+                fieldCell("product_test_target_status"),
+                fieldCell("remark"),
+            ];
+        } else if (action.endsWith("/product-test-environments/create")) {
+            cells = [
+                checkboxCell,
+                fieldCell("product_test_environment_id"),
+                fieldCell("product_test_environment_name"),
+                fieldCell("test_country"),
+                fieldCell("test_city"),
+                fieldCell("test_company"),
+                fieldCell("test_room"),
+                fieldCell("network_type"),
+                fieldCell("test_computer_name"),
+                fieldCell("operating_system_version"),
+                fieldCell("test_tool_name"),
+                fieldCell("test_tool_version"),
+                fieldCell("power_voltage"),
+                fieldCell("power_frequency"),
+                fieldCell("power_connector_type"),
+                fieldCell("power_condition"),
+                fieldCell("captured_at"),
+                fieldCell("product_test_environment_status"),
+                fieldCell("remark"),
+            ];
+        } else if (action.endsWith("/product-test-cases/create")) {
+            cells = [
+                checkboxCell,
+                fieldCell("product_test_case_id"),
+                fieldCell("product_test_case_title"),
+                fieldCell("test_category"),
+                fieldCell("test_objective"),
+                fieldCell("precondition"),
+                fieldCell("expected_result"),
+                fieldCell("product_test_case_status"),
+                fieldCell("remark"),
+            ];
+        } else if (action.endsWith("/product-test-procedures/create")) {
+            cells = [
+                checkboxCell,
+                fieldCell("product_test_procedure_id"),
+                fieldCell("product_test_case_id"),
+                fieldCell("procedure_sequence"),
+                fieldCell("procedure_action"),
+                fieldCell("acceptance_criteria"),
+                fieldCell("required_evidence_type"),
+                fieldCell("product_test_procedure_status"),
+                fieldCell("remark"),
+            ];
+        } else if (action.endsWith("/product-test-reports/create")) {
+            cells = [
+                checkboxCell,
+                buildAutoPlaceholderCell(),
+                fieldCell("test_round_id"),
+                fieldCell("product_test_report_type"),
+                buildAutoPlaceholderCell("DRAFT"),
+                fieldCell("product_test_report_title"),
+                fieldCell("remark"),
+            ];
+        }
+        cells.filter(Boolean).forEach((cell) => row.appendChild(cell));
+        return row.children.length ? row : null;
+    };
+    const mergeAdminDraftRowIntoOutputTable = (form) => {
+        const card = form.closest(".card");
+        const action = String(form.getAttribute("action") || "");
+        if (!card || form.dataset.mergeReady === "true") {
+            return;
+        }
+        const wraps = Array.from(card.querySelectorAll(".tester_table_wrap"));
+        if (wraps.length < 2) {
+            return;
+        }
+        const inputWrap = wraps[0];
+        const outputWrap = wraps[1];
+        const actionBar = card.querySelector(".admin_table_action_bar_top");
+        if (actionBar && actionBar.parentElement !== form) {
+            form.appendChild(actionBar);
+        }
+        if (outputWrap.parentElement !== form) {
+            form.appendChild(outputWrap);
+        }
+        const outputTbody = outputWrap.querySelector("table.basic_table tbody");
+        const mergedDraftRow = buildMergedDraftRow(form);
+        if (!outputTbody || !mergedDraftRow) {
+            return;
+        }
+        outputTbody.appendChild(mergedDraftRow);
+        inputWrap.style.display = "none";
+        form.dataset.mergeReady = "true";
+    };
+    const validateIdFieldsBeforeSubmit = async (form) => {
+        const res = await fetchValidateIdentifiers(form);
+        if (res.ok || !res.errors.length) {
+            return true;
+        }
+        const first = res.errors[0];
+        showNotice({
+            message: first.message || getIdValidationMessage(first.field),
+            level: "guide",
+            mode: "non_modal",
+        });
+        return false;
+    };
+    const syncProductTestReleaseIdReadonly = async (form) => {
+        const action = String(form.getAttribute("action") || "");
+        if (!action.endsWith("/product-test-rounds/create")) {
+            return;
+        }
+        const releaseIdField = form.querySelector('[name="test_round_id"]');
+        if (!(releaseIdField instanceof HTMLInputElement)) {
+            return;
+        }
+        const candidates = await fetchIdCandidates(form, "test_round_id");
+        const candidate = String(candidates[0] || "").trim();
+        const current = String(releaseIdField.value || "").trim();
+        const userLocked = releaseIdField.dataset.userLocked === "true";
+        const matchesAuto = Boolean(candidate && current === candidate);
+        releaseIdField.readOnly = matchesAuto && !userLocked;
+        releaseIdField.classList.toggle("is_auto_derived_release_id", releaseIdField.readOnly);
+        if (!releaseIdField.readOnly) {
+            releaseIdField.removeAttribute("title");
+        }
+    };
+    const attachIdGuides = (form) => {
+        const action = String(form.getAttribute("action") || "");
+        const idFields = Array.from(form.querySelectorAll('input[name$="_id"]'));
+        idFields.forEach(bindManualOverride);
+
+        if (action.endsWith("/product-test-rounds/create")) {
+            const releaseIdField = form.querySelector('[name="test_round_id"]');
+            const upstreamField = form.querySelector('[name="upstream_release_id"]');
+            const refresh = async () => {
+                const candidates = await fetchIdCandidates(form, "test_round_id");
+                setAutofillValue(releaseIdField, candidates[0] || "");
+                await syncProductTestReleaseIdReadonly(form);
+            };
+            upstreamField?.addEventListener("input", () => void refresh());
+            upstreamField?.addEventListener("change", () => void refresh());
+            releaseIdField?.addEventListener("dblclick", () => {
+                if (!(releaseIdField instanceof HTMLInputElement) || !releaseIdField.readOnly) {
+                    return;
+                }
+                releaseIdField.readOnly = false;
+                releaseIdField.dataset.userLocked = "true";
+                releaseIdField.classList.remove("is_auto_derived_release_id");
+                releaseIdField.removeAttribute("title");
+                window.setTimeout(() => {
+                    try {
+                        releaseIdField.focus({ preventScroll: true });
+                        releaseIdField.select();
+                    } catch (_e) {
+                        try {
+                            releaseIdField.focus();
+                        } catch (_e2) {
+                            /* noop */
+                        }
+                    }
+                }, 0);
+            });
+            void refresh();
+            return;
+        }
+                setAutofillValue(definitionIdField, candidateValues[0]);
+                if (!String(productCodeField?.value || "").trim()) {
+                    setAutofillValue(productCodeField, stripTypedIdPrefix(candidateValues[0], "SQA_PRODUCT_TEST_TARGET_DEFINITION_ID-"));
+                }
+            };
+            modelField?.addEventListener("input", () => void refresh());
+            modelField?.addEventListener("change", () => void refresh());
+            void refresh();
+            return;
+        }
+
+        if (action.endsWith("/product-test-targets/create")) {
+            const targetIdField = form.querySelector('[name="product_test_target_id"]');
+            const modelField = form.querySelector('[name="model_name"]');
+            const serialField = form.querySelector('[name="serial_number"]');
+            const refresh = async () => {
+                const candidates = await fetchIdCandidates(form, "product_test_target_id");
+                setAutofillValue(targetIdField, candidates[0] || "");
+            };
+            modelField?.addEventListener("input", () => void refresh());
+            modelField?.addEventListener("change", () => void refresh());
+            serialField?.addEventListener("input", () => void refresh());
+            serialField?.addEventListener("change", () => void refresh());
+            void refresh();
+            return;
+        }
+
+        if (action.endsWith("/product-test-environments/create")) {
+            const environmentIdField = form.querySelector('[name="product_test_environment_id"]');
+            const companyField = form.querySelector('[name="test_company"]');
+            const cityField = form.querySelector('[name="test_city"]');
+            const roomField = form.querySelector('[name="test_room"]');
+            const capturedAtField = form.querySelector('[name="captured_at"]');
+            const refresh = async () => {
+                const candidates = await fetchIdCandidates(form, "product_test_environment_id");
+                setAutofillValue(environmentIdField, candidates[0] || "");
+            };
+            [companyField, cityField, roomField, capturedAtField].forEach((field) => {
+                field?.addEventListener("input", () => void refresh());
+                field?.addEventListener("change", () => void refresh());
+            });
+            void refresh();
+            return;
+        }
+
+        if (action.endsWith("/product-test-cases/create")) {
+            const caseIdField = form.querySelector('[name="product_test_case_id"]');
+            const categoryField = form.querySelector('[name="test_category"]');
+            const titleField = form.querySelector('[name="product_test_case_title"]');
+            const refresh = async () => {
+                const candidates = await fetchIdCandidates(form, "product_test_case_id");
+                setAutofillValue(caseIdField, candidates[0] || "");
+            };
+            categoryField?.addEventListener("input", () => void refresh());
+            categoryField?.addEventListener("change", () => void refresh());
+            titleField?.addEventListener("input", () => void refresh());
+            titleField?.addEventListener("change", () => void refresh());
+            void refresh();
+            return;
+        }
+
+        if (action.endsWith("/product-test-procedures/create")) {
+            const procedureIdField = form.querySelector('[name="product_test_procedure_id"]');
+            const caseField = form.querySelector('[name="product_test_case_id"]');
+            const sequenceField = form.querySelector('[name="procedure_sequence"]');
+            const refresh = async () => {
+                const candidates = await fetchIdCandidates(form, "product_test_procedure_id");
+                setAutofillValue(procedureIdField, candidates[0] || "");
+            };
+            caseField?.addEventListener("change", () => void refresh());
+            sequenceField?.addEventListener("input", () => void refresh());
+            sequenceField?.addEventListener("change", () => void refresh());
+            void refresh();
+        }
+    };
+
+    const getHeaderLabelForField = (table, draftRow, fieldName) => {
+        const headers = Array.from(table.querySelectorAll("thead tr th"));
+        const cells = Array.from(draftRow.children);
+        for (let i = 0; i < cells.length; i += 1) {
+            if (cells[i].querySelector(`[name="${fieldName}"]`)) {
+                return String(headers[i]?.textContent || fieldName).trim() || fieldName;
+            }
+        }
+        return fieldName;
+    };
+
+    const focusAdminField = (element) => {
+        if (!element || !(element instanceof HTMLElement)) {
+            return;
+        }
+        element.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+        window.setTimeout(() => {
+            try {
+                element.focus({ preventScroll: true });
+            } catch (_error) {
+                try {
+                    element.focus();
+                } catch (_e2) {
+                    /* noop */
+                }
+            }
+        }, 320);
+    };
+
+    const bindColumnHeaderNavigation = (form) => {
+        const draftRow = form.querySelector("tr.admin_merged_draft_row");
+        const table = draftRow?.closest("table");
+        if (!table || table.dataset.adminColumnNavBound === "1") {
+            return;
+        }
+        table.dataset.adminColumnNavBound = "1";
+        const action = String(form.getAttribute("action") || "");
+        const plan = ADMIN_WRITE_ORDER_PLANS[action] || null;
+        table.querySelectorAll("thead th").forEach((th) => {
+            th.classList.add("admin_column_header_action");
+        });
+        table.addEventListener("click", async (event) => {
+            const th = event.target.closest("thead th");
+            if (!th || !table.contains(th)) {
+                return;
+            }
+            const wrap = table.closest(".tester_table_wrap");
+            if (wrap && wrap.style.display === "none") {
+                return;
+            }
+            const headerText = String(th.textContent || "").trim();
+            if (!headerText) {
+                return;
+            }
+            const headerRow = th.parentElement;
+            const colIndex = Array.from(headerRow.children).indexOf(th);
+            const row = form.querySelector("tr.admin_merged_draft_row");
+            if (!row || !row.children[colIndex]) {
+                return;
+            }
+            const cell = row.children[colIndex];
+            if (colIndex === 0) {
+                const checkbox = cell.querySelector("input.admin_input_row_checkbox");
+                if (checkbox) {
+                    focusAdminField(checkbox);
+                }
+                return;
+            }
+            const widget = cell.querySelector("input,select,textarea");
+            if (
+                !(widget instanceof HTMLInputElement) &&
+                !(widget instanceof HTMLSelectElement) &&
+                !(widget instanceof HTMLTextAreaElement)
+            ) {
+                showNotice({
+                    message: `${headerText} 열은 자동 반영 값입니다. 편집 가능한 다른 열 헤더를 눌러 주세요.`,
+                    level: "guide",
+                    mode: "non_modal",
+                    title: "",
+                });
+                return;
+            }
+            const fieldName = String(widget.name || "").trim();
+            if (!fieldName) {
+                return;
+            }
+            const block = plan ? await fetchFirstBlockingPrerequisite(form, fieldName) : null;
+            if (block && block.element !== widget) {
+                const blockLabel = getHeaderLabelForField(table, row, block.fieldName);
+                const message = [
+                    `「${headerText}」을(를) 채우려면 먼저 선행 항목을 완료해야 합니다.`,
+                    "",
+                    `먼저 입력: ${blockLabel}`,
+                    "",
+                    "잠시 후 해당 입력칸으로 스크롤·포커스합니다.",
+                ].join("\n");
+                showNotice({
+                    message,
+                    level: "guide",
+                    mode: "non_modal",
+                    title: "",
+                });
+                window.setTimeout(() => focusAdminField(block.element), 480);
+                return;
+            }
+            focusAdminField(widget);
+        });
+    };
+
+    const renderHighlightedText = (text, query) => {
+        const sourceText = String(text || "");
+        const normalizedQuery = String(query || "").trim();
+        if (!normalizedQuery) {
+            return sourceText
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+        }
+        const matchIndex = sourceText.toLowerCase().indexOf(normalizedQuery.toLowerCase());
+        const escaped = (value) =>
+            String(value || "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+        if (matchIndex >= 0) {
+            const before = escaped(sourceText.slice(0, matchIndex));
+            const hit = escaped(sourceText.slice(matchIndex, matchIndex + normalizedQuery.length));
+            const after = escaped(sourceText.slice(matchIndex + normalizedQuery.length));
+            return `${before}<span class="fzf-hit">${hit}</span>${after}`;
+        }
+        return escaped(sourceText);
+    };
+    const ensureAutocompleteShell = (inputElement) => {
+        if (!(inputElement instanceof HTMLInputElement)) {
+            return null;
+        }
+        const parent = inputElement.parentElement;
+        if (parent && parent.classList.contains("autocomplete-shell")) {
+            return parent;
+        }
+        const shell = document.createElement("div");
+        shell.className = "autocomplete-shell";
+        inputElement.parentNode.insertBefore(shell, inputElement);
+        shell.appendChild(inputElement);
+        return shell;
+    };
+    const buildFzfMenu = () => {
+        const menu = document.createElement("div");
+        menu.className = "fzf-menu";
+        menu.setAttribute("role", "listbox");
+        menu.hidden = true;
+        return menu;
+    };
+    const fuzzyScore = (candidateText, queryText) => {
+        const candidate = String(candidateText || "").toLowerCase();
+        const query = String(queryText || "").toLowerCase().trim();
+        if (!query) {
+            return 1;
+        }
+        if (candidate.startsWith(query)) {
+            return 400 - candidate.length;
+        }
+        if (candidate.includes(query)) {
+            return 300 - candidate.indexOf(query);
+        }
+        let cursor = 0;
+        let score = 200;
+        for (const character of query) {
+            const index = candidate.indexOf(character, cursor);
+            if (index < 0) {
+                return Number.NEGATIVE_INFINITY;
+            }
+            score -= index - cursor;
+            cursor = index + 1;
+        }
+        return score;
+    };
+    const enhanceFzfLikeInput = (inputElement) => {
+        if (!(inputElement instanceof HTMLInputElement)) {
+            return;
+        }
+        const listId = inputElement.getAttribute("list");
+        const hasGeneratedIdCandidates = Boolean(idValidationRules[String(inputElement.name || "").trim()]);
+        if (!listId && !hasGeneratedIdCandidates) {
+            return;
+        }
+        const listNode = listId ? document.getElementById(listId) : null;
+        if (!listNode && !hasGeneratedIdCandidates) {
+            return;
+        }
+        const shell = ensureAutocompleteShell(inputElement);
+        if (!shell) {
+            return;
+        }
+        const fzfForm = inputElement.closest("form");
+        const menu = buildFzfMenu();
+        document.body.appendChild(menu);
+        let activeIndex = -1;
+        let visibleOptions = [];
+        let positionCleanups = [];
+        let positioningAttached = false;
+        const detachMenuPositioning = () => {
+            positioningAttached = false;
+            positionCleanups.forEach((fn) => {
+                try {
+                    fn();
+                } catch (_error) {
+                    /* noop */
+                }
+            });
+            positionCleanups = [];
+        };
+        const syncMenuViewportPosition = () => {
+            if (menu.hidden || !inputElement.isConnected) {
+                return;
+            }
+            const rect = inputElement.getBoundingClientRect();
+            const margin = 6;
+            const viewportW = window.innerWidth;
+            const viewportH = window.innerHeight;
+            const maxMenuHeight = 280;
+            let width = Math.max(240, rect.width);
+            width = Math.min(width, Math.min(560, viewportW * 0.92));
+            let left = Math.min(Math.max(8, rect.left), viewportW - width - 8);
+            menu.style.width = `${Math.round(width)}px`;
+            menu.style.left = `${Math.round(left)}px`;
+            menu.style.top = `${Math.round(rect.bottom + margin)}px`;
+            menu.style.maxHeight = `${maxMenuHeight}px`;
+            void menu.offsetHeight;
+            const menuRect = menu.getBoundingClientRect();
+            const spaceBelow = viewportH - rect.bottom - margin;
+            const spaceAbove = rect.top - margin;
+            if (menuRect.height > Math.max(0, spaceBelow - 8) && spaceAbove > spaceBelow) {
+                const desiredTop = rect.top - margin - menuRect.height;
+                const topClamped = Math.max(8, desiredTop);
+                menu.style.top = `${Math.round(topClamped)}px`;
+                const newMax = Math.min(maxMenuHeight, Math.max(120, rect.top - topClamped - margin));
+                menu.style.maxHeight = `${Math.floor(newMax)}px`;
+            }
+        };
+        const scheduleMenuPosition = () => {
+            if (menu.hidden) {
+                return;
+            }
+            window.requestAnimationFrame(() => {
+                syncMenuViewportPosition();
+            });
+        };
+        const attachMenuPositioning = () => {
+            if (positioningAttached) {
+                return;
+            }
+            positioningAttached = true;
+            const onResize = () => scheduleMenuPosition();
+            window.addEventListener("resize", onResize, { passive: true });
+            positionCleanups.push(() => window.removeEventListener("resize", onResize));
+            const onWindowScroll = () => scheduleMenuPosition();
+            window.addEventListener("scroll", onWindowScroll, { passive: true });
+            positionCleanups.push(() => window.removeEventListener("scroll", onWindowScroll));
+            let walk = inputElement.parentElement;
+            while (walk && walk !== document.documentElement) {
+                const style = window.getComputedStyle(walk);
+                const ox = style.overflowX;
+                const oy = style.overflowY;
+                if (
+                    ox === "auto" ||
+                    ox === "scroll" ||
+                    ox === "overlay" ||
+                    oy === "auto" ||
+                    oy === "scroll" ||
+                    oy === "overlay"
+                ) {
+                    const captured = walk;
+                    const onScroll = () => scheduleMenuPosition();
+                    captured.addEventListener("scroll", onScroll, { passive: true });
+                    positionCleanups.push(() => captured.removeEventListener("scroll", onScroll));
+                }
+                walk = walk.parentElement;
+            }
+        };
+        const readOptionsAsync = async () => {
+            const fromList = listNode
+                ? Array.from(listNode.querySelectorAll("option")).map((option) => String(option.value || "").trim())
+                : [];
+            const fromApi =
+                hasGeneratedIdCandidates && fzfForm
+                    ? await fetchIdCandidates(fzfForm, String(inputElement.name || "").trim())
+                    : [];
+            return uniqueNonEmpty([...fromList, ...fromApi]);
+        };
+        const closeMenu = () => {
+            detachMenuPositioning();
+            menu.hidden = true;
+            menu.innerHTML = "";
+            activeIndex = -1;
+            visibleOptions = [];
+        };
+        const applyValue = (value) => {
+            inputElement.value = value;
+            inputElement.dispatchEvent(new Event("input", { bubbles: true }));
+            inputElement.dispatchEvent(new Event("change", { bubbles: true }));
+            closeMenu();
+        };
+        const refreshMenu = async () => {
+            const queryText = String(inputElement.value || "").trim();
+            const optionSource = await readOptionsAsync();
+            visibleOptions = optionSource
+                .map((value) => ({ value, score: fuzzyScore(value, queryText) }))
+                .filter((record) => record.score > Number.NEGATIVE_INFINITY)
+                .sort((left, right) => right.score - left.score || left.value.localeCompare(right.value))
+                .slice(0, 12)
+                .map((record) => record.value);
+            if (!visibleOptions.length) {
+                closeMenu();
+                return;
+            }
+            if (activeIndex < 0 || activeIndex >= visibleOptions.length) {
+                activeIndex = 0;
+            }
+            menu.innerHTML = visibleOptions.map((value, index) => `
+                <div class="fzf-item${index === activeIndex ? " is-active" : ""}" data-fzf-index="${index}" role="option">
+                    ${renderHighlightedText(value, queryText)}
+                </div>
+            `).join("");
+            menu.hidden = false;
+            attachMenuPositioning();
+            scheduleMenuPosition();
+            window.requestAnimationFrame(() => {
+                scheduleMenuPosition();
+            });
+            menu.querySelectorAll("[data-fzf-index]").forEach((itemElement) => {
+                itemElement.addEventListener("mousedown", (event) => {
+                    event.preventDefault();
+                    const index = Number(itemElement.getAttribute("data-fzf-index"));
+                    const targetValue = visibleOptions[index];
+                    if (targetValue) {
+                        applyValue(targetValue);
+                    }
+                });
+            });
+        };
+        const refreshActiveItem = () => {
+            menu.querySelectorAll("[data-fzf-index]").forEach((itemElement, index) => {
+                itemElement.classList.toggle("is-active", index === activeIndex);
+            });
+        };
+        inputElement.setAttribute("autocomplete", "off");
+        inputElement.addEventListener("focus", () => void refreshMenu());
+        inputElement.addEventListener("input", () => void refreshMenu());
+        inputElement.addEventListener("keydown", (event) => {
+            if (menu.hidden || !visibleOptions.length) {
+                return;
+            }
+            if (event.key === "ArrowDown") {
+                event.preventDefault();
+                activeIndex = Math.min(activeIndex + 1, visibleOptions.length - 1);
+                refreshActiveItem();
+                scheduleMenuPosition();
+                const activeNode = menu.querySelector(".fzf-item.is-active");
+                if (activeNode && typeof activeNode.scrollIntoView === "function") {
+                    activeNode.scrollIntoView({ block: "nearest" });
+                }
+                return;
+            }
+            if (event.key === "ArrowUp") {
+                event.preventDefault();
+                activeIndex = Math.max(activeIndex - 1, 0);
+                refreshActiveItem();
+                scheduleMenuPosition();
+                const activeNode = menu.querySelector(".fzf-item.is-active");
+                if (activeNode && typeof activeNode.scrollIntoView === "function") {
+                    activeNode.scrollIntoView({ block: "nearest" });
+                }
+                return;
+            }
+            if (event.key === "Enter" && visibleOptions[activeIndex]) {
+                event.preventDefault();
+                applyValue(visibleOptions[activeIndex]);
+                return;
+            }
+            if (event.key === "Escape") {
+                event.preventDefault();
+                closeMenu();
+            }
+        });
+        inputElement.addEventListener("blur", () => {
+            window.setTimeout(() => {
+                const active = document.activeElement;
+                if (!shell.contains(active) && !menu.contains(active)) {
+                    closeMenu();
+                }
+            }, 120);
+        });
+    };
+
+    const toStorageKey = (form) => `admin_autosave_v1:${form.getAttribute("action") || ""}`;
+    const submittedFingerprintStorageKey = (form) =>
+        `admin_last_submitted_fp:v1:${form.getAttribute("action") || ""}`;
+    const safeSessionStorageSet = (key, value) => {
+        try {
+            sessionStorage.setItem(key, value);
+        } catch (_e) {}
+    };
+    const safeSessionStorageGet = (key) => {
+        try {
+            return sessionStorage.getItem(key);
+        } catch (_e) {
+            return null;
+        }
+    };
+    const toStateLabel = (_form) => null;
+    const setState = (form, text, type = "") => {
+        const state = toStateLabel(form);
+        if (!state) {
+            return;
+        }
+        state.textContent = text;
+        state.className = `admin_auto_state${type ? ` is_${type}` : ""}`;
+    };
+    const getFields = (form) =>
+        Array.from(form.querySelectorAll("input[name], select[name], textarea[name]")).filter(
+            (field) => field.name !== "return_to"
+        );
+    const serialize = (form) => {
+        const payload = {};
+        for (const field of getFields(form)) {
+            payload[field.name] = (field.value || "").trim();
+        }
+        return payload;
+    };
+    const collectDatalistHintsForForm = (form) => {
+        const hints = {};
+        form.querySelectorAll("input[list], textarea[list]").forEach((el) => {
+            if (!(el instanceof HTMLInputElement) && !(el instanceof HTMLTextAreaElement)) {
+                return;
+            }
+            const listId = el.getAttribute("list");
+            if (!listId) {
+                return;
+            }
+            const node = document.getElementById(listId);
+            if (!node) {
+                return;
+            }
+            const opts = Array.from(node.querySelectorAll("option"))
+                .map((o) => String(o.value || "").trim())
+                .filter(Boolean);
+            if (opts.length && el.name) {
+                hints[el.name] = opts;
+            }
+        });
+        form.querySelectorAll("select[name]").forEach((sel) => {
+            const opts = Array.from(sel.options)
+                .map((o) => String(o.value || "").trim())
+                .filter(Boolean);
+            if (opts.length && sel.name) {
+                hints[sel.name] = opts;
+            }
+        });
+        return hints;
+    };
+    const fetchIdCandidates = async (form, fieldName) => {
+        const action = String(form.getAttribute("action") || "");
+        const response = await fetch("/admin/api/product-test/ui/id-candidates", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+                "X-Requested-With": "XMLHttpRequest",
+            },
+            body: JSON.stringify({
+                form_action: action,
+                field_name: fieldName,
+                values: serialize(form),
+                datalist_hints: collectDatalistHintsForForm(form),
+            }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data || !Array.isArray(data.candidates)) {
+            return [];
+        }
+        return data.candidates;
+    };
+    const fetchValidateIdentifiers = async (form) => {
+        const response = await fetch("/admin/api/product-test/ui/validate-identifiers", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+                "X-Requested-With": "XMLHttpRequest",
+            },
+            body: JSON.stringify({ values: serialize(form) }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data) {
+            return { ok: false, errors: [{ field: "", message: "식별자 검증 요청에 실패했습니다." }] };
+        }
+        return { ok: Boolean(data.ok), errors: Array.isArray(data.errors) ? data.errors : [] };
+    };
+    const fetchFirstBlockingPrerequisite = async (form, targetFieldName) => {
+        const action = String(form.getAttribute("action") || "");
+        const response = await fetch("/admin/api/product-test/ui/first-blocking-prerequisite", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+                "X-Requested-With": "XMLHttpRequest",
+            },
+            body: JSON.stringify({
+                form_action: action,
+                target_field_name: targetFieldName,
+                values: serialize(form),
+            }),
+        });
+        const data = await response.json().catch(() => ({}));
+        const name = data && data.blocking_field_name ? String(data.blocking_field_name) : "";
+        if (!name) {
+            return null;
+        }
+        const el = form.querySelector(`[name="${name}"]`);
+        if (!(el instanceof HTMLElement)) {
+            return null;
+        }
+        return { fieldName: name, element: el };
+    };
+    const fingerprint = (payload) => JSON.stringify(payload);
+    const hasAnyValue = (payload) => Object.values(payload).some((value) => String(value || "").trim() !== "");
+    const isComplete = (form, payload) =>
+        getFields(form)
+            .filter((field) => field.required)
+            .every((field) => String(payload[field.name] || "").trim() !== "");
+    const persistDraft = (form, payload) => {
+        if (!hasAnyValue(payload)) {
+            localStorage.removeItem(toStorageKey(form));
+            return false;
+        }
+        localStorage.setItem(toStorageKey(form), JSON.stringify(payload));
+        return true;
+    };
+    const restoreDraft = (form) => {
+        const raw = localStorage.getItem(toStorageKey(form));
+        if (!raw) {
+            return;
+        }
+        try {
+            const payload = JSON.parse(raw);
+            for (const field of getFields(form)) {
+                if (Object.prototype.hasOwnProperty.call(payload, field.name)) {
+                    field.value = payload[field.name] || "";
+                }
+            }
+            setState(form, "자동저장 복원", "info");
+        } catch (_error) {
+            localStorage.removeItem(toStorageKey(form));
+        }
+    };
+    const resetFormAfterSubmit = async (form, submittedFingerprint) => {
+        form.reset();
+        localStorage.removeItem(toStorageKey(form));
+        form.dataset.lastSubmittedFingerprint =
+            typeof submittedFingerprint === "string" && submittedFingerprint.length > 0
+                ? submittedFingerprint
+                : "";
+        form.dataset.lastInvalidIdMessage = "";
+        const checkbox = form.querySelector(".admin_input_row_checkbox");
+        if (checkbox) {
+            checkbox.checked = false;
+        }
+        setState(form, "제출 완료", "success");
+        await syncProductTestReleaseIdReadonly(form);
+    };
+    const clearFormDraftRow = async (form) => {
+        form.reset();
+        localStorage.removeItem(toStorageKey(form));
+        form.dataset.lastDraftFingerprint = "";
+        form.dataset.lastSubmittedFingerprint = "";
+        form.dataset.lastInvalidIdMessage = "";
+        const checkbox = form.querySelector(".admin_input_row_checkbox");
+        if (checkbox) {
+            checkbox.checked = false;
+        }
+        setState(form, "행 제거", "info");
+        await syncProductTestReleaseIdReadonly(form);
+    };
+    const submitNow = async (form, reasonText) => {
+        if (form.dataset.submitting === "true") {
+            return;
+        }
+        const payload = serialize(form);
+        const currentFingerprint = fingerprint(payload);
+        if (!hasAnyValue(payload) || !isComplete(form, payload)) {
+            return;
+        }
+        if (!(await validateIdFieldsBeforeSubmit(form))) {
+            return;
+        }
+        if ((form.dataset.lastSubmittedFingerprint || "") === currentFingerprint) {
+            return;
+        }
+        if (safeSessionStorageGet(submittedFingerprintStorageKey(form)) === currentFingerprint) {
+            form.dataset.lastSubmittedFingerprint = currentFingerprint;
+            return;
+        }
+        form.dataset.submitting = "true";
+        setState(form, "자동제출 중", "pending");
+        try {
+            const response = await fetch(form.getAttribute("action"), {
+                method: "POST",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Accept": "application/json",
+                },
+                body: new FormData(form),
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok || !data.ok) {
+                const message = (data && data.message) || "자동제출에 실패했습니다.";
+                setState(form, "제출 실패", "error");
+                showNotice({
+                    message: data.notice_message || message,
+                    level: data.notice_level || "error",
+                    mode: data.notice_mode || "non_modal",
+                    title: data.dialog_title || "",
+                });
+                return;
+            }
+            safeSessionStorageSet(submittedFingerprintStorageKey(form), currentFingerprint);
+            await resetFormAfterSubmit(form, currentFingerprint);
+            const submitSuccessConfig = adminNoticeConfig.submit_success || {};
+            insertSubmittedRow(form, data.created_row);
+            showNotice({
+                message: data.notice_message || `${reasonText}: ${submitSuccessConfig.suffix || "자동제출 되었습니다."}`,
+                level: data.notice_level || submitSuccessConfig.level || "success",
+                mode: data.notice_mode || submitSuccessConfig.mode || "non_modal",
+                title: data.dialog_title || "",
+            });
+        } catch (_error) {
+            setState(form, "제출 실패", "error");
+            const networkConfig = adminNoticeConfig.network_error || {};
+            showNotice({
+                message: networkConfig.message || "자동제출 중 네트워크 오류가 발생했습니다.",
+                level: networkConfig.level || "error",
+                mode: networkConfig.mode || "non_modal",
+                title: networkConfig.title || "",
+            });
+        } finally {
+            form.dataset.submitting = "false";
+        }
+    };
+    const queueSave = (form) => {
+        void (async () => {
+            const payload = serialize(form);
+            const payloadChanged = (form.dataset.lastDraftFingerprint || "") !== fingerprint(payload);
+            form.dataset.lastDraftFingerprint = fingerprint(payload);
+            const validation = await fetchValidateIdentifiers(form);
+            const invalidEntry = validation.ok ? null : validation.errors[0];
+            if (persistDraft(form, payload) && payloadChanged) {
+                setState(form, "자동저장됨", "success");
+                if (invalidEntry) {
+                    const invalidDraftConfig = adminNoticeConfig.draft_invalid_id || {};
+                    const warningMessage = `${invalidEntry.message} ${invalidDraftConfig.suffix || "자동제출 안 한다."}`.trim();
+                    if ((form.dataset.lastInvalidIdMessage || "") !== warningMessage) {
+                        showNotice({
+                            message: warningMessage,
+                            level: invalidDraftConfig.level || "error",
+                            mode: invalidDraftConfig.mode || "non_modal",
+                            title: invalidDraftConfig.title || "",
+                        });
+                        form.dataset.lastInvalidIdMessage = warningMessage;
+                    }
+                } else {
+                    form.dataset.lastInvalidIdMessage = "";
+                    showNotice({
+                        message: getNextEmptyColumnSuggestion(form, payload),
+                        level: "info",
+                        mode: "non_modal",
+                        title: "",
+                    });
+                }
+            } else if (!hasAnyValue(payload)) {
+                setState(form, "대기");
+                form.dataset.lastInvalidIdMessage = "";
+            } else {
+                setState(form, isComplete(form, payload) ? "제출 대기" : "입력 중", isComplete(form, payload) ? "pending" : "info");
+            }
+            if (form._adminAutoTimer) {
+                clearTimeout(form._adminAutoTimer);
+            }
+            form._adminAutoTimer = setTimeout(() => {
+                void submitNow(form, form.closest(".card")?.querySelector("h3")?.textContent?.trim() || "행");
+            }, 600);
+        })();
+    };
+
+    for (const form of forms) {
+        attachIdGuides(form);
+        mergeAdminDraftRowIntoOutputTable(form);
+        bindColumnHeaderNavigation(form);
+        restoreDraft(form);
+        await syncProductTestReleaseIdReadonly(form);
+        setupSubmittedTableSelection(form);
+        setState(form, "대기");
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            persistDraft(form, serialize(form));
+            await submitNow(form, form.closest(".card")?.querySelector("h3")?.textContent?.trim() || "행");
+        });
+        getFields(form).forEach((field) => {
+            field.addEventListener("input", () => queueSave(form));
+            field.addEventListener("change", () => queueSave(form));
+        });
+        const removeButton = form.querySelector(".admin_remove_rows_button");
+        if (removeButton) {
+            removeButton.addEventListener("click", () => {
+                const card = form.closest(".card");
+                const draftCheckbox = form.querySelector(".admin_input_row_checkbox");
+                const submittedRows = card
+                    ? Array.from(card.querySelectorAll(".admin_submitted_row_checkbox:checked"))
+                        .map(checkbox => checkbox.closest("tr"))
+                        .filter(Boolean)
+                        .filter(row => !row.classList.contains("admin_merged_draft_row"))
+                    : [];
+                const anySelectedCheckbox = card
+                    ? card.querySelector('input[type="checkbox"]:checked')
+                    : null;
+                if (!anySelectedCheckbox) {
+                    if (window.openMessageModal) {
+                        window.openMessageModal("Remove Rows 전에 Selected checkbox를 선택해 주세요.");
+                    }
+                    return;
+                }
+                if (submittedRows.length > 0) {
+                    void deleteSubmittedRows(form, submittedRows);
+                    return;
+                }
+                if (draftCheckbox && !draftCheckbox.checked) {
+                    if (window.openMessageModal) {
+                        window.openMessageModal("제출된 목록 행 삭제는 아직 지원 안 합니다. 입력행 Selected checkbox를 선택해 주세요.");
+                    }
+                    return;
+                }
+                void clearFormDraftRow(form);
+            });
+        }
+        const restoredPayload = serialize(form);
+        if (hasAnyValue(restoredPayload)) {
+            form.dataset.lastDraftFingerprint = fingerprint(restoredPayload);
+            setState(form, isComplete(form, restoredPayload) ? "제출 대기" : "입력 중", isComplete(form, restoredPayload) ? "pending" : "info");
+            if (isComplete(form, restoredPayload)) {
+                const fp = fingerprint(restoredPayload);
+                const lastSubmitted = safeSessionStorageGet(submittedFingerprintStorageKey(form));
+                if (lastSubmitted === fp) {
+                    localStorage.removeItem(toStorageKey(form));
+                    form.reset();
+                    form.dataset.lastSubmittedFingerprint = fp;
+                    form.dataset.lastDraftFingerprint = fingerprint(serialize(form));
+                    mergeAdminDraftRowIntoOutputTable(form);
+                    setState(form, "이미 제출된 내용과 동일한 초안을 비웠습니다.", "info");
+                    await syncProductTestReleaseIdReadonly(form);
+                } else {
+                    form._adminAutoTimer = setTimeout(() => {
+                        void submitNow(form, form.closest(".card")?.querySelector("h3")?.textContent?.trim() || "행");
+                    }, 600);
+                }
+            }
+        }
+    }
+    Array.from(document.querySelectorAll('form.admin_autosubmit_form input, form.admin_autosubmit_form textarea')).forEach(enhanceFzfLikeInput);
+
+    /* ── 테이블 폭 토글: 카드별 COMPACT ↔ 히스토리(원본) ───────────────── */
+    (function initCardTableWidthToggle() {
+        const STORAGE_KEY = "card_compact_v1";
+
+        function loadStates() {
+            try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }
+            catch { return {}; }
+        }
+        function saveState(cardKey, compact) {
+            const s = loadStates();
+            s[cardKey] = compact ? "compact" : "history";
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch {}
+        }
+        function getCardKey(card) {
+            if (card.dataset.cardTitleKey) {
+                return "card__" + card.dataset.cardTitleKey;
+            }
+            const h3 = card.querySelector("h3");
+            return "card__" + (h3 ? h3.textContent.trim() : Array.from(document.querySelectorAll(".card")).indexOf(card));
+        }
+        function applyMode(card, btn, compact) {
+            if (compact) {
+                card.classList.add("compact_mode");
+                btn.textContent = "히스토리 폭";
+            } else {
+                card.classList.remove("compact_mode");
+                btn.textContent = "COMPACT";
+            }
+        }
+
+        if (typeof consolidateCardHeaderToolbar === "function") {
+            consolidateCardHeaderToolbar(document);
+        }
+
+        document.querySelectorAll(".card").forEach(card => {
+            if (card.classList.contains("admin_tab_region_shell") || card.id === "tracking_top_section") {
+                return;
+            }
+            const headerRow = card.querySelector(":scope > .section_header_row");
+            if (!headerRow) return;
+            const actionsHost =
+                headerRow.querySelector(":scope > .card_header_actions") ||
+                (typeof ensureCardHeaderActions === "function" ? ensureCardHeaderActions(headerRow) : headerRow);
+            if (actionsHost.querySelector(".card_compact_toggle_btn")) {
+                return;
+            }
+
+            // 카드별 버튼 주입
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "qc_mode_action_button card_compact_toggle_btn";
+            actionsHost.appendChild(btn);
+
+            const cardKey = getCardKey(card);
+            const states = loadStates();
+            const compact = states[cardKey] === "compact"; // 기본값 history
+            applyMode(card, btn, compact);
+
+            btn.addEventListener("click", () => {
+                const isCompact = card.classList.contains("compact_mode");
+                applyMode(card, btn, !isCompact);
+                saveState(cardKey, !isCompact);
+            });
+        });
+
+        // 전역 버튼(base.html) 이 있으면 숨김
+        const globalBtn = document.getElementById("table_width_toggle_button");
+        if (globalBtn) globalBtn.style.display = "none";
+    })();
+
+    (function initCrossTableHighlight() {
+        let selectedRow = null;
+
+        function clearHighlights() {
+            document.querySelectorAll(".admin_hl_selected, .admin_hl_related").forEach(el => {
+                el.classList.remove("admin_hl_selected", "admin_hl_related");
+            });
+            selectedRow = null;
+        }
+
+        function highlight(row) {
+            if (selectedRow === row) {
+                clearHighlights();
+                return;
+            }
+            clearHighlights();
+            selectedRow = row;
+            row.classList.add("admin_hl_selected");
+
+            const runId    = row.dataset.runId    || "";
+            const roundId  = row.dataset.roundId  || "";
+            const targetId = row.dataset.targetId || "";
+            const envId    = row.dataset.envId    || "";
+
+            document.querySelectorAll("tr.admin_hl_row").forEach(tr => {
+                if (tr === row) return;
+                const trRun    = tr.dataset.runId    || "";
+                const trRound  = tr.dataset.roundId  || "";
+                const trTarget = tr.dataset.targetId || "";
+                const trEnv    = tr.dataset.envId    || "";
+                let related = false;
+                if (runId) {
+                    // Run 행 클릭 → 같은 round/target/env 를 가진 non-run 행
+                    if (roundId  && trRound  === roundId  && !trRun) related = true;
+                    if (targetId && trTarget === targetId && !trRun) related = true;
+                    if (envId    && trEnv    === envId    && !trRun) related = true;
+                } else if (roundId) {
+                    // Round 행 클릭 → 같은 round_id 를 가진 run 행
+                    if (trRound === roundId && trRun) related = true;
+                } else if (targetId) {
+                    // Target 행 클릭 → 같은 target_id 를 가진 run 행
+                    if (trTarget === targetId && trRun) related = true;
+                } else if (envId) {
+                    // Env 행 클릭 → 같은 env_id 를 가진 run 행
+                    if (trEnv === envId && trRun) related = true;
+                }
+                if (related) tr.classList.add("admin_hl_related");
+            });
+        }
+
+        document.addEventListener("click", (event) => {
+            if (event.target.closest("input, button, select, a, label")) return;
+            const row = event.target.closest("tr.admin_hl_row");
+            if (!row) { clearHighlights(); return; }
+            highlight(row);
+        });
+    })();
+})();
+
+    // ── 컬럼 드래그앤드롭 순서 변경 (localStorage 유지) ─────────────────────
+    (function initColumnDragDrop() {
+        const STORAGE_KEY = "col_order_v1";
+
+        function loadAllOrders() {
+            try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }
+            catch { return {}; }
+        }
+        function saveAllOrders(obj) {
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(obj)); } catch {}
+        }
+        function getTableKey(table) {
+            const card = table.closest(".card");
+            const h3 = card && card.querySelector("h3");
+            if (h3) return "tbl__" + h3.textContent.trim();
+            const idx = Array.from(document.querySelectorAll("table.basic_table")).indexOf(table);
+            return "tbl__idx_" + idx;
+        }
+
+        // 현재 th 텍스트 배열 반환 (index 0 = 선택 고정이라 제외)
+        function getColLabels(table) {
+            return Array.from(table.querySelectorAll("thead tr th")).map(th => th.textContent.trim());
+        }
+
+        // order = 원래 컬럼 인덱스 배열 (index 0 항상 0 고정)
+        function applyOrder(table, order) {
+            const thead = table.querySelector("thead tr");
+            if (!thead) return;
+            const ths = Array.from(thead.querySelectorAll("th"));
+            if (order.length !== ths.length) return;
+
+            // 헤더 재정렬
+            order.forEach(origIdx => thead.appendChild(ths[origIdx]));
+
+            // 바디 모든 행 재정렬
+            table.querySelectorAll("tbody tr").forEach(row => {
+                const tds = Array.from(row.querySelectorAll("td, th"));
+                if (tds.length !== order.length) return;
+                order.forEach(origIdx => row.appendChild(tds[origIdx]));
+            });
+        }
+
+        function swapCols(table, fromIdx, toIdx) {
+            if (fromIdx === toIdx || fromIdx === 0 || toIdx === 0) return;
+            const ths = Array.from(table.querySelectorAll("thead tr th"));
+            const order = ths.map((_, i) => i);
+            // swap
+            [order[fromIdx], order[toIdx]] = [order[toIdx], order[fromIdx]];
+            applyOrder(table, order);
+
+            // 저장: 현재 th 순서를 라벨 배열로 저장
+            const allOrders = loadAllOrders();
+            allOrders[getTableKey(table)] = getColLabels(table);
+            saveAllOrders(allOrders);
+        }
+
+        function restoreOrder(table) {
+            const allOrders = loadAllOrders();
+            const saved = allOrders[getTableKey(table)];
+            if (!saved || !Array.isArray(saved)) return;
+            const current = getColLabels(table);
+            if (current.length !== saved.length) return;
+            // saved 순서대로 원래 인덱스 매핑
+            const order = saved.map(label => current.indexOf(label));
+            if (order.some(i => i === -1)) return; // 컬럼 구성 바뀐 경우 무시
+            applyOrder(table, order);
+        }
+
+        function bindDragDrop(table) {
+            let dragFromIdx = null;
+
+            table.querySelectorAll("thead tr th").forEach((th, idx) => {
+                if (idx === 0) return; // 선택 컬럼 고정
+                th.draggable = true;
+                th.style.cursor = "grab";
+
+                th.addEventListener("dragstart", e => {
+                    dragFromIdx = idx;
+                    th.classList.add("col_dragging");
+                    e.dataTransfer.effectAllowed = "move";
+                });
+                th.addEventListener("dragend", () => {
+                    th.classList.remove("col_dragging");
+                    table.querySelectorAll("th.col_drag_over").forEach(t => t.classList.remove("col_drag_over"));
+                    dragFromIdx = null;
+                });
+                th.addEventListener("dragover", e => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = "move";
+                    table.querySelectorAll("th.col_drag_over").forEach(t => t.classList.remove("col_drag_over"));
+                    th.classList.add("col_drag_over");
+                });
+                th.addEventListener("dragleave", () => {
+                    th.classList.remove("col_drag_over");
+                });
+                th.addEventListener("drop", e => {
+                    e.preventDefault();
+                    th.classList.remove("col_drag_over");
+                    const ths = Array.from(table.querySelectorAll("thead tr th"));
+                    const toIdx = ths.indexOf(th);
+                    if (dragFromIdx !== null && dragFromIdx !== toIdx) {
+                        swapCols(table, dragFromIdx, toIdx);
+                        // 드롭 후 새 위치의 th에 이벤트 다시 바인딩
+                        bindDragDrop(table);
+                    }
+                    dragFromIdx = null;
+                });
+            });
+
+            // 새 행 추가 감지: tbody에 MutationObserver
+            if (!table._colDndObserver) {
+                table._colDndObserver = new MutationObserver(() => {
+                    const allOrders = loadAllOrders();
+                    const saved = allOrders[getTableKey(table)];
+                    if (!saved) return;
+                    table.querySelectorAll("tbody tr").forEach(row => {
+                        if (row._colOrdered) return;
+                        row._colOrdered = true;
+                        const current = getColLabels(table);
+                        const order = saved.map(label => current.indexOf(label));
+                        if (order.some(i => i === -1)) return;
+                        const tds = Array.from(row.querySelectorAll("td, th"));
+                        if (tds.length !== order.length) return;
+                        order.forEach(origIdx => row.appendChild(tds[origIdx]));
+                    });
+                });
+                table._colDndObserver.observe(table.querySelector("tbody"), { childList: true });
+            }
+        }
+
+        // 데이터 테이블 = form 밖에 있는 basic_table
+        function getDataTables() {
+            return Array.from(document.querySelectorAll("table.basic_table"));
+        }
+
+        // CSS 스타일 주입
+        const style = document.createElement("style");
+        style.textContent = `
+            th.col_dragging { opacity: 0.5; background: var(--color-accent, #4a90d9) !important; color: #fff !important; }
+            th.col_drag_over { outline: 2px dashed var(--color-accent, #4a90d9); outline-offset: -2px; background: rgba(74,144,217,0.12) !important; }
+        `;
+        document.head.appendChild(style);
+
+        getDataTables().forEach(table => {
+            restoreOrder(table);
+            bindDragDrop(table);
+        });
+    })();
+</script>
+<script src="/static/js/tracking-client-log.js"></script>
+<script src="/static/js/tracking-ui-state.js"></script>
+<script src="/static/js/tracking-helpers.js"></script>
+<script src="/static/js/tracking-gantt-chart.js"></script>
+<script src="/static/js/tracking-gantt-resize.js"></script>
+<script src="/static/js/tracking-gantt-fold.js"></script>
+<script src="/static/js/tracking-col-drag.js"></script>
+<script src="/static/js/tracking-status.js"></script>
+<script src="/static/js/tracking-highlight.js"></script>
+<script src="/static/js/tracking-defect.js"></script>
+<script src="/static/js/tracking-render.js"></script>
+<script src="/static/js/tracking.js"></script>
+<script src="/static/js/admin-find-replace.js"></script><script src="/static/js/admin-row-delete.js"></script>
+</div>{# /admin_dash_compact #}
+{% endblock %}
