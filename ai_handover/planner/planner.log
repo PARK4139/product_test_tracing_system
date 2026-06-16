@@ -2,9 +2,43 @@
 
 ---
 
-## TASK 23 — Tab View 5 Status Log 시트 탭 제거 (2026-06-15)
+## TASK 24 — Environments 시트 전체 리네임 → Configs (2026-06-16)
 
 상태: ⏳ 계획만. **실행 = upserter (사용자/외부).** Claude 미실행.
+
+### 목적
+Tab View 5 의 Environments 엔티티 시트를 Configs 로 **전체** 리네임 (사용자 선택: 키+데이터+코드). TASK 21이 코드 식별자는 Config화했으나 custom_sheet_tab JSON 키/탭라벨은 보존 → 시트 표면 통일.
+
+### A. 데이터 (`custom_sheet_tab` 2행 UPDATE)
+- entity/environment(`sheet_1500a5b0bcb4`,6행): tab_label Environments→**Configs**; columns key+label `product_test_environment_{id,name,status}`→`product_test_config_*`; rows 동일 3키.
+- entity/run(`sheet_9eafbadce078`,41행): FK `product_test_environment_id`→`product_test_config_id` (cols+rows).
+- **region_key `entity/environment` 유지** (내부 식별자).
+
+### B. 코드 (시트 JSON 키 read 치환 `product_test_environment_id/_name`→`config`)
+- `tracking_router.py` 178,480,766(run FK),661,662,769,772
+- `custom_sheet_trace_service.py` 234,235(`environment_name`→`config_name`)
+- `product_test_run_service/_trace.py`(environment_summary 생성),`_runs.py`,`_list_queries.py`,`_exports.py` — `grep -n product_test_environment` 로 시트 dict 접근만 치환.
+
+### C. 다운스트림 (upserter 택1)
+environment_summary 출력키 + 템플릿 6개(trace/report/tester 패널) — **B-1 권장**: 출력키도 config + 템플릿 동반 수정. B-2: 별칭 유지 무수정.
+
+### 보존
+region_key `entity/environment`, ID값 `SQA_PRODUCT_TEST_ENVIRONMENT_ID-*`, `"environment_issue"` 코드.
+
+### 단계 (upserter)
+브랜치+백업 → B/C 코드치환(py_compile/node --check) → A 데이터 UPDATE(트랜잭션,wal_checkpoint) → 검증 → 커밋.
+
+### 검증 (tester)
+`GET /admin` 200·Configs 탭·헤더 config화, run↔config 조인 정상, `run_tests.cmd --auto` green (e2e 폼 `product_test_environment_id` 영향 점검).
+
+### ⚠️ 선행
+`product_test_config_unified` 테이블 부재 관측(TASK 23) → TASK 21 DB 마이그레이션 적용상태 먼저 확인.
+
+---
+
+## TASK 23 — Tab View 5 Status Log 시트 탭 제거 (2026-06-15)
+
+상태: ✅ upserter 적용 완료 (2026-06-15). 상세 `../upserter/upserter.log`.
 
 ### 목적
 Tab View 5 현재 9개 시트 탭 중 **Status Log만 useless** → 제거. 화면 정리 + 감사 무결성 보호.

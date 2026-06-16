@@ -2,6 +2,30 @@
 
 ---
 
+## TASK 23 — Tab View 5 Status Log 시트 탭 제거 (2026-06-15)
+
+계획: `../planner/planner.log` TASK 23.
+
+### 적용
+- 백업: `data/backups/pre_remove_status_log_20260615_223122.db`
+- dry-run: `region_key='entity/status_log'` → 1행 (`sheet_22c33bc82367`, Status Log) 확인.
+- `DELETE FROM custom_sheet_tab WHERE region_key='entity/status_log'` — 1행 삭제.
+- `PRAGMA wal_checkpoint(TRUNCATE)` 완료.
+- `custom_sheet_tab` count: 9 → 8.
+- `product_test_status_transition` count: 16 (불변).
+
+### 검증 필요 항목 (→ tester / 사용자)
+- [ ] `GET /admin` 200, Tab View 5 에서 Status Log 탭 사라짐 (탭 9→8)
+- [ ] trace 패널 감사이력 라이브 표시 여전
+- [ ] `run_tests.cmd --auto` green
+- [x] count 9→8, product_test_status_transition 16 불변 — upserter 확인
+- [x] 백업 생성 — upserter 확인
+
+### 롤백
+`data/backups/pre_remove_status_log_20260615_223122.db` 복원 (원본 테이블 무관, 손실 0).
+
+---
+
 ## TASK 21 — Environment → Config 전체 리네임 (2026-06-15)
 
 계획: `../planner/planner.log` TASK 21.
