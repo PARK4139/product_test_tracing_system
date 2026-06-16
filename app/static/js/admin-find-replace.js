@@ -48,10 +48,20 @@
     function isPK(cell) { return cell.dataset.primaryKey === "1"; }
 
     /* scan */
+    function listFieldNames() {
+        var names = {};
+        document.querySelectorAll("[data-incell-edit-table] td[data-field]").forEach(function (cell) {
+            if (cell.dataset.incellActions === "1") return;
+            if (cell.dataset.field) names[cell.dataset.field] = true;
+        });
+        return Object.keys(names).sort();
+    }
+
     function scanTables(opts) {
         var findText      = opts.findText;
         var matchWhole    = opts.matchWhole;
         var caseSensitive = opts.caseSensitive;
+        var fieldFilter   = opts.fieldName;
         if (!findText) return [];
         var needle  = caseSensitive ? findText : findText.toLowerCase();
         var results = [];
@@ -63,6 +73,7 @@
                 if (!entityType || !entityId) return;
                 row.querySelectorAll("td[data-field]").forEach(function (cell) {
                     if (cell.dataset.incellActions === "1") return;
+                    if (fieldFilter && cell.dataset.field !== fieldFilter) return;
                     var raw      = readCellText(cell);
                     var haystack = caseSensitive ? raw : raw.toLowerCase();
                     var matched  = matchWhole ? haystack === needle : haystack.indexOf(needle) !== -1;
@@ -144,6 +155,12 @@
               "</div>" +
               "<div class=\"admin_fr_body\">" +
                 "<div class=\"admin_fr_row\">" +
+                  "<label class=\"admin_fr_label\">컬럼</label>" +
+                  "<select id=\"admin_fr_column\" class=\"admin_fr_input\">" +
+                    "<option value=\"\">전체 컬럼</option>" +
+                  "</select>" +
+                "</div>" +
+                "<div class=\"admin_fr_row\">" +
                   "<label class=\"admin_fr_label\">찾을 텍스트</label>" +
                   "<input id=\"admin_fr_find\" class=\"admin_fr_input\" type=\"text\" placeholder=\"찾을 텍스트 입력…\" autocomplete=\"off\">" +
                 "</div>" +
@@ -171,10 +188,11 @@
         modal.addEventListener("click", function (e) { if (e.target === modal) closeModal(); });
         document.getElementById("admin_fr_scan_btn").addEventListener("click",  runPreview);
         document.getElementById("admin_fr_apply_btn").addEventListener("click", runApply);
-        ["admin_fr_find","admin_fr_replace","admin_fr_whole","admin_fr_case"].forEach(function (id) {
+        ["admin_fr_column","admin_fr_find","admin_fr_replace","admin_fr_whole","admin_fr_case"].forEach(function (id) {
             document.getElementById(id).addEventListener("input",  resetPreview);
             document.getElementById(id).addEventListener("change", resetPreview);
         });
+        document.getElementById("admin_fr_column").addEventListener("change", function () { lsSave("column", this.value); });
         document.getElementById("admin_fr_find").addEventListener("input", function () { lsSave("find", this.value); });
         document.getElementById("admin_fr_replace").addEventListener("input", function () { lsSave("replace", this.value); });
         document.getElementById("admin_fr_whole").addEventListener("change", function () { lsSave("substring", this.checked ? "1" : ""); });
@@ -188,6 +206,17 @@
     function openModal() {
         buildModal();
         getModal().style.display = "";
+        /* 컬럼 목록 갱신 */
+        var columnEl = document.getElementById("admin_fr_column");
+        if (columnEl) {
+            var savedColumn = lsLoad("column", "");
+            columnEl.innerHTML = "<option value=\"\">전체 컬럼</option>" +
+                listFieldNames().map(function (name) {
+                    return "<option value=\"" + esc(name) + "\">" + esc(name) + "</option>";
+                }).join("");
+            columnEl.value = savedColumn;
+            if (columnEl.value !== savedColumn) columnEl.value = "";
+        }
         /* localStorage 복원 */
         var findEl    = document.getElementById("admin_fr_find");
         var replaceEl = document.getElementById("admin_fr_replace");
@@ -220,6 +249,7 @@
 
     function getOpts() {
         return {
+            fieldName:     document.getElementById("admin_fr_column")  ? document.getElementById("admin_fr_column").value : "",
             findText:      (document.getElementById("admin_fr_find") ? document.getElementById("admin_fr_find").value : "").trim(),
             replaceText:   document.getElementById("admin_fr_replace") ? document.getElementById("admin_fr_replace").value : "",
             matchWhole:    document.getElementById("admin_fr_whole")  ? !document.getElementById("admin_fr_whole").checked  : true,
