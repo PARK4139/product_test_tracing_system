@@ -231,8 +231,8 @@ def list_config_options_cs(db: Session) -> list[dict[str, str]]:
     rows = _rows(db, "entity/environment")
     return [
         {
-            "value": r.get("product_test_environment_id", ""),
-            "label": r.get("environment_name", "") or r.get("product_test_environment_id", ""),
+            "value": r.get("product_test_config_id", ""),
+            "label": r.get("product_test_config_name", "") or r.get("product_test_config_id", ""),
         }
         for r in rows
     ]

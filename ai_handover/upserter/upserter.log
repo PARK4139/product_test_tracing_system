@@ -2,6 +2,52 @@
 
 ---
 
+## TASK 24 — Environments 시트 전체 리네임 → Configs (2026-06-16)
+
+계획: `../planner/planner.log` TASK 24.
+
+### 선행조건 확인
+- `product_test_config_unified` 테이블 존재, `product_test_run.product_test_config_id` 존재 확인 (TASK21 마이그레이션 본 DB 적용 완료 — TASK23 관찰 우려 해소).
+
+### A. 데이터 (`custom_sheet_tab` UPDATE, 백업 `data/backups/pre_rename_environment_to_config_sheet_20260616_131715.db`)
+| sheet_id | region_key | 변경 |
+|---|---|---|
+| `sheet_1500a5b0bcb4` | entity/environment | tab_label `Environments`→`Configs`; columns_json 3키 + rows_json 6행×3키 = 18건 `product_test_environment_{id,name,status}`→`product_test_config_*` |
+| `sheet_9eafbadce078` | entity/run | columns_json 1키 + rows_json 41행×1키 = 41건 FK `product_test_environment_id`→`product_test_config_id` |
+
+검증: UPDATE 후 양쪽 시트 old key 잔존 0, new key 정상 존재, row_count 6/41 불변(트랜잭션+`PRAGMA wal_checkpoint(TRUNCATE)`).
+
+### B. 코드 (시트 JSON 키 read 치환)
+| 파일 | 변경 |
+|---|---|
+| `app/routers/tracking_router.py` | L178,480,661,662,676,766,772 — `.get("product_test_environment_*")` → `.get("product_test_config_*")` 7건 (676=status 추가, 계획엔 미기재했으나 동일 행 데이터라 동반 치환 필요) |
+| `app/services/custom_sheet_trace_service.py` | `list_config_options_cs` L233-234 — `product_test_environment_id`/`environment_name`(미매치 fallback 키) → `product_test_config_id`/`product_test_config_name` |
+| `product_test_run_service/_trace.py,_runs.py,_list_queries.py,_exports.py` | 재확인 결과 TASK21에서 이미 `config_summary`/`product_test_config_*` 완료 — 추가 변경 없음 |
+
+### C. 다운스트림 — 실측 후 B-1 적용 (권장안)
+- TASK21이 백엔드 `_config_summary`/`config_summary` 출력키를 이미 변경했으나, 템플릿 6개 중 살아있는 라우트 연결 1개(`tester_product_test_run_detail.html`, `product_test_tester_router.py:139`)만 구키 `environment_summary.product_test_environment_*` 참조 → **실제 표시 깨짐(빈값) 버그**였음. 헤더 "Environment"→"Config" + 키 `config_summary.product_test_config_{id,name}` 로 수정.
+- 나머지 5개 템플릿(`admin_product_test_round_trace_panel.html`,`admin_product_test_run_trace_panel.html`,`product_test_report_detail_admin.html`,`product_test_report_print_admin.html`,`product_test_trace_admin.html`)은 **앱 내 어떤 라우터에서도 렌더 호출 없음**(grep 0건, `product_test_trace_admin.html`은 `scripts/task15_5_code_sync.py` 일회성 스크립트에서만 언급) → 도달 불가 고아 템플릿 → 수정 보류(불필요 변경 회피).
+
+### 부가 정리
+- `ai_handover/_tmp_check.py` (이전 세션에 우발적으로 커밋된 임시 점검 스크립트) 삭제.
+
+### 보존
+`region_key` 양쪽 그대로(`entity/environment`,`entity/run`), `SQA_PRODUCT_TEST_ENVIRONMENT_ID-*` ID값, `"environment_issue"` 코드, `product_test_tester_router.py`의 ORM 폼 필드명(`product_test_environment_id`)·`list_environment_options`(no-op stub) — 계획 범위 밖.
+
+### 검증 필요 항목 (→ tester / 사용자)
+- [ ] `GET /admin` 200, Tab View 5 "Configs" 탭(구 Environments) 정상 렌더, 6행 데이터 동일
+- [ ] Runs 탭 41행 FK 컬럼 헤더/값 정상
+- [ ] `GET /tester/product-test-runs/{id}` 페이지 "Config" 패널에 ID/Name 정상 표시(이전엔 빈값이었음)
+- [ ] `GET /admin/api/tracking/summary` 응답 `test_environments[].id/name/status`, `environments[].id/name` 값 정상(구키 제거 후도 값 유지되는지)
+- [ ] `run_tests.cmd --auto` green
+- [x] `py_compile` OK (`tracking_router.py`,`custom_sheet_trace_service.py`) — upserter 확인
+- [x] 데이터 마이그레이션 자체 검증(old key 0, row_count 불변) — upserter 확인
+
+### 롤백
+`data/backups/pre_rename_environment_to_config_sheet_20260616_131715.db` 복원 + 코드 3파일 git revert.
+
+---
+
 ## TASK 23 — Tab View 5 Status Log 시트 탭 제거 (2026-06-15)
 
 계획: `../planner/planner.log` TASK 23.

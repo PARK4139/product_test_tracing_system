@@ -175,7 +175,7 @@ def get_tracking_summary(
             proc_results_by_result.setdefault(_rid, []).append(_pr)
 
     environments_by_id: dict[str, dict] = {
-        e.get("product_test_environment_id", ""): e for e in environments_all
+        e.get("product_test_config_id", ""): e for e in environments_all
     }
     cases_by_id: dict[str, dict] = {
         c.get("product_test_case_id", ""): c for c in cases_all
@@ -477,7 +477,7 @@ def get_tracking_summary(
             "target_sw_version":  run_target["sw_version"],
             "physical_target_id": run.get("product_test_target_id", "") or "",
             "target_round_id":    run_target["round_id"],
-            "environment_id":     run.get("product_test_environment_id", "") or "",
+            "environment_id":     run.get("product_test_config_id", "") or "",
             "remark":             _run_display_remark(run.get("remark", "") or "", _work_period),
         })
 
@@ -658,8 +658,8 @@ def get_tracking_summary(
     test_environments = sorted(
         [
             {
-                "id":             e.get("product_test_environment_id", "") or "",
-                "name":           e.get("product_test_environment_name", "") or "",
+                "id":             e.get("product_test_config_id", "") or "",
+                "name":           e.get("product_test_config_name", "") or "",
                 "country":        e.get("test_country", "") or "",
                 "city":           e.get("test_city", "") or "",
                 "company":        e.get("test_company", "") or "",
@@ -673,7 +673,7 @@ def get_tracking_summary(
                 "power_frequency": e.get("power_frequency", "") or "",
                 "power_condition": e.get("power_condition", "") or "",
                 "captured_at":    e.get("captured_at", "") or "",
-                "status":         e.get("product_test_environment_status", "") or "",
+                "status":         e.get("product_test_config_status", "") or "",
                 "remark":         e.get("remark", "") or "",
             }
             for e in environments_all
@@ -763,13 +763,13 @@ def get_tracking_summary(
     seen_env: set[str] = set()
     environments = []
     for run in runs_with_results:
-        _env_id = run.get("product_test_environment_id", "")
+        _env_id = run.get("product_test_config_id", "")
         if _env_id and _env_id not in seen_env:
             seen_env.add(_env_id)
             _env_row = environments_by_id.get(_env_id, {})
             environments.append({
                 "id":   _env_id,
-                "name": _env_row.get("product_test_environment_name", "") or "",
+                "name": _env_row.get("product_test_config_name", "") or "",
             })
 
     # ── 16. Cases (via results, parent_release_id 포함) ───────────────────────
