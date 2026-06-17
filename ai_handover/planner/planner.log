@@ -2,6 +2,41 @@
 
 ---
 
+## TASK 25 — 커스텀 시트 탭 전체 연관 행 하이라이트 (2026-06-17)
+
+상태: ⏳ 계획만. **실행 = upserter (사용자/외부).** Claude 미실행.
+계획서: `~/.claude/plans/prancy-bouncing-mitten.md`.
+
+### 목적
+기존 "연관 데이터 하이라이트"(`tracking-highlight.js`, 간트+`trk_*_table` 전용)를 "+" 버튼 생성 커스텀 엔티티 시트 탭(Tab View 5: Rounds/Targets/Configs/Cases/Procedures/Runs/Results/Defects)으로 확장. 임의 탭 한 행 클릭 → 모든 탭의 연관 행 하이라이트. 범위 = **전체 체인**(연결 컴포넌트).
+
+### 연관 정의 (데이터 근거)
+엔티티 시트 행=범용 JSON, 컬럼 키 일관. 관계:
+```
+Round(test_round_id) ─< Run >─ Target(product_test_target_id) / Config(product_test_config_id)
+Run(product_test_run_id) ─< Result >─ Case(product_test_case_id) ; Case ─< Procedure ; Result ─< Defect
+```
+규칙: 두 행이 같은 **ID 값** 공유 시 연결(ID 전역 고유 → 값 기준 인덱스). ID컬럼 = 키 `_id` 끝 && 값 truthy. **`project_id` 제외**(다수 공유 오연결). 전체 행 ~931 → BFS 무시 가능.
+
+### 변경 (3파일)
+- **신규** `app/static/js/custom-sheet-highlight.js`: `buildCustomSheetIndex(cache)`(값→rowRef 역인덱스), `relatedComponent(ref)`(BFS), `applyHighlight`/`clearCustomSheetHighlights`/`reapplyCustomSheetHighlight`, `bindCustomSheetRowHighlight(panel,sheet)`. `statusHighlightClass` 재사용/복제.
+- `app/templates/admin_dashboard.html:1807` 직후: 스크립트 로드 1줄.
+- `app/static/js/tracking.js`: `renderCustomSheetTable` 말미 2줄(바인딩+재적용), `mountCustomSheetTab` 적재 직후 `buildCustomSheetIndex(customSheetCache)` 1줄.
+
+### 보존 / 무변경
+CSS(`tracking.css:819-826` `tr.trk_row_highlighted.hl-*` 범용 셀렉터 그대로 적용), DB, 라우터, 기존 `tracking-highlight.js`.
+
+### 트리거 UX
+**# 행번호 칸 클릭** = 하이라이트(데이터셀 편집 충돌 회피). 재클릭/Esc = 해제. 색상 = 행 상태값 기반 기존 `hl-*` 체계.
+
+### 검증 (tester)
+`GET /admin` 200 → Runs 행 # 클릭 시 Round/Target/Config + Result/Defect 체인 전 탭 하이라이트, 탭전환 유지, 재클릭/Esc 해제, 편집·정렬·필터 정상, `run_tests.cmd --auto` green.
+
+### ⚠️ 선행 (upserter)
+`mountCustomSheetTab` 가 entity region **전 시트**를 `customSheetCache` 적재하는지 확인. 한 region만이면 cross-tab 인덱스 위해 entity 전 시트 적재 보장 추가 필요.
+
+---
+
 ## TASK 24 — Environments 시트 전체 리네임 → Configs (2026-06-16)
 
 상태: ✅ upserter 적용 완료 (2026-06-16). 상세 `../upserter/upserter.log`.
